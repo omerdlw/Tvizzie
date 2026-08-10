@@ -10,7 +10,6 @@ import {
 } from '@/domains/social/server/activity/activity-events-service';
 import { buildCanonicalActivityDedupeKey } from '@/domains/social/utils';
 import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
-import { updateListReviewsCount } from '@/domains/media/server/lists/list-service.js';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
@@ -28,7 +27,8 @@ import {
 } from '@/domains/reviews/utils';
 import { getReviewValidationError } from './validation.js';
 import { fireReviewLiveEvent, getListReviewsSubscriptionKey } from './review-subscriptions.js';
-import { executeReviewWriteServer } from '@/domains/reviews/api/reviews-write.server';
+import { executeReviewWrite } from '@/domains/reviews/api/reviews-write-client';
+import { toggleReviewLikeByKey } from './mutation-shared.js';
 
 export async function upsertListReview({
   list,
@@ -82,7 +82,7 @@ export async function upsertListReview({
     }),
   };
 
-  const writePayload = await executeReviewWriteServer({
+  const writePayload = await executeReviewWrite({
     action: 'upsert-list-review',
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
@@ -92,18 +92,9 @@ export async function upsertListReview({
       updatedAt: nowIso,
     },
     rating: null,
-    userId: user.id,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const isCreated = writeResult?.created === true;
-
-  if (isCreated) {
-    await updateListReviewsCount({
-      ownerId,
-      listId,
-      delta: 1,
-    });
-  }
 
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_COMMENTED, {
     dedupeKey: buildListOpinionDedupeKey(user.id, subjectMetadata),
@@ -163,10 +154,9 @@ export async function deleteListReview({ ownerId, listId, userId }) {
     throw new Error('ownerId, listId, and userId are required');
   }
 
-  const writePayload = await executeReviewWriteServer({
+  const writePayload = await executeReviewWrite({
     action: 'delete-list-review',
     listId,
-    userId,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const deleted = writeResult?.deleted === true;
@@ -178,12 +168,6 @@ export async function deleteListReview({ ownerId, listId, userId }) {
   await removeActivityEvents({
     action: 'delete-list-opinion',
     listId,
-  });
-
-  await updateListReviewsCount({
-    ownerId,
-    listId,
-    delta: -1,
   });
 
   invalidatePollingSubscription(getListReviewsSubscriptionKey({ list: null, ownerId, listId }), {

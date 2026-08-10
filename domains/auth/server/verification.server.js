@@ -63,6 +63,12 @@ function getTimestampMs(value) {
   return new Date(value).getTime() || 0;
 }
 
+function createVerificationChallengeKey(email, purpose) {
+  return createHash('sha256')
+    .update(`${normalizeEmailValue(email)}:${normalizeValue(purpose).toLowerCase()}`)
+    .digest('hex');
+}
+
 // ============================================================
 // Email Delivery Service (Brevo API)
 // ============================================================
@@ -168,6 +174,7 @@ export async function requestVerificationCode({
   deviceId,
   email,
   forceNew = false,
+  initial = false,
   ipAddress,
   purpose,
   userId,
@@ -186,9 +193,7 @@ export async function requestVerificationCode({
   }
 
   const now = Date.now();
-  const challengeKey = createHash('sha256')
-    .update(`${normalizedEmail}:${normalizedPurpose}`)
-    .digest('hex');
+  const challengeKey = createVerificationChallengeKey(normalizedEmail, normalizedPurpose);
   const existingData = await getChallengeByKey(challengeKey);
 
   const existingResendAtMs = getTimestampMs(existingData?.resend_available_at);
@@ -203,10 +208,25 @@ export async function requestVerificationCode({
   }
 
   if (forceNew && existingData?.status === 'pending' && existingResendAtMs > now) {
+    if (initial) {
+      return {
+        challengeKey,
+        expiresAt: existingData.expires_at,
+        resendAvailableAt: existingData.resend_available_at,
+      };
+    }
+
     const waitSeconds = Math.max(1, Math.ceil((existingResendAtMs - now) / 1000));
-    throw new Error(
+    const error = new Error(
       `Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting a new code`,
     );
+    error.code = 'VERIFICATION_RESEND_COOLDOWN';
+    error.data = {
+      challengeKey,
+      expiresAt: existingData.expires_at,
+      resendAvailableAt: existingData.resend_available_at,
+    };
+    throw error;
   }
 
   const code = String(randomInt(100000, 1000000));
@@ -270,9 +290,7 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
     throw new Error('Verification code is invalid');
   }
 
-  const challengeKey = createHash('sha256')
-    .update(`${normalizedEmail}:${normalizedPurpose}`)
-    .digest('hex');
+  const challengeKey = createVerificationChallengeKey(normalizedEmail, normalizedPurpose);
   const challenge = await getChallengeByKey(challengeKey);
 
   if (!challenge || challenge.status !== 'pending' || challenge.used_at) {
@@ -339,9 +357,7 @@ export async function claimVerificationProof({ challengeJti, challengeKey, email
   const normalizedPurpose = normalizeValue(purpose).toLowerCase();
   const normalizedJti = normalizeValue(challengeJti);
   const normalizedKey = normalizeValue(challengeKey);
-  const expectedKey = createHash('sha256')
-    .update(`${normalizedEmail}:${normalizedPurpose}`)
-    .digest('hex');
+  const expectedKey = createVerificationChallengeKey(normalizedEmail, normalizedPurpose);
 
   if (
     !normalizedEmail ||

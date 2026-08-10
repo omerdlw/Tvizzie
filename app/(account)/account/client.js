@@ -135,6 +135,15 @@ export default function Client({ routeData = null, RegistryComponent = undefined
       initialFeed: initialReviewFeed,
       resolvedUserId: effectiveResolvedUserId,
     });
+
+  useEffect(() => {
+    if (username || !profileHandle) {
+      return;
+    }
+
+    router.replace(`/account/${encodeURIComponent(profileHandle)}`);
+  }, [profileHandle, router, username]);
+
   const editableReviewUser = useMemo(() => {
     if (!isOwner || !auth.user?.id) {
       return null;

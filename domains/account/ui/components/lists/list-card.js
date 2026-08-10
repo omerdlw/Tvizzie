@@ -229,7 +229,6 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               },
             }}
             style={{
-              transformStyle: 'preserve-3d',
               transformOrigin: 'center bottom',
             }}
           >

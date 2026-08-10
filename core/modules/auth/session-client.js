@@ -38,7 +38,10 @@ export async function fetchCanonicalSessionPayload({ force = false } = {}) {
 
   const requestPromise = (async () => {
     try {
-      const response = await fetch('/api/auth/session', { credentials: 'include' });
+      const response = await fetch('/api/auth/session', {
+        cache: 'no-store',
+        credentials: 'include',
+      });
       const payload = await response.json().catch(() => createAnonymousSessionPayload());
 
       if (!response.ok) {

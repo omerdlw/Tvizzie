@@ -5,7 +5,13 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
-import { listSupabaseAuthStorageKeys } from '@/infrastructure/supabase/auth-storage';
+import {
+  combineCookieChunks,
+  getCookieChunkBaseName,
+  isSupabaseAuthCookieName,
+  listSupabaseAuthStorageKeys,
+  parseSupabaseSessionAccessToken,
+} from '@/infrastructure/supabase/auth-storage';
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,
@@ -222,10 +228,57 @@ export function hasSessionHint(request, { allowBearer = true } = {}) {
 }
 
 export function readSessionFromSupabaseCookies(request) {
-  const accessToken = getCookieValue(request, 'sb-access-token');
-  const refreshToken = getCookieValue(request, 'sb-refresh-token');
-  if (!accessToken) return null;
-  return { accessToken, refreshToken };
+  const legacyAccessToken = getCookieValue(request, 'sb-access-token');
+  const legacyRefreshToken = getCookieValue(request, 'sb-refresh-token');
+
+  if (legacyAccessToken) {
+    return {
+      accessToken: legacyAccessToken,
+      refreshToken: legacyRefreshToken,
+      source: 'legacy-session',
+    };
+  }
+
+  const cookieMap = new Map();
+  const sessionCookieNames = new Set();
+  const requestCookies =
+    typeof request?.cookies?.getAll === 'function'
+      ? request.cookies.getAll()
+      : String(getHeader(request, 'cookie') || '')
+          .split(';')
+          .flatMap((entry) => {
+            const separatorIndex = entry.indexOf('=');
+            if (separatorIndex <= 0) return [];
+
+            const name = normalizeValue(entry.slice(0, separatorIndex));
+            if (!name) return [];
+
+            return [{ name, value: entry.slice(separatorIndex + 1).trim() }];
+          });
+
+  requestCookies.forEach(({ name, value }) => {
+    const normalizedName = normalizeValue(name);
+    if (!normalizedName) return;
+
+    cookieMap.set(normalizedName, normalizeValue(value));
+    const baseName = getCookieChunkBaseName(normalizedName);
+    if (isSupabaseAuthCookieName(baseName)) sessionCookieNames.add(baseName);
+  });
+
+  for (const cookieName of sessionCookieNames) {
+    const accessToken = parseSupabaseSessionAccessToken(
+      combineCookieChunks(cookieMap, cookieName),
+    );
+    if (accessToken) {
+      return {
+        accessToken,
+        refreshToken: null,
+        source: 'ssr-cookie-session',
+      };
+    }
+  }
+
+  return null;
 }
 
 function parseJwtClaims(token) {
@@ -370,7 +423,48 @@ export function createRequestSupabaseClient(request) {
   assertSupabaseBrowserEnv();
   return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
-      get: (name) => getCookieValue(request, name),
+      getAll: () => {
+        if (typeof request?.cookies?.getAll === 'function') {
+          return request.cookies.getAll();
+        }
+
+        const cookieHeader = getHeader(request, 'cookie');
+        if (!cookieHeader) return [];
+
+        return cookieHeader.split(';').flatMap((item) => {
+          const separatorIndex = item.indexOf('=');
+          if (separatorIndex <= 0) return [];
+
+          const name = normalizeValue(item.slice(0, separatorIndex));
+          const rawValue = item.slice(separatorIndex + 1).trim();
+          if (!name) return [];
+
+          let value = rawValue;
+          try {
+            value = decodeURIComponent(rawValue);
+          } catch {}
+
+          return [{ name, value }];
+        });
+      },
+    },
+  });
+}
+
+export function createAuthenticatedSupabaseClient(accessToken) {
+  const normalizedAccessToken = normalizeValue(accessToken);
+
+  if (!normalizedAccessToken) {
+    throw new Error('Authentication session is required');
+  }
+
+  assertSupabaseBrowserEnv();
+  return createSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    accessToken: async () => normalizedAccessToken,
+    global: {
+      headers: {
+        Authorization: `Bearer ${normalizedAccessToken}`,
+      },
     },
   });
 }
@@ -391,7 +485,18 @@ export async function readSessionFromRequest(
 
     const cookieSession = readSessionFromSupabaseCookies(request);
     if (cookieSession?.accessToken) {
-      return await verifyAccessTokenWithSupabase(cookieSession.accessToken, 'legacy-session');
+      try {
+        return await verifyAccessTokenWithSupabase(
+          cookieSession.accessToken,
+          cookieSession.source || 'cookie-session',
+        );
+      } catch (legacyCookieError) {
+        // Older releases used sb-access-token. If that stale cookie is still
+        // present, let the current @supabase/ssr cookie be resolved below.
+        if (isTransientNetworkError(legacyCookieError) || isTransientSessionError(legacyCookieError)) {
+          throw legacyCookieError;
+        }
+      }
     }
 
     if (skipSupabaseFallback) return null;

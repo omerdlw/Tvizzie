@@ -1,6 +1,6 @@
 'use client';
 
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
@@ -14,8 +14,6 @@ import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
 } from '@/domains/social/server/notifications/notification-events-service';
-import { resolveRpcRow } from './list-shared.js';
-
 export async function toggleListLike({ ownerId, listId, userId }) {
   if (!ownerId || !listId || !userId) {
     throw new Error('ownerId, listId, and userId are required to like a list');
@@ -25,36 +23,20 @@ export async function toggleListLike({ ownerId, listId, userId }) {
     throw new Error('You cannot like your own list');
   }
 
-  const client = getSupabaseClient();
-  const listResult = await client
-    .from('lists')
-    .select('slug,title,payload,poster_path')
-    .eq('id', listId)
-    .eq('user_id', ownerId)
-    .maybeSingle();
-
-  assertSupabaseResult(listResult, 'List could not be loaded');
-
-  if (!listResult.data) {
-    throw new Error('List not found');
-  }
-
-  const rpcResult = await client.rpc('collection_toggle_list_like', {
-    p_list_id: listId,
-    p_owner_id: ownerId,
-    p_user_id: userId,
+  const result = await requestApiJson('/api/lists/like', {
+    method: 'POST',
+    body: {
+      listId,
+      ownerId,
+    },
   });
-
-  assertSupabaseResult(rpcResult, 'List like state could not be updated');
-
-  const rpcRow = resolveRpcRow(rpcResult.data);
-  const isNowLiked = rpcRow?.is_liked === true;
+  const isNowLiked = result?.isNowLiked === true;
 
   if (isNowLiked) {
-    const listOwnerUsername = listResult.data?.payload?.ownerSnapshot?.username || null;
-    const listTitle = listResult.data.title || listResult.data?.payload?.title || 'Untitled List';
-    const listSlug = listResult.data.slug || listId;
-    const listPoster = listResult.data?.payload?.coverUrl || listResult.data?.poster_path || null;
+    const listOwnerUsername = result?.list?.ownerUsername || null;
+    const listTitle = result?.list?.title || 'Untitled List';
+    const listSlug = result?.list?.slug || listId;
+    const listPoster = result?.list?.poster || null;
 
     fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
       listOwnerId: ownerId,
@@ -93,36 +75,4 @@ export async function toggleListLike({ ownerId, listId, userId }) {
   }
 
   return isNowLiked;
-}
-
-export async function updateListReviewsCount({ ownerId, listId, delta }) {
-  if (!ownerId || !listId || !Number.isFinite(Number(delta))) {
-    throw new Error('ownerId, listId, and delta are required');
-  }
-
-  const client = getSupabaseClient();
-  const listResult = await client
-    .from('lists')
-    .select('reviews_count')
-    .eq('id', listId)
-    .eq('user_id', ownerId)
-    .maybeSingle();
-
-  assertSupabaseResult(listResult, 'List could not be loaded');
-
-  if (!listResult.data) {
-    throw new Error('List not found');
-  }
-
-  const nextReviewsCount = Math.max(0, Number(listResult.data.reviews_count || 0) + Number(delta));
-  const updateResult = await client
-    .from('lists')
-    .update({
-      reviews_count: nextReviewsCount,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', listId)
-    .eq('user_id', ownerId);
-
-  assertSupabaseResult(updateResult, 'List review count could not be updated');
 }

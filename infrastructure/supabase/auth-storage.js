@@ -44,8 +44,12 @@ export function isSupabaseProjectStorageKey(key) {
 export function isSupabaseAuthCookieName(name) {
   const baseName = getCookieChunkBaseName(name);
 
+  // PKCE stores its verifier in `<auth-token>-code-verifier`. That cookie is
+  // required to exchange the OAuth code, but it is not a user session. Treating
+  // it as one makes the proxy attempt a refresh before the callback can perform
+  // the exchange, which can discard the verifier on some Supabase versions.
   return (
-    baseName.startsWith(SUPABASE_STORAGE_PREFIX) && baseName.includes(SUPABASE_AUTH_TOKEN_SUFFIX)
+    baseName.startsWith(SUPABASE_STORAGE_PREFIX) && baseName.endsWith(SUPABASE_AUTH_TOKEN_SUFFIX)
   );
 }
 

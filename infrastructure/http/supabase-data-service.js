@@ -1,10 +1,10 @@
 'use client';
 
 import { normalizeValue } from '@/shared/utils';
-import { createClient } from '@/infrastructure/supabase/supabase-client';
+import { createAuthenticatedDataClient } from '@/infrastructure/supabase/supabase-client';
 
 export function getSupabaseClient() {
-  return createClient();
+  return createAuthenticatedDataClient();
 }
 
 export function normalizeSupabaseError(error, fallbackMessage) {

@@ -94,6 +94,7 @@ export function resolveVerificationErrorMessage(error, fallbackMessage) {
     return 'Verification could not be completed. Request a new code and try again';
   }
   if (
+    message.includes('Verification session has expired') ||
     message.includes('Pending sign-in session was not found') ||
     message.includes('Pending sign-in session has expired')
   ) {

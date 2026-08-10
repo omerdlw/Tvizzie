@@ -144,12 +144,23 @@ function getClient(providedClient = null) {
 }
 
 async function fetchAppAuthJson(path, { body, fallbackError, headers = {} } = {}) {
+  const csrfResponse = await fetch('/api/auth/csrf', {
+    cache: 'no-store',
+    credentials: 'include',
+  });
+  const csrfPayload = await csrfResponse.json().catch(() => null);
+  const requestHeaders = createCsrfHeaders({
+    ...headers,
+    ...(csrfPayload?.csrfToken ? { 'X-CSRF-Token': csrfPayload.csrfToken } : {}),
+  });
+
   const response = await fetch(path, {
     method: 'POST',
+    cache: 'no-store',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...headers,
+      ...requestHeaders,
     },
     body: JSON.stringify(body || {}),
   });
@@ -261,6 +272,7 @@ export function createSupabaseAuthAdapter(options = {}) {
 
       const result = await fetchAppAuthJson('/api/auth/sign-in', {
         fallbackError: 'Sign in failed',
+        headers: createCsrfHeaders(),
         body: {
           identifier: String(payload.identifier || '').trim() || undefined,
           email: normalizeEmailValue(payload.email),

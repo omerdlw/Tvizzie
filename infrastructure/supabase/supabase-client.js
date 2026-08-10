@@ -1,11 +1,16 @@
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
+import { createClient as createSupabaseDataClient } from '@supabase/supabase-js';
 
 import {
+  combineCookieChunks,
+  getCookieChunkBaseName,
+  isSupabaseAuthCookieName,
   isSupabaseProjectStorageKey,
   listSupabaseAuthStorageKeys,
   normalizeStorageValue,
+  parseSupabaseSessionAccessToken,
 } from './auth-storage';
 import {
   assertSupabaseBrowserEnv,
@@ -29,6 +34,43 @@ if (typeof window !== 'undefined') {
 }
 
 let clientInstance = null;
+let dataClientAccessToken = null;
+let dataClientInstance = null;
+
+export function getBrowserSupabaseAccessToken() {
+  if (typeof document === 'undefined') return '';
+
+  const cookieMap = new Map();
+  const sessionCookieNames = new Set();
+
+  String(document.cookie || '')
+    .split(';')
+    .forEach((entry) => {
+      const separatorIndex = entry.indexOf('=');
+      if (separatorIndex <= 0) return;
+
+      const name = normalizeStorageValue(entry.slice(0, separatorIndex));
+      if (!name) return;
+
+      let value = entry.slice(separatorIndex + 1).trim();
+      try {
+        value = decodeURIComponent(value);
+      } catch {}
+
+      cookieMap.set(name, normalizeStorageValue(value));
+      const baseName = getCookieChunkBaseName(name);
+      if (isSupabaseAuthCookieName(baseName)) sessionCookieNames.add(baseName);
+    });
+
+  for (const cookieName of sessionCookieNames) {
+    const accessToken = parseSupabaseSessionAccessToken(
+      combineCookieChunks(cookieMap, cookieName),
+    );
+    if (accessToken) return accessToken;
+  }
+
+  return '';
+}
 
 function expireBrowserCookie(name) {
   if (typeof document === 'undefined' || !name) {
@@ -90,6 +132,10 @@ export function createClient() {
 
   clientInstance = createBrowserClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
+      // OAuth callback handling is explicit in app/(auth)/callback. Leaving
+      // URL detection enabled here races that exchange with Supabase's own
+      // automatic code exchange and can leave the server cookie unsynced.
+      detectSessionInUrl: false,
       flowType: 'pkce',
       multiTab: false,
     },
@@ -101,6 +147,25 @@ export function createClient() {
   }
 
   return clientInstance;
+}
+
+export function createAuthenticatedDataClient() {
+  const accessToken = getBrowserSupabaseAccessToken();
+
+  if (!accessToken) {
+    return createClient();
+  }
+
+  if (dataClientInstance && dataClientAccessToken === accessToken) {
+    return dataClientInstance;
+  }
+
+  assertSupabaseBrowserEnv();
+  dataClientAccessToken = accessToken;
+  dataClientInstance = createSupabaseDataClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    accessToken: async () => accessToken,
+  });
+  return dataClientInstance;
 }
 
 export async function clearBrowserSupabaseAuthState({ clearServer = true } = {}) {
@@ -148,6 +213,8 @@ export async function clearBrowserSupabaseAuthState({ clearServer = true } = {})
   }
 
   clientInstance = null;
+  dataClientAccessToken = null;
+  dataClientInstance = null;
 }
 
 export async function terminateBrowserSession({

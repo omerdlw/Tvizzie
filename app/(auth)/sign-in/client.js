@@ -45,6 +45,7 @@ import {
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
+import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import AuthRegistry from '@/app/(auth)/registry';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -148,7 +149,24 @@ export default function Client() {
       });
     }
 
-    window.location.replace(postAuthRedirect);
+    let redirectUrl = postAuthRedirect;
+
+    if (postAuthRedirect === '/account') {
+      try {
+        const response = await fetch('/api/account/profile', {
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        const payload = await response.json().catch(() => null);
+        const username = String(payload?.profile?.username || '').trim();
+
+        if (response.ok && username) {
+          redirectUrl = `/account/${encodeURIComponent(username)}`;
+        }
+      } catch {}
+    }
+
+    window.location.replace(redirectUrl);
     return true;
   };
 
@@ -164,9 +182,9 @@ export default function Client() {
       },
       data: {
         allowRememberDevice: true,
+        challenge: signInResult.challenge || null,
         email: signInResult.email || '',
         identifier,
-        forceNewCodeOnOpen: true,
         purpose: AUTH_PURPOSE.SIGN_IN,
       },
     });

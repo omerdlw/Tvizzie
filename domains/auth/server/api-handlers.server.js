@@ -31,6 +31,7 @@ import {
   resolvePasswordAccountIdentifier,
   setPendingSignInCookie,
   setTrustedDeviceCookie,
+  verifyPendingSignInToken,
   verifyCodeRequest,
 } from './verification.server';
 import {
@@ -99,7 +100,7 @@ export async function handleSignInPost(request) {
     }
 
     if (!isTrusted) {
-      await requestVerificationCode({
+      const challenge = await requestVerificationCode({
         email,
         purpose: 'sign-in',
         userId: pendingSignIn.userId,
@@ -111,13 +112,13 @@ export async function handleSignInPost(request) {
         deviceHash: requestContext.deviceHash,
         email,
         refreshToken: pendingSignIn.refreshToken,
-        user: pendingSignIn.user || null,
         userId: pendingSignIn.userId,
       });
 
       const response = NextResponse.json({
         requiresVerification: true,
         email,
+        challenge,
       });
       setPendingSignInCookie(response, pendingToken);
       setDeviceIdCookie(response, requestContext.deviceId);
@@ -320,6 +321,7 @@ export async function handleVerificationPost(request) {
         deviceId: requestContext.deviceId,
         email,
         forceNew: body?.forceNew === true,
+        initial: body?.initial === true,
         ipAddress: requestContext.ipAddress,
         purpose,
         userId: stepUpSession?.userId || undefined,
@@ -354,7 +356,10 @@ export async function handleVerificationPost(request) {
         code,
         email,
         purpose,
-        userId: stepUpSession?.userId || undefined,
+        userId:
+          normalizedPurpose === 'sign-in'
+            ? pendingSignIn?.userId || undefined
+            : stepUpSession?.userId || undefined,
       });
       const result = { success: true, ...verified };
       const normPurpose = String(purpose || '')
@@ -392,7 +397,12 @@ export async function handleVerificationPost(request) {
       } else if (normPurpose === 'sign-in' && pendingSignIn) {
         const response = NextResponse.json({
           ...result,
-          session: { user: pendingSignIn.user || null },
+          session: {
+            user: {
+              id: pendingSignIn.userId,
+              email: pendingSignIn.email,
+            },
+          },
         });
         await applySupabaseSessionToResponse(request, response, {
           accessToken: pendingSignIn.accessToken,

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { createAppError } from '@/infrastructure/http/app-error';
+import { createMediaPayload } from '@/domains/media/server/media';
 
 import {
   normalizeOptionalNumber,
@@ -9,7 +10,79 @@ import {
   REVIEW_MIN_LENGTH,
 } from './reviews-write-shared';
 
-async function upsertMediaReview({ admin, body, userId }) {
+async function ensureMediaWatchedForReview({ admin, hasText, media, mediaKey, userClient, userId }) {
+  const mediaPayload = createMediaPayload(media, userId);
+  if (mediaPayload.mediaKey !== mediaKey) {
+    throw new Error('Review media does not match its media key');
+  }
+  const existingResult = await admin
+    .from('watched')
+    .select('media_key')
+    .eq('media_key', mediaPayload.mediaKey)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existingResult.error) {
+    throw new Error(existingResult.error.message || 'Watched state could not be loaded');
+  }
+  if (existingResult.data) return;
+
+  const watchedAt = new Date().toISOString();
+  const watchedPayload = {
+    ...mediaPayload,
+    addedAt: watchedAt,
+    firstWatchedAt: watchedAt,
+    lastWatchedAt: watchedAt,
+    sourceLastAction: hasText ? 'review' : 'rating',
+    updatedAt: watchedAt,
+    watchCount: 1,
+  };
+  const rpcResult = await userClient.rpc('collection_mark_watched', {
+    p_backdrop_path: mediaPayload.backdrop_path || null,
+    p_entity_id: mediaPayload.entityId,
+    p_entity_type: mediaPayload.entityType,
+    p_last_watched_at: watchedAt,
+    p_media_key: mediaPayload.mediaKey,
+    p_payload: watchedPayload,
+    p_poster_path: mediaPayload.poster_path || null,
+    p_source_last_action: watchedPayload.sourceLastAction,
+    p_title: mediaPayload.title,
+    p_user_id: userId,
+  });
+
+  if (rpcResult.error) {
+    throw new Error(rpcResult.error.message || 'Watched item could not be saved');
+  }
+}
+
+async function adjustListReviewsCount({ admin, delta, listId }) {
+  const listResult = await admin
+    .from('lists')
+    .select('reviews_count')
+    .eq('id', listId)
+    .maybeSingle();
+
+  if (listResult.error) {
+    throw new Error(listResult.error.message || 'List could not be loaded');
+  }
+  if (!listResult.data) {
+    throw new Error('List not found');
+  }
+
+  const updateResult = await admin
+    .from('lists')
+    .update({
+      reviews_count: Math.max(0, Number(listResult.data.reviews_count || 0) + delta),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', listId);
+
+  if (updateResult.error) {
+    throw new Error(updateResult.error.message || 'List review count could not be updated');
+  }
+}
+
+async function upsertMediaReview({ admin, body, userClient, userId }) {
   const mediaKey = normalizeValue(body?.mediaKey);
   const content = normalizeValue(body?.content);
   const rating = normalizeOptionalNumber(body?.rating);
@@ -19,6 +92,15 @@ async function upsertMediaReview({ admin, body, userId }) {
   if (!mediaKey) {
     throw new Error('mediaKey is required');
   }
+
+  await ensureMediaWatchedForReview({
+    admin,
+    hasText: Boolean(content),
+    media: body?.media,
+    mediaKey,
+    userClient,
+    userId,
+  });
 
   const existingResult = await admin
     .from('media_reviews')
@@ -126,6 +208,10 @@ async function upsertListReview({ admin, body, userId }) {
     throw new Error(upsertResult.error.message || 'Review could not be saved');
   }
 
+  if (!existingResult.data) {
+    await adjustListReviewsCount({ admin, delta: 1, listId });
+  }
+
   return {
     created: !existingResult.data,
   };
@@ -172,8 +258,13 @@ async function deleteListReview({ admin, body, userId }) {
     throw new Error(result.error.message || 'Review could not be deleted');
   }
 
+  const deleted = Array.isArray(result.data) && result.data.length > 0;
+  if (deleted) {
+    await adjustListReviewsCount({ admin, delta: -1, listId });
+  }
+
   return {
-    deleted: Array.isArray(result.data) && result.data.length > 0,
+    deleted,
   };
 }
 
@@ -234,11 +325,11 @@ async function toggleReviewLike({ admin, body, userId }) {
   };
 }
 
-export async function executeReviewWriteAction({ action, admin, body, userId }) {
+export async function executeReviewWriteAction({ action, admin, body, userClient, userId }) {
   const normalizedAction = normalizeValue(action).toLowerCase();
 
   if (normalizedAction === 'upsert-media-review') {
-    return upsertMediaReview({ admin, body, userId });
+    return upsertMediaReview({ admin, body, userClient, userId });
   }
 
   if (normalizedAction === 'upsert-list-review') {

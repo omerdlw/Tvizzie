@@ -152,7 +152,10 @@ export function buildOAuthCallbackUrl({ intent = 'sign-in', nextPath = '/account
   const normalizedOrigin = origin ? new URL(origin).origin : '';
   const normalizedProvider = normalizeOAuthProvider(provider);
   if (!normalizedOrigin || !normalizedProvider) return '';
-  const url = new URL('/callback', normalizedOrigin);
+  // PKCE's code verifier lives in an SSR cookie. Exchange the authorization
+  // code in a route handler so the verifier and resulting session cookies are
+  // read and written in the same server response.
+  const url = new URL('/api/auth/callback', normalizedOrigin);
   url.searchParams.set('next', sanitizeAuthNextPath(nextPath));
   url.searchParams.set('intent', intent);
   url.searchParams.set('provider', normalizedProvider);

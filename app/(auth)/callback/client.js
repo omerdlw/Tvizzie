@@ -209,10 +209,10 @@ async function waitForBrowserSession({ isCancelled = null, supabase }) {
 
 async function ensureAccountRecord(user = null) {
   if (!user?.id) {
-    return;
+    return null;
   }
 
-  await ACCOUNT_CLIENT.ensureAccount({
+  return ACCOUNT_CLIENT.ensureAccount({
     avatarUrl: user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
     displayName:
       user?.user_metadata?.display_name ||
@@ -349,6 +349,17 @@ function OAuthCallbackContent({ initialProvider = null }) {
         window.location.replace(url);
       };
 
+      const resolvePostAuthUrl = (accountProfile = null) => {
+        if (nextPath !== '/account' || !accountProfile?.username) {
+          return nextUrl;
+        }
+
+        return new URL(
+          `/account/${encodeURIComponent(accountProfile.username)}`,
+          origin,
+        ).toString();
+      };
+
       const syncServerSession = async () =>
         waitForCanonicalSession({
           isCancelled: () => cancelled,
@@ -356,19 +367,30 @@ function OAuthCallbackContent({ initialProvider = null }) {
 
       const syncCookiesAndServerSession = async (session) => {
         if (!session?.access_token) return;
-        try {
-          await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              accessToken: session.access_token,
-              refreshToken: session.refresh_token,
-            }),
-          });
-        } catch {}
-        await syncServerSession();
+        const response = await fetch('/api/auth/session', {
+          cache: 'no-store',
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accessToken: session.access_token,
+            refreshToken: session.refresh_token,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => null);
+          throw new Error(payload?.error || 'Authentication session could not be synchronized');
+        }
+
+        await response.json().catch(() => null);
+
+        const isServerSessionReady = await syncServerSession();
+        if (!isServerSessionReady) {
+          throw new Error('Authentication session could not be verified');
+        }
       };
 
       if (providerError) {
@@ -385,11 +407,11 @@ function OAuthCallbackContent({ initialProvider = null }) {
 
       const supabase = createSupabaseClient();
 
-      const handleCallbackFailure = async () => {
-        try {
-          await supabase.auth.signOut();
-          await fetch('/api/auth/session', { method: 'DELETE' });
-        } catch {}
+      const handleCallbackFailure = () => {
+        // OAuth may already have completed successfully by the time a
+        // follow-up profile or canonical-session request fails. Never revoke
+        // that valid session here: doing so turns a successful provider login
+        // into an immediate logout.
         redirectTo(
           resolveFailureRedirectUrl({
             intent,
@@ -404,11 +426,10 @@ function OAuthCallbackContent({ initialProvider = null }) {
 
       if (sessionState.userId) {
         try {
-          await ensureAccountRecord(sessionState.user);
-          await syncCookiesAndServerSession(sessionState.session);
-          redirectTo(nextUrl);
+          const accountProfile = await ensureAccountRecord(sessionState.user);
+          redirectTo(resolvePostAuthUrl(accountProfile));
         } catch (err) {
-          await handleCallbackFailure();
+          redirectTo(nextUrl);
         }
         return;
       }
@@ -425,11 +446,11 @@ function OAuthCallbackContent({ initialProvider = null }) {
 
         if (!exchangeResult.error && exchangeResult.data?.session?.user?.id) {
           try {
-            await ensureAccountRecord(exchangeResult.data.session.user);
             await syncCookiesAndServerSession(exchangeResult.data.session);
-            redirectTo(nextUrl);
+            const accountProfile = await ensureAccountRecord(exchangeResult.data.session.user);
+            redirectTo(resolvePostAuthUrl(accountProfile));
           } catch (err) {
-            await handleCallbackFailure();
+            redirectTo(nextUrl);
           }
           return;
         }
@@ -442,11 +463,11 @@ function OAuthCallbackContent({ initialProvider = null }) {
 
       if (browserSessionState.hasSession) {
         try {
-          await ensureAccountRecord(browserSessionState.user);
           await syncCookiesAndServerSession(browserSessionState.session);
-          redirectTo(nextUrl);
+          const accountProfile = await ensureAccountRecord(browserSessionState.user);
+          redirectTo(resolvePostAuthUrl(accountProfile));
         } catch (err) {
-          await handleCallbackFailure();
+          redirectTo(nextUrl);
         }
         return;
       }
@@ -460,7 +481,7 @@ function OAuthCallbackContent({ initialProvider = null }) {
         }
       }
 
-      await handleCallbackFailure();
+      handleCallbackFailure();
     }
 
     void finalizeOAuthSession();
@@ -482,4 +503,3 @@ export default function Client({ initialProvider = null }) {
     </Suspense>
   );
 }
-

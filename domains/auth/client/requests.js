@@ -23,11 +23,26 @@ function getCsrfHeaders() {
   return token ? { 'X-CSRF-Token': token } : {};
 }
 
+async function ensureCsrfHeaders() {
+  const response = await fetch('/api/auth/csrf', {
+    cache: 'no-store',
+    credentials: 'include',
+  });
+  const payload = await response.json().catch(() => null);
+  if (payload?.csrfToken) {
+    return { 'X-CSRF-Token': payload.csrfToken };
+  }
+
+  return getCsrfHeaders();
+}
+
 async function postAuthJson(path, body, fallbackMessage) {
+  const csrfHeaders = await ensureCsrfHeaders();
   const response = await fetch(path, {
     method: 'POST',
+    cache: 'no-store',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+    headers: { 'Content-Type': 'application/json', ...csrfHeaders },
     body: JSON.stringify(body),
   });
   const payload = await response.json().catch(() => ({ error: fallbackMessage }));
@@ -114,10 +129,10 @@ export function assertSignUpEmailAvailable({ email }) {
   return resolvePasswordAccountStatus({ email, intent: 'sign-up' });
 }
 
-export async function requestVerificationCode({ email, purpose, forceNew }) {
+export async function requestVerificationCode({ email, initial, purpose, forceNew }) {
   return postAuthJson(
     '/api/auth/verification',
-    { action: 'send', email, forceNew: forceNew === true, purpose },
+    { action: 'send', email, forceNew: forceNew === true, initial: initial === true, purpose },
     'Could not send verification code',
   );
 }

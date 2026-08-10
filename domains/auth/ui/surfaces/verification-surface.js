@@ -79,7 +79,7 @@ function OtpBoxes({
         className="absolute inset-0 z-10 bg-transparent text-transparent [caret-color:transparent] outline-none"
       />
 
-      <div className="grid grid-cols-6 gap-2 p-1 overflow-visible">
+      <div className="grid grid-cols-6 gap-2 overflow-visible">
         {Array.from({ length: 6 }).map((_, index) => {
           const digit = code[index] || '';
           const isActive = isFocused && activeIndex === index;
@@ -94,13 +94,13 @@ function OtpBoxes({
                 'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70 hover:text-black transition-colors duration-200',
                 hasError &&
                   digit &&
-                  'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
+                  'border-error/30 bg-error/15 text-error hover:border-error/20 hover:bg-error/20 border',
                 isActive &&
                   !digit &&
                   'border border-black/5 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
                 digit &&
                   !hasError &&
-                  'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border',
+                  'border-success/30 bg-success/15 text-success hover:border-success/20 hover:bg-success/20 border',
               )}
             >
               <AnimatePresence mode="wait">
@@ -143,6 +143,12 @@ export default function AuthVerificationSurface({ close, data, header }) {
     .toLowerCase();
   const email = normalizeEmail(data?.email);
   const identifier = String(data?.identifier || '').trim();
+  const initialChallenge = data?.challenge || null;
+  const initialChallengeToken = String(
+    initialChallenge?.challengeToken || initialChallenge?.challengeKey || '',
+  ).trim();
+  const forceNewCodeOnOpen =
+    purpose !== PURPOSES.SIGN_IN && data?.forceNewCodeOnOpen === true;
   const hasValidVerificationTarget =
     purpose === PURPOSES.ACCOUNT_DELETE ||
     purpose === PURPOSES.PASSWORD_CHANGE ||
@@ -154,15 +160,18 @@ export default function AuthVerificationSurface({ close, data, header }) {
   const [isSending, setIsSending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [code, setCode] = useState('');
-  const [challengeToken, setChallengeToken] = useState('');
-  const [expiresAt, setExpiresAt] = useState(null);
-  const [resendAvailableAt, setResendAvailableAt] = useState(null);
+  const [challengeToken, setChallengeToken] = useState(initialChallengeToken);
+  const [expiresAt, setExpiresAt] = useState(initialChallenge?.expiresAt || null);
+  const [resendAvailableAt, setResendAvailableAt] = useState(
+    initialChallenge?.resendAvailableAt || null,
+  );
   const [now, setNow] = useState(Date.now());
   const [rememberDevice, setRememberDevice] = useState(Boolean(data?.rememberDevice));
   const [isCodeFocused, setIsCodeFocused] = useState(false);
   const [hasCodeError, setHasCodeError] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [isStatusError, setIsStatusError] = useState(false);
+  const [isCooldownError, setIsCooldownError] = useState(false);
 
   const resendRemainingMs = Math.max(0, resolveVerificationTimestamp(resendAvailableAt) - now);
   const codeRemainingMs = Math.max(0, resolveVerificationTimestamp(expiresAt) - now);
@@ -175,9 +184,9 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
   const [meta, setMeta] = useState(() => ({
     codeExpiryLabel: null,
-    hasChallenge: false,
     isExpired: false,
-    isSending: hasValidVerificationTarget,
+    isSending: hasValidVerificationTarget && !initialChallengeToken,
+    hasChallenge: Boolean(initialChallengeToken),
   }));
 
   const sendCode = useCallback(
@@ -193,22 +202,21 @@ export default function AuthVerificationSurface({ close, data, header }) {
       if (!isInitial && !canResendCode) {
         setStatusMessage(`Please wait ${resendRemainingSeconds}s before resending`);
         setIsStatusError(true);
+        setIsCooldownError(true);
         return;
       }
 
       setIsSending(true);
       setStatusMessage('');
       setIsStatusError(false);
+      setIsCooldownError(false);
 
       try {
         const challenge = await requestVerificationCode({
           email,
+          initial: isInitial,
           identifier,
-          forceNew: !isInitial || (
-            isInitial &&
-            data?.forceNewCodeOnOpen === true &&
-            (purpose === PURPOSES.SIGN_IN || purpose === PURPOSES.SIGN_UP)
-          ),
+          forceNew: !isInitial || (isInitial && forceNewCodeOnOpen),
           purpose,
         });
 
@@ -218,12 +226,19 @@ export default function AuthVerificationSurface({ close, data, header }) {
         setResendAvailableAt(challenge?.resendAvailableAt || null);
         setNow(Date.now());
         setHasCodeError(false);
+        setIsCooldownError(false);
         lastAutoSubmittedCodeRef.current = '';
         completedRef.current = false;
         activeSubmissionKeyRef.current = '';
 
 
       } catch (error) {
+        const cooldownAt = error?.data?.resendAvailableAt || null;
+        if (cooldownAt) {
+          setResendAvailableAt(cooldownAt);
+          setNow(Date.now());
+          setIsCooldownError(true);
+        }
         const msg = resolveVerificationErrorMessage(error, 'Verification code could not be sent');
         setStatusMessage(msg);
         setIsStatusError(true);
@@ -240,7 +255,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       isSubmitting,
       purpose,
       resendRemainingSeconds,
-      data?.forceNewCodeOnOpen,
+      forceNewCodeOnOpen,
     ],
   );
 
@@ -265,14 +280,23 @@ export default function AuthVerificationSurface({ close, data, header }) {
   }, [expiresAt, resendAvailableAt]);
 
   useEffect(() => {
+    if (!isCooldownError || resendRemainingMs > 0) return;
+
+    setIsCooldownError(false);
+    setStatusMessage('');
+    setIsStatusError(false);
+  }, [isCooldownError, resendRemainingMs]);
+
+  useEffect(() => {
     if (autoSentRef.current) return;
+    if (initialChallengeToken) return;
     if (!hasValidVerificationTarget) {
       return;
     }
 
     autoSentRef.current = true;
     void sendCode({ isInitial: true });
-  }, [hasValidVerificationTarget, sendCode]);
+  }, [hasValidVerificationTarget, initialChallengeToken, sendCode]);
 
   useEffect(() => {
     if (!challengeToken || isSending) {
@@ -359,6 +383,18 @@ export default function AuthVerificationSurface({ close, data, header }) {
           completedRef.current && resolvedMessage.includes('already used');
 
         if (shouldIgnoreAlreadyUsedAfterSuccess) {
+          return;
+        }
+
+        if (resolvedMessage === 'Your login verification session expired. Sign in again') {
+          toast.error(resolvedMessage, {
+            id: `auth-verification-session-expired-${purpose}`,
+          });
+          closeVerification(close, {
+            success: false,
+            cancelled: true,
+            error: new Error(resolvedMessage),
+          });
           return;
         }
 
@@ -489,7 +525,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 pt-0.5"
+      className="flex flex-col gap-2.5"
       aria-busy={isSending || isSubmitting}
     >
       <OtpBoxes
@@ -505,17 +541,19 @@ export default function AuthVerificationSurface({ close, data, header }) {
       {statusMessage ? (
         <div
           className={cn(
-            "text-center text-xs font-semibold px-3 py-2 rounded-xl transition-all duration-200 border",
+            'text-center text-xs font-semibold px-3.5 py-2.5 rounded-2xl transition-all duration-200 border',
             isStatusError
-              ? "bg-error/10 text-error border-error/20"
-              : "bg-success/10 text-success border-success/20"
+              ? 'bg-error/10 text-error border-error/20'
+              : 'bg-success/10 text-success border-success/20',
           )}
         >
-          {statusMessage}
+          {isCooldownError
+            ? `Please wait ${resendRemainingSeconds}s before requesting a new code`
+            : statusMessage}
         </div>
       ) : null}
 
-      <div className="grid gap-2">
+      <div className="flex flex-col gap-2.5">
         <button
           className="center hover:bg-info h-11 w-full flex-auto rounded-2xl border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
@@ -536,7 +574,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'flex h-11 rounded-2xl w-full items-center gap-2  border px-3 text-left text-xs font-semibold uppercase tracking-wider transition',
+              'flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3.5 text-left text-xs font-semibold uppercase tracking-wider transition-colors duration-150',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
@@ -545,7 +583,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center size-4 border rounded-[8px]',
+                'center size-4 shrink-0 rounded-md border transition-colors',
                 rememberDevice
                   ? 'border-success/40 bg-success text-white'
                   : 'border-black/20 bg-transparent text-transparent',
@@ -554,7 +592,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             >
               <Icon icon="material-symbols:check-small-rounded" size={14} />
             </span>
-            <span>Remember this device for 30 days</span>
+            <span className="truncate">Remember this device for 30 days</span>
           </button>
         ) : null}
       </div>

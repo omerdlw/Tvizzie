@@ -26,7 +26,8 @@ import {
 } from '@/domains/reviews/utils';
 import { getReviewValidationError } from './validation.js';
 import { fireReviewLiveEvent, getMediaReviewsSubscriptionKey } from './review-subscriptions.js';
-import { executeReviewWriteServer } from '@/domains/reviews/api/reviews-write.server';
+import { executeReviewWrite } from '@/domains/reviews/api/reviews-write-client';
+import { toggleReviewLikeByKey } from './mutation-shared.js';
 
 export async function upsertMediaReview({
   media,
@@ -57,14 +58,6 @@ export async function upsertMediaReview({
   }
 
   const nowIso = new Date().toISOString();
-  await ensureWatchedBeforeMediaReview({
-    hasText: normalizedContent.length > 0,
-    media,
-    mediaKey: subjectMetadata.subjectKey,
-    userId: user.id,
-    watchedAt: nowIso,
-  });
-
   const payload = {
     authorId: user.id,
     content: normalizedContent,
@@ -79,17 +72,17 @@ export async function upsertMediaReview({
     }),
   };
 
-  const writePayload = await executeReviewWriteServer({
+  const writePayload = await executeReviewWrite({
     action: 'upsert-media-review',
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+    media,
     mediaKey: subjectMetadata.subjectKey,
     payload: {
       ...payload,
       updatedAt: nowIso,
     },
     rating: normalizedRating,
-    userId: user.id,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const isCreated = writeResult?.created === true;
@@ -140,10 +133,9 @@ export async function deleteMediaReview({ media, userId }) {
 
   const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
-  const writePayload = await executeReviewWriteServer({
+  const writePayload = await executeReviewWrite({
     action: 'delete-media-review',
     mediaKey,
-    userId,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const deleted = writeResult?.deleted !== false;

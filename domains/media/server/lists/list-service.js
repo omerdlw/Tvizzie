@@ -10,7 +10,6 @@ export {
   getUserListMemberships,
   toggleListLike,
   toggleUserListItem,
-  updateListReviewsCount,
   updateUserList,
 } from './mutations.js';
 export {

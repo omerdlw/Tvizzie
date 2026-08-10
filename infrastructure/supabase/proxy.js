@@ -33,7 +33,7 @@ const SUPABASE_PROXY_REFRESH_BUFFER_MS = resolveTimeoutMs(
 let lastClaimsErrorLogAt = 0;
 
 function isSecureCookieEnvironment() {
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false';
 }
 
 function decodeAccessTokenExpirationMs(accessToken) {

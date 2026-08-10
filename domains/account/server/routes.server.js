@@ -32,6 +32,7 @@ function buildCookieRequest(cookieStore) {
   return {
     cookies: {
       get(name) { return cookieStore.get(name); },
+      getAll() { return cookieStore.getAll(); },
     },
     headers: {
       get(name) {

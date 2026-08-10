@@ -2,7 +2,7 @@
 
 export { syncUserListDerivedState } from './derived-state.js';
 export { getUserListMemberships, toggleUserListItem } from './item-mutations.js';
-export { toggleListLike, updateListReviewsCount } from './like-mutations.js';
+export { toggleListLike } from './like-mutations.js';
 export {
   createUserList,
   createUserListWithItems,

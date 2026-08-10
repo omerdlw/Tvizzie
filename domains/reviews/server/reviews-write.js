@@ -2,7 +2,10 @@ import 'server-only';
 
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { requireSessionRequest } from '@/domains/auth/server/session.server.js';
+import {
+  createAuthenticatedSupabaseClient,
+  requireSessionRequest,
+} from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import { executeReviewWriteAction } from './reviews-write-actions';
 import { normalizeValue } from './reviews-write-shared';
@@ -23,6 +26,7 @@ export async function handleReviewsWritePost(request) {
       action,
       admin,
       body,
+      userClient: createAuthenticatedSupabaseClient(session.accessToken),
       userId: session.userId,
     });
 

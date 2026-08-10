@@ -131,4 +131,3 @@ export const SEARCH_STYLES = Object.freeze({
   metaBadge:
     'flex  w-fit items-center rounded-[8px] gap-1 border border-black/5',
 });
-

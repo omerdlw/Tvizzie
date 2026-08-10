@@ -6,22 +6,32 @@ import {
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
-  return handleSessionGet(request);
+  const response = await handleSessionGet(request);
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
 }
 
 export async function POST(request) {
   try {
     const { accessToken, refreshToken } = await request.json();
     const response = NextResponse.json({ success: true });
+    response.headers.set('Cache-Control', 'private, no-store');
     await applySupabaseSessionToResponse(request, response, { accessToken, refreshToken });
     return response;
   } catch (error) {
-    return NextResponse.json({ error: error.message || 'Failed to apply session cookies' }, { status: 400 });
+    const response = NextResponse.json(
+      { error: error.message || 'Failed to apply session cookies' },
+      { status: 400 },
+    );
+    response.headers.set('Cache-Control', 'private, no-store');
+    response.headers.set('Vary', 'Cookie');
+    return response;
   }
 }
 
 export async function DELETE() {
   const response = NextResponse.json({ success: true });
+  response.headers.set('Cache-Control', 'private, no-store');
   clearAuthCookies(response);
   return response;
 }

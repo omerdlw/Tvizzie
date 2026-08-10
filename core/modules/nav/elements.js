@@ -57,6 +57,7 @@ export const Description = memo(function Description({ text, style, maxLines = 1
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
+  const targetOpacity = typeof opacity === 'number' ? opacity : 0.7;
 
   return (
     <div className="relative min-h-[1.25rem] w-full overflow-hidden text-sm">
@@ -64,15 +65,15 @@ export const Description = memo(function Description({ text, style, maxLines = 1
         <motion.p
           key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: targetOpacity }}
           exit={{ opacity: 0 }}
           transition={NAV_FADE_TRANSITION}
           className={cn(
-            'text-black',
             isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
+            'text-black',
             className,
           )}
-          style={{ opacity, ...getLineClampStyle(maxLines, restStyle) }}
+          style={{ opacity: targetOpacity, ...getLineClampStyle(maxLines, restStyle) }}
         >
           {text}
         </motion.p>
