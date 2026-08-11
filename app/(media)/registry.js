@@ -164,7 +164,7 @@ export default function Registry({
               ? {
                   image: backgroundImage,
                   overlay: true,
-                  overlayOpacity: 0.4,
+                  overlayOpacity: 0,
                   overlayColor: 'var(--white)',
                   noiseStyle: {
                     opacity: 0.2,

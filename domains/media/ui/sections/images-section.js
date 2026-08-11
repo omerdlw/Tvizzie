@@ -7,6 +7,11 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
+import Icon from '@/ui/primitives/icon';
+import {
+  MEDIA_DETAIL_SECTION_CONTENT_CLASS,
+  MEDIA_DETAIL_SECTION_HEADER_CLASS,
+} from '@/domains/media/ui/layouts/media-detail-section';
 import {
   getCarouselButtonProps,
   getMediaCardProps,
@@ -100,64 +105,74 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
   }
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'images')}>
-        <SegmentedControl
-          value={activeKey}
-          className="w-auto self-start"
-          classNames={{}}
-          items={availableTabs}
-          onChange={handleTabChange}
-        />
-      </motion.div>
-
-      <div className="relative">
-        <div key={`movie-images-${currentTab.key}`}>
-          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
-            {items.map((image, index) => {
-              return (
-                <motion.div
-                  key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                  {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'images')}
-                >
-                  <MediaCard
-                    imageSrc={
-                      image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null
-                    }
-                    imageClassName={
-                      currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'
-                    }
-                    onClick={() =>
-                      openModal('PREVIEW_MODAL', 'center', {
-                        data: image,
-                      })
-                    }
-                    imageFetchPriority={index < 3 ? 'high' : undefined}
-                    imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
-                    fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
-                    imageAlt={`${currentTab.label} ${index + 1}`}
-                    className={`shrink-0 ${currentTab.width}`}
-                    aspectClass={currentTab.aspect}
-                    imageSizes={currentTab.sizes}
-                    imagePriority={index < 3}
-                    fallbackIconSize={24}
-                    {...(currentTab.key === 'backdrops'
-                      ? {
-                          'data-backdrop-file-path': image.file_path || '',
-                          'data-context-menu-target': 'movie-backdrop-card',
-                        }
-                      : currentTab.key === 'posters'
-                        ? {
-                            'data-poster-file-path': image.file_path || '',
-                            'data-context-menu-target': 'movie-poster-card',
-                          }
-                        : {})}
-                  />
-                </motion.div>
-              );
-            })}
-          </Carousel>
+    <section className="relative w-full border-b border-black/10">
+      <motion.div
+        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'images')}
+        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:gallery-minimalistic-bold" size={20} className="text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            Images
+          </h2>
         </div>
+        {availableTabs.length > 1 && (
+          <div className="flex shrink-0 items-center">
+            <SegmentedControl
+              value={activeKey}
+              className="w-auto self-start"
+              classNames={{}}
+              items={availableTabs}
+              onChange={handleTabChange}
+            />
+          </div>
+        )}
+      </motion.div>
+      <div key={`movie-images-${currentTab.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
+        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+          {items.map((image, index) => {
+            return (
+              <motion.div
+                key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
+                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'images')}
+              >
+                <MediaCard
+                  imageSrc={
+                    image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null
+                  }
+                  imageClassName={
+                    currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'
+                  }
+                  onClick={() =>
+                    openModal('PREVIEW_MODAL', 'center', {
+                      data: image,
+                    })
+                  }
+                  imageFetchPriority={index < 3 ? 'high' : undefined}
+                  imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
+                  fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
+                  imageAlt={`${currentTab.label} ${index + 1}`}
+                  className={`shrink-0 ${currentTab.width}`}
+                  aspectClass={currentTab.aspect}
+                  imageSizes={currentTab.sizes}
+                  imagePriority={index < 3}
+                  fallbackIconSize={24}
+                  {...(currentTab.key === 'backdrops'
+                    ? {
+                        'data-backdrop-file-path': image.file_path || '',
+                        'data-context-menu-target': 'movie-backdrop-card',
+                      }
+                    : currentTab.key === 'posters'
+                      ? {
+                          'data-poster-file-path': image.file_path || '',
+                          'data-context-menu-target': 'movie-poster-card',
+                        }
+                      : {})}
+                />
+              </motion.div>
+            );
+          })}
+        </Carousel>
       </div>
     </section>
   );

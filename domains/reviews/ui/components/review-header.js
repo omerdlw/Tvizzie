@@ -24,15 +24,11 @@ export default function ReviewHeader({
     Number(ratingStats.average) > 0;
 
   return (
-    <div className="flex flex-col gap-2.5 border-b border-black/10 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex min-w-0 items-center gap-2">
-          <Icon
-            icon="solar:chat-round-line-bold"
-            size={20}
-            className="shrink-0 text-black/70 sm:size-6"
-          />
-          <h2 className="text-sm font-bold tracking-wider text-black uppercase sm:text-base">
+          <Icon icon="solar:chat-round-line-bold" size={20} className="shrink-0 text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide uppercase text-black/70">
             {title}
           </h2>
         </div>

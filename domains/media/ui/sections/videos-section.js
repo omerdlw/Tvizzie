@@ -8,6 +8,10 @@ import SegmentedControl from '@/ui/primitives/segmented-control';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
 import {
+  MEDIA_DETAIL_SECTION_CONTENT_CLASS,
+  MEDIA_DETAIL_SECTION_HEADER_CLASS,
+} from '@/domains/media/ui/layouts/media-detail-section';
+import {
   getCarouselButtonProps,
   getMediaCardProps,
   getSectionHeaderProps,
@@ -60,58 +64,71 @@ export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SEC
   }
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'videos')}>
-        <SegmentedControl
-          value={activeType}
-          className="w-auto self-start"
-          classNames={{}}
-          items={items}
-          onChange={handleTabChange}
-        />
-      </motion.div>
-
-      <div className="relative">
-        <div key={`movie-videos-${activeType || 'all'}`}>
-          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(0)}>
-            {filteredVideos.map((video, index) => {
-              return (
-                <motion.div
-                  key={video.id}
-                  {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'videos')}
-                >
-                  <MediaCard
-                    className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
-                    aspectClass="aspect-video"
-                    imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
-                    imageAlt={video.name}
-                    imageSizes="288px"
-                    imagePreset="grid"
-                    fallbackIcon="solar:video-library-bold"
-                    fallbackIconSize={24}
-                    overlay={
-                      <>
-                        <div className="center absolute inset-0 transition-all duration-150 ease-linear group-hover:opacity-0">
-                          <div className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm">
-                            <Icon icon="solar:play-bold" size={16} />
-                          </div>
-                        </div>
-                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white group-hover:from-black">
-                          <h3 className="truncate text-sm font-bold text-white">{video.name}</h3>
-                        </div>
-                      </>
-                    }
-                    onClick={() =>
-                      openModal('VIDEO_PREVIEW_MODAL', 'center', {
-                        data: video,
-                      })
-                    }
-                  />
-                </motion.div>
-              );
-            })}
-          </Carousel>
+    <section className="relative w-full border-b border-black/10">
+      <motion.div
+        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'videos')}
+        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:video-library-bold" size={20} className="text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            Videos
+          </h2>
         </div>
+        {items.length > 0 && (
+          <div className="flex shrink-0 items-center">
+            <SegmentedControl
+              value={activeType}
+              className="w-auto self-start"
+              classNames={{}}
+              items={items}
+              onChange={handleTabChange}
+            />
+          </div>
+        )}
+      </motion.div>
+      <div
+        key={`movie-videos-${activeType || 'all'}`}
+        className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}
+      >
+        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(0)}>
+          {filteredVideos.map((video, index) => {
+            return (
+              <motion.div
+                key={video.id}
+                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'videos')}
+              >
+                <MediaCard
+                  className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
+                  aspectClass="aspect-video"
+                  imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
+                  imageAlt={video.name}
+                  imageSizes="288px"
+                  imagePreset="grid"
+                  fallbackIcon="solar:video-library-bold"
+                  fallbackIconSize={24}
+                  overlay={
+                    <>
+                      <div className="center absolute inset-0 transition-all duration-150 ease-linear group-hover:opacity-0">
+                        <div className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm">
+                          <Icon icon="solar:play-bold" size={16} />
+                        </div>
+                      </div>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white group-hover:from-black">
+                        <h3 className="truncate text-sm font-bold text-white">{video.name}</h3>
+                      </div>
+                    </>
+                  }
+                  onClick={() =>
+                    openModal('VIDEO_PREVIEW_MODAL', 'center', {
+                      data: video,
+                    })
+                  }
+                />
+              </motion.div>
+            );
+          })}
+        </Carousel>
       </div>
     </section>
   );

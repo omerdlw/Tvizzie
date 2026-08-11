@@ -378,7 +378,7 @@ export default function Modal() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-0 bg-white/40 backdrop-blur-md"
+            className="fixed inset-0 bg-white/40 backdrop-blur-sm"
             style={{ zIndex: Z_INDEX.MODAL, willChange: 'opacity' }}
             onClick={() => closeModal(null, topModalEntry.id)}
           />

@@ -18,7 +18,12 @@ import { getUserAvatarUrl } from '@/domains/account/utils';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/surfaces/account-bio-surface';
 import { AccountProfileShellProvider, useAccountProfileShell } from './account-profile-context';
 import AccountGridFrame from './account-grid-frame';
-import { getNavItemProps, getSectionRevealProps, navBarVariants, SPRINGS } from '@/app/(account)/motion';
+import {
+  getNavItemProps,
+  getSectionRevealProps,
+  navBarVariants,
+  SPRINGS,
+} from '@/app/(account)/motion';
 
 // ─── Nav Transition Context ───────────────────────────────────────────────────
 
@@ -65,7 +70,7 @@ export function AccountNavReveal({ children, className = '' }) {
   return (
     <motion.div
       className={className}
-      initial={navBarVariants.initial}
+      initial={false}
       animate={navBarVariants.animate}
       transition={navBarVariants.transition}
     >
@@ -84,10 +89,8 @@ export function AccountSectionReveal({
   return (
     <motion.div
       className={className}
-      initial={revealProps.initial}
+      initial={false}
       animate={revealProps.animate}
-      whileInView={revealProps.whileInView}
-      viewport={revealProps.viewport}
       transition={revealProps.transition}
     >
       {children}
@@ -173,9 +176,9 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
     <div className={cn('relative w-full bg-transparent', className)}>
       <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch divide-x divide-black/10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="grid h-14 w-full auto-cols-[6.75rem] grid-flow-col divide-x divide-black/10 overflow-x-auto [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
-            <div key={index} className="p-2 w-full flex-auto">
+            <div key={index} className="h-14 p-2 sm:min-w-0">
               <NavViewItem
                 key={item.key}
                 item={item}
@@ -226,8 +229,8 @@ function NavViewItem({ item, isActive, href, index }) {
 
   return (
     <motion.div
-      className="flex min-w-[6.75rem] flex-auto"
-      initial={navItemProps.initial}
+      className="flex h-full w-full min-w-0"
+      initial={false}
       animate={navItemProps.animate}
       transition={navItemProps.transition}
       whileHover={navItemProps.whileHover}
@@ -237,10 +240,10 @@ function NavViewItem({ item, isActive, href, index }) {
         href={href}
         onClick={handleClick}
         className={cn(
-          'relative center h-10 last:border-none w-full shrink-0 rounded-2xl px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-colors sm:text-xs',
+          'center relative h-full w-full shrink-0 rounded-2xl px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-colors last:border-none sm:text-xs',
           isActive
-            ? 'text-white font-bold'
-            : 'text-black/70 hover:bg-primary hover:text-black font-semibold',
+            ? 'font-bold text-white'
+            : 'hover:bg-primary font-semibold text-black/70 hover:text-black',
         )}
       >
         {isActive ? (

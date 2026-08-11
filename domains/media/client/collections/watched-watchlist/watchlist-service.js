@@ -27,6 +27,7 @@ import {
   getUserWatchlistSubscriptionKey,
   getWatchlistStatusSubscriptionKey,
 } from './watchlist-shared.js';
+import { fetchWatchlistStatus } from './watchlist-queries.js';
 
 export { subscribeToUserWatchlist, subscribeToWatchlistStatus } from './watchlist-subscriptions.js';
 
@@ -38,13 +39,28 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   const watchlistRef = createWatchlistRef(userId, media);
   const client = getSupabaseClient();
   const row = createMediaRow(media, userId);
-  const rpcRow = await executeMediaCollectionRpc(
-    'collection_toggle_watchlist',
-    createMediaCollectionToggleRpcParams({ row, userId }),
-    'Watchlist item could not be updated',
+  const rpcRow = await executeMediaCollectionRpc({
     client,
-  );
-  const isInWatchlist = rpcRow?.is_in_watchlist === true;
+    fnName: 'collection_toggle_watchlist',
+    params: createMediaCollectionToggleRpcParams({ row, userId }),
+    fallbackMessage: 'Watchlist item could not be updated',
+  });
+  // Supabase can expose a single-row RPC result as either an object or a
+  // one-item array depending on the function's return declaration. Resolve
+  // both shapes, then confirm against the status endpoint when the RPC does
+  // not include the boolean explicitly.
+  const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  let isInWatchlist =
+    resolvedRpcRow?.is_in_watchlist === true || resolvedRpcRow?.isInWatchlist === true;
+
+  try {
+    const status = await fetchWatchlistStatus({ media, userId });
+    if (typeof status?.isInWatchlist === 'boolean') {
+      isInWatchlist = status.isInWatchlist;
+    }
+  } catch {
+    // Keep the RPC result when the follow-up status read is unavailable.
+  }
 
   if (isInWatchlist) {
     const mediaSnapshot = assertTitleMedia(
@@ -78,7 +94,6 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshMediaCollectionAccountSummary(userId);
 
   return nextResult;
 }
@@ -87,14 +102,15 @@ export async function removeUserWatchlistItem({ media = null, mediaKey = null, u
   ensureUserId(userId, 'Authenticated user is required to manage watchlist items');
 
   const resolvedMediaKey = mediaKey || getWatchlistDocRef(userId, media).id;
-  await executeMediaCollectionRpc(
-    'collection_remove_watchlist',
-    {
+  await executeMediaCollectionRpc({
+    client: getSupabaseClient(),
+    fnName: 'collection_remove_watchlist',
+    params: {
       p_media_key: resolvedMediaKey,
       p_user_id: userId,
     },
-    'Watchlist item could not be removed',
-  );
+    fallbackMessage: 'Watchlist item could not be removed',
+  });
 
   invalidatePollingSubscription(getWatchlistStatusSubscriptionKey({ media, userId }), {
     payload: {
@@ -105,7 +121,6 @@ export async function removeUserWatchlistItem({ media = null, mediaKey = null, u
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshMediaCollectionAccountSummary(userId);
 
   return {
     mediaKey: resolvedMediaKey,

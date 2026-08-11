@@ -1,4 +1,5 @@
 import { fetchAccountResource } from './account-api.client';
+import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 
 function getResourceItems(response) {
   return response?.items || response?.data || [];
@@ -85,25 +86,40 @@ export async function fetchMediaCollectionStatus({ media = null, resource, userI
   return res?.data || null;
 }
 
-export function createMediaCollectionToggleRpcParams({ extraPayload = {}, row = {}, userId }) {
+export function createMediaCollectionToggleRpcParams({ extras = {}, row = {}, userId }) {
   return {
-    p_added_at: row.addedAt || row.added_at || new Date().toISOString(),
     p_backdrop_path: row.backdrop_path || row.backdropPath || null,
     p_entity_id: String(row.entityId || row.entity_id || row.id || '').trim(),
     p_entity_type: String(row.entityType || row.entity_type || row.media_type || '')
       .trim()
       .toLowerCase(),
-    p_extra_payload: extraPayload,
     p_media_key: row.mediaKey || row.media_key || null,
+    p_payload: row.payload || {},
     p_poster_path: row.poster_path || row.posterPath || null,
     p_title: row.title || row.name || 'Untitled',
     p_user_id: userId,
+    ...extras,
   };
 }
 
-export async function executeMediaCollectionRpc({ client, fnName, params, fallbackMessage }) {
-  const result = await client.rpc(fnName, params);
-  if (result.error) throw new Error(result.error.message || fallbackMessage);
+export async function executeMediaCollectionRpc(fnNameOrOptions, paramsArg, fallbackMessageArg, clientArg) {
+  let fnName;
+  let params;
+  let fallbackMessage;
+  let client;
+
+  if (typeof fnNameOrOptions === 'object' && fnNameOrOptions !== null) {
+    ({ client, fnName, params, fallbackMessage } = fnNameOrOptions);
+  } else {
+    fnName = fnNameOrOptions;
+    params = paramsArg;
+    fallbackMessage = fallbackMessageArg;
+    client = clientArg;
+  }
+
+  const supabase = client || getSupabaseClient();
+  const result = await supabase.rpc(fnName, params);
+  if (result.error) throw new Error(result.error.message || fallbackMessage || 'Collection action failed');
   return result.data;
 }
 

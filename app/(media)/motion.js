@@ -28,7 +28,7 @@ export const DURATIONS = Object.freeze({
 });
 
 export const BLURS = Object.freeze({
-  NONE: 'blur(0px)',
+  NONE: 'none',
   SUBTLE: 'blur(5px)',
   LIGHT: 'blur(9px)',
   MEDIUM: 'blur(14px)',
@@ -226,8 +226,8 @@ export const MEDIA_BACKGROUND_ANIMATION = Object.freeze({
 });
 
 export const sidebarColumnVariants = Object.freeze({
-  initial: { y: 18, scale: 0.985 },
-  animate: { y: 0, scale: 1 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
   transition: {
     duration: DURATIONS.COLUMN_SLIDE,
     delay: TIMELINES.SIDEBAR_COLUMN_DELAY,
@@ -236,8 +236,8 @@ export const sidebarColumnVariants = Object.freeze({
 });
 
 export const mainContentColumnVariants = Object.freeze({
-  initial: { y: 12, scale: 0.99 },
-  animate: { y: 0, scale: 1 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
   transition: {
     duration: DURATIONS.COLUMN_SLIDE,
     delay: 0.3,
@@ -307,7 +307,6 @@ export const heroOverviewVariants = Object.freeze({
 
 const SHARED_INTERACTION_PROPS = Object.freeze({
   whileHover: {
-    y: -2,
     scale: 1.012,
     transition: SPRINGS.RESPONSIVE,
   },
@@ -320,11 +319,10 @@ function getSharedInteractionProps() {
 
 export function getActionButtonProps(index = 0) {
   return {
-    initial: { opacity: 0, y: 14, scale: 0.94, filter: BLURS.LIGHT },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 14, scale: 0.94 },
+    animate: { opacity: 1, y: 0, scale: 1 },
     transition: {
       duration: DURATIONS.ACTION_BUTTON,
-      delay: TIMELINES.ACTION_BUTTON_BASE_DELAY + index * TIMELINES.ACTION_BUTTON_STEP,
       ease: EASINGS.CONTROL,
     },
     ...getSharedInteractionProps(),
@@ -385,24 +383,24 @@ export function getSidebarRowProps(index = 0, baseDelay = TIMELINES.SIDEBAR_ROWS
 
 const SECTION_HEADER_PRESETS = Object.freeze({
   cast: Object.freeze({
-    initial: { opacity: 0, y: 18, scale: 0.985, filter: BLURS.MEDIUM },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 18, filter: BLURS.MEDIUM },
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   }),
   seasons: Object.freeze({
-    initial: { opacity: 0, y: 14, scale: 0.985, filter: BLURS.MEDIUM },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 14, filter: BLURS.MEDIUM },
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   }),
   gallery: Object.freeze({
-    initial: { opacity: 0, y: 16, scale: 0.985, filter: BLURS.MEDIUM },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 16, filter: BLURS.MEDIUM },
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   }),
   images: Object.freeze({
-    initial: { opacity: 0, y: 10, scale: 0.98, filter: BLURS.SUBTLE },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 10, filter: BLURS.SUBTLE },
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   }),
   videos: Object.freeze({
-    initial: { opacity: 0, y: 18, scale: 0.985, filter: BLURS.MEDIUM },
-    animate: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+    initial: { opacity: 0, y: 18, filter: BLURS.MEDIUM },
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   }),
   filmography: Object.freeze({
     initial: { opacity: 0, y: 16, filter: BLURS.MEDIUM },
@@ -429,8 +427,8 @@ function getSectionPreset(sectionKey, hasSwitchedTab = false) {
   const preset = SECTION_HEADER_PRESETS[sectionKey] || SECTION_HEADER_PRESETS.generic;
   if (!hasSwitchedTab) return preset;
   return {
-    initial: { opacity: 0, y: 8, scale: 0.985 },
-    animate: { opacity: 1, y: 0, scale: 1 },
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
   };
 }
 
@@ -497,7 +495,10 @@ export function getCastHeaderProps(
   baseDelay = TIMELINES.CAST_SECTION_BASE_DELAY,
   hasSwitchedTab = false,
 ) {
-  return getSectionHeaderProps(baseDelay, hasSwitchedTab, 'cast');
+  const props = getSectionHeaderProps(baseDelay, hasSwitchedTab, 'cast');
+  const { filter: _initialFilter, ...initial } = props.initial;
+  const { filter: _animateFilter, ...animate } = props.animate;
+  return { ...props, initial, animate };
 }
 
 export function getCastCardProps(
@@ -519,16 +520,16 @@ export function getCastHoverProps() {
 export function getScrollSectionProps(sectionKey = 'related', baseDelay = 0) {
   const presets = {
     related: {
-      initial: { opacity: 0, y: 22, scale: 0.985, filter: BLURS.MEDIUM },
-      whileInView: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+      initial: { opacity: 0 },
+      whileInView: { opacity: 1 },
     },
     reviews: {
-      initial: { opacity: 0, y: 18, scale: 0.99, filter: BLURS.LIGHT },
-      whileInView: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+      initial: { opacity: 0 },
+      whileInView: { opacity: 1 },
     },
     videos: {
-      initial: { opacity: 0, y: 20, scale: 0.985, filter: BLURS.MEDIUM },
-      whileInView: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
+      initial: { opacity: 0 },
+      whileInView: { opacity: 1 },
     },
   };
   const preset = presets[sectionKey] || presets.related;

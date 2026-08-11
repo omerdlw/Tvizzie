@@ -25,7 +25,12 @@ export function buildLikeRef(userId, media) {
 }
 
 export function getLikeStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('likes', { media, userId });
+  const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in likes');
+  return buildMediaCollectionStatusSubscriptionKey(
+    'likes',
+    userId,
+    buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
+  );
 }
 
 export function getUserLikesSubscriptionKey(userId, options = {}) {

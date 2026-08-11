@@ -4,6 +4,8 @@ import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 
+export const LEGAL_PAGE_CONTENT_CLASS = `relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-20 sm:px-6`;
+
 export default function LegalPageShell({ children }) {
   return (
     <PageGradientShell className="overflow-hidden">

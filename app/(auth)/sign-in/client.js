@@ -23,6 +23,7 @@ import {
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  AUTH_PAGE_FORM_CLASS,
   AuthPageShell,
   AuthVerificationSurface,
   ForgotPasswordAction,
@@ -449,7 +450,7 @@ function View({
           <motion.form
             key="reset-mode-form"
             onSubmit={handleResetSubmit}
-            className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
+            className={AUTH_PAGE_FORM_CLASS}
             variants={signInPageVariants}
             initial="hidden"
             animate="visible"
@@ -549,9 +550,9 @@ function View({
           <motion.form
             key="sign-in-form"
             onSubmit={handleSubmit}
-            className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
+            className={AUTH_PAGE_FORM_CLASS}
             variants={signInPageVariants}
-            initial="hidden"
+            initial={false}
             animate="visible"
             exit="exit"
           >

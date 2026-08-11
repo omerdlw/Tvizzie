@@ -87,10 +87,9 @@ function createRow(id, icon, content) {
   };
 }
 
-function SidebarTaxonomy({ genres = [], tags = [], baseDelay = TIMELINES.TAXONOMY_BASE_DELAY }) {
+function SidebarTaxonomy({ genres = [], baseDelay = TIMELINES.TAXONOMY_BASE_DELAY }) {
   const normalizedGenres = normalizeTaxonomyItems(genres);
-  const normalizedTags = normalizeTaxonomyItems(tags, '#');
-  if (!normalizedGenres.length && !normalizedTags.length) {
+  if (!normalizedGenres.length) {
     return { element: null, count: 0 };
   }
   let chipIndexCounter = 0;
@@ -98,7 +97,7 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay = TIMELINES.TAXONOM
     <div className="mt-2 flex flex-col gap-2">
       <motion.div {...getTaxonomyHeaderProps(baseDelay)}>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
-          GENRES / TAGS
+          GENRES
         </p>
       </motion.div>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -112,20 +111,6 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay = TIMELINES.TAXONOM
             >
               <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase shadow-xs transition-colors hover:border-black/20 hover:text-black">
                 {genre}
-              </span>
-            </motion.div>
-          );
-        })}
-        {normalizedTags.map((tag) => {
-          const currentIndex = chipIndexCounter++;
-          return (
-            <motion.div
-              key={tag}
-              {...getTaxonomyChipProps(currentIndex, baseDelay)}
-              className="inline-flex"
-            >
-              <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/70 uppercase shadow-xs transition-colors hover:border-black/20 hover:text-black">
-                {tag}
               </span>
             </motion.div>
           );
@@ -144,14 +129,13 @@ export default function Sidebar({
   certification,
   topContent,
   genres = [],
-  tags = [],
 }) {
   const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)
       ?.english_name || item.original_language;
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
-  const hasTaxonomy = genres?.length || tags?.length;
+  const hasTaxonomy = genres?.length;
   const personGroups = [
     {
       id: 'writers',
@@ -237,7 +221,6 @@ export default function Sidebar({
 
   const taxonomyData = SidebarTaxonomy({
     genres,
-    tags,
     baseDelay: TIMELINES.TAXONOMY_BASE_DELAY,
   });
   const rowBaseDelay =

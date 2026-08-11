@@ -19,6 +19,10 @@ import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import { cn } from '@/shared/utils';
 import {
+  MEDIA_DETAIL_SECTION_CONTENT_CLASS,
+  MEDIA_DETAIL_SECTION_HEADER_CLASS,
+} from '@/domains/media/ui/layouts/media-detail-section';
+import {
   getCastCardProps,
   getCastHeaderProps,
   getCastHoverProps,
@@ -79,7 +83,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs transition-all duration-200 hover:border-black/15',
+        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-sm transition-all duration-200 hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
@@ -251,7 +255,7 @@ export default function CastSection({
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-2xl border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer rounded-2xl border border-black/10 text-black/70 backdrop-blur-sm transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -262,27 +266,36 @@ export default function CastSection({
   };
 
   return (
-    <section className="relative flex flex-col gap-2">
+    <section className="relative w-full border-b border-black/10">
       <motion.div
         {...getCastHeaderProps(baseDelay, hasSwitchedTab)}
-        className="flex items-center justify-between gap-3"
+        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
-        <SegmentedControl
-          value={activeTab}
-          classNames={{
-            wrapper: 'backdrop-blur-xs',
-          }}
-          onChange={handleTabChange}
-          items={tabs.map(({ key, label }) => ({
-            key,
-            label,
-          }))}
-        />
-        {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:users-group-two-rounded-bold" size={20} className="text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            Cast & Crew
+          </h2>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-3">
+          <SegmentedControl
+            value={activeTab}
+            className='backdrop-blur-sm'
+            onChange={handleTabChange}
+            items={tabs.map(({ key, label }) => ({
+              key,
+              label,
+            }))}
+          />
+          {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
+        </div>
       </motion.div>
 
-      <div className="relative overflow-visible">
-        {renderPanel(activeTabData.key, activeTabData.entries)}
+      <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
+        <div className="relative overflow-visible">
+          {renderPanel(activeTabData.key, activeTabData.entries)}
+        </div>
       </div>
     </section>
   );

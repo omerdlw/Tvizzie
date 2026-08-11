@@ -22,7 +22,15 @@ export function createWatchedRef(userId, media) {
 }
 
 export function getWatchedStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watched', { media, userId });
+  const mediaSnapshot = assertTitleMedia(
+    media,
+    'Only movies and TV series are supported in watched items',
+  );
+  return buildMediaCollectionStatusSubscriptionKey(
+    'watched',
+    userId,
+    buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
+  );
 }
 
 export function getUserWatchedSubscriptionKey(userId, options = {}) {
@@ -38,5 +46,13 @@ export function getUserWatchlistSubscriptionKey(userId, options = {}) {
 }
 
 export function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
+  const mediaSnapshot = assertTitleMedia(
+    media,
+    'Only movies and TV series are supported in watchlist items',
+  );
+  return buildMediaCollectionStatusSubscriptionKey(
+    'watchlist',
+    userId,
+    buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
+  );
 }

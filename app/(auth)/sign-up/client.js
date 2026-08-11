@@ -37,6 +37,7 @@ import {
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  AUTH_PAGE_FORM_CLASS,
   AuthPageShell,
   AuthVerificationSurface,
   OAuthProviderList,
@@ -416,10 +417,10 @@ function SignUpView({
           custom={direction}
           onSubmit={handleStepSubmit}
           variants={signUpStepVariants}
-          initial="hidden"
+          initial={currentStep === 0 ? false : 'hidden'}
           animate="visible"
           exit="exit"
-          className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
+          className={AUTH_PAGE_FORM_CLASS}
         >
           <motion.div
             variants={signUpHeaderVariants}

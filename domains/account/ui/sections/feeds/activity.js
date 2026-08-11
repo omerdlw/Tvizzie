@@ -160,7 +160,8 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
     <motion.article
       className={ACTIVITY_ROW_CLASS}
       initial={motionProps.initial}
-      animate={motionProps.animate}
+      whileInView={motionProps.whileInView}
+      viewport={motionProps.viewport}
       transition={motionProps.transition}
     >
       <div className="flex min-w-0 items-start justify-between gap-4">

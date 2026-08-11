@@ -36,11 +36,9 @@ export const SCALES = Object.freeze({
 export const pageContainerVariants = Object.freeze({
   hidden: {
     y: 18,
-    scale: 0.99,
   },
   visible: {
     y: 0,
-    scale: 1,
     transition: {
       duration: DURATIONS.PAGE,
       ease: EASINGS.LUXURY,
@@ -62,11 +60,9 @@ export const pageContainerVariants = Object.freeze({
 export const headerContainerVariants = Object.freeze({
   hidden: {
     y: -14,
-    scale: 0.99,
   },
   visible: {
     y: 0,
-    scale: 1,
     transition: {
       duration: 0.72,
       ease: EASINGS.LUXURY,
@@ -95,11 +91,9 @@ export const titleVariants = Object.freeze({
 export const articleContainerVariants = Object.freeze({
   hidden: {
     y: 22,
-    scale: 0.995,
   },
   visible: {
     y: 0,
-    scale: 1,
     transition: {
       duration: 0.86,
       ease: EASINGS.LUXURY,
@@ -112,12 +106,9 @@ export const articleContainerVariants = Object.freeze({
 export const contentDividerVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    scaleX: 0.88,
-    transformOrigin: '0% 50%',
   },
   visible: {
     opacity: 1,
-    scaleX: 1,
     transition: {
       duration: 0.7,
       ease: EASINGS.LUXURY,
@@ -146,13 +137,11 @@ export const sectionItemVariants = Object.freeze({
   hidden: {
     opacity: 0,
     y: 18,
-    scale: 0.99,
     filter: BLURS.MEDIUM,
   },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     filter: BLURS.NONE,
     transition: {
       duration: DURATIONS.SECTION,

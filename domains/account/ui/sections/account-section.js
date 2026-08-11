@@ -14,8 +14,10 @@ import {
   ReviewCardsSkeletonList,
 } from '@/domains/account/ui/skeletons/account-section-skeletons';
 
-export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = 'p-4';
+export const ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS = 'px-4';
+export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = `min-h-14 ${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS}`;
 export const ACCOUNT_SECTION_CONTENT_PADDING_CLASS = 'p-6';
+export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = `${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS} py-4`;
 export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-6 flex justify-center';
 const ACCOUNT_SECTION_BORDER_CLASS = 'border-black/10';
 
@@ -60,7 +62,7 @@ export function AccountSectionHeading({
   return (
     <motion.div
       className={cn('relative flex w-full flex-col', className)}
-      initial={sectionHeadingVariants.initial}
+      initial={false}
       animate={sectionHeadingVariants.animate || sectionHeadingVariants.whileInView}
       transition={sectionHeadingVariants.transition}
     >
@@ -157,7 +159,7 @@ export default function AccountSectionLayout({
   contentPaddingClassName = ACCOUNT_SECTION_CONTENT_PADDING_CLASS,
   titleHref = null,
   toolbar = null,
-  toolbarPaddingClassName = ACCOUNT_SECTION_HEADER_PADDING_CLASS,
+  toolbarPaddingClassName = ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS,
   toolbarClassName = '',
 }) {
   return (

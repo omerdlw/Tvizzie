@@ -12,13 +12,13 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
     <div className="relative w-full bg-transparent">
       <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="grid h-14 w-full auto-cols-[6.75rem] grid-flow-col divide-x divide-black/10 overflow-x-auto [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((label) => {
             const isSelected = label.toLowerCase() === activeTab.toLowerCase();
             return (
               <div
                 key={label}
-                className={`inline-flex h-8 min-w-[6.75rem] flex-auto items-center justify-center px-3 backdrop-blur-md ${
+                className={`inline-flex h-14 min-w-0 items-center justify-center px-3 backdrop-blur-md ${
                   isSelected ? 'bg-black' : 'bg-white/40'
                 }`}
               >

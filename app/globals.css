@@ -3,23 +3,21 @@
 @theme {
   --color-white: var(--white);
   --color-black: var(--black);
-  --color-primary: #fff;
+  --color-primary: var(--primary);
 
-  --color-warning: #92400e;
-  --color-success: #14532d;
-  --color-error: #9b1c1c;
-  --color-info: #1e3a5f;
+  --color-error: #8e2626;
+  --color-warning: #734500;
+  --color-success: #006300;
+  --color-info: #184f95;
 
   --font-zuume: var(--font-zuume);
-  --font-sans: var(--font-inter);
 }
 
 @layer base {
   :root {
-    --white: #f8f8f6;
+    --white: #FAF9F7;
     --black: #141413;
-    --primary:
-  ;
+    --primary: #ffffff;
   }
 
   html,
@@ -30,7 +28,6 @@
 }
 
 * {
-  border-radius: 0 !important;
   -ms-overflow-style: none;
   box-sizing: border-box;
   scrollbar-width: none;
@@ -46,12 +43,27 @@
     background-image: linear-gradient(
       to bottom,
       color-mix(in srgb, var(--white) 40%, transparent) 0%,
-      color-mix(in srgb, var(--white) 80%, transparent) 18vh,
-      color-mix(in srgb, var(--white) 80%, transparent) 34vh,
-      color-mix(in srgb, var(--white) 90%, transparent) 50vh,
-      color-mix(in srgb, var(--white) 100%, transparent) 66vh,
-      var(--white) 80vh,
+      color-mix(in srgb, var(--white) 52%, transparent) 15vh,
+      color-mix(in srgb, var(--white) 68%, transparent) 30vh,
+      color-mix(in srgb, var(--white) 76%, transparent) 45vh,
+      color-mix(in srgb, var(--white) 88%, transparent) 60vh,
+      color-mix(in srgb, var(--white) 98%, transparent) 75vh,
+      var(--white) 85vh,
       var(--white) 100%
+    );
+  }
+
+  .media-detail-gradient-backdrop {
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 32%, transparent) 0%,
+      color-mix(in srgb, var(--white) 42%, transparent) 15vh,
+      color-mix(in srgb, var(--white) 52%, transparent) 30vh,
+      color-mix(in srgb, var(--white) 62%, transparent) 45vh,
+      color-mix(in srgb, var(--white) 72%, transparent) 60vh,
+      color-mix(in srgb, var(--white) 84%, transparent) 75vh,
+      color-mix(in srgb, var(--white) 96%, transparent) 90vh,
+      var(--white) 100vh
     );
   }
 

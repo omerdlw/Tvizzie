@@ -1,16 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import {
-  subscribeToLikeStatus,
-  toggleUserLike,
-} from '@/domains/media/client/collections/likes';
+import { subscribeToLikeStatus, toggleUserLike } from '@/domains/media/client/collections/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
@@ -52,8 +49,7 @@ function getMediaSnapshot(media) {
         .map((genre) => genre.id)
         .filter((value) => Number.isFinite(Number(value)))
         .map((value) => Number(value));
-  const watchProviders =
-    media?.watchProviders || media?.['watch/providers'] || null;
+  const watchProviders = media?.watchProviders || media?.['watch/providers'] || null;
   return {
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
@@ -96,15 +92,15 @@ function createCollectionActionState(isLoading = true) {
 
 function getActionPalette(palette, active) {
   if (!active) {
-    return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80 text-black/70 hover:text-black';
+    return 'border border-black/10 bg-primary/30 hover:border-black/20 hover:bg-primary/60 text-black/70 hover:text-black';
   }
   if (palette === 'like') {
-    return 'border border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10';
+    return 'border border-success/20 bg-success/15 text-success hover:border-success/10 hover:bg-success/25';
   }
   if (palette === 'watched' || palette === 'watchlist') {
-    return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
+    return 'border border-info/20 bg-info/15 text-info hover:border-info/10 hover:bg-info/25';
   }
-  return 'border border-black/10 bg-primary/40 hover:border-black/15 hover:bg-primary/80';
+  return 'border border-black/10 bg-primary/30 hover:border-black/15 hover:bg-primary/60';
 }
 
 function ActionButton({
@@ -123,7 +119,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5 rounded-[20px] px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
+        'group center xs:text-xs h-11 w-full gap-1.5 rounded-[20px] px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-colors duration-200 ease-in-out disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >
@@ -190,6 +186,10 @@ export default function CollectionActions({ media }) {
     pathname?.endsWith('/reviews') && mediaSnapshot?.entityId && mediaSnapshot?.entityType,
   );
   const [state, setState] = useState(createCollectionActionState);
+  // Status polling can briefly return the pre-mutation value while the API
+  // write has already succeeded. Keep that stale response from undoing the
+  // button's confirmed optimistic state.
+  const pendingStatusRef = useRef({ like: null, watchlist: null });
 
   useEffect(() => {
     if (!mediaSnapshot.entityId) {
@@ -204,16 +204,22 @@ export default function CollectionActions({ media }) {
       return undefined;
     }
     if (!isSessionReady || !userId) {
+      pendingStatusRef.current = { like: null, watchlist: null };
       setState(createCollectionActionState());
       return undefined;
     }
     let isMounted = true;
+    pendingStatusRef.current = { like: null, watchlist: null };
     setState(createCollectionActionState());
 
     const unsubscribeLike = subscribeToLikeStatus(
       { media: mediaSnapshot, userId },
       (isLikedStatus) => {
         if (!isMounted) return;
+        const pending = pendingStatusRef.current.like;
+        if (pending && pending.expiresAt > Date.now() && pending.value !== isLikedStatus) {
+          return;
+        }
         setState((prev) => ({
           ...prev,
           liked: isLikedStatus,
@@ -238,6 +244,10 @@ export default function CollectionActions({ media }) {
       { media: mediaSnapshot, userId },
       (isWatchlistStatus) => {
         if (!isMounted) return;
+        const pending = pendingStatusRef.current.watchlist;
+        if (pending && pending.expiresAt > Date.now() && pending.value !== isWatchlistStatus) {
+          return;
+        }
         setState((prev) => ({
           ...prev,
           watchlist: isWatchlistStatus,
@@ -252,7 +262,14 @@ export default function CollectionActions({ media }) {
       unsubscribeWatched();
       unsubscribeWatchlist();
     };
-  }, [auth.isAuthenticated, auth.isReady, isSessionReady, mediaSnapshot, userId]);
+  }, [
+    auth.isAuthenticated,
+    auth.isReady,
+    isSessionReady,
+    mediaSnapshot.entityId,
+    mediaSnapshot.entityType,
+    userId,
+  ]);
 
   const handleLikeClick = async () => {
     if (!auth.isReady) {
@@ -269,14 +286,24 @@ export default function CollectionActions({ media }) {
     const previousLikedState = state.liked;
     const nextLikedState = !state.liked;
     const intent = nextLikedState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, liked: nextLikedState, submittingLike: true, likeIntent: intent }));
+    pendingStatusRef.current.like = { value: nextLikedState, expiresAt: Date.now() + 5000 };
+    setState((prev) => ({
+      ...prev,
+      liked: nextLikedState,
+      submittingLike: true,
+      likeIntent: intent,
+    }));
 
     try {
       await toggleUserLike({
         media: mediaSnapshot,
         userId: auth.user.id,
       });
+      // The mutation promise is the success signal. Keep the UI aligned with
+      // the user's click instead of trusting a toggle RPC's ambiguous boolean.
+      setState((prev) => ({ ...prev, liked: nextLikedState }));
     } catch {
+      pendingStatusRef.current.like = null;
       setState((prev) => ({ ...prev, liked: previousLikedState }));
       toast.error('Action Failed', 'Could not update your like status. Please try again.');
     } finally {
@@ -299,7 +326,12 @@ export default function CollectionActions({ media }) {
     const previousWatchedState = state.watched;
     const nextWatchedState = !state.watched;
     const intent = nextWatchedState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, watched: nextWatchedState, submittingWatched: true, watchedIntent: intent }));
+    setState((prev) => ({
+      ...prev,
+      watched: nextWatchedState,
+      submittingWatched: true,
+      watchedIntent: intent,
+    }));
 
     try {
       if (nextWatchedState) {
@@ -336,14 +368,25 @@ export default function CollectionActions({ media }) {
     const previousWatchlistState = state.watchlist;
     const nextWatchlistState = !state.watchlist;
     const intent = nextWatchlistState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, watchlist: nextWatchlistState, submittingWatchlist: true, watchlistIntent: intent }));
+    pendingStatusRef.current.watchlist = {
+      value: nextWatchlistState,
+      expiresAt: Date.now() + 5000,
+    };
+    setState((prev) => ({
+      ...prev,
+      watchlist: nextWatchlistState,
+      submittingWatchlist: true,
+      watchlistIntent: intent,
+    }));
 
     try {
-      await toggleUserWatchlistItem({
+      const result = await toggleUserWatchlistItem({
         media: mediaSnapshot,
         userId: auth.user.id,
       });
+      setState((prev) => ({ ...prev, watchlist: result?.isInWatchlist === true }));
     } catch {
+      pendingStatusRef.current.watchlist = null;
       setState((prev) => ({ ...prev, watchlist: previousWatchlistState }));
       toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
     } finally {

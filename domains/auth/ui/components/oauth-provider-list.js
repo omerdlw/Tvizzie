@@ -20,7 +20,7 @@ export default function OAuthProviderList({
           key={provider}
           custom={itemDelay + index * 0.08}
           variants={itemVariants}
-          initial="hidden"
+          initial={false}
           animate="visible"
           whileHover="hover"
           whileTap="tap"

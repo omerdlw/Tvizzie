@@ -248,14 +248,12 @@ export const pageContainerVariants = Object.freeze({
 });
 
 export function getSectionRevealProps(index = 0, isInitialSection = false) {
-  const calculatedDelay = isInitialSection
-    ? TIMELINES.FIRST_SECTION_BASE_DELAY
-    : index * 0.1;
+  const calculatedDelay = isInitialSection ? TIMELINES.FIRST_SECTION_BASE_DELAY : index * 0.1;
 
   return {
-    initial: { opacity: 0, y: 32, scale: SCALES.CARD, filter: BLURS.MEDIUM },
-    whileInView: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
-    viewport: SCROLL_VIEWPORT,
+    // Section shells establish the account page's shared rails and full-bleed rules.
+    // Keep their geometry fixed: a scale transform makes those rails and rules drift.
+    animate: { opacity: 1, y: 0, filter: BLURS.NONE },
     transition: {
       duration: DURATIONS.SECTION,
       delay: calculatedDelay,

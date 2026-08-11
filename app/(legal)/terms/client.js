@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import LegalNavRegistry from '@/app/(legal)/registry';
 import LegalQuickLinks from '@/domains/legal/ui/components/legal-quick-links';
-import LegalPageShell from '@/domains/legal/ui/layouts/legal-page-shell';
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import LegalPageShell, {
+  LEGAL_PAGE_CONTENT_CLASS,
+} from '@/domains/legal/ui/layouts/legal-page-shell';
 import {
   articleContainerVariants,
   contentDividerVariants,
@@ -38,9 +39,9 @@ function TermsView() {
       />
       <LegalPageShell>
         <motion.div
-          className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-20 sm:px-6`}
+          className={LEGAL_PAGE_CONTENT_CLASS}
           variants={pageContainerVariants}
-          initial="hidden"
+          initial={false}
           animate="visible"
           exit="exit"
         >

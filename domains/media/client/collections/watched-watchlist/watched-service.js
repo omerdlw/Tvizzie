@@ -1,6 +1,10 @@
 'use client';
 
-import { executeMediaCollectionRpc, fetchCollectionResource } from '@/domains/account/client';
+import {
+  executeMediaCollectionRpc,
+  fetchCollectionResource,
+  scheduleAccountSummaryRefresh,
+} from '@/domains/account/client';
 import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
   invalidatePollingSubscription,
@@ -65,9 +69,10 @@ export async function markUserWatched({
     sourceLastAction,
     watchCount: 1,
   };
-  const rpcRow = await executeMediaCollectionRpc(
-    'collection_mark_watched',
-    {
+  const rpcRow = await executeMediaCollectionRpc({
+    client,
+    fnName: 'collection_mark_watched',
+    params: {
       p_backdrop_path: mediaPayload.backdrop_path || null,
       p_entity_id: mediaPayload.entityId || null,
       p_entity_type: mediaPayload.entityType || null,
@@ -79,9 +84,8 @@ export async function markUserWatched({
       p_title: mediaPayload.title || null,
       p_user_id: userId,
     },
-    'Watched item could not be saved',
-    client,
-  );
+    fallbackMessage: 'Watched item could not be saved',
+  });
   const isNew = rpcRow?.is_new === true;
   const watchCount = Number(rpcRow?.watch_count || 1);
   const wasRemovedFromWatchlist = rpcRow?.was_removed_from_watchlist === true;
@@ -129,7 +133,7 @@ export async function markUserWatched({
       item: null,
     },
   });
-  refreshMediaCollectionAccountSummary(userId);
+  scheduleAccountSummaryRefresh(userId);
 
   return {
     isAlreadyWatched: !isNew,
@@ -143,14 +147,15 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   ensureUserId(userId, 'Authenticated user is required to manage watched items');
 
   const resolvedMediaKey = mediaKey || getWatchedDocRef(userId, media).id;
-  const rpcRow = await executeMediaCollectionRpc(
-    'collection_remove_watched',
-    {
+  const rpcRow = await executeMediaCollectionRpc({
+    client: getSupabaseClient(),
+    fnName: 'collection_remove_watched',
+    params: {
       p_media_key: resolvedMediaKey,
       p_user_id: userId,
     },
-    'Watched item could not be removed',
-  );
+    fallbackMessage: 'Watched item could not be removed',
+  });
   const wasRemoved = rpcRow?.removed === true;
 
   primePollingSubscription(getWatchedStatusSubscriptionKey({ media, userId }), {
@@ -161,7 +166,7 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshMediaCollectionAccountSummary(userId);
+  scheduleAccountSummaryRefresh(userId);
 
   return {
     isWatched: false,

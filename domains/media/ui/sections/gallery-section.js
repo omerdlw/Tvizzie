@@ -5,6 +5,11 @@ import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
+import Icon from '@/ui/primitives/icon';
+import {
+  MEDIA_DETAIL_SECTION_CONTENT_CLASS,
+  MEDIA_DETAIL_SECTION_HEADER_CLASS,
+} from '@/domains/media/ui/layouts/media-detail-section';
 import {
   getCarouselButtonProps,
   getMediaCardProps,
@@ -22,43 +27,51 @@ export default function GallerySection({
   }
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <motion.h2
+    <section className="relative w-full border-b border-black/10">
+      <motion.div
         {...getSectionHeaderProps(baseDelay, false, 'gallery')}
-        className="text-[11px] font-semibold tracking-widest text-black/70 uppercase"
+        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
-        Gallery
-      </motion.h2>
-      <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
-        {images.map((image, index) => {
-          return (
-            <motion.div
-              key={image.file_path || index}
-              {...getMediaCardProps(index, baseDelay, false, 'gallery')}
-            >
-              <MediaCard
-                imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}
-                onClick={() =>
-                  openModal('PREVIEW_MODAL', 'center', {
-                    data: image,
-                  })
-                }
-                imageFetchPriority={index < 3 ? 'high' : undefined}
-                imagePreset="feature"
-                fallbackIcon="solar:panorama-bold"
-                imageAlt={`Scene ${index + 1}`}
-                aspectClass="aspect-video"
-                imagePriority={index < 3}
-                fallbackIconSize={24}
-                imageSizes="288px"
-                className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
-                data-backdrop-file-path={image.file_path || ''}
-                data-context-menu-target="movie-backdrop-card"
-              />
-            </motion.div>
-          );
-        })}
-      </Carousel>
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:gallery-wide-bold" size={20} className="text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            Gallery
+          </h2>
+        </div>
+      </motion.div>
+
+      <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
+        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+          {images.map((image, index) => {
+            return (
+              <motion.div
+                key={image.file_path || index}
+                {...getMediaCardProps(index, baseDelay, false, 'gallery')}
+              >
+                <MediaCard
+                  imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}
+                  onClick={() =>
+                    openModal('PREVIEW_MODAL', 'center', {
+                      data: image,
+                    })
+                  }
+                  imageFetchPriority={index < 3 ? 'high' : undefined}
+                  imagePreset="feature"
+                  fallbackIcon="solar:panorama-bold"
+                  imageAlt={`Scene ${index + 1}`}
+                  aspectClass="aspect-video"
+                  imagePriority={index < 3}
+                  fallbackIconSize={24}
+                  imageSizes="288px"
+                  className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
+                  data-backdrop-file-path={image.file_path || ''}
+                  data-context-menu-target="movie-backdrop-card"
+                />
+              </motion.div>
+            );
+          })}
+        </Carousel>
+      </div>
     </section>
   );
 }

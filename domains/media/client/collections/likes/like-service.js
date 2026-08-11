@@ -10,21 +10,14 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  assertMoviePayload,
-  buildMediaItemKey,
-  createMediaRow,
-  ensureUserId,
-  normalizeMediaPayload,
-} from '@/domains/media/shared/media';
+import { createMediaRow, ensureUserId, normalizeMediaPayload } from '@/domains/media/shared/media';
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
 } from '@/domains/social/client/activity/activity-events';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/domains/social/utils';
 import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
-import { isUserMediaWatched, markUserWatched } from '../watched-watchlist/watched-service.js';
-import { removeLikeFromShowcase, writeFavoriteShowcase } from './like-queries.js';
+import { fetchLikeStatus, removeLikeFromShowcase, writeFavoriteShowcase } from './like-queries.js';
 import {
   buildLikeRef,
   getFavoriteShowcaseSubscriptionKey,
@@ -56,7 +49,6 @@ export async function updateFavoriteShowcase({ items = [], userId }) {
   const showcase = await writeFavoriteShowcase(userId, items);
 
   primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), showcase);
-  refreshMediaCollectionAccountSummary(userId);
 
   return showcase;
 }
@@ -65,49 +57,48 @@ export async function toggleUserLike({ media, userId }) {
   const likeRef = buildLikeRef(userId, media);
   const client = getSupabaseClient();
   const row = createMediaRow(media, userId);
-  const rpcRow = await executeMediaCollectionRpc(
-    'collection_toggle_like',
-    createMediaCollectionToggleRpcParams({ row, userId }),
-    'Like could not be updated',
+  const rpcRow = await executeMediaCollectionRpc({
     client,
-  );
-  const isLiked = rpcRow?.is_liked === true;
+    fnName: 'collection_toggle_like',
+    params: createMediaCollectionToggleRpcParams({ row, userId }),
+    fallbackMessage: 'Like could not be updated',
+  });
+  const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  let isLiked =
+    resolvedRpcRow?.is_liked === true || resolvedRpcRow?.isLiked === true;
+
+  // Toggle RPCs may return the previous row state. The status resource is the
+  // authoritative post-mutation value, so use it to drive the button state.
+  try {
+    const status = await fetchLikeStatus({ media, userId });
+    if (typeof status?.isLiked === 'boolean') {
+      isLiked = status.isLiked;
+    }
+  } catch {
+    // Preserve the RPC result if the follow-up read is temporarily unavailable.
+  }
 
   if (!isLiked) {
-    await removeLikeFromShowcase(userId, likeRef.id);
+    // The collection row is the primary mutation. Showcase cleanup is a
+    // secondary profile update and must not turn a successful unlike into a
+    // misleading "Action Failed" state.
+    await removeLikeFromShowcase(userId, likeRef.id).catch(() => {});
   } else {
-    const normalizedType = assertMoviePayload(
-      media,
-      'Only movies and TV series are supported in likes',
-    );
-    const entityId = String(media?.entityId ?? media?.id ?? '').trim();
-    const mediaKey = buildMediaItemKey(normalizedType, entityId);
-    const alreadyWatched = await isUserMediaWatched({
-      mediaKey,
-      userId,
-    });
-
-    if (!alreadyWatched) {
-      await markUserWatched({
-        media,
-        sourceLastAction: 'like',
-        userId,
-      });
-    }
-
+    const subjectId = String(media?.entityId ?? media?.id ?? '').trim();
+    const subjectType = media?.entityType || media?.media_type || 'movie';
     fireActivityEvent(ACTIVITY_EVENT_TYPES.LIKED_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
         primaryRef: buildActivitySubjectRef({
-          subjectId: entityId,
-          subjectType: normalizedType,
+          subjectId,
+          subjectType,
         }),
         slotType: ACTIVITY_SLOT_TYPES.LIKED_ENTRY,
       }),
-      subjectId: entityId,
+      subjectId,
       subjectPoster: media?.posterPath || media?.poster_path || null,
       subjectTitle: media?.title || media?.name || 'Untitled',
-      subjectType: normalizedType,
+      subjectType,
     });
   }
 
@@ -121,7 +112,6 @@ export async function toggleUserLike({ media, userId }) {
   invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshMediaCollectionAccountSummary(userId);
 
   return nextResult;
 }
@@ -130,14 +120,15 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
   ensureUserId(userId, 'Authenticated user is required to manage likes');
 
   const resolvedMediaKey = mediaKey || getLikeDocRef(userId, media).id;
-  const rpcRow = await executeMediaCollectionRpc(
-    'collection_remove_like',
-    {
+  const rpcRow = await executeMediaCollectionRpc({
+    client: getSupabaseClient(),
+    fnName: 'collection_remove_like',
+    params: {
       p_media_key: resolvedMediaKey,
       p_user_id: userId,
     },
-    'Like could not be removed',
-  );
+    fallbackMessage: 'Like could not be removed',
+  });
 
   if (rpcRow?.removed) {
     await removeLikeFromShowcase(userId, resolvedMediaKey);
@@ -156,7 +147,7 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
   invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshMediaCollectionAccountSummary(userId);
+  scheduleAccountSummaryRefresh(userId);
 
   return {
     mediaKey: resolvedMediaKey,

@@ -354,10 +354,9 @@ export const SIGN_IN_TIMELINE = Object.freeze({
 });
 
 export const signInPageVariants = Object.freeze({
-  hidden: { y: 18, scale: 0.99 },
+  hidden: { y: 18 },
   visible: {
     y: 0,
-    scale: 1,
     transition: {
       duration: 0.96,
       delay: SIGN_IN_TIMELINE.PAGE_DELAY,
@@ -424,14 +423,13 @@ export const signInFieldVariants = Object.freeze({
 });
 
 export const signInDividerVariants = Object.freeze({
-  hidden: { opacity: 0, scaleX: 0.88, filter: BLURS.LIGHT },
+  hidden: { opacity: 0, filter: BLURS.LIGHT },
   visible: (delay = SIGN_IN_TIMELINE.DIVIDER_DELAY) => ({
     opacity: 1,
-    scaleX: 1,
     filter: BLURS.NONE,
     transition: { duration: 0.58, delay, ease: EASINGS.CINEMATIC },
   }),
-  exit: { opacity: 0, scaleX: 0.92, transition: { duration: 0.24, ease: EASINGS.EXIT } },
+  exit: { opacity: 0, transition: { duration: 0.24, ease: EASINGS.EXIT } },
 });
 
 export const signInOAuthContainerVariants = Object.freeze({
@@ -490,20 +488,17 @@ export const signUpStepVariants = Object.freeze({
   hidden: (direction = 1) => ({
     opacity: 0,
     y: direction > 0 ? 18 : -18,
-    scale: 0.99,
     filter: BLURS.LIGHT,
   }),
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     filter: BLURS.NONE,
     transition: { duration: 0.62, ease: EASINGS.CINEMATIC },
   },
   exit: (direction = 1) => ({
     opacity: 0,
     y: direction > 0 ? -12 : 12,
-    scale: 0.99,
     filter: BLURS.LIGHT,
     transition: { duration: 0.3, ease: EASINGS.EXIT },
   }),

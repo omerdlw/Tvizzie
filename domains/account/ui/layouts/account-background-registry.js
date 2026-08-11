@@ -25,7 +25,7 @@ export default function AccountBackgroundRegistry({ bannerUrl = null }) {
         ? {
             image: heroBannerSrc,
             overlay: true,
-            overlayOpacity: 0.2,
+            overlayOpacity: 0,
             overlayColor: 'var(--white)',
             noiseStyle: { opacity: 0.3 },
             animation: false,

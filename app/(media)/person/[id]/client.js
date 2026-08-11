@@ -21,6 +21,7 @@ import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import { Spinner } from '@/ui/feedback/spinner';
 import Registry from '@/app/(media)/registry';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
+import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
 import {
   PERSON_TEXT,
   getDeferredChapterDelay,
@@ -145,23 +146,19 @@ export default function Client({ person, secondaryDataPromise }) {
 }
 
 function PersonMainContent({ person, choreographyStartedAt }) {
+  const hasGallery = person?.images?.profiles?.length > 0;
   return (
     <>
-      {person?.images?.profiles?.length > 0 ? (
-        <div className="mt-8 sm:mt-12">
-          <PersonGallery
-            images={person.images}
-            baseDelay={getDeferredChapterDelay('personGallery', choreographyStartedAt)}
-          />
-        </div>
-      ) : null}
-
-      <div className="mt-8 sm:mt-12">
-        <PersonFilmographySection
-          person={person}
-          baseDelay={getDeferredChapterDelay('filmography', choreographyStartedAt)}
+      {hasGallery ? (
+        <PersonGallery
+          images={person.images}
+          baseDelay={getDeferredChapterDelay('personGallery', choreographyStartedAt)}
         />
-      </div>
+      ) : null}
+      <PersonFilmographySection
+        person={person}
+        baseDelay={getDeferredChapterDelay('filmography', choreographyStartedAt)}
+      />
     </>
   );
 }
@@ -180,7 +177,6 @@ function PersonDeferredContent({
   if (activeView === 'timeline') {
     return (
       <motion.div
-        className="mt-8 sm:mt-12"
         {...getSectionHeaderProps(
           getDeferredChapterDelay('generic', choreographyStartedAt),
           false,
@@ -226,54 +222,70 @@ function PersonView({
         canResetPersonPoster={canResetPersonPoster}
       />
 
-      <PageGradientShell>
+      <PageGradientShell className="overflow-hidden">
+        <PersonGridFrame />
         <div
-          className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
+          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12 [overflow-anchor:none]`}
         >
-          <div
-            key={`person-scene-${activeView}`}
-            className="mt-16 flex w-full flex-col items-center gap-6 sm:mt-24 sm:gap-8 lg:mt-36"
-          >
+          <div key={`person-scene-${activeView}`} className="flex w-full flex-col items-center">
             {activeView !== 'timeline' && activeView !== 'awards' && (
-              <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
-                {person?.profile_path ? (
-                  <motion.div
-                    className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-                    {...personPortraitVariants}
+              <div className="relative flex w-full flex-col items-center gap-6 px-4 py-16 sm:gap-8 sm:py-24 lg:py-32">
+                <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
+                  {person?.profile_path ? (
+                    <motion.div
+                      className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+                      {...personPortraitVariants}
+                      initial={false}
+                    >
+                      <AdaptiveImage
+                        mode="img"
+                        className="h-full w-full rounded-2xl object-cover"
+                        src={`${TMDB_IMG}/w342${person.profile_path}`}
+                        alt={person.name}
+                        decoding="async"
+                        wrapperClassName="h-full w-full rounded-2xl"
+                      />
+                    </motion.div>
+                  ) : null}
+
+                  <BlurryText
+                    as="h1"
+                    by="character"
+                    {...PERSON_TEXT.TITLE}
+                    className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
                   >
-                    <AdaptiveImage
-                      mode="img"
-                      className="h-full w-full rounded-2xl object-cover"
-                      src={`${TMDB_IMG}/w342${person.profile_path}`}
-                      alt={person.name}
-                      decoding="async"
-                      wrapperClassName="h-full w-full rounded-2xl"
-                    />
+                    {person.name}
+                  </BlurryText>
+                </div>
+
+                {person?.biography ? (
+                  <motion.div
+                    {...personBioVariants}
+                    initial={false}
+                    className="mx-auto w-full max-w-[72ch]"
+                  >
+                    <PersonBio biography={person.biography} person={person} />
                   </motion.div>
                 ) : null}
 
-                <BlurryText
-                  as="h1"
-                  by="character"
-                  {...PERSON_TEXT.TITLE}
-                  className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
-                >
-                  {person.name}
-                </BlurryText>
+                <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
               </div>
             )}
 
-            {activeView !== 'timeline' && activeView !== 'awards' && person?.biography ? (
-              <motion.div {...personBioVariants} className="mx-auto w-full max-w-[72ch]">
-                <PersonBio biography={person.biography} person={person} />
-              </motion.div>
-            ) : null}
-
-            <div className="w-full text-left" key={`person-view-${activeView}`}>
+            <div
+              className={`relative w-full text-left ${
+                activeView === 'main' ? '' : 'pt-16 sm:pt-24 lg:pt-32'
+              }`}
+              key={`person-view-${activeView}`}
+            >
+              {activeView !== 'main' ? (
+                <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+              ) : null}
               {activeView === 'awards' ? (
                 <motion.div
-                  className="mt-8 sm:mt-12"
-                  {...getSectionHeaderProps(getDeferredChapterDelay('generic', choreographyStartedAt))}
+                  {...getSectionHeaderProps(
+                    getDeferredChapterDelay('generic', choreographyStartedAt),
+                  )}
                 >
                   <PersonAwards personId={person.id} />
                 </motion.div>

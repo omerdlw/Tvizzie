@@ -6,6 +6,11 @@ import { TMDB_IMG } from '@/shared/constants';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import MediaCard from '@/domains/media/ui/components/media-card';
+import Icon from '@/ui/primitives/icon';
+import {
+  MEDIA_DETAIL_SECTION_CONTENT_CLASS,
+  MEDIA_DETAIL_SECTION_HEADER_CLASS,
+} from '@/domains/media/ui/layouts/media-detail-section';
 import {
   getCarouselButtonProps,
   getMediaCardProps,
@@ -113,32 +118,41 @@ export default function TvSeasonsSection({
   }
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'seasons')}>
-        <SegmentedControl
-          value={activeSeasonKey}
-          className={seasonTabs.length >= 16 ? 'w-full' : 'w-auto self-start'}
-          classNames={{
-            wrapper: seasonTabs.length >= 16 ? 'min-w-full' : '',
-          }}
-          items={seasonTabs}
-          onChange={handleTabChange}
-        />
+    <section className="relative w-full border-b border-black/10">
+      <motion.div
+        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'seasons')}
+        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:calendar-mark-bold" size={20} className="text-black/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            Seasons
+          </h2>
+        </div>
+        <div className="flex shrink-0 items-center">
+          <SegmentedControl
+            value={activeSeasonKey}
+            className={seasonTabs.length >= 16 ? 'w-full' : 'w-auto self-start'}
+            classNames={{
+              wrapper: seasonTabs.length >= 16 ? 'min-w-full' : '',
+            }}
+            items={seasonTabs}
+            onChange={handleTabChange}
+          />
+        </div>
       </motion.div>
 
-      <div className="relative">
-        <div key={`tv-season-${activeSeason.key}`}>
-          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
-            {episodes.map((episode, index) => (
-              <motion.div
-                key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
-                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'seasons')}
-              >
-                <EpisodeCard episode={episode} index={index} />
-              </motion.div>
-            ))}
-          </Carousel>
-        </div>
+      <div key={`tv-season-${activeSeason.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
+        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+          {episodes.map((episode, index) => (
+            <motion.div
+              key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
+              {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'seasons')}
+            >
+              <EpisodeCard episode={episode} index={index} />
+            </motion.div>
+          ))}
+        </Carousel>
       </div>
     </section>
   );

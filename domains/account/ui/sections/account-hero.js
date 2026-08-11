@@ -52,7 +52,7 @@ function HeroInlineMetric({
   if (item.href) {
     return (
       <motion.div
-        initial={statProps.initial}
+        initial={false}
         animate={statProps.animate}
         transition={statProps.transition}
         whileHover={statProps.whileHover}
@@ -67,7 +67,7 @@ function HeroInlineMetric({
   if (typeof item.onClick === 'function') {
     return (
       <motion.div
-        initial={statProps.initial}
+        initial={false}
         animate={statProps.animate}
         transition={statProps.transition}
         whileHover={statProps.whileHover}
@@ -76,7 +76,7 @@ function HeroInlineMetric({
         <button
           type="button"
           onClick={item.onClick}
-          className={cn('border-0 bg-transparent p-0 text-left cursor-pointer', wrapperClassName)}
+          className={cn('cursor-pointer border-0 bg-transparent p-0 text-left', wrapperClassName)}
         >
           {content}
         </button>
@@ -85,7 +85,7 @@ function HeroInlineMetric({
   }
   return (
     <motion.span
-      initial={statProps.initial}
+      initial={false}
       animate={statProps.animate}
       transition={statProps.transition}
       whileHover={statProps.whileHover}
@@ -230,7 +230,7 @@ export default function AccountHero({
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <motion.div
           className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md transition-shadow duration-300 hover:shadow-lg sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-          initial={heroAvatarVariants.initial}
+          initial={false}
           animate={heroAvatarVariants.animate}
           transition={heroAvatarVariants.transition}
           whileHover={{ scale: 1.05, transition: SPRINGS.HERO_AVATAR }}
@@ -249,7 +249,7 @@ export default function AccountHero({
 
         <motion.h1
           className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl"
-          initial={heroNameVariants.initial}
+          initial={false}
           animate={heroNameVariants.animate}
           transition={heroNameVariants.transition}
         >
@@ -274,7 +274,7 @@ export default function AccountHero({
       {/* Biography */}
       {profile?.description ? (
         <motion.div
-          initial={heroBioVariants.initial}
+          initial={false}
           animate={heroBioVariants.animate}
           transition={heroBioVariants.transition}
           className="mx-auto w-full max-w-[72ch] px-4"

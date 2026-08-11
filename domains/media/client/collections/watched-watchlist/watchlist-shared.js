@@ -22,7 +22,15 @@ export function createWatchlistRef(userId, media) {
 }
 
 export function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
+  const mediaSnapshot = assertTitleMedia(
+    media,
+    'Only movies and TV series are supported in watchlist items',
+  );
+  return buildMediaCollectionStatusSubscriptionKey(
+    'watchlist',
+    userId,
+    buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
+  );
 }
 
 export function getUserWatchlistSubscriptionKey(userId, options = {}) {

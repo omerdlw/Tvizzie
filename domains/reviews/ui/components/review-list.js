@@ -59,9 +59,9 @@ export default function ReviewList({
           <motion.div
             key={key}
             initial={motionProps.initial}
-            animate={isInitialSection ? motionProps.animate : undefined}
-            whileInView={!isInitialSection ? motionProps.whileInView : undefined}
-            viewport={!isInitialSection ? motionProps.viewport : undefined}
+            animate={motionProps.animate}
+            whileInView={motionProps.whileInView}
+            viewport={motionProps.viewport}
             transition={motionProps.transition}
             style={{ willChange: 'transform, opacity, filter' }}
           >
