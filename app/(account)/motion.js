@@ -312,10 +312,7 @@ export function getListCardProps(index = 0, baseDelay = 0) {
   const safeBaseDelay = typeof baseDelay === 'number' ? Math.min(Math.max(0, baseDelay), 0.4) : 0;
   return {
     initial: { opacity: 0, y: 24, scale: SCALES.CARD },
-    // Was setting both `animate` and `whileInView` to the same values.
-    // `animate` fires immediately on mount and effectively overrides the
-    // scroll-triggered reveal - `whileInView` was likely a no-op. Dropped
-    // `animate` so list/feed cards actually reveal as they scroll in.
+    animate: { opacity: 1, y: 0, scale: 1 },
     whileInView: { opacity: 1, y: 0, scale: 1 },
     viewport: SCROLL_VIEWPORT,
     transition: {

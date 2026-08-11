@@ -271,7 +271,7 @@ export default function Registry({
   const resolvedBackgroundImage = shouldClearBackgroundForReviews
     ? undefined
     : backgroundImage ||
-      (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
+      (movie?.backdrop_path ? `${TMDB_IMG}/w1280${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading =
     !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
 

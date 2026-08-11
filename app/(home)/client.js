@@ -15,7 +15,7 @@ export default function Client({ data = {} }) {
     ? data.initialDiscoverItems[0]
     : null;
   const activeHeroBackground = activeHeroItem?.backdrop_path
-    ? `${TMDB_IMG}/original${activeHeroItem.backdrop_path}`
+    ? `${TMDB_IMG}/w1280${activeHeroItem.backdrop_path}`
     : null;
 
   return (

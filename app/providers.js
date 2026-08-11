@@ -3,22 +3,16 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { useReportWebVitals } from 'next/web-vitals';
 
-import {
-  AuthInteractiveBoundary,
-  InteractiveFeatureBoundary,
-  PersistentInteractiveShell,
-} from '@/app/_shell/interactive-boundary';
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
-import SettingsModal from '@/app/_shell/settings-modal';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
 import { pipe } from '@/shared/utils';
-import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
+import { AuthProvider, createSupabaseAuthAdapter } from '@/modules/auth';
 import { GlobalError } from '@/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/modules/loading';
+import { ModalProvider } from '@/modules/modal';
 import { NavigationProvider } from '@/modules/nav/context';
 import {
   RegistryBootstrap,
@@ -26,10 +20,12 @@ import {
   RegistryProvider,
   useNavRegistryActions,
 } from '@/modules/registry';
+import {
+  createClient as createSupabaseClient,
+  terminateBrowserSession,
+} from '@/infrastructure/supabase/supabase-client';
 
 const Nav = dynamic(() => import('@/modules/nav'));
-const WEB_VITALS_ENDPOINT = '/api/observability/web-vitals';
-const TRACKED_METRICS = new Set(['CLS', 'FCP', 'INP', 'LCP', 'TTFB']);
 const STATIC_NAV_ITEMS = Object.freeze(
   Object.fromEntries(Object.values(NAV_CONFIG.items).map((item) => [item.path || item.name, item])),
 );
@@ -38,12 +34,6 @@ const APP_REGISTRY_ENTRIES = Object.freeze([
   {
     type: REGISTRY_TYPES.NAV,
     items: STATIC_NAV_ITEMS,
-  },
-  {
-    type: REGISTRY_TYPES.MODAL,
-    items: {
-      SETTINGS_MODAL: SettingsModal,
-    },
   },
   {
     type: REGISTRY_TYPES.NAV_RUNTIME,
@@ -55,6 +45,16 @@ const APP_REGISTRY_ENTRIES = Object.freeze([
     },
   },
 ]);
+
+const APP_AUTH_CONFIG = {
+  adapter: createSupabaseAuthAdapter({
+    client: () => createSupabaseClient(),
+    oauthDefaultNextPath: '/account',
+    terminateBrowserSession,
+  }),
+  hydrateFromStorage: false,
+  persistSession: false,
+};
 
 function AppRegistryBootstrap({ children }) {
   return (
@@ -71,65 +71,9 @@ const CoreShellProviders = pipe(
   [BackgroundProvider],
   [NavigationProvider],
   [LoadingProvider],
+  [AuthProvider, { config: APP_AUTH_CONFIG }],
+  [ModalProvider],
 );
-
-function shouldEnableInteractiveBoundary(pathname = '/') {
-  return resolveInteractiveBoundaryVariant(pathname) !== 'none';
-}
-
-function resolveInteractiveBoundaryVariant(pathname = '/') {
-  return pathname === '/' ||
-    pathname.startsWith('/movie/') ||
-    pathname.startsWith('/tv/') ||
-    pathname.startsWith('/person/') ||
-    pathname.startsWith('/account') ||
-    pathname.startsWith('/modules')
-    ? 'full'
-    : pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')
-      ? 'auth'
-      : 'none';
-}
-
-function renderInteractiveBoundary(children, variant) {
-  if (variant === 'full') {
-    return <InteractiveFeatureBoundary>{children}</InteractiveFeatureBoundary>;
-  }
-
-  if (variant === 'auth') {
-    return <AuthInteractiveBoundary>{children}</AuthInteractiveBoundary>;
-  }
-
-  return children;
-}
-
-function shouldEnableSmoothScroll(pathname = '/') {
-//  return resolveInteractiveBoundaryVariant(pathname) === 'full';
-  return false;
-}
-
-function sanitizeMetric(metric) {
-  return {
-    delta: Number(metric?.delta) || 0,
-    id: String(metric?.id || '').slice(0, 120),
-    name: String(metric?.name || '').slice(0, 40),
-    navigationType: String(metric?.navigationType || '').slice(0, 40) || 'navigate',
-    pathname: typeof window === 'undefined' ? null : window.location.pathname,
-    rating: String(metric?.rating || '').slice(0, 40) || 'unknown',
-    value: Number(metric?.value) || 0,
-  };
-}
-
-function postWebVital(metric) {
-  if (!TRACKED_METRICS.has(metric?.name)) {
-    return;
-  }
-}
-
-function WebVitals() {
-  useReportWebVitals(postWebVital);
-
-  return null;
-}
 
 function AccountRouteNavGuard() {
   const pathname = usePathname();
@@ -148,26 +92,14 @@ function AccountRouteNavGuard() {
 }
 
 export const AppProviders = ({ children }) => {
-  const pathname = usePathname();
-  const enableSmoothScroll = shouldEnableSmoothScroll(pathname);
-
   return (
     <>
-      <WebVitals />
       <CoreShellProviders>
         <AccountRouteNavGuard />
-        <PersistentInteractiveShell>
-          <BackgroundOverlay />
-          <LoadingOverlay />
-          <Nav />
-          <GlobalError>
-            {enableSmoothScroll ? (
-              <SmoothScrollProvider>{children}</SmoothScrollProvider>
-            ) : (
-              children
-            )}
-          </GlobalError>
-        </PersistentInteractiveShell>
+        <BackgroundOverlay />
+        <LoadingOverlay />
+        <Nav />
+        <GlobalError>{children}</GlobalError>
       </CoreShellProviders>
     </>
   );

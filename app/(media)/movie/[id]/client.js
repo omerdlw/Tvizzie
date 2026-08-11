@@ -305,12 +305,7 @@ function RelatedMoviesSection({ items, title, baseDelay = 0, hasBottomBorder = t
               key={`${item.id}-${index}`}
               {...getMediaCardProps(index, 0, false, 'related')}
             >
-              <RecommendationCard
-                movie={item}
-                index={index}
-                imagePriority={index < 4}
-                imageFetchPriority={index < 4 ? 'high' : undefined}
-              />
+              <RecommendationCard movie={item} index={index} />
             </motion.div>
           ))}
         </Carousel>

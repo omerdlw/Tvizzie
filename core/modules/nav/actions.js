@@ -27,12 +27,10 @@ export const NAV_ACTION_KEYS = Object.freeze({
   LOGOUT: 'logout',
   SCROLL_TOP: 'scroll-top',
   TOGGLE_MUTE: 'toggle-mute',
-  SETTINGS: 'settings',
 });
 
 export const NAV_ACTION_ORDER = Object.freeze({
   NOTIFICATIONS: -10,
-  SETTINGS: 0,
   TOGGLE_MUTE: 10,
   SCROLL_TOP: 20,
   LOGOUT: 30,
@@ -77,7 +75,6 @@ function isStatusToolbarActionAllowed(activeItem) {
 function filterContextToolbarActions(actions, activeItem) {
   return actions.filter((action) => {
     if (action.key === NAV_ACTION_KEYS.LOGOUT && activeItem?.hideLogout) return false;
-    if (action.key === NAV_ACTION_KEYS.SETTINGS && activeItem?.hideSettings) return false;
     if (action.key === NAV_ACTION_KEYS.SCROLL_TOP && activeItem?.hideScroll) return false;
     return true;
   });
@@ -162,17 +159,6 @@ function useDefaultNavActions() {
         onClick: (event) => {
           stopPropagation(event);
           toggleMute();
-        },
-      },
-      {
-        key: NAV_ACTION_KEYS.SETTINGS,
-        icon: 'solar:settings-bold',
-        tooltip: 'Settings',
-        visible: false,
-        order: NAV_ACTION_ORDER.SETTINGS,
-        onClick: (event) => {
-          stopPropagation(event);
-          openModal('SETTINGS_MODAL', 'center');
         },
       },
     ],

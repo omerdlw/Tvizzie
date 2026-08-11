@@ -4,12 +4,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 import { useLoadingState } from '@/modules/loading';
+import { useBackgroundActions, useBackgroundState } from '@/modules/background/context';
 import { useNavigationActions, useNavigationState } from '../context';
 import { NAV_EVENT_HANDLERS } from '../events';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import { createInlineSurfaceEntry, resolveSurfaceAction } from '../surface-model';
 import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from '../utils';
-import { useNavigationCountdown } from './use-navigation-countdown';
 import { useNavigationItems } from './use-navigation-items';
 import { useNavigationStatus } from './use-navigation-status';
 
@@ -44,11 +44,7 @@ function filterNavigationItems(items, searchQuery) {
   });
 }
 
-function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage, countdownItem }) {
-  if (countdownItem) {
-    return [countdownItem];
-  }
-
+function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage }) {
   const baseItems = isNotFoundPage
     ? rawItems.filter((item) => item.path === '/' || isNotFoundItem(item))
     : rawItems;
@@ -62,12 +58,8 @@ function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage,
   return flattenedItems;
 }
 
-function resolveActiveIndex({ navigationItems, activeItem, pathname, countdownItem }) {
+function resolveActiveIndex({ navigationItems, activeItem, pathname }) {
   const normalizedPathname = normalizePath(pathname);
-
-  if (countdownItem) {
-    return 0;
-  }
 
   const selectedDataSourceIndex = navigationItems.findIndex(
     (item) => item.isDataSource && item.isSelected,
@@ -244,7 +236,6 @@ function resolveActiveItem({
   isNotFoundPage,
   surfaceState,
   statusState,
-  countdownItem,
   isVideo,
   toggleBackgroundVideo,
   mediaAction,
@@ -259,7 +250,7 @@ function resolveActiveItem({
   });
 
   if (!baseActiveItem) {
-    return countdownItem || null;
+    return null;
   }
 
   if (surfaceState?.isSurfaceOpen) {
@@ -270,10 +261,6 @@ function resolveActiveItem({
 
   if (statusState?.isOverlay) {
     return applyStatusOverlay(baseActiveItem, statusState);
-  }
-
-  if (countdownItem) {
-    return countdownItem;
   }
 
   if (isPageLoading) {
@@ -367,7 +354,8 @@ export function useNavigationDisplay() {
   );
   const statusState = useNavigationStatus();
   const { mediaAction } = useNavRuntimeRegistry();
-  const { isVideo, countdownItem, toggleBackgroundVideo } = useNavigationCountdown();
+  const { isVideo } = useBackgroundState();
+  const { toggleVideo: toggleBackgroundVideo } = useBackgroundActions();
 
   const isNotFoundPage = useMemo(() => {
     return rawItems.some((item) => isNotFoundItem(item));
@@ -379,9 +367,8 @@ export function useNavigationDisplay() {
       expanded,
       searchQuery,
       isNotFoundPage,
-      countdownItem,
     });
-  }, [rawItems, expanded, searchQuery, isNotFoundPage, countdownItem]);
+  }, [rawItems, expanded, searchQuery, isNotFoundPage]);
 
   const rawActiveItem = useMemo(() => {
     return resolveActiveItem({
@@ -391,7 +378,6 @@ export function useNavigationDisplay() {
       isNotFoundPage,
       surfaceState,
       statusState,
-      countdownItem,
       isVideo,
       toggleBackgroundVideo,
       mediaAction,
@@ -405,7 +391,6 @@ export function useNavigationDisplay() {
     isNotFoundPage,
     surfaceState,
     statusState,
-    countdownItem,
     isVideo,
     toggleBackgroundVideo,
     mediaAction,
@@ -420,9 +405,8 @@ export function useNavigationDisplay() {
       navigationItems,
       activeItem,
       pathname,
-      countdownItem,
     });
-  }, [navigationItems, activeItem, pathname, countdownItem]);
+  }, [navigationItems, activeItem, pathname]);
 
   const result = useMemo(() => {
     return {

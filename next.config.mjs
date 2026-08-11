@@ -123,6 +123,7 @@ const NEXT_CONFIG = {
         /\/api\/account\/profile(?:\?|$)/,
         /\/api\/notifications(?:\?|$)/,
         /\/api\/auth\/session(?:\?|$)/,
+        /\/manifest\.webmanifest(?:\?|$)/,
       ],
     },
   },
@@ -251,12 +252,6 @@ const NEXT_CONFIG = {
         permanent: true,
       },
     ];
-  },
-  webpack(config) {
-    config.resolve = config.resolve || {};
-    config.resolve.alias = config.resolve.alias || {};
-    config.resolve.alias['framer-motion/client'] = 'framer-motion';
-    return config;
   },
 };
 

@@ -16,7 +16,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── interactive-boundary.js
 │   │   ├── nav-runtime.js
 │   │   ├── navigation-config.js
-│   │   ├── settings-modal.js
 │   │   └── smooth-scroll.js
 │   ├── (account)
 │   │   ├── account
@@ -171,10 +170,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── menu-engine.js
 │   │   │   ├── motion.js
 │   │   │   └── renderer.js
-│   │   ├── countdown
-│   │   │   ├── config.js
-│   │   │   ├── context.js
-│   │   │   └── index.js
 │   │   ├── error-boundary
 │   │   │   ├── core.js
 │   │   │   ├── index.js
@@ -206,7 +201,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── use-nav-viewport.js
 │   │   │   │   ├── use-navigation-compact.js
 │   │   │   │   ├── use-navigation-core.js
-│   │   │   │   ├── use-navigation-countdown.js
 │   │   │   │   ├── use-navigation-display.js
 │   │   │   │   ├── use-navigation-items.js
 │   │   │   │   ├── use-navigation-layout.js
@@ -245,12 +239,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── route-registry.js
 │   │   │   ├── store.js
 │   │   │   └── use-registry.js
-│   │   └── settings
-│   │       ├── config.js
-│   │       ├── context.js
-│   │       ├── index.js
-│   │       ├── storage.js
-│   │       └── utils.js
 │   ├── shared
 │   │   ├── constants
 │   │   │   ├── events
@@ -678,8 +666,7 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── app-event-queue.server.js
 │   │   └── app-events-route.server.js
 │   ├── observability
-│   │   ├── feedback.server.js
-│   │   └── web-vitals.server.js
+│   │   └── feedback.server.js
 │   ├── realtime
 │   │   ├── api
 │   │   │   ├── live-updates-events.server.js

@@ -78,9 +78,6 @@ const DEFAULT_MODAL_HEADERS = {
     title: 'Social Activity',
   }),
   REVIEW_EDITOR_MODAL: resolveReviewEditorHeader,
-  SETTINGS_MODAL: () => ({
-    title: 'Settings',
-  }),
 };
 
 export function resolveModalHeader(modalType, config = {}) {

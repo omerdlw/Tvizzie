@@ -55,12 +55,10 @@ export default function GallerySection({
                       data: image,
                     })
                   }
-                  imageFetchPriority={index < 3 ? 'high' : undefined}
                   imagePreset="feature"
                   fallbackIcon="solar:panorama-bold"
                   imageAlt={`Scene ${index + 1}`}
                   aspectClass="aspect-video"
-                  imagePriority={index < 3}
                   fallbackIconSize={24}
                   imageSizes="288px"
                   className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"

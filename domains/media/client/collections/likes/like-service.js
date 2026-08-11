@@ -3,7 +3,7 @@
 import {
   createMediaCollectionToggleRpcParams,
   executeMediaCollectionRpc,
-  fetchCollectionResource,
+  scheduleAccountSummaryRefresh,
 } from '@/domains/account/client';
 import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
@@ -130,16 +130,20 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
     fallbackMessage: 'Like could not be removed',
   });
 
-  if (rpcRow?.removed) {
+  const wasRemoved = rpcRow?.removed === true;
+
+  if (wasRemoved) {
     await removeLikeFromShowcase(userId, resolvedMediaKey);
   }
 
-  invalidatePollingSubscription(getLikeStatusSubscriptionKey({ media, userId }), {
-    payload: {
-      isLiked: false,
-      like: null,
-    },
-  });
+  if (media) {
+    invalidatePollingSubscription(getLikeStatusSubscriptionKey({ media, userId }), {
+      payload: {
+        isLiked: false,
+        like: null,
+      },
+    });
+  }
 
   invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
     refetch: true,
@@ -151,5 +155,6 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
 
   return {
     mediaKey: resolvedMediaKey,
+    wasRemoved,
   };
 }

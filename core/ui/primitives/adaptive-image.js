@@ -16,6 +16,10 @@ export default function AdaptiveImage({
   wrapperClassName = '',
   skeletonClassName = '',
   fill = false,
+  priority = false,
+  preload = false,
+  loading,
+  fetchPriority,
   onLoad,
   onError,
   ...props
@@ -52,6 +56,8 @@ export default function AdaptiveImage({
     hasLoaded ? 'opacity-100' : 'opacity-0',
     className,
   );
+  const resolvedLoading = loading || (priority ? 'eager' : 'lazy');
+  const resolvedFetchPriority = fetchPriority || (priority ? 'high' : undefined);
   const handleLoad = (event) => {
     setHasLoaded(true);
     setHasFailed(false);
@@ -73,6 +79,8 @@ export default function AdaptiveImage({
           className={imageClassName}
           onLoad={handleLoad}
           onError={handleError}
+          loading={resolvedLoading}
+          fetchPriority={resolvedFetchPriority}
           {...props}
         />
       ) : (
@@ -81,6 +89,9 @@ export default function AdaptiveImage({
           src={resolvedSrc}
           alt={alt}
           fill={fill}
+          preload={preload}
+          loading={resolvedLoading}
+          fetchPriority={resolvedFetchPriority}
           className={imageClassName}
           onLoad={handleLoad}
           onError={handleError}

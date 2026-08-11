@@ -149,7 +149,7 @@ export default function Nav() {
     };
 
     const handleClick = () => {
-      if (link.type === 'COUNTDOWN' || link.isOverlay) return;
+      if (link.isOverlay) return;
 
       if (!expanded) {
         if (isTop) {

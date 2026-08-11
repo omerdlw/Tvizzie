@@ -85,11 +85,7 @@ export default function PersonFilmographySection({
               {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'filmography')}
               initial={false}
             >
-              <FilmographyCard
-                credit={credit}
-                imagePriority={index < 8}
-                imageFetchPriority={index < 8 ? 'high' : undefined}
-              />
+              <FilmographyCard credit={credit} />
             </motion.div>
           ))}
         </div>

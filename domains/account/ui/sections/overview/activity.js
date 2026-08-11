@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSeededFeedState } from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
@@ -52,6 +52,14 @@ export default function AccountActivityOverview({
     () => hasMatchingInitialFeed(initialFeed, effectiveResolvedUserId),
     [initialFeed, effectiveResolvedUserId],
   );
+  const hasUsableSeededFeed = useMemo(
+    () =>
+      hasInitialFeed &&
+      Array.isArray(initialFeed?.items) &&
+      initialFeed.items.length > 0,
+    [hasInitialFeed, initialFeed],
+  );
+  const [hasRequestedFeed, setHasRequestedFeed] = useState(hasUsableSeededFeed);
 
   useEffect(() => {
     if (!hasInitialFeed) {
@@ -66,18 +74,18 @@ export default function AccountActivityOverview({
     requestRef.current = requestId;
 
     if (!effectiveResolvedUserId) {
+      setHasRequestedFeed(true);
       return;
     }
 
     if (!isOwner && isPrivateProfile && !canViewPrivateContent) {
+      setHasRequestedFeed(true);
       resetFeed();
       return;
     }
 
-    const hasUsableSeededFeed =
-      hasInitialFeed && Array.isArray(initialFeed?.items);
-
     if (hasUsableSeededFeed) {
+      setHasRequestedFeed(true);
       setIsFeedLoading(false);
       return;
     }
@@ -85,6 +93,7 @@ export default function AccountActivityOverview({
     let ignore = false;
 
     async function loadFeed() {
+      setHasRequestedFeed(true);
       setIsFeedLoading(true);
       setFeedError(null);
 
@@ -129,7 +138,7 @@ export default function AccountActivityOverview({
     applyFeedResult,
     canViewPrivateContent,
     effectiveResolvedUserId,
-    hasInitialFeed,
+    hasUsableSeededFeed,
     isOwner,
     isPrivateProfile,
     normalizedLimit,
@@ -145,13 +154,15 @@ export default function AccountActivityOverview({
   const resolvedTotalCount = Number.isFinite(Number(totalCount))
     ? Math.max(visibleItems.length, Number(totalCount))
     : visibleItems.length;
+  const isInitialFeedLoading =
+    Boolean(effectiveResolvedUserId) && !hasUsableSeededFeed && !hasRequestedFeed;
 
   return (
     <AccountActivityFeed
       emptyMessage={emptyMessage}
       icon={icon}
       isInitialSection={isInitialSection}
-      isLoading={isFeedLoading}
+      isLoading={isFeedLoading || isInitialFeedLoading}
       items={visibleItems}
       loadError={feedError}
       revealDelay={revealDelay}

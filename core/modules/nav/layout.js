@@ -116,7 +116,7 @@ export function isImageIconSource(icon) {
 }
 
 export function shouldShowVideoIcon({ isActive, isVideo, link }) {
-  return Boolean(isActive && isVideo && link.type !== 'COUNTDOWN');
+  return Boolean(isActive && isVideo);
 }
 
 export function getItemMeasurementKey({ link, expanded, compact }) {

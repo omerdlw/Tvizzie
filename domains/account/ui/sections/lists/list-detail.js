@@ -154,21 +154,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
         <AccountSectionState message="This list could not be found." />
       ) : (
         <>
-          <AccountSectionReveal>
-            <header className="relative">
-              <div className={`${LIST_SECTION_SHELL_CLASS} border-y border-black/10 p-4`}>
-                <div className="flex w-full flex-col gap-3">
-                  <h1 className="w-full text-3xl font-bold tracking-tight sm:text-4xl">
-                    {list.title}
-                  </h1>
-                  <p className="w-full text-sm leading-6 text-black/70">
-                    {String(list.description || '').trim() || 'No description provided.'}
-                  </p>
-                </div>
-              </div>
-            </header>
-          </AccountSectionReveal>
-
           <AccountSectionReveal delay={0.06}>
             <AccountMediaGridPage
               currentPage={mediaPage}
@@ -179,7 +164,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
               items={filteredListItems}
               onPageChange={setMediaPage}
               showHeader={false}
-              showTopRule={false}
               title={list?.title || 'List'}
               renderOverlay={(item) =>
                 isOwner ? (
@@ -216,39 +200,42 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
           <AccountSectionLayout
             contentPaddingClassName="p-0"
             icon="solar:chat-round-line-bold"
+            isInitialSection={false}
             revealDelay={0.1}
             summaryLabel={`${reviews.length} ${reviews.length === 1 ? 'Comment' : 'Comments'}`}
             title="Comments"
             toolbarPaddingClassName="p-0"
             toolbar={
-              <>
-                {!auth?.user && (
-                  <ReviewAuthFallback
-                    mode="comment"
-                    onSignIn={handleSignInRequest}
-                    title={list.title}
-                    variant="account-section"
-                  />
-                )}
-                {reviews.length > 0 ? (
-                  <div className="p-4">
-                    <AccountReviewFilterBar
-                      filters={reviewFilters}
-                      showRatingFilter={false}
-                      sortOptions={LIST_COMMENT_SORT_OPTIONS}
-                      visibilityOptions={[]}
-                      yearOptions={reviewYearOptions}
-                      onChange={updateReviewFilters}
-                      onReset={hasReviewFilters ? resetReviewFilters : null}
+              !auth?.user || reviews.length > 0 ? (
+                <>
+                  {!auth?.user && (
+                    <ReviewAuthFallback
+                      mode="comment"
+                      onSignIn={handleSignInRequest}
+                      title={list.title}
+                      variant="account-section"
                     />
-                    {hasReviewFilters && (
-                      <p className="mt-3 text-xs font-semibold tracking-widest text-black/50 uppercase">
-                        {filteredReviews.length} of {reviews.length} comments shown
-                      </p>
-                    )}
-                  </div>
-                ) : null}
-              </>
+                  )}
+                  {reviews.length > 0 ? (
+                    <div className="p-4">
+                      <AccountReviewFilterBar
+                        filters={reviewFilters}
+                        showRatingFilter={false}
+                        sortOptions={LIST_COMMENT_SORT_OPTIONS}
+                        visibilityOptions={[]}
+                        yearOptions={reviewYearOptions}
+                        onChange={updateReviewFilters}
+                        onReset={hasReviewFilters ? resetReviewFilters : null}
+                      />
+                      {hasReviewFilters && (
+                        <p className="mt-3 text-xs font-semibold tracking-widest text-black/50 uppercase">
+                          {filteredReviews.length} of {reviews.length} comments shown
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
+                </>
+              ) : null
             }
           >
             <ListDetailCommentsSection

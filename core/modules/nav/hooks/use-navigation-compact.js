@@ -55,13 +55,12 @@ function canUseCompactNav({
   isStatus,
   isSurface,
   title,
-  type,
 }) {
   if (!hasActiveItem) {
     return false;
   }
 
-  if (isOverlay || isSurface || isLoading || isStatus || isActionEngaged || type === 'COUNTDOWN') {
+  if (isOverlay || isSurface || isLoading || isStatus || isActionEngaged) {
     return false;
   }
 
@@ -119,7 +118,6 @@ export function useNavigationCompact({
   const activeItemPath = activeItem?.path || '';
   const activeItemName = activeItem?.name || '';
   const activeItemTitle = activeItem?.title || activeItem?.name || '';
-  const activeItemType = activeItem?.type || '';
   const isOverlay = Boolean(activeItem?.isOverlay);
   const isSurface = Boolean(activeItem?.isSurface);
   const isLoading = Boolean(activeItem?.isLoading);
@@ -135,7 +133,6 @@ export function useNavigationCompact({
       isStatus,
       isSurface,
       title: activeItemTitle,
-      type: activeItemType,
     });
     const canPreserveCompactRestore =
       typeof window !== 'undefined' && isSurface && restoreCompactRef.current;
@@ -323,7 +320,6 @@ export function useNavigationCompact({
     activeItemName,
     activeItemPath,
     activeItemTitle,
-    activeItemType,
     isLoading,
     isOverlay,
     isStatus,

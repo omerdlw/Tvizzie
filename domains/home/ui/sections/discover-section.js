@@ -304,7 +304,12 @@ export function DiscoverSection({
       <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
         {gridItems.map((item, index) => (
           <motion.div key={item.id} {...getDiscoverCardProps(index)}>
-            <MediaPosterCard item={item} className="w-full" />
+            <MediaPosterCard
+              item={item}
+              className="w-full"
+              imageLoading={index === 0 ? 'eager' : undefined}
+              imageFetchPriority={index === 0 ? 'high' : undefined}
+            />
           </motion.div>
         ))}
 

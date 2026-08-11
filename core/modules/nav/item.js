@@ -206,7 +206,7 @@ function StandardItemContent({
             </div>
             <Description text={description} style={itemStyle.description} />
           </div>
-          {isTop && link.type !== 'COUNTDOWN' ? <NavActionsContainer activeItem={link} /> : null}
+          {isTop ? <NavActionsContainer activeItem={link} /> : null}
         </div>
       </div>
 

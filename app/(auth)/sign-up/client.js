@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { setPendingAccountBootstrap } from '@/domains/auth/client';
@@ -436,7 +437,13 @@ function SignUpView({
                 href="/"
                 className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
               >
-                <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
+                <Image
+                  src="/tvizzie.png"
+                  alt="Tvizzie"
+                  width={64}
+                  height={64}
+                  className="size-16"
+                />
               </Link>
             </motion.div>
             <motion.h1

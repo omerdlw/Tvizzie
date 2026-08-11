@@ -16,6 +16,7 @@ import {
   ensureUserId,
   normalizeMediaPayload,
 } from '@/domains/media/shared/media';
+import { removeUserLike } from '../likes/like-service.js';
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
@@ -147,6 +148,14 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   ensureUserId(userId, 'Authenticated user is required to manage watched items');
 
   const resolvedMediaKey = mediaKey || getWatchedDocRef(userId, media).id;
+
+  // A like is only valid for a watched title. Remove the dependent like first
+  // so a failed watched deletion cannot leave a liked-but-unwatched title.
+  const likeResult = await removeUserLike({
+    media,
+    mediaKey: resolvedMediaKey,
+    userId,
+  });
   const rpcRow = await executeMediaCollectionRpc({
     client: getSupabaseClient(),
     fnName: 'collection_remove_watched',
@@ -171,6 +180,7 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   return {
     isWatched: false,
     mediaKey: resolvedMediaKey,
+    wasUnliked: likeResult?.wasRemoved === true,
     wasRemoved,
   };
 }

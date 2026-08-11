@@ -433,7 +433,6 @@ export function useNavigationStatus() {
               return <NotFoundAction />;
             }
           : null,
-        hideSettings: true,
         hideScroll: true,
       });
     });

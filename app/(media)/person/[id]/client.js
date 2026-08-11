@@ -32,7 +32,7 @@ import {
 } from '@/app/(media)/motion';
 
 function getMovieBackdropSrc(credit) {
-  return credit?.backdrop_path ? `${TMDB_IMG}/original${credit.backdrop_path}` : null;
+  return credit?.backdrop_path ? `${TMDB_IMG}/w1280${credit.backdrop_path}` : null;
 }
 
 function getFallbackBackgroundImage(person) {

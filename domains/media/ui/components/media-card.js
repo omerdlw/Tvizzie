@@ -119,7 +119,6 @@ export default function MediaCard({
               fill
               sizes={imageSizes}
               loading={resolvedImageLoading}
-              priority={imagePriority}
               fetchPriority={resolvedImageFetchPriority}
               quality={resolvedImageQuality}
               decoding="async"

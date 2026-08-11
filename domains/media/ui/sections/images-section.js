@@ -148,14 +148,12 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
                       data: image,
                     })
                   }
-                  imageFetchPriority={index < 3 ? 'high' : undefined}
                   imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
                   fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
                   imageAlt={`${currentTab.label} ${index + 1}`}
                   className={`shrink-0 ${currentTab.width}`}
                   aspectClass={currentTab.aspect}
                   imageSizes={currentTab.sizes}
-                  imagePriority={index < 3}
                   fallbackIconSize={24}
                   {...(currentTab.key === 'backdrops'
                     ? {

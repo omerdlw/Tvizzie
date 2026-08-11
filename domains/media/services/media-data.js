@@ -293,12 +293,12 @@ export function getGalleryImages(images) {
     .slice(0, 20);
 }
 
-export function createMovieBackdropImageUrl(filePath, size = 'original') {
+export function createMovieBackdropImageUrl(filePath, size = 'w1280') {
   if (typeof filePath !== 'string' || !filePath.trim()) {
     return null;
   }
 
-  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'original';
+  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'w1280';
   return `${TMDB_IMG}/${resolvedSize}${filePath}`;
 }
 

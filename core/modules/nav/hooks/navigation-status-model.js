@@ -204,7 +204,6 @@ export function createOverlayStatus({
     style,
     action,
     actions,
-    hideSettings: true,
     hideScroll: true,
   };
 }

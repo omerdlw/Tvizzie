@@ -60,9 +60,13 @@ function getCollectionCount(initialCollections, key, hasSeededCollectionSnapshot
   return normalizeCollectionCount(initialCollections?.counts?.[key]);
 }
 
-function hasUsableSeededItems(items, seededCount, hasSeededCollectionSnapshot) {
+function hasUsableSeededItems(items, hasSeededCollectionSnapshot) {
   if (!hasSeededCollectionSnapshot || !Array.isArray(items)) return false;
-  return items.length > 0 || seededCount === 0;
+
+  // An empty server snapshot can also be the fallback from an optional load
+  // timeout. Let the client subscription confirm empty collections so the
+  // Overview renders a skeleton instead of a premature empty state.
+  return items.length > 0;
 }
 
 export function getCollectionPreviewLimits(previewLimits = null) {
@@ -105,14 +109,10 @@ export function createSeededCollectionState({ initialCollections = null, resolve
     counts: hasSeededCollectionSnapshot ? counts : UNRESOLVED_COLLECTION_COUNTS,
     hasSeededCollectionSnapshot,
     hasSeededItems: {
-      likes: hasUsableSeededItems(items.likes, counts.likes, hasSeededCollectionSnapshot),
-      lists: hasUsableSeededItems(items.lists, counts.lists, hasSeededCollectionSnapshot),
-      watched: hasUsableSeededItems(items.watched, counts.watched, hasSeededCollectionSnapshot),
-      watchlist: hasUsableSeededItems(
-        items.watchlist,
-        counts.watchlist,
-        hasSeededCollectionSnapshot,
-      ),
+      likes: hasUsableSeededItems(items.likes, hasSeededCollectionSnapshot),
+      lists: hasUsableSeededItems(items.lists, hasSeededCollectionSnapshot),
+      watched: hasUsableSeededItems(items.watched, hasSeededCollectionSnapshot),
+      watchlist: hasUsableSeededItems(items.watchlist, hasSeededCollectionSnapshot),
     },
     items,
   };
@@ -476,6 +476,8 @@ function subscribeToAccountCollection({
   toast,
   userId,
 }) {
+  const hasSeededCollectionItems = Array.isArray(seededItems);
+
   return config.subscribe(
     userId,
     (nextItems) => {
@@ -494,12 +496,15 @@ function subscribeToAccountCollection({
       setLoading(false);
     },
     {
+      emitCachedPayloadOnSubscribe: hasSeededCollectionItems,
+      fetchOnSubscribe: true,
       limitCount,
       onError: (error) => {
         if (isDisposed()) return;
         setLoading(false);
         notifyAccountLoadError(toast, error, config.label);
       },
+      refreshOnSubscribe: !hasSeededCollectionItems,
       seededItems,
     },
   );

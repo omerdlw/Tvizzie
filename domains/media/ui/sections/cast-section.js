@@ -223,11 +223,7 @@ export default function CastSection({
                 {...getCastCardProps(index, baseDelay, hasSwitchedTab)}
               >
                 <motion.div {...getCastHoverProps()} className="h-full w-full">
-                  <PersonCard
-                    person={person}
-                    priority={index < 4}
-                    fetchPriority={index < 4 ? 'high' : undefined}
-                  />
+                  <PersonCard person={person} />
                 </motion.div>
               </motion.div>
             );
@@ -281,7 +277,7 @@ export default function CastSection({
         <div className="flex shrink-0 items-center gap-3">
           <SegmentedControl
             value={activeTab}
-            className='backdrop-blur-sm'
+            className="backdrop-blur-sm"
             onChange={handleTabChange}
             items={tabs.map(({ key, label }) => ({
               key,

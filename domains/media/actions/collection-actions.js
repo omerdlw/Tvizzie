@@ -329,6 +329,7 @@ export default function CollectionActions({ media }) {
     setState((prev) => ({
       ...prev,
       watched: nextWatchedState,
+      liked: nextWatchedState ? prev.liked : false,
       submittingWatched: true,
       watchedIntent: intent,
     }));

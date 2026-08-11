@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "analyze": "ANALYZE=true next build --webpack",
-    "build": "next build --webpack",
+    "build": "next build",
+    "build:webpack": "next build --webpack",
     "build:cloudflare": "opennextjs-cloudflare build",
     "deploy": "npm run build:cloudflare && opennextjs-cloudflare deploy",
     "preview": "npm run build:cloudflare && opennextjs-cloudflare preview",
