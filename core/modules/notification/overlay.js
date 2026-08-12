@@ -36,7 +36,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden rounded-[24px] border shadow-lg backdrop-blur-lg',
+        'pointer-events-auto relative w-full overflow-hidden rounded-[24px] border backdrop-blur-lg',
         dismissible && 'touch-pan-y',
         config.colorClass,
       )}

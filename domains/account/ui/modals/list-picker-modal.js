@@ -64,7 +64,7 @@ const ListPreviewStack = memo(function ListPreviewStack({ list }) {
         return (
           <div
             key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-            className="border-primary absolute bottom-0 overflow-hidden rounded-[8px] border bg-white shadow-xs"
+            className="border-primary absolute bottom-0 overflow-hidden rounded-[8px] border bg-white"
             style={{
               width: '46px',
               height: `${68 - index * 6}px`,

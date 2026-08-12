@@ -421,7 +421,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-sm',
+          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white/80 backdrop-blur-sm',
           classNames.content,
         )}
         role="menu"

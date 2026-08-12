@@ -244,7 +244,7 @@ export default function MediaReviews({
               classNames={{
                 trigger:
                   'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between rounded-xl border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
-                menu: 'overflow-hidden rounded-xl border border-black/10 bg-white p-1 shadow-lg',
+                menu: 'overflow-hidden rounded-xl border border-black/10 bg-white p-1',
                 optionsList: 'flex flex-col gap-1',
                 option:
                   'cursor-pointer rounded-[8px] px-3 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',

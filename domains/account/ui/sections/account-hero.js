@@ -229,7 +229,7 @@ export default function AccountHero({
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <motion.div
-          className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md transition-shadow duration-300 hover:shadow-lg sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+          className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md transition-shadow duration-300 sm:h-16 sm:w-16 lg:h-20 lg:w-20"
           initial={false}
           animate={heroAvatarVariants.animate}
           transition={heroAvatarVariants.transition}

@@ -8,6 +8,7 @@ import {
   getPersonBase,
   getPersonSecondary,
 } from '@/infrastructure/tmdb/clients/tmdb-server-client';
+import { getPersonAwards } from '@/domains/media/server/person-awards';
 import Client from '@/app/(media)/person/[id]/client';
 
 export async function generateMetadata({ params }) {
@@ -41,8 +42,16 @@ export default async function PersonDetailPage({ params }) {
   const secondaryDataPromise = getPersonSecondary(id).then(
     (secondaryResponse) => secondaryResponse?.data || {},
   );
+  const awardsPromise = getPersonAwards(id).catch(() => null);
 
-  return <Client key={person.id} person={person} secondaryDataPromise={secondaryDataPromise} />;
+  return (
+    <Client
+      key={person.id}
+      person={person}
+      secondaryDataPromise={secondaryDataPromise}
+      awardsPromise={awardsPromise}
+    />
+  );
 }
 
 export const revalidate = 3600;

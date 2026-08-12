@@ -11,11 +11,13 @@ import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/shared/constants';
 import { Suspense, use } from 'react';
 import { motion } from 'framer-motion';
 import PersonAwards from '@/domains/media/ui/components/person/awards';
+import PersonAwardsSkeleton from '@/domains/media/ui/components/person/awards-skeleton';
 import PersonBio from '@/domains/media/ui/components/person/bio';
 import PersonFilmographySection from '@/domains/media/ui/sections/person/filmography-section';
 import PersonGallery from '@/domains/media/ui/components/person/gallery';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import PersonTimeline from '@/domains/media/ui/components/person/timeline';
+import PersonTimelineSkeleton from '@/domains/media/ui/components/person/timeline-skeleton';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import { Spinner } from '@/ui/feedback/spinner';
@@ -53,7 +55,7 @@ function useViewChoreographyClock(activeView) {
   return choreographyStartedAtRef.current;
 }
 
-export default function Client({ person, secondaryDataPromise }) {
+export default function Client({ person, secondaryDataPromise, awardsPromise }) {
   const personId = person?.id;
   const fallbackPosterFilePath = person?.profile_path || null;
   const [activeView, setActiveView] = useState('main');
@@ -134,6 +136,7 @@ export default function Client({ person, secondaryDataPromise }) {
     <PersonView
       person={resolvedPerson}
       secondaryDataPromise={secondaryDataPromise}
+      awardsPromise={awardsPromise}
       activeView={activeView}
       setActiveView={setActiveView}
       age={age}
@@ -176,13 +179,7 @@ function PersonDeferredContent({
   };
   if (activeView === 'timeline') {
     return (
-      <motion.div
-        {...getSectionHeaderProps(
-          getDeferredChapterDelay('generic', choreographyStartedAt),
-          false,
-          'generic',
-        )}
-      >
+      <motion.div {...getSectionHeaderProps(0, true, 'generic')}>
         <PersonTimeline person={mergedPerson} />
       </motion.div>
     );
@@ -193,6 +190,7 @@ function PersonDeferredContent({
 function PersonView({
   person,
   secondaryDataPromise,
+  awardsPromise,
   activeView,
   setActiveView,
   age,
@@ -274,7 +272,7 @@ function PersonView({
 
             <div
               className={`relative w-full text-left ${
-                activeView === 'main' ? '' : 'pt-16 sm:pt-24 lg:pt-32'
+                activeView === 'main' ? '' : 'pt-6 sm:pt-8 lg:pt-12'
               }`}
               key={`person-view-${activeView}`}
             >
@@ -282,13 +280,20 @@ function PersonView({
                 <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
               ) : null}
               {activeView === 'awards' ? (
-                <motion.div
-                  {...getSectionHeaderProps(
-                    getDeferredChapterDelay('generic', choreographyStartedAt),
-                  )}
-                >
-                  <PersonAwards personId={person.id} />
-                </motion.div>
+                <Suspense fallback={<PersonAwardsSkeleton />}>
+                  <motion.div {...getSectionHeaderProps(0, true, 'generic')}>
+                    <PersonAwards personId={person.id} awardsPromise={awardsPromise} />
+                  </motion.div>
+                </Suspense>
+              ) : activeView === 'timeline' ? (
+                <Suspense fallback={<PersonTimelineSkeleton />}>
+                  <PersonDeferredContent
+                    person={person}
+                    secondaryDataPromise={secondaryDataPromise}
+                    activeView={activeView}
+                    choreographyStartedAt={choreographyStartedAt}
+                  />
+                </Suspense>
               ) : (
                 <Suspense fallback={deferredFallback}>
                   <PersonDeferredContent

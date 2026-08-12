@@ -15,7 +15,7 @@ export const UI = {
     'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-white text-black/70 hover:border-black/20 hover:bg-black/5',
   resetButton:
     'ml-auto inline-flex h-9 shrink-0 items-center rounded-xl border border-black/10 bg-white px-3 text-[11px] font-semibold uppercase tracking-wide text-black/70 hover:border-black/20 hover:bg-black/5',
-  menu: 'z-50 overflow-y-auto overscroll-contain rounded-xl border border-black/10 bg-white p-1 shadow-lg',
+  menu: 'z-50 overflow-y-auto overscroll-contain rounded-xl border border-black/10 bg-white p-1',
   sectionLabel: 'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-black/50',
   menuItem:
     'flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-sm text-black/80 hover:bg-black/5',

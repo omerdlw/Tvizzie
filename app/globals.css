@@ -28,6 +28,7 @@
 }
 
 * {
+  border-radius: 0;
   -ms-overflow-style: none;
   box-sizing: border-box;
   scrollbar-width: none;
@@ -50,20 +51,6 @@
       color-mix(in srgb, var(--white) 98%, transparent) 75vh,
       var(--white) 85vh,
       var(--white) 100%
-    );
-  }
-
-  .media-detail-gradient-backdrop {
-    background-image: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--white) 32%, transparent) 0%,
-      color-mix(in srgb, var(--white) 42%, transparent) 15vh,
-      color-mix(in srgb, var(--white) 52%, transparent) 30vh,
-      color-mix(in srgb, var(--white) 62%, transparent) 45vh,
-      color-mix(in srgb, var(--white) 72%, transparent) 60vh,
-      color-mix(in srgb, var(--white) 84%, transparent) 75vh,
-      color-mix(in srgb, var(--white) 96%, transparent) 90vh,
-      var(--white) 100vh
     );
   }
 

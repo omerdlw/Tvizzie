@@ -53,7 +53,7 @@ export default function PersonTimeline({ person }) {
           <motion.div
             initial={{ scaleY: 0 }}
             animate={{ scaleY: 1 }}
-            transition={{ duration: 1.2, ease: EASINGS.LUXURY, delay: 0.1 }}
+            transition={{ duration: 0.3, ease: EASINGS.LUXURY }}
             className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24"
           />
 
@@ -64,11 +64,11 @@ export default function PersonTimeline({ person }) {
                 <div key={year} className="relative flex">
                   <div className="w-16 shrink-0 sm:w-24">
                     <motion.span
-                      initial={{ opacity: 0, x: -16, filter: 'blur(8px)' }}
-                      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{
-                        duration: 0.6,
-                        delay: Math.min(yearIndex * 0.05, 0.4),
+                        duration: 0.25,
+                        delay: Math.min(yearIndex * 0.02, 0.1),
                         ease: EASINGS.LUXURY,
                       }}
                       className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base"
@@ -84,9 +84,9 @@ export default function PersonTimeline({ person }) {
                       type: 'spring',
                       stiffness: 350,
                       damping: 20,
-                      delay: Math.min(yearIndex * 0.05 + 0.1, 0.45),
+                      delay: Math.min(yearIndex * 0.02, 0.1),
                     }}
-                    className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24"
+                    className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black sm:left-24"
                   />
 
                   <div
@@ -101,15 +101,15 @@ export default function PersonTimeline({ person }) {
                         credit.original_name ||
                         'Untitled';
                       const creditLabel = getCreditLabel(credit);
-                      const cardDelay = Math.min(yearIndex * 0.06 + creditIndex * 0.04, 0.5);
+                      const cardDelay = Math.min(yearIndex * 0.02 + creditIndex * 0.015, 0.15);
 
                       return (
                         <motion.div
                           key={`${credit.credit_id || credit.id}-${credit.media_type}`}
-                          initial={{ opacity: 0, x: 28, scale: 0.96, filter: 'blur(14px)' }}
-                          animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+                          initial={{ opacity: 0, x: 16 }}
+                          animate={{ opacity: 1, x: 0 }}
                           transition={{
-                            duration: 0.75,
+                            duration: 0.3,
                             delay: cardDelay,
                             ease: EASINGS.LUXURY,
                           }}

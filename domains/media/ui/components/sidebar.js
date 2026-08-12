@@ -109,7 +109,7 @@ function SidebarTaxonomy({ genres = [], baseDelay = TIMELINES.TAXONOMY_BASE_DELA
               {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
             >
-              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase shadow-xs transition-colors hover:border-black/20 hover:text-black">
+              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase transition-colors hover:border-black/20 hover:text-black">
                 {genre}
               </span>
             </motion.div>
