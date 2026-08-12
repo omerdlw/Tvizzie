@@ -2,10 +2,10 @@
 
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '@/ui/primitives/icon';
 import MediaThumb from './media-thumb';
 import { getPersonAwardsServer } from '@/domains/media/api/person-awards.server';
+import { MediaRouteReveal } from '@/app/(media)/motion';
 
 function buildTimeline(organizations = []) {
   return (organizations || [])
@@ -93,7 +93,7 @@ function usePersonAwards({ personId, awardsPromise }) {
   };
 }
 
-function AwardStatCard({ icon, label, value, variant = 'base' }) {
+function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
   const variantStyles = {
     win: {
       border: 'border-warning/50',
@@ -110,19 +110,26 @@ function AwardStatCard({ icon, label, value, variant = 'base' }) {
   }[variant];
 
   return (
-    <div
-      className={`flex flex-1 min-w-[110px] flex-col items-center justify-center rounded-2xl border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
+    <MediaRouteReveal
+      className="flex flex-1"
+      deferred
+      itemIndex={index}
+      stage="person.awards.stat"
     >
-      <div className={`flex items-center gap-1.5 ${variantStyles.iconText}`}>
-        <Icon icon={icon} size={20} />
-        <span className="text-xs font-bold tracking-wider uppercase">{label}</span>
-      </div>
-      <span
-        className={`font-zuume mt-1 text-5xl leading-none font-bold sm:text-6xl ${variantStyles.valueText}`}
+      <div
+        className={`flex min-w-[110px] flex-1 flex-col items-center justify-center rounded-2xl border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
       >
-        {value}
-      </span>
-    </div>
+        <div className={`flex items-center gap-1.5 ${variantStyles.iconText}`}>
+          <Icon icon={icon} size={20} />
+          <span className="text-xs font-bold tracking-wider uppercase">{label}</span>
+        </div>
+        <span
+          className={`font-zuume mt-1 text-5xl leading-none font-bold sm:text-6xl ${variantStyles.valueText}`}
+        >
+          {value}
+        </span>
+      </div>
+    </MediaRouteReveal>
   );
 }
 
@@ -132,32 +139,42 @@ function AwardFilterPill({
   isActive,
   onClick,
   activeColorClass = 'bg-black text-white',
+  index,
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`max-w-[200px] truncate rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-        isActive ? `${activeColorClass}` : 'bg-black/5 text-black/70 hover:bg-black/10'
-      }`}
+    <MediaRouteReveal
+      className="inline-flex"
+      deferred
+      interaction="control"
+      interactive
+      itemIndex={index}
+      stage="person.awards.filters"
     >
-      {label} {count !== undefined ? `(${count})` : ''}
-    </button>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`max-w-[200px] truncate rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+          isActive ? `${activeColorClass}` : 'bg-black/5 text-black/70 hover:bg-black/10'
+        }`}
+      >
+        {label} {count !== undefined ? `(${count})` : ''}
+      </button>
+    </MediaRouteReveal>
   );
 }
 
-function AwardCard({ award }) {
+function AwardCard({ award, index }) {
   const isWin = award.type === 'Win';
   const mediaType = award.mediaType === 'tv' ? 'tv' : 'movie';
   const hasProjectLink = Boolean(award.projectId);
 
   const cardContent = (
     <div
-      className={`group relative flex items-center gap-2 rounded-3xl border p-1 sm:gap-4 sm:p-2 transition-all ${
+      className={`group relative flex items-center gap-2 rounded-3xl border p-1 sm:gap-4 sm:p-2 ${
         isWin
-          ? 'border-yellow-600 border-2 bg-yellow text-white'
+          ? 'border-yellow-500 border bg-white/50 hover:bg-primary'
           : 'border-black/10 bg-white/50 hover:bg-primary'
-      }`}
+      } transition-[background-color,border-color,box-shadow] duration-300 ease-out`}
     >
       {award.poster || award.project ? (
         <MediaThumb
@@ -189,22 +206,31 @@ function AwardCard({ award }) {
         </p>
       </div>
       {hasProjectLink && (
-        <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 pr-1">
+        <div className="shrink-0 opacity-0 group-hover:opacity-100 pr-1">
           <Icon icon="solar:alt-arrow-right-bold" size={18} className="text-black/40" />
         </div>
       )}
     </div>
   );
 
-  if (hasProjectLink) {
-    return (
-      <Link href={`/${mediaType}/${award.projectId}`} className="block">
-        {cardContent}
-      </Link>
-    );
-  }
+  const resolvedCard = hasProjectLink ? (
+    <Link href={`/${mediaType}/${award.projectId}`} className="block">
+      {cardContent}
+    </Link>
+  ) : (
+    cardContent
+  );
 
-  return cardContent;
+  return (
+    <MediaRouteReveal
+      deferred
+      interactive
+      itemIndex={index}
+      stage="person.awards.item"
+    >
+      {resolvedCard}
+    </MediaRouteReveal>
+  );
 }
 
 function AwardsMessage({ children }) {
@@ -243,9 +269,10 @@ export default function PersonAwards({ personId, awardsPromise }) {
     <section className="relative w-full">
       <div className="relative w-full pt-2 pb-6 sm:pt-3 sm:pb-8">
         <div className="mx-auto flex max-w-[72ch] items-center justify-center gap-3 px-4 sm:gap-4">
-          <AwardStatCard icon="solar:cup-bold" label="Wins" value={wins} variant="win" />
+          <AwardStatCard icon="solar:cup-bold" index={0} label="Wins" value={wins} variant="win" />
           <AwardStatCard
             icon="solar:medal-ribbons-star-bold"
+            index={1}
             label="Nominations"
             value={nominations}
             variant="base"
@@ -253,6 +280,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
           {academyWins > 0 ? (
             <AwardStatCard
               icon="solar:star-bold"
+              index={2}
               label="Oscars"
               value={academyWins}
               variant="win"
@@ -260,9 +288,10 @@ export default function PersonAwards({ personId, awardsPromise }) {
           ) : (
             <AwardStatCard
               icon="solar:cup-star-bold"
+              index={2}
               label="Organizations"
               value={organizations.length}
-              variant="neutral"
+              variant="base"
             />
           )}
         </div>
@@ -271,26 +300,29 @@ export default function PersonAwards({ personId, awardsPromise }) {
         <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       </div>
 
-      <div className="p-4 sm:p-6">
+      <MediaRouteReveal className="p-4 sm:p-6" stage="person.sections.awards" deferred>
         {/* Filter Pills */}
         <div className="mx-auto flex max-w-[72ch] flex-wrap items-center justify-center gap-2 pt-2 sm:pt-4">
           <AwardFilterPill
             label="All"
+            index={0}
             count={allItems.length}
             isActive={activeFilter === 'all'}
             onClick={() => setActiveFilter('all')}
           />
           <AwardFilterPill
             label="Wins"
+            index={1}
             count={wins}
             isActive={activeFilter === 'wins'}
             onClick={() => setActiveFilter('wins')}
             activeColorClass="bg-yellow-500 text-white"
           />
 
-          {organizations.map((org) => (
+          {organizations.map((org, index) => (
             <AwardFilterPill
               key={org.id}
+              index={index + 2}
               label={org.title}
               isActive={activeFilter === org.id}
               onClick={() => setActiveFilter(org.id)}
@@ -299,21 +331,15 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
 
         {/* Award Items List */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeFilter}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-6 flex max-w-[72ch] flex-col gap-3 sm:mt-8"
-          >
-            {filteredItems.map((award) => (
-              <AwardCard key={award.key} award={award} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+        <div
+          key={activeFilter}
+          className="mx-auto mt-6 flex max-w-[72ch] flex-col gap-3 sm:mt-8"
+        >
+          {filteredItems.map((award, index) => (
+            <AwardCard key={`${activeFilter}-${award.key}`} award={award} index={index} />
+          ))}
+        </div>
+      </MediaRouteReveal>
 
       <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
     </section>

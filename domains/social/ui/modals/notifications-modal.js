@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
+import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal/motion';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import {
@@ -24,7 +26,8 @@ import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants/index';
 
-const TOOL_BUTTON_CLASS = 'size-7 rounded-xl transition-colors duration-150 ease-in-out';
+const TOOL_BUTTON_CLASS =
+  'size-7 rounded-xl transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97]';
 const SKELETON_COUNT = 16;
 
 function formatRelativeTime(dateValue) {
@@ -139,13 +142,18 @@ const NotificationContent = memo(function NotificationContent({ type, actor, pay
   }
 });
 
-const NotificationRow = memo(function NotificationRow({ notification, onMarkRead, onDelete }) {
+const NotificationRow = memo(function NotificationRow({ notification, onMarkRead, onDelete, index }) {
   const isUnread = !notification.read;
 
   return (
-    <div
+    <motion.div
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
       className={cn(
-        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors duration-150 ease-in-out last:border-none lg:p-4',
+        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4',
         isUnread ? 'bg-white' : 'hover:bg-white',
       )}
     >
@@ -198,7 +206,7 @@ const NotificationRow = memo(function NotificationRow({ notification, onMarkRead
           <Icon icon="solar:trash-bin-trash-linear" size={16} />
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
@@ -379,27 +387,35 @@ export default function NotificationsModal({ close, header, data }) {
       }}
     >
       <div className="min-h-0 overflow-y-auto">
-        {isLoading ? (
-          Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
-        ) : loadError ? (
-          <div className="center h-52 px-6 text-center text-sm font-medium text-black/50">
-            Notifications could not be loaded. Please try again.
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="center h-screen text-sm font-medium text-black/50">
-            You have no notifications yet
-          </div>
-        ) : (
-          notifications.map((notification, index) => (
-            <NotificationRow
-              key={notification.id}
-              notification={notification}
-              onMarkRead={handleMarkRead}
-              onDelete={handleDelete}
-              index={index}
-            />
-          ))
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {isLoading ? (
+            <motion.div key="loading" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+              {Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)}
+            </motion.div>
+          ) : loadError ? (
+            <motion.div key="error" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit" className="center h-52 px-6 text-center text-sm font-medium text-black/50">
+              Notifications could not be loaded. Please try again.
+            </motion.div>
+          ) : notifications.length === 0 ? (
+            <motion.div key="empty" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit" className="center h-screen text-sm font-medium text-black/50">
+              You have no notifications yet
+            </motion.div>
+          ) : (
+            <motion.div key="notifications" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+              <AnimatePresence initial={false}>
+                {notifications.map((notification, index) => (
+                  <NotificationRow
+                    key={notification.id}
+                    notification={notification}
+                    onMarkRead={handleMarkRead}
+                    onDelete={handleDelete}
+                    index={index}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Container>
   );

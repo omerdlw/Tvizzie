@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 import AccountListCard from './list-card';
 import AccountSectionLayout, {
   AccountInlineSectionState,
@@ -14,12 +13,11 @@ import {
   buildAccountCollectionPageHref,
   formatPaginationSummaryLabel,
 } from '@/domains/account/utils';
-import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
-
+import { AccountReveal } from '@/app/(account)/motion';
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
 export default function AccountPaginatedListGrid({
-  baseDelay = TIMELINES.CARD_BASE_DELAY,
+  baseDelay = 0,
   currentPage = 1,
   emptyMessage = 'No lists yet',
   icon = 'solar:list-broken',
@@ -90,23 +88,20 @@ export default function AccountPaginatedListGrid({
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
             {visibleLists.map((list, index) => {
-              const motionProps = getListCardProps(index, baseDelay, isInitialSection);
               return (
-                <motion.div
+                <AccountReveal
                   key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
-                  initial={motionProps.initial}
-                  animate={isInitialSection ? motionProps.animate : undefined}
-                  whileInView={!isInitialSection ? motionProps.whileInView : undefined}
-                  viewport={!isInitialSection ? motionProps.viewport : undefined}
-                  transition={motionProps.transition}
-                  whileHover={motionProps.whileHover}
+                  deferred
+                  interactive
+                  itemIndex={index}
+                  stage="item.list"
                 >
                   <AccountListCard
                     list={list}
                     ownerUsername={ownerUsername}
                     renderActions={renderActions}
                   />
-                </motion.div>
+                </AccountReveal>
               );
             })}
           </div>

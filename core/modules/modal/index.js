@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -219,10 +219,7 @@ function ModalLayer({
           isVerticalEdgeModal && 'self-stretch',
           isSideModal && isMobileViewport && 'self-stretch',
         )}
-        style={{
-          zIndex: modalZIndex,
-          willChange: 'transform, opacity',
-        }}
+        style={{ zIndex: modalZIndex }}
         onClick={(event) => event.stopPropagation()}
       >
         <div
@@ -233,7 +230,7 @@ function ModalLayer({
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
-                ? 'rounded-[24px]'
+                ? 'rounded-3xl'
                 : activePosition === MODAL_POSITIONS.BOTTOM
                   ? 'rounded-t-[24px]'
                   : activePosition === MODAL_POSITIONS.TOP
@@ -289,7 +286,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-black/15 backdrop-blur-[1px] transition-all duration-200"
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-black/15 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               aria-label="Close active top modal"
             />
           )}
@@ -313,6 +310,20 @@ export default function Modal() {
 
   const [mounted, setMounted] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
+  const [isTopExitSettling, setIsTopExitSettling] = useState(false);
+  const previousTopModalIdRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const currentTopModalId = modalStack[modalStack.length - 1]?.id || null;
+    const previousTopModalId = previousTopModalIdRef.current;
+    const previousTopStillMounted = modalStack.some((entry) => entry.id === previousTopModalId);
+
+    if (previousTopModalId && previousTopModalId !== currentTopModalId && !previousTopStillMounted) {
+      setIsTopExitSettling(true);
+    }
+
+    previousTopModalIdRef.current = currentTopModalId;
+  }, [modalStack]);
 
   useEffect(() => {
     setMounted(true);
@@ -378,20 +389,24 @@ export default function Modal() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-0 bg-white/40 backdrop-blur-sm"
-            style={{ zIndex: Z_INDEX.MODAL, willChange: 'opacity' }}
-            onClick={() => closeModal(null, topModalEntry.id)}
+            className="fixed inset-0 bg-white/40"
+            style={{ zIndex: Z_INDEX.MODAL }}
+            onClick={() => {
+              if (!isTopExitSettling) {
+                closeModal(null, topModalEntry.id);
+              }
+            }}
           />
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence onExitComplete={() => setIsTopExitSettling(false)}>
         {modalStack.map((entry, index) => (
           <ModalLayer
             key={entry.id}
             entry={entry}
             stackIndex={index}
-            isTopModal={index === modalStack.length - 1}
+            isTopModal={index === modalStack.length - 1 && !isTopExitSettling}
             isMobileViewport={isMobileViewport}
             closeModal={closeModal}
             registry={registry}

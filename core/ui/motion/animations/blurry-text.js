@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils';
 
 export function BlurryText({
@@ -49,29 +48,12 @@ export function BlurryText({
                   const itemDelay = delay + charIndex * stagger;
 
                   return (
-                    <motion.span
+                    <span
                       key={`char-${charIndex}`}
-                      initial={{
-                        opacity: 0,
-                        y: initialY,
-                        scale: initialScale,
-                        filter: initialBlur,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        filter: 'blur(0px)',
-                      }}
-                      transition={{
-                        duration,
-                        delay: itemDelay,
-                        ease,
-                      }}
                       className={cn('inline-block', segmentClassName)}
                     >
                       {char}
-                    </motion.span>
+                    </span>
                   );
                 })}
                 {wordIndex < words.length - 1 && <span className="inline-block">&nbsp;</span>}
@@ -81,30 +63,13 @@ export function BlurryText({
         : words.map((word, wordIndex) => {
             const itemDelay = delay + wordIndex * (stagger * 3);
             return (
-              <motion.span
+              <span
                 key={`word-${wordIndex}`}
-                initial={{
-                  opacity: 0,
-                  y: initialY,
-                  scale: initialScale,
-                  filter: initialBlur,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  filter: 'blur(0px)',
-                }}
-                transition={{
-                  duration,
-                  delay: itemDelay,
-                  ease,
-                }}
                 className={cn('inline-block', segmentClassName)}
               >
                 {word}
                 {wordIndex < words.length - 1 && <span className="inline-block">&nbsp;</span>}
-              </motion.span>
+              </span>
             );
           })}
     </Component>

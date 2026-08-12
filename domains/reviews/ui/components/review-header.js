@@ -62,7 +62,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 text-black/70 transition-colors hover:text-black"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:text-black active:scale-[0.97]"
             aria-label="Edit your review"
             title="Edit your review"
           >
@@ -74,7 +74,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onDeleteOwnReview}
-            className="border-error/10 bg-error/10 text-error hover:border-error hover:bg-error inline-flex size-8 shrink-0 items-center justify-center rounded-xl border transition-colors hover:text-white"
+            className="border-error/10 bg-error/10 text-error hover:border-error hover:bg-error inline-flex size-8 shrink-0 items-center justify-center rounded-xl border transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:text-white active:scale-[0.97]"
             aria-label="Delete your review"
             title="Delete your review"
           >
@@ -85,7 +85,7 @@ export default function ReviewHeader({
         {hasAllReviewsLink && (
           <Link
             href={allReviewsHref}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97]"
           >
             <span>All reviews</span>
             <Icon icon="solar:alt-arrow-right-linear" size={14} />
@@ -96,7 +96,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onAddReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1.5 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1.5 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97]"
           >
             <Icon icon="solar:pen-bold" size={13} />
             <span>Add {itemLabel}</span>

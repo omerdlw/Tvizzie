@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 
 import { useToast } from '@/modules/notification';
 import { upsertListReview, upsertMediaReview } from '@/domains/reviews/client';
@@ -283,12 +283,9 @@ export default function ReviewEditorSurface({ close, data }) {
   }
 
   return (
-    <motion.form
+    <form
       id={FORM_ID}
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
       className="flex w-full flex-col gap-2"
     >
       {!isListSubject && (
@@ -296,7 +293,7 @@ export default function ReviewEditorSurface({ close, data }) {
           <RatingSelector value={rating} onChange={setRating} />
         </div>
       )}
-      <motion.div whileFocusWithin={{ scale: 1.006 }} className="relative w-full">
+      <div className="relative w-full">
         <Textarea
           maxLength={REVIEW_MAX_LENGTH}
           value={reviewText}
@@ -308,7 +305,7 @@ export default function ReviewEditorSurface({ close, data }) {
           onChange={handleTextChange}
           className={{
             wrapper:
-              'flex rounded-xl border border-black/5 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
+              'flex rounded-xl border border-black/5 focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
             textarea:
               'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
@@ -320,19 +317,16 @@ export default function ReviewEditorSurface({ close, data }) {
             <span>{trimmedTextLength} chars</span>
           ) : null}
         </div>
-      </motion.div>
+      </div>
 
       <div className={NAV_ACTION_STYLES.row}>
         {!isListSubject && (
-          <motion.button
+          <button
             type="button"
             role="switch"
             aria-checked={isSpoiler}
             disabled={!hasText}
             onClick={handleSpoilerToggle}
-            whileHover={!hasText ? undefined : { scale: 1.012 }}
-            whileTap={!hasText ? undefined : { scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
             className={getNavActionClass({
               isActive: false,
               className: cn(
@@ -346,15 +340,12 @@ export default function ReviewEditorSurface({ close, data }) {
               size={NAV_ACTION_STYLES.icon}
             />
             <span>{isSpoiler && hasText ? 'Contains Spoilers' : 'Mark as Spoiler'}</span>
-          </motion.button>
+          </button>
         )}
-        <motion.button
+        <button
           type="submit"
           form={FORM_ID}
           disabled={isSaving || Boolean(validationError)}
-          whileHover={isSaving || Boolean(validationError) ? undefined : { scale: 1.012 }}
-          whileTap={isSaving || Boolean(validationError) ? undefined : { scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           className={getNavActionClass({
             isActive: true,
             className: cn(
@@ -363,15 +354,7 @@ export default function ReviewEditorSurface({ close, data }) {
             ),
           })}
         >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={isSaving ? 'saving' : 'normal'}
-              initial={{ opacity: 0, y: 3 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -3 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
-              className="flex items-center gap-2"
-            >
+          <span className="flex items-center gap-2">
               <Icon
                 icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
                 size={NAV_ACTION_STYLES.icon}
@@ -386,10 +369,9 @@ export default function ReviewEditorSurface({ close, data }) {
                       reviewText,
                     })}
               </span>
-            </motion.span>
-          </AnimatePresence>
-        </motion.button>
+          </span>
+        </button>
       </div>
-    </motion.form>
+    </form>
   );
 }

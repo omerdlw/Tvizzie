@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import {
   createMediaMetadata,
+  delayMediaSkeletonPreview,
   loadMediaRouteData,
 } from '@/domains/media/server/title-route.server';
 import {
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default async function PersonDetailPage({ params }) {
+export default async function PersonDetailPage({ params, searchParams }) {
+  await delayMediaSkeletonPreview(searchParams);
   const { id, media: person, response } = await loadMediaRouteData(params, getPersonBase);
 
   if (!person || response.status === 404) {

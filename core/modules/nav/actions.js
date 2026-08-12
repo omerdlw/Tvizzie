@@ -214,6 +214,7 @@ export const NavAction = memo(function NavAction({ action }) {
         className="center relative cursor-pointer rounded-[10px] p-1 text-black/70 hover:bg-black/5 hover:text-black"
         onClick={action.onClick}
         type="button"
+        whileHover={{ y: -1, scale: 1.035 }}
         whileTap={{ scale: NAV_TAP_SCALE }}
         transition={NAV_BUTTON_TRANSITION}
       >

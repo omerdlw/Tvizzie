@@ -2,11 +2,12 @@
 
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
 
-const S = 'skeleton-block animate-pulse';
-const SOFT = 'skeleton-block-soft animate-pulse';
+const S = 'skeleton-block';
+const SOFT = 'skeleton-block-soft';
 
-const HEADER_PADDING_CLASS = 'p-4';
+const HEADER_PADDING_CLASS = 'min-h-14 px-4';
 const CONTENT_PADDING_CLASS = 'p-6';
+const TOOLBAR_PADDING_CLASS = 'p-4';
 
 /** The loading state uses the same full-width bands and rules as AccountSectionLayout. */
 function SectionSkeleton({
@@ -49,7 +50,7 @@ function SectionSkeleton({
         ) : null}
         {toolbar ? (
           <div
-            className={`relative ${HEADER_PADDING_CLASS} ${
+            className={`relative ${TOOLBAR_PADDING_CLASS} ${
               !isInitialSection ? 'border-b border-black/10' : ''
             }`}
           >
@@ -132,28 +133,45 @@ export function ActivityItemsSkeletonList({ count = 6 }) {
 }
 
 function SingleListCardSkeleton({ delay = 0 }) {
+  const previewPosters = [0, 1, 2, 3, 4].map((index) => {
+    const distanceFromCenter = Math.abs(index - 2);
+    const normalizedPosition = (index / 4) * 2 - 1;
+
+    return {
+      opacity: distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.64 : 0.36,
+      scale: distanceFromCenter === 0 ? 1.05 : distanceFromCenter === 1 ? 0.95 : 0.88,
+      x: -76 + index * 38,
+      y: 6 + (-16 * (1 - distanceFromCenter / 2) || 0),
+      zIndex: 10 - distanceFromCenter,
+      rotate: normalizedPosition * 10,
+    };
+  });
+
   return (
     <article className="relative w-full" style={{ animationDelay: `${delay}ms` }}>
-      <div className="relative h-[232px] w-full overflow-hidden bg-white/40">
-        <div className="absolute inset-0 flex items-center justify-center">
-          {[-76, -38, 0, 38, 76].map((offset, index) => (
+      <div className="relative h-[232px] w-full rounded-2xl border border-black/10 bg-white/40">
+        <div className="absolute inset-0">
+          {previewPosters.map((poster, index) => (
             <div
               key={index}
-              className={`absolute h-[156px] w-[98px] bg-black/[0.08] ${S}`}
+              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden rounded-xl border border-black/10 bg-black/[0.08]"
               style={{
-                transform: `translateX(${offset}px) rotate(${(index - 2) * 10}deg)`,
-                zIndex: 5 - Math.abs(index - 2),
+                opacity: poster.opacity,
+                transform: `translateX(calc(-50% + ${poster.x}px)) translateY(${poster.y}px) rotate(${poster.rotate}deg) scale(${poster.scale})`,
+                zIndex: poster.zIndex,
                 animationDelay: `${delay + index * 45}ms`,
               }}
             />
           ))}
         </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 min-h-[124px] overflow-hidden bg-white p-4">
-        <div className={`h-5 w-2/3 ${S}`} />
-        <div className={`mt-2 h-3.5 w-full ${SOFT}`} />
-        <div className={`mt-1.5 h-3.5 w-4/5 ${SOFT}`} />
-        <div className="mt-3 flex h-11 items-center justify-between pt-3">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-2xl border border-black/10 bg-white">
+        <div className="px-4 py-4">
+          <div className={`h-5 w-2/3 ${S}`} />
+          <div className={`mt-2 h-3.5 w-full ${SOFT}`} />
+          <div className={`mt-1.5 h-3.5 w-4/5 ${SOFT}`} />
+        </div>
+        <div className="flex h-11 items-center justify-between border-t border-black/10 px-3">
           <div className={`h-3 w-24 ${SOFT}`} />
           <div className={`h-3 w-20 ${SOFT}`} />
         </div>
@@ -255,16 +273,25 @@ export function AccountListDetailSkeleton() {
 export function AccountOverviewSkeleton() {
   return (
     <div className="w-full">
-      <SectionSkeleton titleWidth="w-24" isInitialSection={true}>
+      <SectionSkeleton summary={false} titleWidth="w-24" isInitialSection>
+        <PosterCardsSkeletonRow count={5} wideGrid={false} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-28" isInitialSection={false}>
         <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-36" isInitialSection={false}>
-        <ActivityItemsSkeletonList count={6} />
+      <SectionSkeleton titleWidth="w-24" isInitialSection={false}>
+        <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-20" isInitialSection={false}>
+      <SectionSkeleton titleWidth="w-14" isInitialSection={false}>
+        <PosterCardsSkeletonRow count={6} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-16" isInitialSection={false}>
         <ListCardsSkeletonGrid count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-32" isInitialSection={false}>
+      <SectionSkeleton titleWidth="w-28" isInitialSection={false}>
+        <ActivityItemsSkeletonList count={6} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-28" isInitialSection={false}>
         <ReviewCardsSkeletonList count={6} />
       </SectionSkeleton>
     </div>

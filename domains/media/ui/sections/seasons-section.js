@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import SegmentedControl from '@/ui/primitives/segmented-control';
@@ -11,13 +10,7 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import {
-  getCarouselButtonProps,
-  getMediaCardProps,
-  getSectionHeaderProps,
-  TIMELINES,
-} from '@/app/(media)/motion';
-
+import { MediaRouteReveal } from '@/app/(media)/motion';
 function normalizeSeasonDetails(seasonDetails = []) {
   return new Map(
     (Array.isArray(seasonDetails) ? seasonDetails : [])
@@ -82,7 +75,7 @@ function buildSeasonTabs(seasons, detailsBySeason) {
 export default function TvSeasonsSection({
   seasonDetails = [],
   seasons = [],
-  baseDelay = TIMELINES.TV_SEASONS_SECTION_BASE_DELAY,
+  baseDelay = 0,
 }) {
   const detailsBySeason = useMemo(() => normalizeSeasonDetails(seasonDetails), [seasonDetails]);
   const seasonTabs = useMemo(
@@ -119,8 +112,7 @@ export default function TvSeasonsSection({
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <motion.div
-        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'seasons')}
+      <div
         className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -140,17 +132,20 @@ export default function TvSeasonsSection({
             onChange={handleTabChange}
           />
         </div>
-      </motion.div>
+      </div>
 
       <div key={`tv-season-${activeSeason.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+        <Carousel gap="gap-3">
           {episodes.map((episode, index) => (
-            <motion.div
+            <MediaRouteReveal
               key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
-              {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'seasons')}
+              stage="items.seasons"
+              deferred
+              interactive
+              itemIndex={index}
             >
               <EpisodeCard episode={episode} index={index} />
-            </motion.div>
+            </MediaRouteReveal>
           ))}
         </Carousel>
       </div>

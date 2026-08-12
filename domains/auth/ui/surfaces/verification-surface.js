@@ -18,7 +18,6 @@ import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { Spinner } from '@/ui/feedback/spinner';
 
-import { motion, AnimatePresence } from 'framer-motion';
 
 function dismissSurface(close) {
   if (typeof close === 'function') {
@@ -85,13 +84,10 @@ function OtpBoxes({
           const isActive = isFocused && activeIndex === index;
 
           return (
-            <motion.div
+            <div
               key={`otp-box-${index}`}
-              animate={{ scale: isActive ? 1.04 : 1 }}
-              whileHover={{ scale: 1.04 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 25 }}
               className={cn(
-                'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70 transition-colors duration-200 hover:text-black',
+                'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70-colors hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/30 bg-error/15 text-error hover:border-error/20 hover:bg-error/20 border',
@@ -103,24 +99,20 @@ function OtpBoxes({
                   'border-success/30 bg-success/15 text-success hover:border-success/20 hover:bg-success/20 border',
               )}
             >
-              <AnimatePresence mode="wait">
+              
                 {digit ? (
-                  <motion.span
+                  <span
                     key={`digit-${digit}`}
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.6, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                   >
                     {digit}
-                  </motion.span>
+                  </span>
                 ) : (
                   <span key="empty" className="invisible">
                     0
                   </span>
                 )}
-              </AnimatePresence>
-            </motion.div>
+              
+            </div>
           );
         })}
       </div>
@@ -213,7 +205,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       try {
         const challenge = await requestVerificationCode({
           email,
-          initial: isInitial,
+          isInitial,
           identifier,
           forceNew: !isInitial || (isInitial && forceNewCodeOnOpen),
           purpose,
@@ -540,7 +532,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       {statusMessage ? (
         <div
           className={cn(
-            'rounded-2xl border px-3.5 py-2.5 text-center text-xs font-semibold transition-all duration-200',
+            'rounded-2xl border px-3.5 py-2.5 text-center text-xs font-semibold-all ',
             isStatusError
               ? 'bg-error/10 text-error border-error/20'
               : 'bg-success/10 text-success border-success/20',
@@ -554,7 +546,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
       <div className="flex flex-col gap-2.5">
         <button
-          className="center hover:bg-info h-11 w-full flex-auto rounded-2xl border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
+          className="center hover:bg-info h-11 w-full flex-auto rounded-2xl border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"
@@ -573,7 +565,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3.5 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-150',
+              'flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3.5 text-left text-xs font-semibold tracking-wider uppercase-colors ',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
@@ -582,7 +574,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center size-4 shrink-0 rounded-md border transition-colors',
+                'center size-4 shrink-0 rounded-md border-colors',
                 rememberDevice
                   ? 'border-success/40 bg-success text-white'
                   : 'border-black/20 bg-transparent text-transparent',

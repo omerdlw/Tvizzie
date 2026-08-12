@@ -6,7 +6,7 @@ import { TMDB_IMG } from '@/shared/constants';
 import { AuthGate } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import { Button, Select } from '@/ui/primitives';
 import ReviewAuthFallback from '../components/review-auth-fallback';
 import ReviewHeader from '../components/review-header';
@@ -37,6 +37,8 @@ export default function MediaReviews({
   hideWhenEmpty = false,
   showComposer = false,
   onReviewStateChange,
+  motionStage = null,
+  motionDeferred = false,
 }) {
   const [sortMode, setSortMode] = useState(defaultSortMode);
   const searchParams = useSearchParams();
@@ -268,6 +270,8 @@ export default function MediaReviews({
               showOwnActions={false}
               sortedReviews={displayedReviews}
               userProfile={userProfile}
+              motionStage={motionStage}
+              motionDeferred={motionDeferred}
             />
           </div>
         )}

@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import AccountListCard from '@/domains/account/ui/components/lists/list-card';
 import Icon from '@/ui/primitives/icon';
 import {
@@ -8,7 +7,7 @@ import {
   AccountInlineSectionLoading,
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
-import { getListCardProps } from '@/app/(account)/motion';
+import { AccountReveal } from '@/app/(account)/motion';
 const OVERVIEW_LIST_LIMIT = 6;
 export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
@@ -40,15 +39,14 @@ export default function AccountListsOverview({
       ) : visibleLists.length > 0 ? (
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {visibleLists.map((list, index) => {
-            const listProps = getListCardProps(index);
+
             return (
-              <motion.div
+              <AccountReveal
                 key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
-                initial={listProps.initial}
-                whileInView={listProps.whileInView}
-                viewport={listProps.viewport}
-                transition={listProps.transition}
-                whileHover={listProps.whileHover}
+                deferred
+                interactive
+                itemIndex={index}
+                stage="item.list"
               >
                 <AccountListCard
                   list={list}
@@ -91,7 +89,7 @@ export default function AccountListsOverview({
                       : null
                   }
                 />
-              </motion.div>
+              </AccountReveal>
             );
           })}
         </div>

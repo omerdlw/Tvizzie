@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
@@ -10,16 +9,10 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import {
-  getCarouselButtonProps,
-  getMediaCardProps,
-  getSectionHeaderProps,
-  TIMELINES,
-} from '@/app/(media)/motion';
-
+import { MediaRouteReveal } from '@/app/(media)/motion';
 export default function GallerySection({
   images,
-  baseDelay = TIMELINES.GALLERY_SECTION_BASE_DELAY,
+  baseDelay = 0,
 }) {
   const { openModal } = useModal();
   if (!images?.length) {
@@ -28,8 +21,7 @@ export default function GallerySection({
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <motion.div
-        {...getSectionHeaderProps(baseDelay, false, 'gallery')}
+      <div
         className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -38,15 +30,18 @@ export default function GallerySection({
             Gallery
           </h2>
         </div>
-      </motion.div>
+      </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+        <Carousel gap="gap-3">
           {images.map((image, index) => {
             return (
-              <motion.div
+              <MediaRouteReveal
                 key={image.file_path || index}
-                {...getMediaCardProps(index, baseDelay, false, 'gallery')}
+                stage="items.gallery"
+                deferred
+                interactive
+                itemIndex={index}
               >
                 <MediaCard
                   imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}
@@ -65,7 +60,7 @@ export default function GallerySection({
                   data-backdrop-file-path={image.file_path || ''}
                   data-context-menu-target="movie-backdrop-card"
                 />
-              </motion.div>
+              </MediaRouteReveal>
             );
           })}
         </Carousel>

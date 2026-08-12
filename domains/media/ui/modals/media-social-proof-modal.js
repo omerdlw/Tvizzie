@@ -3,13 +3,13 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-
 import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
 } from '@/domains/account/utils';
 import { Container } from '@/modules/modal';
+import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal/motion';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
@@ -63,19 +63,15 @@ function formatActionSummary(actions = []) {
   return actions.map((item) => item.toUpperCase()).join(' • ');
 }
 
-const SocialUserRow = memo(function SocialUserRow({ close, user, actions }) {
+const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index }) {
   const username = user?.username || 'user';
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.008, x: 2 }}
-      whileTap={{ scale: 0.985 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-    >
+    <motion.div variants={MODAL_LIST_ITEM_VARIANTS} custom={index} initial="hidden" animate="visible">
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border-b border-black/5 p-3 transition-colors duration-200 last:border-none hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
       >
         <div className="center size-10 shrink-0 overflow-hidden rounded-xl border border-black/5">
           <AdaptiveImage
@@ -115,7 +111,7 @@ export default function MediaSocialProofModal({ close, data }) {
 
   return (
     <Container
-      className="relative max-h-[85vh] w-[min(92vw,560px)] rounded-[24px]"
+      className="relative max-h-[85vh] w-[min(92vw,560px)] rounded-3xl"
       close={close}
       header={{
         left: (
@@ -130,16 +126,17 @@ export default function MediaSocialProofModal({ close, data }) {
       bodyClassName="p-0"
     >
       {userEntries.length > 0 ? (
-        <div className="flex flex-col">
+        <motion.div variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" className="flex flex-col">
           {userEntries.map(({ user, actions }, index) => (
             <SocialUserRow
               key={user.id || user.username || index}
               close={close}
               user={user}
               actions={actions}
+              index={index}
             />
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="center flex-col gap-2 p-8 text-center">
           <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-black/30" />

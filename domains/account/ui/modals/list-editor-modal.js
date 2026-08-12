@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useCallback, memo, useMemo } from 'react';
-import { motion } from 'framer-motion';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
+import {
+  MODAL_LIST_ITEM_VARIANTS,
+  MODAL_LIST_VARIANTS,
+  MODAL_MICRO_TAP_SCALE,
+} from '@/modules/modal/motion';
 import { useToast } from '@/modules/notification';
 import { createUserList, toggleUserListItem, updateUserList } from '@/domains/media/client/collections/lists';
 import { Input, Textarea } from '@/ui/primitives';
@@ -34,10 +38,12 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
   const title = getItemTitle(item);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
-      className="group bg-primary flex min-h-10 items-center gap-3 rounded-xl border border-black/5 px-3 py-1.5 transition-colors duration-150 hover:border-black/10"
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="group bg-primary flex min-h-10 items-center gap-3 rounded-xl border border-black/5 px-3 py-1.5 transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/10"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
@@ -45,11 +51,9 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
 
       <motion.button
         type="button"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer rounded-lg border border-transparent text-black/35 opacity-100 transition-colors duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer rounded-lg border border-transparent text-black/35 opacity-100 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
@@ -162,24 +166,18 @@ export default function ListEditorModal({ close, data, header }) {
         ),
         right: (
           <div className="flex items-center gap-2 overflow-visible p-0.5">
-            <motion.button
+            <button
               type="button"
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={close}
               disabled={isSaving}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="submit"
               form={FORM_ID}
               disabled={isSaving || !canSubmit}
-              whileHover={isSaving || !canSubmit ? undefined : { scale: 1.012 }}
-              whileTap={isSaving || !canSubmit ? undefined : { scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               className={ACTION_BUTTON_CLASS}
             >
               {isSaving
@@ -189,7 +187,7 @@ export default function ListEditorModal({ close, data, header }) {
                 : isEditing
                   ? 'Update list'
                   : 'Create list'}
-            </motion.button>
+            </button>
           </div>
         ),
       }}
@@ -203,7 +201,7 @@ export default function ListEditorModal({ close, data, header }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-10 items-center rounded-xl border border-black/10 bg-black/5 px-3.5 transition-colors duration-150 ease-linear focus-within:border-black/20',
+                'flex h-10 items-center rounded-xl border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
               input:
                 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
             }}
@@ -215,7 +213,7 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={120}
             className={{
               wrapper:
-                'flex min-h-10 rounded-xl border border-black/10 bg-black/5 px-3.5 py-2.5 transition-colors duration-150 ease-linear focus-within:border-black/20 sm:min-h-10',
+                'flex min-h-10 rounded-xl border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
               textarea:
                 'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
             }}
@@ -229,14 +227,18 @@ export default function ListEditorModal({ close, data, header }) {
             className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
           >
             {draftItems.length > 0 ? (
-              draftItems.map((item, index) => (
-                <ListItemRow
-                  key={getItemKey(item)}
-                  index={index}
-                  item={item}
-                  onRemove={handleRemoveItem}
-                />
-              ))
+              <motion.div variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible">
+                <AnimatePresence initial={false}>
+                  {draftItems.map((item, index) => (
+                    <ListItemRow
+                      key={getItemKey(item)}
+                      index={index}
+                      item={item}
+                      onRemove={handleRemoveItem}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
             ) : (
               <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/10 bg-black/5 text-center">
                 <Icon icon="solar:list-broken" size={24} className="text-black/50" />

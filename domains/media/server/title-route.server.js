@@ -5,6 +5,26 @@ import { notFound } from 'next/navigation';
 import { getMediaComputedData } from '@/domains/media/services/media-data';
 import { TMDB_IMG } from '@/shared/constants';
 
+const SKELETON_PREVIEW_DELAY_MS = 2500;
+
+/** Development-only route fallback preview. Use ?skeleton=1 on a media detail URL. */
+export async function delayMediaSkeletonPreview(searchParams) {
+  if (process.env.NODE_ENV !== 'development') {
+    return;
+  }
+
+  const resolvedSearchParams = (await searchParams) || {};
+  const previewValue = Array.isArray(resolvedSearchParams.skeleton)
+    ? resolvedSearchParams.skeleton[0]
+    : resolvedSearchParams.skeleton;
+
+  if (previewValue !== '1') {
+    return;
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, SKELETON_PREVIEW_DELAY_MS));
+}
+
 export function getMediaTitle(media = {}) {
   return media?.title || media?.original_title || media?.name || media?.original_name || 'Untitled';
 }
@@ -109,7 +129,8 @@ export function createTitleDetailRoute({ Client, fallbackTitle, getBase, getSeco
       if (isMissingMedia(media, response, isDisplayable)) return { title: fallbackTitle };
       return createTitleDetailMetadata(media, { fallbackTitle, openGraphType });
     },
-    async Page({ params }) {
+    async Page({ params, searchParams }) {
+      await delayMediaSkeletonPreview(searchParams);
       const { id, media, response } = await loadMediaRouteData(params, getBase);
       if (isMissingMedia(media, response, isDisplayable)) notFound();
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { createContext, forwardRef, useContext, useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { Description, Icon as BadgeIcon, Title } from '@/modules/nav/elements';
 import {
+  NAV_FADE_TRANSITION,
   NAV_MICRO_TRANSITION,
   NAV_SURFACE_TRANSITION,
   NAV_TAP_SCALE,
@@ -34,9 +35,14 @@ export function NavSurfaceHeader({
   return (
     <div className={cn('relative flex w-full items-center gap-3', hasClose && 'pr-10', className)}>
       {icon ? (
-        <div className="center relative shrink-0">
+        <motion.div
+          className="center relative shrink-0"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...NAV_MICRO_TRANSITION, delay: 0.08 }}
+        >
           <BadgeIcon icon={icon} />
-        </div>
+        </motion.div>
       ) : null}
 
       <div className="relative flex min-w-0 flex-1 items-center justify-between gap-3 overflow-hidden">
@@ -103,21 +109,34 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
         ref={ref}
         className={cn('relative flex flex-col gap-3 overflow-visible', className)}
         variants={slideFadeVariants}
-        initial="hidden"
+        initial={false}
         animate="visible"
         exit="exit"
         transition={NAV_SURFACE_TRANSITION}
       >
-        <NavSurfaceHeader
-          descriptionMaxLines={descriptionMaxLines}
-          description={headerState.description}
-          trailing={headerState.trailing}
-          title={headerState.title}
-          icon={headerState.icon}
-          closeLabel={closeLabel}
-          onClose={onClose}
-        />
-        <div className={cn('w-full overflow-visible p-0.5', contentClassName)}>{children}</div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={NAV_FADE_TRANSITION}
+        >
+          <NavSurfaceHeader
+            descriptionMaxLines={descriptionMaxLines}
+            description={headerState.description}
+            trailing={headerState.trailing}
+            title={headerState.title}
+            icon={headerState.icon}
+            closeLabel={closeLabel}
+            onClose={onClose}
+          />
+        </motion.div>
+        <motion.div
+          className={cn('w-full overflow-visible p-0.5', contentClassName)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ ...NAV_FADE_TRANSITION, delay: 0.08 }}
+        >
+          {children}
+        </motion.div>
       </motion.section>
     </SurfaceHeaderContext.Provider>
   );

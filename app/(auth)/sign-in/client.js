@@ -32,24 +32,12 @@ import {
   PasswordToggleButton,
 } from '@/domains/auth/ui';
 import { Button, Input } from '@/ui/primitives';
-import {
-  SIGN_IN_TIMELINE,
-  signInDividerVariants,
-  signInFieldVariants,
-  signInFooterVariants,
-  signInHeaderVariants,
-  signInLogoVariants,
-  signInOAuthContainerVariants,
-  signInOAuthItemVariants,
-  signInPageVariants,
-  signInTitleVariants,
-} from '@/app/(auth)/motion';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import AuthRegistry from '@/app/(auth)/registry';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AuthReveal, AuthScene } from '@/app/(auth)/motion';
 import Link from 'next/link';
 
 export default function Client() {
@@ -446,35 +434,26 @@ function View({
 
   return (
     <AuthPageShell>
-      <AnimatePresence mode="wait">
+      <AuthScene sceneKey={isResetMode ? 'password-reset' : 'sign-in'}>
         {isResetMode ? (
-          <motion.form
-            key="reset-mode-form"
+          <form
             onSubmit={handleResetSubmit}
             className={AUTH_PAGE_FORM_CLASS}
-            variants={signInPageVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
           >
-            <motion.div variants={signInHeaderVariants} className="text-center">
-              <motion.h1
-                custom={SIGN_IN_TIMELINE.RESET_TITLE_DELAY}
-                variants={signInTitleVariants}
+            <AuthReveal className="text-center" stage="heading">
+              <h1
                 className="text-3xl font-semibold sm:text-4xl"
               >
                 Reset Password
-              </motion.h1>
-              <motion.p
-                custom={SIGN_IN_TIMELINE.RESET_TITLE_DELAY + 0.12}
-                variants={signInTitleVariants}
+              </h1>
+              <p
                 className="mt-2 text-base text-black/50"
               >
                 {resetFlow.email}
-              </motion.p>
-            </motion.div>
+              </p>
+            </AuthReveal>
 
-            <motion.div custom={SIGN_IN_TIMELINE.RESET_FIELD_DELAY} variants={signInFieldVariants}>
+            <AuthReveal itemIndex={0} stage="field">
               <Input
                 id="reset-password"
                 type={showResetPassword ? 'text' : 'password'}
@@ -495,12 +474,9 @@ function View({
                   />
                 }
               />
-            </motion.div>
+            </AuthReveal>
 
-            <motion.div
-              custom={SIGN_IN_TIMELINE.RESET_CONFIRM_DELAY}
-              variants={signInFieldVariants}
-            >
+            <AuthReveal itemIndex={1} stage="field">
               <Input
                 id="reset-password-confirmation"
                 type={showResetConfirmPassword ? 'text' : 'password'}
@@ -523,13 +499,9 @@ function View({
                   />
                 }
               />
-            </motion.div>
+            </AuthReveal>
 
-            <motion.div
-              custom={SIGN_IN_TIMELINE.RESET_ACTION_DELAY}
-              variants={signInFieldVariants}
-              className="grid gap-2 sm:grid-cols-2"
-            >
+            <AuthReveal className="grid gap-2 sm:grid-cols-2" stage="submit">
               <Button
                 type="button"
                 onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
@@ -545,28 +517,15 @@ function View({
               >
                 {resetFlow.isSubmitting ? 'Resetting' : 'Reset'}
               </Button>
-            </motion.div>
-          </motion.form>
+            </AuthReveal>
+          </form>
         ) : (
-          <motion.form
-            key="sign-in-form"
+          <form
             onSubmit={handleSubmit}
             className={AUTH_PAGE_FORM_CLASS}
-            variants={signInPageVariants}
-            initial={false}
-            animate="visible"
-            exit="exit"
           >
-            <motion.div
-              variants={signInHeaderVariants}
-              className="flex flex-col items-center text-center"
-            >
-              <motion.div
-                custom={SIGN_IN_TIMELINE.LOGO_DELAY}
-                variants={signInLogoVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
+            <div className="flex flex-col items-center text-center">
+              <AuthReveal stage="brand">
                 <Link
                   href="/"
                   className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
@@ -576,20 +535,16 @@ function View({
                     alt="Tvizzie"
                     width={64}
                     height={64}
-                    className="size-16"
+                  className="size-16"
                   />
                 </Link>
-              </motion.div>
-              <motion.h1
-                custom={SIGN_IN_TIMELINE.TITLE_DELAY}
-                variants={signInTitleVariants}
-                className="text-2xl font-semibold sm:text-3xl"
-              >
-                Welcome back
-              </motion.h1>
-            </motion.div>
+              </AuthReveal>
+              <AuthReveal stage="heading">
+                <h1 className="text-2xl font-semibold sm:text-3xl">Welcome back</h1>
+              </AuthReveal>
+            </div>
 
-            <motion.div custom={SIGN_IN_TIMELINE.IDENTIFIER_DELAY} variants={signInFieldVariants}>
+            <AuthReveal itemIndex={0} stage="field">
               <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
                 <Input
                   id="sign-in-identifier"
@@ -600,9 +555,9 @@ function View({
                   classNames={AUTH_INPUT_CLASSNAMES}
                 />
               </AuthField>
-            </motion.div>
+            </AuthReveal>
 
-            <motion.div custom={SIGN_IN_TIMELINE.PASSWORD_DELAY} variants={signInFieldVariants}>
+            <AuthReveal itemIndex={1} stage="field">
               <AuthField htmlFor="sign-in-password" label="Password">
                 <Input
                   id="sign-in-password"
@@ -620,9 +575,9 @@ function View({
                   }
                 />
               </AuthField>
-            </motion.div>
+            </AuthReveal>
 
-            <motion.div custom={SIGN_IN_TIMELINE.SUBMIT_DELAY} variants={signInFieldVariants}>
+            <AuthReveal stage="submit">
               <Button
                 type="submit"
                 disabled={isSignInBusy}
@@ -630,46 +585,41 @@ function View({
               >
                 {isPasswordSubmitting ? 'Logging in' : 'Log In'}
               </Button>
-            </motion.div>
+            </AuthReveal>
 
-            <motion.div
-              custom={SIGN_IN_TIMELINE.DIVIDER_DELAY}
-              variants={signInDividerVariants}
-              className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]"
-            >
+            <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
               <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
               <div className="h-px grow bg-black/10" />
-              <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+              <AuthReveal stage="divider">
+                <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+              </AuthReveal>
               <div className="h-px grow bg-black/10" />
               <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
-            </motion.div>
+            </div>
 
-            <OAuthProviderList
-              activeProvider={activeOAuthProvider}
-              containerVariants={signInOAuthContainerVariants}
-              disabled={isSignInBusy}
-              itemDelay={SIGN_IN_TIMELINE.OAUTH_DELAY}
-              itemVariants={signInOAuthItemVariants}
-              mode="sign-in"
-              onSelect={handleOAuthSignIn}
-            />
+            <AuthReveal stage="oauth">
+              <OAuthProviderList
+                activeProvider={activeOAuthProvider}
+                disabled={isSignInBusy}
+                mode="sign-in"
+                onSelect={handleOAuthSignIn}
+              />
+            </AuthReveal>
 
-            <motion.p
-              custom={SIGN_IN_TIMELINE.FOOTER_DELAY}
-              variants={signInFooterVariants}
-              className="mt-2 text-center text-sm font-medium text-black/50"
-            >
-              Don&apos;t have an account?{' '}
-              <Link
-                href={signUpHref}
-                className="rounded px-1 text-black hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
-              >
-                Sign Up
-              </Link>
-            </motion.p>
-          </motion.form>
+            <AuthReveal className="mt-2 text-center text-sm font-medium text-black/50" stage="footer">
+              <p>
+                Don&apos;t have an account?{' '}
+                <Link
+                  href={signUpHref}
+                  className="inline-block rounded px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+                >
+                  Sign Up
+                </Link>
+              </p>
+            </AuthReveal>
+          </form>
         )}
-      </AnimatePresence>
+      </AuthScene>
     </AuthPageShell>
   );
 }

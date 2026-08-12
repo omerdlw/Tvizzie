@@ -64,11 +64,10 @@ export function getItemKey(link, index = 0) {
   const pathPart = String(link?.path || '').trim() || 'no-path';
   const namePart = String(link?.name || '').trim() || 'no-name';
   const typePart = String(link?.type || '').trim() || 'no-type';
-  const surfacePart = link?.isSurface
-    ? `surface::${link?.id || link?.surfaceTitle || 'open'}`
-    : 'base';
 
-  return `${pathPart}::${namePart}::${typePart}::${surfacePart}:${index}`;
+  // A surface replaces the active item's content, not the item itself. Keeping
+  // this identity stable lets the surface's AnimatePresence boundary play its exit.
+  return `${pathPart}::${namePart}::${typePart}:${index}`;
 }
 
 export function getIsItemActive(link, activeItem) {

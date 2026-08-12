@@ -9,7 +9,6 @@ import AccountWatchlistOverview from '@/domains/account/ui/sections/overview/wat
 import { AccountPageShell } from '@/domains/account/ui/layouts/account-layout';
 import { ProfileMediaActions } from '@/domains/account/ui/components/account-media-grid';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
-import { TIMELINES } from '@/app/(account)/motion';
 
 const LIMITS = { activity: 6, media: 6, favorites: 5, lists: 6 };
 
@@ -124,7 +123,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               (() => {
                 const index = sectionCounter++;
                 const isInitial = index === 0;
-                const baseDelay = isInitial ? TIMELINES.FIRST_SECTION_BASE_DELAY + 0.06 : undefined;
+                const baseDelay = isInitial ? 0.06 : undefined;
                 return (
                   <AccountFavoritesOverview
                     key="section-favorites"
@@ -154,7 +153,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               (() => {
                 const index = sectionCounter++;
                 const isInitial = index === 0;
-                const baseDelay = isInitial ? TIMELINES.FIRST_SECTION_BASE_DELAY + 0.06 : undefined;
+                const baseDelay = isInitial ? 0.06 : undefined;
                 return (
                   <AccountWatchlistOverview
                     key="section-watchlist"
@@ -187,7 +186,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               (() => {
                 const index = sectionCounter++;
                 const isInitial = index === 0;
-                const baseDelay = isInitial ? TIMELINES.FIRST_SECTION_BASE_DELAY + 0.06 : undefined;
+                const baseDelay = isInitial ? 0.06 : undefined;
                 return (
                   <AccountWatchedOverview
                     key="section-watched"
@@ -219,7 +218,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               (() => {
                 const index = sectionCounter++;
                 const isInitial = index === 0;
-                const baseDelay = isInitial ? TIMELINES.FIRST_SECTION_BASE_DELAY + 0.06 : undefined;
+                const baseDelay = isInitial ? 0.06 : undefined;
                 return (
                   <AccountFavoritesOverview
                     key="section-likes"

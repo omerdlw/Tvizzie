@@ -2,7 +2,6 @@
 
 import { useEffect, useState, memo } from 'react';
 import { motion } from 'framer-motion';
-
 import { TMDB_IMG } from '@/shared/constants';
 import { useAuthSessionReady } from '@/modules/auth';
 import {
@@ -11,6 +10,11 @@ import {
   ACTION_BUTTON_CLASS,
   useModalActions,
 } from '@/modules/modal';
+import {
+  MODAL_LIST_ITEM_VARIANTS,
+  MODAL_LIST_VARIANTS,
+  MODAL_MICRO_TAP_SCALE,
+} from '@/modules/modal/motion';
 import { useToast } from '@/modules/notification';
 import {
   getUserListMemberships,
@@ -99,13 +103,13 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
     <motion.button
       type="button"
       onClick={onToggle}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
-      whileHover={{ x: 2 }}
-      whileTap={{ scale: 0.985 }}
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       className={cn(
-        'group flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-colors duration-200',
+        'group flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-[background-color,border-color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
         isSelected
           ? 'bg-info/10 border-info/20'
           : 'hover:bg-primary border-black/5 hover:border-black/10',
@@ -314,17 +318,14 @@ export default function ListPickerModal({ close, data }) {
         ),
         right: (
           <div className="overflow-visible p-0.5">
-            <motion.button
+            <button
               type="button"
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={handleOpenCreator}
               disabled={isApplying}
               className={CANCEL_BUTTON_CLASS}
             >
               Create new list
-            </motion.button>
+            </button>
           </div>
         ),
       }}
@@ -338,28 +339,22 @@ export default function ListPickerModal({ close, data }) {
         ),
         right: (
           <div className="flex items-center gap-2 overflow-visible p-0.5">
-            <motion.button
+            <button
               type="button"
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={close}
               disabled={isApplying}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="button"
-              whileHover={isApplying || !hasPendingChanges ? undefined : { scale: 1.012 }}
-              whileTap={isApplying || !hasPendingChanges ? undefined : { scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
               className={ACTION_BUTTON_CLASS}
             >
               {isApplying ? 'Applying' : 'Apply changes'}
-            </motion.button>
+            </button>
           </div>
         ),
       }}
@@ -378,7 +373,12 @@ export default function ListPickerModal({ close, data }) {
               </p>
             </div>
           ) : (
-            <div className="space-y-2.5 overflow-visible p-1">
+            <motion.div
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              className="space-y-2.5 overflow-visible p-1"
+            >
               {lists.map((list, index) => (
                 <ListRow
                   key={list.id}
@@ -388,7 +388,7 @@ export default function ListPickerModal({ close, data }) {
                   onToggle={() => handleToggleDraft(list.id)}
                 />
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>

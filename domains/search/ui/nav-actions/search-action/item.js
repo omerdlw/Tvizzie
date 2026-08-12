@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 import { TMDB_IMG } from '@/shared/constants';
 import {
   applyAvatarFallback,
@@ -33,12 +33,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
   const userAvatarFallbackSrc =
     item.media_type === SEARCH_TYPES.USER ? getUserAvatarFallbackUrl(item) : '';
   const rowContent = (
-    <motion.div
-      whileHover={{ scale: 1.012, x: 2 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
-      className="flex w-full min-w-0 items-center gap-3"
-    >
+    <div className="flex w-full min-w-0 items-center gap-3">
       <div className={SEARCH_STYLES.thumbnail}>
         {item.media_type === SEARCH_TYPES.USER ? (
           <AdaptiveImage
@@ -94,7 +89,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
   if (!hasDetailPath) {
     return <div className={SEARCH_STYLES.resultItem}>{rowContent}</div>;

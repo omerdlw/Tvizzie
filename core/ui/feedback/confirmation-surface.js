@@ -1,8 +1,6 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 import { cn } from '@/shared/utils';
 import { NAV_SURFACE_RENDER_MODE } from '@/modules/nav';
 
@@ -20,7 +18,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2 rounded-2xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ease-out hover:scale-[1.012] active:scale-[0.985]',
+    'center w-full cursor-pointer gap-2 rounded-2xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:scale-[1.012] active:scale-[0.985]',
     resolveButtonTone(tone),
     className,
   );
@@ -100,13 +98,10 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.24, 1] }}
+    <div
       className="flex w-full flex-row items-center gap-2 overflow-visible"
     >
-      <motion.button
+      <button
         type="button"
         disabled={isSubmitting}
         onClick={handleCancel}
@@ -114,14 +109,11 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: 'muted',
           className: 'disabled:cursor-not-allowed',
         })}
-        whileHover={isSubmitting ? undefined : { scale: 1.012 }}
-        whileTap={isSubmitting ? undefined : { scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
       >
         {cancelText}
-      </motion.button>
+      </button>
 
-      <motion.button
+      <button
         type="button"
         disabled={isSubmitting}
         onClick={handleConfirm}
@@ -129,23 +121,12 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
-        whileHover={isSubmitting ? undefined : { scale: 1.012 }}
-        whileTap={isSubmitting ? undefined : { scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.span
+      ><span
             key={isSubmitting ? 'submitting' : 'confirm'}
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -3 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
           >
             {isSubmitting ? confirmLoadingText : confirmText}
-          </motion.span>
-        </AnimatePresence>
-      </motion.button>
-    </motion.div>
+          </span></button>
+    </div>
   );
 }
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
@@ -12,13 +11,7 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import {
-  getCarouselButtonProps,
-  getMediaCardProps,
-  getSectionHeaderProps,
-  TIMELINES,
-} from '@/app/(media)/motion';
-
+import { MediaRouteReveal } from '@/app/(media)/motion';
 const TABS = Object.freeze([
   {
     key: 'backdrops',
@@ -73,7 +66,7 @@ function getTabItems(images, key) {
   return dedupedItems;
 }
 
-export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SECTION_BASE_DELAY }) {
+export default function ImagesSection({ images, baseDelay = 0 }) {
   const { openModal } = useModal();
   const availableTabs = useMemo(
     () => TABS.filter((tab) => getTabItems(images, tab.key).length > 0),
@@ -106,8 +99,7 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <motion.div
-        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'images')}
+      <div
         className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -127,14 +119,17 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
             />
           </div>
         )}
-      </motion.div>
+      </div>
       <div key={`movie-images-${currentTab.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
+        <Carousel gap="gap-3">
           {items.map((image, index) => {
             return (
-              <motion.div
+              <MediaRouteReveal
                 key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'images')}
+                stage="items.images"
+                deferred
+                interactive
+                itemIndex={index}
               >
                 <MediaCard
                   imageSrc={
@@ -167,7 +162,7 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
                         }
                       : {})}
                 />
-              </motion.div>
+              </MediaRouteReveal>
             );
           })}
         </Carousel>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
@@ -11,18 +10,12 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import {
-  getCarouselButtonProps,
-  getMediaCardProps,
-  getSectionHeaderProps,
-  TIMELINES,
-} from '@/app/(media)/motion';
-
+import { MediaRouteReveal } from '@/app/(media)/motion';
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
 }
 
-export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SECTION_BASE_DELAY }) {
+export default function VideosSection({ videos, baseDelay = 0 }) {
   const { openModal } = useModal();
   const availableTypes = useMemo(() => getAvailableTypes(videos), [videos]);
   const [activeType, setActiveType] = useState(null);
@@ -65,8 +58,7 @@ export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SEC
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <motion.div
-        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'videos')}
+      <div
         className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -86,17 +78,20 @@ export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SEC
             />
           </div>
         )}
-      </motion.div>
+      </div>
       <div
         key={`movie-videos-${activeType || 'all'}`}
         className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}
       >
-        <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(0)}>
+        <Carousel gap="gap-3">
           {filteredVideos.map((video, index) => {
             return (
-              <motion.div
+              <MediaRouteReveal
                 key={video.id}
-                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'videos')}
+                stage="items.videos"
+                deferred
+                interactive
+                itemIndex={index}
               >
                 <MediaCard
                   className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
@@ -109,7 +104,7 @@ export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SEC
                   fallbackIconSize={24}
                   overlay={
                     <>
-                      <div className="center absolute inset-0 transition-all duration-150 ease-linear group-hover:opacity-0">
+                      <div className="center absolute inset-0 group-hover:opacity-0">
                         <div className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm">
                           <Icon icon="solar:play-bold" size={16} />
                         </div>
@@ -125,7 +120,7 @@ export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SEC
                     })
                   }
                 />
-              </motion.div>
+              </MediaRouteReveal>
             );
           })}
         </Carousel>

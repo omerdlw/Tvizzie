@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';
@@ -149,7 +147,7 @@ export default function AccountAction(props) {
             const isActive = activeTab === tab.key;
 
             return (
-              <motion.button
+              <button
                 key={tab.key}
                 type="button"
                 onClick={() => onTabChange?.(tab.key)}
@@ -158,19 +156,16 @@ export default function AccountAction(props) {
                   tone: isActive ? 'active' : 'muted',
                   className: 'relative justify-center overflow-hidden',
                 })}
-                whileHover={{ scale: 1.012 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               >
                 {tab.label}
-              </motion.button>
+              </button>
             );
           })}
         </div>
 
         {canShowFollowAction ? (
           <div className="flex w-full gap-2">
-            <motion.button
+            <button
               type="button"
               onClick={onFollow}
               disabled={isFollowLoading}
@@ -178,36 +173,21 @@ export default function AccountAction(props) {
                 tone: followAction.tone,
                 className: '',
               })}
-              whileHover={isFollowLoading ? undefined : { scale: 1.018 }}
-              whileTap={isFollowLoading ? undefined : { scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-            >
-              <AnimatePresence mode="wait">
-                {isFollowLoading ? (
-                  <motion.span
+            >{isFollowLoading ? (
+                  <span
                     key="loading"
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                   >
                     Updating
-                  </motion.span>
+                  </span>
                 ) : (
-                  <motion.span
+                  <span
                     key={followAction.label}
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                     className="flex items-center gap-2"
                   >
                     <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
                     {followAction.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
+                  </span>
+                )}</button>
           </div>
         ) : null}
       </div>
@@ -228,7 +208,7 @@ export default function AccountAction(props) {
               const isActive = activeEditTab === tab.key;
 
               return (
-                <motion.button
+                <button
                   key={tab.key}
                   type="button"
                   onClick={() => onEditTabChange?.(tab.key)}
@@ -237,13 +217,10 @@ export default function AccountAction(props) {
                     tone: isActive ? 'active' : 'muted',
                     className: 'justify-center',
                   })}
-                  whileHover={{ scale: 1.012 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 26 }}
                 >
                   <Icon icon={tab.icon} size={NAV_ACTION_STYLES.icon} />
                   {tab.label}
-                </motion.button>
+                </button>
               );
             })}
           </div>
@@ -252,7 +229,7 @@ export default function AccountAction(props) {
         {shouldShowBottomRow ? (
           <div className="flex w-full gap-2">
             {canShowUploadAction ? (
-              <motion.button
+              <button
                 type="button"
                 onClick={onOpenMediaUpload}
                 disabled={isUploadDisabled}
@@ -260,16 +237,14 @@ export default function AccountAction(props) {
                   tone: 'info',
                   className: showSaveAction ? 'flex-1' : '',
                 })}
-                whileTap={isUploadDisabled ? undefined : { scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               >
                 <Icon icon="solar:upload-bold" size={NAV_ACTION_STYLES.icon} />
                 {uploadLabel}
-              </motion.button>
+              </button>
             ) : null}
 
             {canShowCancelAction ? (
-              <motion.button
+              <button
                 type="button"
                 onClick={onCancel}
                 disabled={isCancelDisabled}
@@ -277,15 +252,13 @@ export default function AccountAction(props) {
                   tone: 'muted',
                   className: 'flex-1',
                 })}
-                whileTap={isCancelDisabled ? undefined : { scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               >
                 {cancelLabel}
-              </motion.button>
+              </button>
             ) : null}
 
             {showSaveAction ? (
-              <motion.button
+              <button
                 type="button"
                 onClick={onSave}
                 disabled={isSaveLoading || isSaveDisabled}
@@ -293,35 +266,21 @@ export default function AccountAction(props) {
                   tone: isSaveDisabled ? 'muted' : 'success',
                   className: canShowUploadAction || canShowCancelAction ? 'flex-1' : '',
                 })}
-                whileTap={isSaveLoading || isSaveDisabled ? undefined : { scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-              >
-                <AnimatePresence mode="wait">
-                  {isSaveLoading ? (
-                    <motion.span
+              >{isSaveLoading ? (
+                    <span
                       key="saving"
-                      initial={{ opacity: 0, y: 3 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -3 }}
-                      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                     >
                       Saving
-                    </motion.span>
+                    </span>
                   ) : (
-                    <motion.span
+                    <span
                       key="save"
-                      initial={{ opacity: 0, y: 3 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -3 }}
-                      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                       className="flex items-center gap-2"
                     >
                       <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
                       {saveLabel}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+                    </span>
+                  )}</button>
             ) : null}
           </div>
         ) : null}
@@ -332,40 +291,26 @@ export default function AccountAction(props) {
   if (mode === 'save') {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <motion.button
+        <button
           type="button"
           onClick={onSave}
           disabled={isSaveLoading || isSaveDisabled}
           className={actionClass({ tone: !isSaveDisabled && 'success', className: '' })}
-          whileTap={isSaveLoading || isSaveDisabled ? undefined : { scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-        >
-          <AnimatePresence mode="wait">
-            {isSaveLoading ? (
-              <motion.span
+        >{isSaveLoading ? (
+              <span
                 key="saving"
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -3 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
               >
                 Saving
-              </motion.span>
+              </span>
             ) : (
-              <motion.span
+              <span
                 key="save"
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -3 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                 className="flex items-center gap-2"
               >
                 <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
                 {saveLabel}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
+              </span>
+            )}</button>
       </div>
     );
   }
@@ -373,16 +318,14 @@ export default function AccountAction(props) {
   if (mode === 'single-action') {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <motion.button
+        <button
           type="button"
           onClick={onAction}
           className={actionClass({ tone: actionTone })}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         >
           {actionIcon ? <Icon icon={actionIcon} size={NAV_ACTION_STYLES.icon} /> : null}
           {actionLabel}
-        </motion.button>
+        </button>
       </div>
     );
   }
@@ -390,15 +333,13 @@ export default function AccountAction(props) {
   if (isNotFound) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <motion.button
+        <button
           type="button"
           onClick={() => (window.location.href = '/')}
           className={actionClass()}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         >
           Back Home
-        </motion.button>
+        </button>
       </div>
     );
   }
@@ -413,7 +354,7 @@ export default function AccountAction(props) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
         {canShowFollowAction ? (
-          <motion.button
+          <button
             type="button"
             onClick={onFollow}
             disabled={isFollowLoading}
@@ -421,39 +362,25 @@ export default function AccountAction(props) {
               tone: followAction.tone,
               className: '',
             })}
-            whileTap={isFollowLoading ? undefined : { scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-          >
-            <AnimatePresence mode="wait">
-              {isFollowLoading ? (
-                <motion.span
+          >{isFollowLoading ? (
+                <span
                   key="loading"
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                 >
                   Updating
-                </motion.span>
+                </span>
               ) : (
-                <motion.span
+                <span
                   key={followAction.label}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                   className="flex items-center gap-2"
                 >
                   <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
                   {followAction.label}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
+                </span>
+              )}</button>
         ) : null}
 
         {canShowLikeListAction ? (
-          <motion.button
+          <button
             type="button"
             onClick={onToggleLike}
             disabled={isLikeLoading}
@@ -461,28 +388,15 @@ export default function AccountAction(props) {
               tone: isLiked ? 'success' : 'muted',
               className: '',
             })}
-            whileHover={isLikeLoading ? undefined : { scale: 1.018 }}
-            whileTap={isLikeLoading ? undefined : { scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-          >
-            <AnimatePresence mode="wait">
-              {isLikeLoading ? (
-                <motion.span
+          >{isLikeLoading ? (
+                <span
                   key="loading"
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                 >
                   Updating
-                </motion.span>
+                </span>
               ) : (
-                <motion.span
+                <span
                   key={isLiked ? 'liked' : 'like'}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
                   className="flex items-center gap-2"
                 >
                   <Icon
@@ -490,27 +404,22 @@ export default function AccountAction(props) {
                     size={NAV_ACTION_STYLES.icon}
                   />
                   {isLiked ? 'Liked' : 'Like List'}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
+                </span>
+              )}</button>
         ) : null}
 
         {canShowCommentAction ? (
-          <motion.button
+          <button
             type="button"
             onClick={onOpenReviewComposer}
             className={actionClass({ tone: 'muted', className: '' })}
-            whileHover={{ scale: 1.012 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           >
             <Icon
               icon={ownReview ? 'solar:pen-bold' : 'solar:chat-round-bold'}
               size={NAV_ACTION_STYLES.icon}
             />
             {ownReview ? 'Edit Comment' : 'Add Comment'}
-          </motion.button>
+          </button>
         ) : null}
       </div>
     );
@@ -519,7 +428,7 @@ export default function AccountAction(props) {
   if (!isAuthenticated) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <motion.button
+        <button
           type="button"
           onClick={() => {
             if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
@@ -530,13 +439,10 @@ export default function AccountAction(props) {
             window.location.assign(guestHref);
           }}
           className={actionClass()}
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         >
           <Icon icon={guestIcon} size={NAV_ACTION_STYLES.icon} />
           {guestLabel}
-        </motion.button>
+        </button>
       </div>
     );
   }
@@ -554,60 +460,48 @@ export default function AccountAction(props) {
       <div className={NAV_ACTION_STYLES.row}>
         {showListActions ? (
           <>
-            <motion.button
+            <button
               type="button"
               onClick={() => onEditList?.()}
               className={actionClass()}
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
             >
               <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
               Edit List
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="button"
               onClick={() => onDeleteList?.()}
               className={actionClass({ tone: 'danger' })}
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
             >
               <Icon icon="solar:trash-bin-trash-bold" size={NAV_ACTION_STYLES.icon} />
               Delete List
-            </motion.button>
+            </button>
           </>
         ) : null}
 
         {canShowCommentAction ? (
-          <motion.button
+          <button
             type="button"
             onClick={onOpenReviewComposer}
             className={actionClass({ tone: 'muted', className: '' })}
-            whileHover={{ scale: 1.012 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           >
             <Icon
               icon={ownReview ? 'solar:pen-bold' : 'solar:chat-round-bold'}
               size={NAV_ACTION_STYLES.icon}
             />
             {ownReview ? 'Edit Comment' : 'Add Comment'}
-          </motion.button>
+          </button>
         ) : null}
 
         {shouldShowInboxAction && (
-          <motion.button
+          <button
             type="button"
             onClick={onOpenInbox}
             className={actionClass({ tone: 'info' })}
-            whileHover={{ scale: 1.012 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           >
             <Icon icon="solar:inbox-bold" size={NAV_ACTION_STYLES.icon} />
             Inbox {inboxCount}
-          </motion.button>
+          </button>
         )}
       </div>
     );

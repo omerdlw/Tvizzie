@@ -1,31 +1,34 @@
 'use client';
 
+import { Children } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import LegalNavRegistry from '@/app/(legal)/registry';
 import LegalQuickLinks from '@/domains/legal/ui/components/legal-quick-links';
 import LegalPageShell, {
   LEGAL_PAGE_CONTENT_CLASS,
 } from '@/domains/legal/ui/layouts/legal-page-shell';
-import {
-  articleContainerVariants,
-  contentDividerVariants,
-  headerContainerVariants,
-  legalQuickLinksVariants,
-  listItemVariants,
-  pageContainerVariants,
-  sectionItemVariants,
-  titleVariants,
-} from '@/app/(legal)/motion';
+import { LegalReveal } from '@/app/(legal)/motion';
 
 const LAST_UPDATED = 'April 20, 2026';
 
 function AnimatedLegalSection({ children, title }) {
   return (
-    <motion.section variants={sectionItemVariants} className="space-y-3">
+    <section className="space-y-3">
       <h2 className="text-xl font-semibold tracking-tight text-black sm:text-2xl">{title}</h2>
       <div className="space-y-3 text-sm leading-7 text-black/72 sm:text-[15px]">{children}</div>
-    </motion.section>
+    </section>
+  );
+}
+
+function LegalDocument({ children }) {
+  return (
+    <article className="bg-primary space-y-8 border border-black/5 p-6 sm:p-8">
+      {Children.toArray(children).map((section, index) => (
+        <LegalReveal key={section.key || index} inView itemIndex={index} stage="section">
+          {section}
+        </LegalReveal>
+      ))}
+    </article>
   );
 }
 
@@ -38,54 +41,40 @@ function PrivacyView() {
         icon="solar:shield-user-bold"
       />
       <LegalPageShell>
-        <motion.div
+        <div
           className={LEGAL_PAGE_CONTENT_CLASS}
-          variants={pageContainerVariants}
-          initial={false}
-          animate="visible"
-          exit="exit"
         >
-          <motion.header
-            variants={headerContainerVariants}
-            className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28"
-          >
+          <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
-              <motion.h1
-                variants={titleVariants}
-                className="text-4xl font-semibold tracking-tight text-black sm:text-5xl"
-              >
-                Privacy Policy
-              </motion.h1>
-              <motion.p
-                variants={titleVariants}
-                className="mx-auto max-w-2xl text-sm leading-7 text-black/68 sm:text-[15px]"
-              >
-                This policy explains what information Tvizzie processes, why it is processed, and
-                what choices you have. It is written to reflect the current product and
-                infrastructure used by the app today.
-              </motion.p>
+              <LegalReveal stage="title">
+                <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+                  Privacy Policy
+                </h1>
+              </LegalReveal>
+              <LegalReveal stage="lead">
+                <p className="mx-auto max-w-2xl text-sm leading-7 text-black/68 sm:text-[15px]">
+                  This policy explains what information Tvizzie processes, why it is processed, and
+                  what choices you have. It is written to reflect the current product and
+                  infrastructure used by the app today.
+                </p>
+              </LegalReveal>
             </div>
-            <motion.p
-              variants={titleVariants}
-              className="text-xs tracking-wide text-black/44 uppercase"
-            >
-              Last updated {LAST_UPDATED}
-            </motion.p>
-          </motion.header>
+            <LegalReveal stage="meta">
+              <p className="text-xs tracking-wide text-black/44 uppercase">
+                Last updated {LAST_UPDATED}
+              </p>
+            </LegalReveal>
+          </header>
 
-          <motion.div
+          <div
             aria-hidden="true"
-            variants={contentDividerVariants}
             className="relative left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
           />
 
-          <LegalQuickLinks variants={legalQuickLinksVariants} />
+          <LegalQuickLinks />
 
           <div className="mt-6 w-full">
-            <motion.article
-              variants={articleContainerVariants}
-              className="bg-primary space-y-8 border border-black/5 p-6 sm:p-8"
-            >
+            <LegalDocument>
               <AnimatedLegalSection title="Overview">
                 <p>
                   Tvizzie is a movie and TV discovery app that lets people sign in, manage a
@@ -96,7 +85,7 @@ function PrivacyView() {
                 <p>
                   If you have privacy questions, you can contact{' '}
                   <a
-                    className="underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
                     href="mailto:omerdeliavci@outlook.com"
                   >
                     omerdeliavci@outlook.com
@@ -111,79 +100,79 @@ function PrivacyView() {
                   information:
                 </p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     Account information, such as your email address, username, display name,
                     authentication provider, and basic profile details.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Profile content you choose to add, such as an avatar, banner image, biography,
                     profile description, and account privacy setting.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Content you create inside the app, such as watched titles, watchlist items,
-                    favorites, ratings, reviews, liked reviews, liked lists, custom lists, and
+                    favorites, ratings, reviews, liked reviews, liked lists, lists, and
                     comments on lists.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Messages you send through the product feedback flow, along with limited request
                     metadata such as referrer and user agent when feedback is submitted.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Security and session data used to sign you in and protect your account,
                     including authentication cookies, CSRF tokens, short-lived verification state,
                     trusted-device markers, and account-security audit events.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Performance and diagnostics data, including Web Vitals measurements such as CLS,
                     FCP, INP, LCP, TTFB, the current pathname, and a generated metric identifier.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Local browser storage used for app preferences and temporary client-side state,
                     such as poster/background preferences, movie image cache entries, settings
                     storage, and short-lived auth helper state.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
               <AnimatedLegalSection title="Information we receive from third parties">
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     If you sign in with Google or GitHub, Tvizzie may receive basic account details
                     made available by that provider, such as your email address, name, and profile
                     image.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Movie, TV, person, genre, and artwork data shown in the product is fetched from
                     third-party media sources, primarily TMDB. That content is used to power
                     discovery and browsing features, not to identify you.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
               <AnimatedLegalSection title="How we use information">
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     To create and maintain your account and sign you in securely.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     To let you edit your profile and publish the content you choose to share.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     To operate social features such as reviews, likes, lists, activity feeds, and
                     profile pages.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     To send verification and account-security emails, including sign-in, sign-up,
                     password reset, and account-change codes.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     To respond to product feedback, investigate bugs, and improve performance and
                     reliability.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     To detect abuse, protect the service, and enforce the rules described in our
                     Terms of Service.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
@@ -207,26 +196,26 @@ function PrivacyView() {
                   information with service providers that help run the app:
                 </p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     <strong>Supabase</strong> for authentication, database storage, file storage,
                     realtime features, and server-side functions.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     <strong>Google</strong> or <strong>GitHub</strong> when you choose those OAuth
                     sign-in methods.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     <strong>SMTP or Brevo</strong> for transactional email delivery, including
                     verification codes and account security emails.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     <strong>Hosting and infrastructure providers</strong> that deliver the web app
                     and may process standard request metadata and logs.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     <strong>TMDB and related image endpoints</strong> to load movie and TV metadata,
                     posters, backdrops, and related media assets.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
@@ -254,24 +243,24 @@ function PrivacyView() {
 
               <AnimatedLegalSection title="Your choices">
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     You can edit your profile information inside the app.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You can change your profile privacy setting inside your account settings.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You can remove reviews, list content, watched items, watchlist items, and other
                     profile content that you created.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You can request account deletion through the account settings flow if that
                     option is available on your account.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You can stop using OAuth sign-in methods and use password-based access where
                     supported by your account configuration.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
@@ -295,7 +284,7 @@ function PrivacyView() {
                 <p>
                   Please also review the{' '}
                   <Link
-                    className="underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
                     href="/terms"
                   >
                     Terms of Service
@@ -303,9 +292,9 @@ function PrivacyView() {
                   .
                 </p>
               </AnimatedLegalSection>
-            </motion.article>
+            </LegalDocument>
           </div>
-        </motion.div>
+        </div>
       </LegalPageShell>
     </>
   );

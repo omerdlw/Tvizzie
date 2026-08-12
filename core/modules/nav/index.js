@@ -201,7 +201,7 @@ export default function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={NAV_BACKDROP_TRANSITION}
-            className={cn('fixed inset-0 cursor-pointer bg-white/40 will-change-[opacity]')}
+            className="fixed inset-0 cursor-pointer bg-white/40"
             style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
             onClick={handleOutsideDismiss}
           />
@@ -211,15 +211,15 @@ export default function Nav() {
       <motion.div
         id="nav-card-stack"
         ref={navRef}
-        className="fixed bottom-1 left-1/2 w-full -translate-x-1/2 touch-manipulation select-none"
+        className="fixed inset-x-0 bottom-1 mx-auto touch-manipulation select-none"
         style={{
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',
         }}
         initial={false}
         animate={{
-          width: isCompactStack ? compactStackWidth : stackWidth,
-          height: containerHeight,
+          width: Math.round(isCompactStack ? compactStackWidth : stackWidth),
+          height: Math.round(containerHeight),
           opacity: isFullscreenStateActive ? 0 : 1,
           pointerEvents: isFullscreenStateActive ? 'none' : 'auto',
         }}

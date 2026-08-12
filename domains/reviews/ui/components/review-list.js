@@ -1,14 +1,15 @@
 'use client';
 
-import { motion } from 'framer-motion';
+
 import { normalizeFeedbackText } from '@/shared/utils';
 import { mergeReviewUser } from '../../shared/review-data';
 import ReviewCard from './review-card';
-import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import { MediaRouteReveal } from '@/app/(media)/motion';
+import { AccountReveal } from '@/app/(account)/motion';
 
 export default function ReviewList({
-  baseDelay = TIMELINES.CARD_BASE_DELAY,
+  baseDelay = 0,
   currentUserId,
   displayVariant = 'media',
   isInitialSection = true,
@@ -24,6 +25,9 @@ export default function ReviewList({
   sortedReviews = [],
   userProfile,
   watchedMediaKeys = null,
+  motionStage = null,
+  motionDeferred = false,
+  accountMotion = false,
 }) {
   if (isLoading) {
     return <ReviewCardsSkeletonList count={4} />;
@@ -51,20 +55,11 @@ export default function ReviewList({
         const isOwnReview = review.user?.id === currentUserId;
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
         const key = review.docPath || review.id || `review-${index}`;
-        const motionProps = getListCardProps(index, baseDelay, isInitialSection);
         const isFirst = index === 0;
         const isLast = index === sortedReviews.length - 1;
 
-        return (
-          <motion.div
-            key={key}
-            initial={motionProps.initial}
-            animate={motionProps.animate}
-            whileInView={motionProps.whileInView}
-            viewport={motionProps.viewport}
-            transition={motionProps.transition}
-            style={{ willChange: 'transform, opacity, filter' }}
-          >
+        const card = (
+          <div key={key}>
             <ReviewCard
               review={mergedReview}
               currentUserId={currentUserId}
@@ -80,7 +75,35 @@ export default function ReviewList({
               showSubject={showSubject}
               watchedMediaKeys={watchedMediaKeys}
             />
-          </motion.div>
+          </div>
+        );
+
+        if (accountMotion) {
+          return (
+            <AccountReveal
+              key={key}
+              deferred
+              itemIndex={index}
+              stage="item.feed"
+            >
+              {card}
+            </AccountReveal>
+          );
+        }
+
+        if (!motionStage) {
+          return card;
+        }
+
+        return (
+          <MediaRouteReveal
+            key={key}
+            stage={motionStage}
+            deferred={motionDeferred}
+            itemIndex={index}
+          >
+            {card}
+          </MediaRouteReveal>
         );
       })}
     </div>

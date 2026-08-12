@@ -1,6 +1,6 @@
 'use client';
 
-import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { isValidElement, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
@@ -8,7 +8,13 @@ import Icon from '@/ui/primitives/icon';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
-import { menuPopVariants, CONTEXT_MENU_TAP_SCALE, CONTEXT_MENU_MICRO_SPRING } from './motion';
+import {
+  CONTEXT_MENU_MICRO_SPRING,
+  CONTEXT_MENU_TAP_Y,
+  menuContentVariants,
+  menuItemVariants,
+  menuPopVariants,
+} from './motion';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({
@@ -127,8 +133,8 @@ function positionMenu(menuElement, position) {
     y = viewportHeight - rect.height - MENU_SCREEN_MARGIN;
   }
 
-  menuElement.style.left = `${Math.max(MENU_SCREEN_MARGIN, x)}px`;
-  menuElement.style.top = `${Math.max(MENU_SCREEN_MARGIN, y)}px`;
+  menuElement.style.left = `${Math.round(Math.max(MENU_SCREEN_MARGIN, x))}px`;
+  menuElement.style.top = `${Math.round(Math.max(MENU_SCREEN_MARGIN, y))}px`;
 }
 
 function isScrollLockKey(event) {
@@ -209,7 +215,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full rounded-2xl items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full items-center gap-2.5 rounded-2xl px-3 text-left text-[13px] font-medium text-black/75 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -217,7 +223,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   );
 
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-black/55 group-hover:text-black/80',
+    'shrink-0 text-black/55 transition-colors duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-black/80',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,
@@ -232,7 +238,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
       disabled={item.disabled}
       role="menuitem"
       type="button"
-      whileTap={{ scale: CONTEXT_MENU_TAP_SCALE }}
+      whileTap={{ y: CONTEXT_MENU_TAP_Y }}
       transition={CONTEXT_MENU_MICRO_SPRING}
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
@@ -266,11 +272,11 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
     itemRefs.current = [];
   }, [items]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (menuRef.current) {
       positionMenu(menuRef.current, position);
     }
-  }, [position, items]);
+  }, [header, items, position]);
 
   useEffect(() => {
     if (activeIndex < 0) {
@@ -421,7 +427,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white/80 backdrop-blur-sm',
+          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
           classNames.content,
         )}
         role="menu"
@@ -432,28 +438,36 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
           position: 'fixed',
           top: position?.y || 0,
           zIndex: Z_INDEX.DEBUG_OVERLAY,
-          willChange: 'transform, opacity',
         }}
         onMouseLeave={() => setActiveIndex(-1)}
         onKeyDown={handleMenuKeyDown}
       >
-        <ContextMenuHeader classNames={classNames} header={header} />
+        <motion.div variants={menuContentVariants} initial="hidden" animate="visible">
+          <ContextMenuHeader classNames={classNames} header={header} />
+        </motion.div>
         {items.map((item, index) => (
-          <ContextMenuItem
+          <motion.div
             key={item.key || `menu-item-${index}`}
-            item={item}
-            classNames={classNames}
-            isActive={index === activeIndex}
-            onHover={() => {
-              if (item.type === 'action' && !item.disabled) {
-                setActiveIndex(index);
-              }
-            }}
-            setButtonRef={(node) => {
-              itemRefs.current[index] = node;
-            }}
-            onSelect={handleItemSelect}
-          />
+            variants={menuItemVariants}
+            custom={index}
+            initial="hidden"
+            animate="visible"
+          >
+            <ContextMenuItem
+              item={item}
+              classNames={classNames}
+              isActive={index === activeIndex}
+              onHover={() => {
+                if (item.type === 'action' && !item.disabled) {
+                  setActiveIndex(index);
+                }
+              }}
+              setButtonRef={(node) => {
+                itemRefs.current[index] = node;
+              }}
+              onSelect={handleItemSelect}
+            />
+          </motion.div>
         ))}
       </motion.div>
     </div>
@@ -470,18 +484,18 @@ export function ContextMenuRenderer() {
       ? menuItems
       : resolveMenuItems(menuConfig, menuContext);
 
-  if (!isOpen || !menuConfig || resolvedItems.length === 0) return null;
-
   return createPortal(
     <AnimatePresence>
-      <ContextMenuContent
-        key="context-menu-content"
-        config={menuConfig}
-        items={resolvedItems}
-        menuContext={menuContext}
-        position={position}
-        onClose={closeMenu}
-      />
+      {isOpen && menuConfig && resolvedItems.length > 0 ? (
+        <ContextMenuContent
+          key="context-menu-content"
+          config={menuConfig}
+          items={resolvedItems}
+          menuContext={menuContext}
+          position={position}
+          onClose={closeMenu}
+        />
+      ) : null}
     </AnimatePresence>,
     document.body,
   );

@@ -104,40 +104,21 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           className="group relative w-full cursor-pointer"
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
-          {/* Back 3D Panel */}
           <motion.div
             className="relative z-0 rounded-2xl border border-black/10 bg-white/40"
-            animate={{
-              rotateX: isHovered ? 15 : 0,
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 200,
-              damping: 25,
-              mass: 0.8,
-            }}
+            animate={{ rotateX: isHovered ? 15 : 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformStyle: 'preserve-3d',
               transformOrigin: 'center bottom',
             }}
           >
-            {/* Inner 3D tilted poster stack */}
             <motion.div
               className="absolute inset-0"
-              animate={{
-                rotateX: isHovered ? -15 : 0,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 200,
-                damping: 25,
-                mass: 0.8,
-              }}
-              style={{
-                transformStyle: 'flat',
-                transformOrigin: 'center bottom',
-              }}
+              animate={{ rotateX: isHovered ? -15 : 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
+              style={{ transformStyle: 'flat', transformOrigin: 'center bottom' }}
             >
               {[0, 1, 2, 3, 4].map((imgIndex) => {
                 const pos = imagePositions[imgIndex];
@@ -195,10 +176,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                           animate={{
                             filter: `brightness(${isHovered ? Math.min(1, brightness + 0.2) : brightness}) contrast(1.08) saturate(${1 - distanceFromCenter * 0.2}) blur(${isHovered ? 0 : blurAmount}px)`,
                           }}
-                          transition={{
-                            duration: 0.3,
-                            ease: [0.16, 1, 0.3, 1],
-                          }}
+                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         />
                       ) : (
                         <div className="center h-full w-full bg-white/60 text-black/40">
@@ -212,7 +190,6 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             </motion.div>
           </motion.div>
 
-          {/* Front Glass Panel */}
           <motion.div
             className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-2xl border border-black/10"
             animate={{
@@ -220,20 +197,10 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               backgroundColor: 'rgba(255, 255, 255, 1)',
             }}
             transition={{
-              rotateX: {
-                type: 'spring',
-                stiffness: 180,
-                damping: 22,
-                mass: 0.8,
-              },
-              backgroundColor: {
-                duration: 0.3,
-                ease: [0.16, 1, 0.3, 1],
-              },
+              rotateX: { type: 'spring', stiffness: 180, damping: 22, mass: 0.8 },
+              backgroundColor: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
             }}
-            style={{
-              transformOrigin: 'center bottom',
-            }}
+            style={{ transformOrigin: 'center bottom' }}
           >
             <div className="relative px-4 py-4">
               <h3 className="line-clamp-1 text-[19px] leading-[1.22] font-semibold text-black transition-colors duration-200 group-hover:text-black">

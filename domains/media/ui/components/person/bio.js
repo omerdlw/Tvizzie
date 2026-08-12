@@ -1,7 +1,7 @@
 'use client';
 
 import { useNavigationActions } from '@/modules/nav';
-import { createPersonBioSurfaceEntry } from '@/domains/media/ui/surfaces/person-bio-surface';
+import { createPersonBioSurfaceEntry } from '@/domains/media/ui/nav-surfaces/person-bio-surface';
 
 const MAX_LINES = 4;
 
@@ -42,7 +42,7 @@ export default function PersonBio({ biography, person = null }) {
         <button
           type="button"
           onClick={handleReadMore}
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-colors hover:text-black"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:text-black active:scale-[0.97]"
         >
           Read More
         </button>

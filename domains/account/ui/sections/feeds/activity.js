@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { normalizeFeedbackText } from '@/shared/utils';
 import {
   collectActivitySubjectOptions,
@@ -19,8 +18,7 @@ import {
   ActivityItemsSkeletonList,
   FilterBarSkeleton,
 } from '@/domains/account/ui/skeletons/account-section-skeletons';
-import { getActivityItemProps } from '@/app/(account)/motion';
-
+import { AccountReveal } from '@/app/(account)/motion';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 
 function formatActivityTime(value) {
@@ -153,16 +151,15 @@ function ActivityList({ baseDelay, isInitialSection = false, items }) {
 
 function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
-  const motionProps = getActivityItemProps(index, baseDelay, isInitialSection);
+
   const hasReview = item?.renderKind === 'text_with_review' && item?.reviewCard;
 
   return (
-    <motion.article
+    <AccountReveal
       className={ACTIVITY_ROW_CLASS}
-      initial={motionProps.initial}
-      whileInView={motionProps.whileInView}
-      viewport={motionProps.viewport}
-      transition={motionProps.transition}
+      deferred
+      itemIndex={index}
+      stage="item.feed"
     >
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className={ACTIVITY_LINE_CLASS}>
@@ -184,7 +181,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
           review={item.reviewCard}
         />
       ) : null}
-    </motion.article>
+    </AccountReveal>
   );
 }
 

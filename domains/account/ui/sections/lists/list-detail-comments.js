@@ -82,6 +82,7 @@ function CommentsView({
             showSubject={true}
             sortedReviews={visibleReviews}
             userProfile={userProfile}
+            accountMotion
           />
         )}
 

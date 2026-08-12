@@ -5,8 +5,8 @@ import AccountSocialModal from '@/domains/social/ui/modals/account-social-modal'
 import CreateListModal from '@/domains/account/ui/modals/create-list-modal';
 import ListEditorModal from '@/domains/account/ui/modals/list-editor-modal';
 import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
-import AccountAction from '@/domains/account/ui/components/account-action-bar';
-import ReviewAction from '@/domains/reviews/actions/review-action';
+import AccountAction from '@/domains/account/ui/nav-actions/account-action';
+import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
 import Icon from '@/ui/primitives/icon';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { Spinner } from '@/ui/feedback/spinner';

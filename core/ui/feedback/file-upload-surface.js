@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useId, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-
 import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
@@ -70,13 +68,9 @@ export default function FileUploadSurface({ close, data }) {
   );
 
   return (
-    <motion.div
+    <div
       role="button"
       tabIndex={0}
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
-      whileHover={{ scale: 1.008 }}
       onClick={() => inputRef.current?.click()}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -103,24 +97,22 @@ export default function FileUploadSurface({ close, data }) {
       }}
       onDrop={handleDrop}
       className={cn(
-        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-[16px] border px-6 py-8 text-center transition-colors duration-300 ease-out',
+        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border px-6 py-8 text-center',
         isDragActive
           ? 'border-info/30 bg-info/10'
           : 'bg-primary border-transparent hover:border-black/10',
       )}
     >
-      <motion.div
-        whileHover={{ scale: 1.15, rotate: -4 }}
-        transition={{ type: 'spring', stiffness: 350, damping: 18 }}
+      <div
         className={cn(
-          'center size-14 rounded-2xl border transition-colors duration-300 ease-out',
+          'center size-14 rounded-2xl border',
           isDragActive
             ? 'border-info/20 bg-info/10 text-info'
             : 'border-black/5 bg-black/5 text-black/70',
         )}
       >
         <Icon icon="solar:cloud-upload-bold" size={24} />
-      </motion.div>
+      </div>
       <div className="space-y-1 px-4">
         <p className="text-base font-semibold tracking-tight text-black">
           Click to upload or drag and drop
@@ -128,24 +120,21 @@ export default function FileUploadSurface({ close, data }) {
         <p className="text-xs leading-relaxed text-black/50">{hint}</p>
       </div>
       <div className="overflow-visible p-1">
-        <motion.button
+        <button
           type="button"
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           onClick={(event) => {
             event.stopPropagation();
             inputRef.current?.click();
           }}
           className={cn(
-            'inline-flex h-9 items-center justify-center rounded-xl border px-4 text-xs font-bold tracking-wider uppercase transition-colors duration-300 ease-out',
+            'inline-flex h-9 items-center justify-center rounded-xl border px-4 text-xs font-bold tracking-wider uppercase',
             isDragActive
               ? 'border-info/20 bg-info/10 text-info hover:bg-info/20'
               : 'hover:bg-primary border-black/5 bg-black/5 hover:border-black/10',
           )}
         >
           {buttonLabel}
-        </motion.button>
+        </button>
       </div>
       <input
         ref={inputRef}
@@ -155,6 +144,6 @@ export default function FileUploadSurface({ close, data }) {
         className="sr-only"
         onChange={handleInputChange}
       />
-    </motion.div>
+    </div>
   );
 }

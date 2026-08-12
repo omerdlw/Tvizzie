@@ -14,7 +14,7 @@ import { TMDB_IMG } from '@/shared/constants';
 import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
 import { subscribeToUserWatched } from '@/domains/media/client/collections/watched-watchlist';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountReviewFeed from '@/domains/account/ui/sections/feeds/reviews';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';

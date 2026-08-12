@@ -1,7 +1,7 @@
 'use client';
 
-import SearchActionControls from './components/controls';
-import SearchActionResultsPreview from './components/results-preview';
+import SearchActionControls from './controls';
+import SearchActionResultsPreview from './results-preview';
 import { useSearchActionController } from './use-search-action-controller';
 export default function SearchAction({
   loading: controlledLoading = false,
@@ -26,6 +26,7 @@ export default function SearchAction({
     loading,
     pageResults,
     query,
+    resultSetId,
     results,
     searchType,
     totalPages,
@@ -55,6 +56,7 @@ export default function SearchAction({
         query={debouncedQuery}
         searchType={searchType}
         results={pageResults}
+        resultSetId={resultSetId}
         currentPage={currentPage}
         totalPages={totalPages}
         onImageError={handleImageError}

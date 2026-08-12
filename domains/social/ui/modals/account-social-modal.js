@@ -2,9 +2,14 @@
 
 import { useEffect, useState, useCallback, memo, useMemo } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { Container } from '@/modules/modal';
+import {
+  MODAL_LIST_ITEM_VARIANTS,
+  MODAL_LIST_VARIANTS,
+  MODAL_MICRO_TAP_SCALE,
+} from '@/modules/modal/motion';
 import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
@@ -37,7 +42,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 transition-colors duration-150 ease-in-out rounded-xl border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0 rounded-xl border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-black/5';
 
 const ACTION_CLASSES = Object.freeze({
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
@@ -121,8 +126,7 @@ const UserAction = memo(function UserAction({
           type="button"
           onClick={() => onAccept(user.id)}
           disabled={isPending}
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
           className={ACTION_CLASSES.SUCCESS}
           aria-label={`Accept follow request from ${user.displayName}`}
         >
@@ -132,8 +136,7 @@ const UserAction = memo(function UserAction({
           type="button"
           onClick={() => onReject(user.id)}
           disabled={isPending}
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
           className={ACTION_CLASSES.ERROR}
           aria-label={`Reject follow request from ${user.displayName}`}
         >
@@ -149,8 +152,7 @@ const UserAction = memo(function UserAction({
         type="button"
         onClick={() => onUnfollow(user.id)}
         disabled={isPending}
-        whileHover={{ scale: 1.012 }}
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         className={ACTION_CLASSES.ERROR}
         aria-label={`Unfollow ${user.displayName}`}
       >
@@ -165,8 +167,7 @@ const UserAction = memo(function UserAction({
         type="button"
         onClick={() => onRemoveFollower(user.id)}
         disabled={isPending}
-        whileHover={{ scale: 1.012 }}
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         className={ACTION_CLASSES.ERROR}
         aria-label={`Remove ${user.displayName} from followers`}
       >
@@ -184,8 +185,7 @@ const UserAction = memo(function UserAction({
         type="button"
         onClick={() => onFollow(user.id)}
         disabled={isFollowPending || isPending}
-        whileHover={{ scale: 1.012 }}
-        whileTap={{ scale: 0.97 }}
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         className={ACTION_CLASSES.INFO}
         aria-label={`Follow ${user.displayName}`}
       >
@@ -203,11 +203,11 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
-      whileHover={{ x: 2 }}
-      className="flex items-center justify-between gap-3 border-b border-black/5 p-3 transition-colors duration-150 ease-in-out last:border-none hover:bg-white lg:p-4"
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      className="flex items-center justify-between gap-3 border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-none hover:bg-white lg:p-4"
     >
       <Link
         href={`/account/${user.username || user.id}`}
@@ -543,39 +543,54 @@ export default function AccountSocialModal({ close, data }) {
       }
     >
       <div className="flex h-full min-h-0 flex-col">
-        {isLoading ? (
-          <LoadingList />
-        ) : activeErrorMessage ? (
-          <EmptyState description={activeErrorMessage} className="h-full" />
-        ) : list.length === 0 ? (
-          <EmptyState description={emptyDescription} className="h-full min-h-96" />
-        ) : (
-          <div className="min-h-96 flex-1 overflow-y-auto">
-            {list.map((user, index) => (
-              <SocialUserRow
-                key={user.id}
-                close={close}
-                user={user}
-                index={index}
-                action={
-                  <UserAction
-                    tab={activeTab}
-                    user={user}
-                    authUserId={authUserId}
-                    isOwnProfile={isOwnProfile}
-                    pendingKind={pendingActionByUserId[user.id] || null}
-                    followStatus={followingStatusMap[user.id] || null}
-                    onAccept={handleAccept}
-                    onReject={handleReject}
-                    onUnfollow={handleUnfollow}
-                    onRemoveFollower={handleRemoveFollower}
-                    onFollow={handleFollow}
-                  />
-                }
-              />
-            ))}
-          </div>
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {isLoading ? (
+            <motion.div key={`loading-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+              <LoadingList />
+            </motion.div>
+          ) : activeErrorMessage ? (
+            <motion.div key={`error-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+              <EmptyState description={activeErrorMessage} className="h-full" />
+            </motion.div>
+          ) : list.length === 0 ? (
+            <motion.div key={`empty-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+              <EmptyState description={emptyDescription} className="h-full min-h-96" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`users-${activeTab}`}
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="min-h-96 flex-1 overflow-y-auto"
+            >
+              {list.map((user, index) => (
+                <SocialUserRow
+                  key={user.id}
+                  close={close}
+                  user={user}
+                  index={index}
+                  action={
+                    <UserAction
+                      tab={activeTab}
+                      user={user}
+                      authUserId={authUserId}
+                      isOwnProfile={isOwnProfile}
+                      pendingKind={pendingActionByUserId[user.id] || null}
+                      followStatus={followingStatusMap[user.id] || null}
+                      onAccept={handleAccept}
+                      onReject={handleReject}
+                      onUnfollow={handleUnfollow}
+                      onRemoveFollower={handleRemoveFollower}
+                      onFollow={handleFollow}
+                    />
+                  }
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Container>
   );
@@ -589,10 +604,10 @@ function LoadingList() {
           key={index}
           className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
         >
-          <div className="size-10 shrink-0 animate-pulse rounded-xl bg-black/5" />
+          <div className="size-10 shrink-0 rounded-xl bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse rounded bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse rounded bg-black/5" />
+            <div className="h-3 w-3/5 rounded bg-black/5" />
+            <div className="h-2 w-2/5 rounded bg-black/5" />
           </div>
         </div>
       ))}

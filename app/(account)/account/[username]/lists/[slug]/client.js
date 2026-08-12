@@ -23,7 +23,7 @@ import {
 } from '@/domains/reviews/client';
 import { TMDB_IMG } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,

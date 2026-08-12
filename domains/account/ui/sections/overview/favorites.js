@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { usePosterPreferenceVersion } from '@/domains/media/utils/poster-overrides';
 import { toAccountMediaCard } from '@/domains/account/utils/media-card';
@@ -12,7 +11,7 @@ import {
   AccountInlineSectionLoading,
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
-import { getCardProps } from '@/app/(account)/motion';
+import { AccountReveal } from '@/app/(account)/motion';
 const OVERVIEW_ROW_CARD_LIMIT = 5;
 export default function AccountFavoritesOverview({
   baseDelay,
@@ -57,16 +56,15 @@ export default function AccountFavoritesOverview({
           }`}
         >
           {cards.slice(0, cardLimit).map((card, index) => {
-            const cardProps = getCardProps(index, baseDelay);
+
             return (
-              <motion.div
+              <AccountReveal
                 key={`${card.id}-${index}`}
                 className="flex h-full min-w-0 flex-col"
-                initial={cardProps.initial}
-                animate={cardProps.animate}
-                transition={cardProps.transition}
-                whileHover={cardProps.whileHover}
-                whileTap={cardProps.whileTap}
+                deferred
+                interactive
+                itemIndex={index}
+                stage="item.media"
               >
                 <MediaCard
                   className="w-full md:w-full lg:w-full"
@@ -113,7 +111,7 @@ export default function AccountFavoritesOverview({
                   }
                   tooltipText={card.tooltipText}
                 />
-              </motion.div>
+              </AccountReveal>
             );
           })}
         </div>

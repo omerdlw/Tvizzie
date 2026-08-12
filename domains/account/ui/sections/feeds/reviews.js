@@ -24,11 +24,10 @@ import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { FilterBarSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
-import { TIMELINES } from '@/app/(account)/motion';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
 export default function AccountReviewsFeed({
-  baseDelay = TIMELINES.CARD_BASE_DELAY,
+  baseDelay = 0,
   currentUserId = null,
   emptyMessage = 'No reviews yet',
   enablePagination = false,
@@ -162,7 +161,6 @@ export default function AccountReviewsFeed({
         <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{loadError}</div>
       ) : (
         <ReviewList
-          baseDelay={baseDelay}
           currentUserId={currentUserId}
           displayVariant="account"
           isInitialSection={isInitialSection}
@@ -178,6 +176,7 @@ export default function AccountReviewsFeed({
           sortedReviews={visibleReviews}
           userProfile={userProfile}
           watchedMediaKeys={watchedMediaKeys}
+          accountMotion
         />
       )}
 

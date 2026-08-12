@@ -163,6 +163,7 @@ function applySurface(item, surfaceEntry, closeSurface) {
     ...item,
     isSurface: true,
     isOverlay: true,
+    surfaceId: surfaceEntry.id ?? null,
     dismissible: surfaceEntry.dismissible !== false,
     surfaceComponent,
     surfaceContent,

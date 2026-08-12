@@ -15,7 +15,7 @@ import { fetchAccountActivityFeed } from '@/domains/account/client/account-api.c
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
-import AccountAction from '@/domains/account/ui/components/account-action-bar';
+import AccountAction from '@/domains/account/ui/nav-actions/account-action';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,

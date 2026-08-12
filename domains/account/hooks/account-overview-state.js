@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import { TMDB_IMG } from '@/shared/constants';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.client';

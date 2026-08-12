@@ -75,15 +75,13 @@ export function getNavItemCardProps({
 
   const isTop = position === 0;
   const collapsedScaleValue = collapsedScale ** position;
-
   const y = expanded ? position * expandedOffsetY : position * collapsedOffsetY;
   const scale = expanded ? cardScale || 1 : collapsedScaleValue;
   const opacity = expanded || position < visibleCount ? 1 : 0;
 
   return {
     className: cn(
-      'absolute h-auto w-full border rounded-[24px] p-2 border-black/10 transition-colors duration-200',
-      compact ? 'bg-white backdrop-blur-md' : 'bg-white/80 backdrop-blur-md',
+      'absolute h-auto w-full rounded-3xl border border-black/10 bg-white p-2 transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
       isAnchoredToBottom || isTop ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
       showBorder && 'border-black/15',
@@ -92,11 +90,8 @@ export function getNavItemCardProps({
     style: {
       ...safeCardStyle,
       overflow: 'hidden',
-      isolation: compact ? undefined : 'isolate',
       transformOrigin: isAnchoredToBottom || isTop ? 'bottom center' : 'top center',
       zIndex: 10 - position,
-      backfaceVisibility: 'hidden',
-      WebkitBackfaceVisibility: 'hidden',
       ...(isTop ? { height: '100%' } : {}),
       pointerEvents: expanded || position < visibleCount ? undefined : 'none',
     },

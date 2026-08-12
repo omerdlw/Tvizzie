@@ -3,12 +3,10 @@
 import { TMDB_IMG } from '@/shared/constants';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import Registry from '@/app/(home)/registry';
-import { motion } from 'framer-motion';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
 import { TrendingSection } from '@/domains/home/ui/sections/trending-section';
-import { homeBackgroundVariants, homePageContainerVariants } from '@/domains/home/ui/motion';
 
 export default function Client({ data = {} }) {
   const activeHeroItem = Array.isArray(data.initialDiscoverItems)
@@ -41,20 +39,8 @@ function View({ homeData = {} }) {
 
   return (
     <PageGradientShell className="overflow-hidden">
-      <motion.div
-        variants={homeBackgroundVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]"
-      />
-      <motion.div
-        variants={homePageContainerVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-3 pt-20 pb-20 sm:px-4 md:px-6`}
-      >
+      <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]" />
+      <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-3 pt-20 pb-20 sm:px-4 md:px-6`}>
         <DiscoverSection
           initialDiscoverItems={initialDiscoverItems}
           initialGenres={initialGenres}
@@ -65,7 +51,7 @@ function View({ homeData = {} }) {
         <TrendingSection title="Today's popular movies" items={dailyItems} />
 
         <TrendingSection title="This week's popular movies" items={weeklyItems} />
-      </motion.div>
+      </div>
     </PageGradientShell>
   );
 }

@@ -1,7 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 export function createPersonBioSurfaceEntry(data = {}, config = {}) {
   return {
     component: PersonBioSurface,
@@ -26,10 +24,7 @@ export default function PersonBioSurface({
   const normalizedBiography = String(biography || '').trim();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
+    <div
       className="bg-primary max-h-[min(50dvh,24rem)] w-full overflow-y-auto rounded-2xl px-4 py-3"
     >
       {normalizedBiography ? (
@@ -39,6 +34,6 @@ export default function PersonBioSurface({
           </p>
         </div>
       ) : null}
-    </motion.div>
+    </div>
   );
 }

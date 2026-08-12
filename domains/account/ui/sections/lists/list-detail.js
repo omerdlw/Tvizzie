@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 
-import {
-  AccountPageShell,
-  AccountSectionReveal,
-} from '@/domains/account/ui/layouts/account-layout';
+import { AccountPageShell } from '@/domains/account/ui/layouts/account-layout';
 import AccountMediaGridPage, {
   ProfileMediaActions,
 } from '@/domains/account/ui/components/account-media-grid';
@@ -154,48 +151,46 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
         <AccountSectionState message="This list could not be found." />
       ) : (
         <>
-          <AccountSectionReveal delay={0.06}>
-            <AccountMediaGridPage
-              currentPage={mediaPage}
-              emptyMessage={
-                hasMediaFilters && hasListItems ? 'No titles match the current filters.' : undefined
-              }
-              icon="solar:clapperboard-bold"
-              items={filteredListItems}
-              onPageChange={setMediaPage}
-              showHeader={false}
-              title={list?.title || 'List'}
-              renderOverlay={(item) =>
-                isOwner ? (
-                  <ProfileMediaActions
-                    media={item}
-                    onRemoveItem={handleRemoveListItem}
-                    removeLabel={`Remove ${item?.title || item?.name || 'item'} from this list`}
-                    userId={auth.user?.id}
+          <AccountMediaGridPage
+            currentPage={mediaPage}
+            emptyMessage={
+              hasMediaFilters && hasListItems ? 'No titles match the current filters.' : undefined
+            }
+            icon="solar:clapperboard-bold"
+            items={filteredListItems}
+            onPageChange={setMediaPage}
+            showHeader={false}
+            title={list?.title || 'List'}
+            renderOverlay={(item) =>
+              isOwner ? (
+                <ProfileMediaActions
+                  media={item}
+                  onRemoveItem={handleRemoveListItem}
+                  removeLabel={`Remove ${item?.title || item?.name || 'item'} from this list`}
+                  userId={auth.user?.id}
+                />
+              ) : null
+            }
+            toolbar={
+              hasListItems && (
+                <>
+                  <AccountMediaFilterBar
+                    filters={mediaFilters}
+                    decadeOptions={decadeOptions}
+                    genreOptions={genreOptions}
+                    visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
+                    onChange={updateMediaFilters}
+                    onReset={hasMediaFilters ? resetMediaFilters : null}
                   />
-                ) : null
-              }
-              toolbar={
-                hasListItems && (
-                  <>
-                    <AccountMediaFilterBar
-                      filters={mediaFilters}
-                      decadeOptions={decadeOptions}
-                      genreOptions={genreOptions}
-                      visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
-                      onChange={updateMediaFilters}
-                      onReset={hasMediaFilters ? resetMediaFilters : null}
-                    />
-                    {hasMediaFilters && (
-                      <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
-                        {filteredListItems.length} of {listItems.length} titles shown
-                      </p>
-                    )}
-                  </>
-                )
-              }
-            />
-          </AccountSectionReveal>
+                  {hasMediaFilters && (
+                    <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                      {filteredListItems.length} of {listItems.length} titles shown
+                    </p>
+                  )}
+                </>
+              )
+            }
+          />
 
           <AccountSectionLayout
             contentPaddingClassName="p-0"

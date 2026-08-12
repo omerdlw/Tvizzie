@@ -5,7 +5,7 @@ import { useModalActions } from '@/modules/modal';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // ListsView is defined in this route client.
 import AccountListsFeed from '@/domains/account/ui/sections/lists/lists-collection';
-import AccountAction from '@/domains/account/ui/components/account-action-bar';
+import AccountAction from '@/domains/account/ui/nav-actions/account-action';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,

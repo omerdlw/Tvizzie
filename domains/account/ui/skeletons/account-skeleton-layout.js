@@ -16,15 +16,16 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
           {SECTION_ITEMS.map((label) => {
             const isSelected = label.toLowerCase() === activeTab.toLowerCase();
             return (
-              <div
-                key={label}
-                className={`inline-flex h-14 min-w-0 items-center justify-center px-3 backdrop-blur-md ${
-                  isSelected ? 'bg-black' : 'bg-white/40'
-                }`}
-              >
+              <div key={label} className="h-14 p-2 sm:min-w-0">
                 <div
-                  className={`h-2.5 w-12 animate-pulse ${isSelected ? 'bg-white/70' : 'skeleton-block-soft'}`}
-                />
+                  className={`center h-full w-full rounded-2xl px-2 ${
+                    isSelected ? 'bg-black' : ''
+                  }`}
+                >
+                  <div
+                    className={`h-2.5 w-12 ${isSelected ? 'bg-white/70' : 'skeleton-block-soft'}`}
+                  />
+                </div>
               </div>
             );
           })}
@@ -36,24 +37,26 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
 
 export function AccountHeroSkeleton() {
   return (
-    <section className="relative flex w-full flex-col items-center gap-5 py-2 text-center sm:gap-7 sm:py-4 lg:gap-8">
+    <section className="relative flex min-h-[280px] w-full flex-col items-center gap-5 py-2 text-center sm:gap-7 sm:py-4 lg:gap-8">
       {/* Avatar & Title Row (Matches AccountHero 1-to-1) */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
-        <div className="skeleton-block relative h-12 w-12 shrink-0 animate-pulse bg-white/40 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
-        <div className="skeleton-block h-12 w-52 animate-pulse sm:h-16 sm:w-80 lg:h-20 lg:w-[28rem]" />
+        <div className="skeleton-block relative h-12 w-12 shrink-0 rounded-2xl bg-white/40 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
+        <div className="skeleton-block h-10 w-40 sm:h-12 sm:w-44 lg:h-14 lg:w-48" />
       </div>
 
       {/* Stats Row Under Title (Matches AccountHero 6 items 1-to-1) */}
-      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 px-2 text-sm sm:text-base">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="skeleton-block-soft h-4 w-20 animate-pulse sm:w-24" />
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-2 text-sm sm:text-base">
+        {['w-16', 'w-14', 'w-12', 'w-12', 'w-14', 'w-14'].map((width, index) => (
+          <div key={index} className={`skeleton-block-soft h-4 ${width}`} />
         ))}
       </div>
 
       {/* Biography Lines (Matches AccountHero 1-to-1) */}
-      <div className="mx-auto w-full max-w-[72ch] space-y-2 px-4">
-        <div className="skeleton-block-soft mx-auto h-4 w-full max-w-[50ch] animate-pulse sm:h-5" />
-        <div className="skeleton-block-soft mx-auto h-4 w-2/3 max-w-[32ch] animate-pulse sm:h-5" />
+      <div className="mx-auto flex w-full max-w-[72ch] flex-col items-center gap-2 px-4">
+        <div className="skeleton-block-soft h-4 w-full max-w-[50ch] sm:h-5" />
+        <div className="skeleton-block-soft h-4 w-[88%] max-w-[44ch] sm:h-5" />
+        <div className="skeleton-block-soft h-4 w-2/3 max-w-[32ch] sm:h-5" />
+        <div className="skeleton-block-soft mt-1 h-3 w-16" />
       </div>
     </section>
   );

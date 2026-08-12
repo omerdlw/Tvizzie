@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import {
@@ -10,7 +9,6 @@ import {
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
-import { actionButtonVariants } from '@/app/(account)/motion';
 import { buildMediaKeySet } from '@/domains/account/ui/filters/filtering';
 export default function AccountReviewsOverview({
   currentUserId = null,
@@ -76,15 +74,13 @@ export default function AccountReviewsOverview({
           sortedReviews={items}
           userProfile={userProfile}
           watchedMediaKeys={watchedMediaKeys}
+          accountMotion
         />
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <motion.div
+        <div
           className={ACCOUNT_SECTION_PAGINATION_CLASS}
-          initial={actionButtonVariants.initial}
-          animate={actionButtonVariants.animate}
-          transition={actionButtonVariants.transition}
         >
           <Button
             type="button"
@@ -94,7 +90,7 @@ export default function AccountReviewsOverview({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </motion.div>
+        </div>
       ) : null}
     </AccountSectionLayout>
   );

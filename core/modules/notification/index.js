@@ -41,16 +41,14 @@ export function NotificationContainer() {
       className="pointer-events-none fixed top-4 right-0 left-0 mx-auto flex w-full max-w-[380px] flex-col gap-2 overflow-visible p-1 px-4 sm:right-4 sm:left-auto sm:mx-0 sm:px-0"
       style={{ zIndex: Z_INDEX.NOTIFICATION }}
     >
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence initial={false}>
         {sortedNotifications.map(([id, notification]) => (
           <motion.div
             key={id}
-            layout
             variants={toastVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            style={{ willChange: 'transform, filter, opacity' }}
           >
             <NotificationOverlay
               notification={notification}

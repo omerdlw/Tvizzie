@@ -120,7 +120,7 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       onClick={onClick}
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 text-sm font-medium disabled:cursor-default disabled:opacity-50',
+        'inline-flex items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97] disabled:cursor-default disabled:opacity-50',
         hasLiked ? 'text-error' : 'text-black/50 hover:text-black/70',
       )}
     >
@@ -148,7 +148,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/5 text-black/70 hover:border-black/10 hover:text-black"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -212,7 +212,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-xl border border-black/10 p-3 text-left transition-all duration-150 ease-in-out hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-xl border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"
@@ -226,7 +226,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase transition-all duration-150 ease-in-out group-hover:text-black">
+      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase group-hover:text-black">
         Show
       </span>
     </button>
@@ -304,7 +304,7 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-black/10 last:border-b-0',
+        'relative border-b border-black/10 transition-[background-color,border-color] duration-[340ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-b-0 hover:bg-black/[0.02]',
         removeTopPadding ? 'pt-0 sm:pt-0' : 'pt-3.5 sm:pt-4',
         removeBottomPadding ? 'pb-0 sm:pb-0' : 'pb-3.5 sm:pb-4',
         isSpoilerHidden && 'cursor-pointer',

@@ -80,6 +80,7 @@ export function useSearchActionController({
   const [localLoading, setLocalLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
+  const [resultSetId, setResultSetId] = useState(0);
 
   const query = isQueryControlled ? controlledQuery : localQuery;
   const searchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
@@ -127,6 +128,7 @@ export function useSearchActionController({
     handleQueryChange('');
     setResults([]);
     setCurrentPage(0);
+    setResultSetId((previousId) => previousId + 1);
 
     if (!isSearchTypeControlled) {
       setLocalSearchType(SEARCH_TYPES.ALL);
@@ -175,6 +177,7 @@ export function useSearchActionController({
     if (!normalizedDebouncedQuery) {
       setResults([]);
       setCurrentPage(0);
+      setResultSetId((previousId) => previousId + 1);
 
       if (!isSearchTypeControlled) {
         setLocalSearchType(SEARCH_TYPES.ALL);
@@ -208,12 +211,14 @@ export function useSearchActionController({
 
           setResults(payload.results);
           setCurrentPage(0);
+          setResultSetId((previousId) => previousId + 1);
         });
       } catch {
         if (!isCancelled) {
           startTransition(() => {
             setResults([]);
             setCurrentPage(0);
+            setResultSetId((previousId) => previousId + 1);
           });
         }
       } finally {
@@ -262,6 +267,7 @@ export function useSearchActionController({
     pageResults,
     query,
     results,
+    resultSetId,
     searchType,
     totalPages,
   };

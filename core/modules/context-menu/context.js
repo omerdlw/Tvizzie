@@ -46,8 +46,8 @@ function resolveNextOpenState(configOrState, x, y) {
 
     const resolvedPosition = isObject(configOrState.position)
       ? {
-          x: toFiniteNumber(configOrState.position.x, 0),
-          y: toFiniteNumber(configOrState.position.y, 0),
+          x: Math.round(toFiniteNumber(configOrState.position.x, 0)),
+          y: Math.round(toFiniteNumber(configOrState.position.y, 0)),
         }
       : { x: 0, y: 0 };
 
@@ -70,8 +70,8 @@ function resolveNextOpenState(configOrState, x, y) {
     isOpen: true,
     items: [],
     position: {
-      x: toFiniteNumber(x, 0),
-      y: toFiniteNumber(y, 0),
+      x: Math.round(toFiniteNumber(x, 0)),
+      y: Math.round(toFiniteNumber(y, 0)),
     },
   };
 }

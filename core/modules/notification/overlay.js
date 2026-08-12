@@ -8,10 +8,9 @@ import Icon from '@/ui/primitives/icon';
 
 import { NOTIFICATION_CONFIG } from './config';
 import {
-  NOTIFICATION_SPRING,
+  NOTIFICATION_ACTION_TAP_Y,
+  notificationContentVariants,
   NOTIFICATION_MICRO_SPRING,
-  NOTIFICATION_TAP_SCALE,
-  NOTIFICATION_MICRO_TAP_SCALE,
 } from './motion';
 
 export function NotificationOverlay({ notification, onDismiss }) {
@@ -36,24 +35,29 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden rounded-[24px] border backdrop-blur-lg',
+        'pointer-events-auto relative w-full overflow-hidden rounded-3xl border shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
         dismissible && 'touch-pan-y',
         config.colorClass,
       )}
     >
-      <div className="flex flex-col gap-3 p-4">
+      <motion.div
+        variants={notificationContentVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col gap-3 p-4"
+      >
         {dismissible ? (
           <motion.button
             type="button"
             aria-label="Bildirimi kapat"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: NOTIFICATION_MICRO_TAP_SCALE }}
+            whileHover={{ y: -1 }}
+            whileTap={{ y: 1 }}
             transition={NOTIFICATION_MICRO_SPRING}
             onClick={(e) => {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer rounded-full border border-black/5 transition-colors duration-150 hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer rounded-full border border-black/5 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={14} />
           </motion.button>
@@ -72,23 +76,22 @@ export function NotificationOverlay({ notification, onDismiss }) {
               <motion.button
                 key={action.label || index}
                 onPointerDown={(e) => e.stopPropagation()}
-                whileHover={{ scale: 1.012 }}
-                whileTap={{ scale: NOTIFICATION_TAP_SCALE }}
-                transition={NOTIFICATION_SPRING}
+                whileTap={{ y: NOTIFICATION_ACTION_TAP_Y }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => {
                   e.stopPropagation();
                   action.onClick?.();
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 rounded-xl border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-colors duration-200 hover:border-black/10 hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+                className="min-h-10 flex-1 rounded-xl border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-[background-color,border-color,color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/10 hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
               >
                 {action.label}
               </motion.button>
             ))}
           </div>
         ) : null}
-      </div>
+      </motion.div>
     </section>
   );
 }

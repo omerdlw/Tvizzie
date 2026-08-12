@@ -1,4 +1,3 @@
-import MediaAction from '@/app/_shell/navigation/media-action';
 import NotFoundAction from '@/ui/feedback/not-found-action';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
 
@@ -17,6 +16,5 @@ function createGuardSurface({ message, onCancel, onConfirm }) {
 
 export const NAV_RUNTIME = Object.freeze({
   createGuardSurface,
-  mediaAction: MediaAction,
   notFoundAction: NotFoundAction,
 });

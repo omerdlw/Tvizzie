@@ -2,8 +2,7 @@
 
 import { useDeferredValue, useEffect, useState, useTransition, useCallback, memo } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import { useAuth } from '@/modules/auth';
 import {
@@ -12,6 +11,11 @@ import {
   ACTION_BUTTON_CLASS,
   useModalActions,
 } from '@/modules/modal';
+import {
+  MODAL_LIST_ITEM_VARIANTS,
+  MODAL_LIST_VARIANTS,
+  MODAL_MICRO_TAP_SCALE,
+} from '@/modules/modal/motion';
 import { useToast } from '@/modules/notification';
 import { createUserListWithItems } from '@/domains/media/client/collections/lists';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
@@ -62,7 +66,7 @@ const getItemYear = (item) => formatYear(item?.release_date || item?.first_air_d
 
 const INPUT_STYLES = Object.freeze({
   wrapper:
-    'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
+    'flex h-11 items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
   input:
     'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
 });
@@ -76,12 +80,13 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.04, 0.28) }}
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
       onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-between rounded-2xl border p-1 transition-all duration-150 ease-in-out select-none',
+        'group flex w-full cursor-pointer items-center justify-between rounded-2xl border p-1 select-none transition-[background-color,border-color,color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.995]',
         isAdded
           ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
           : 'border-transparent bg-white hover:border-black/5 hover:bg-black/5',
@@ -121,7 +126,7 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
 
       <div
         className={cn(
-          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold tracking-wider uppercase transition-all duration-150 ease-in-out',
+          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold tracking-wider uppercase',
           isAdded
             ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
             : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
@@ -149,17 +154,19 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
   );
 });
 
-const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
+const DraftItemRow = memo(function DraftItemRow({ item, onRemove, index }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
-      className="group flex w-full items-center justify-between rounded-2xl border border-black/5 bg-white p-1 transition-colors duration-150 select-none hover:bg-black/5"
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="group flex w-full items-center justify-between rounded-2xl border border-black/5 bg-white p-1 select-none transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5"
     >
       <div className="flex min-w-0 items-center gap-3">
         <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
@@ -195,14 +202,12 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
 
       <motion.button
         type="button"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         onClick={(e) => {
           e.stopPropagation();
           onRemove(item);
         }}
-        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50 transition-colors duration-150"
+        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
@@ -391,14 +396,22 @@ export default function CreateListModal({ close, data }) {
           data-lenis-prevent-wheel
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]"
         >
+          <AnimatePresence mode="wait" initial={false}>
           {showSearchResults ? (
-            <div className="flex flex-col gap-1.5">
+            <motion.div
+              key="search-results"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex flex-col gap-1.5"
+            >
               <div className="flex items-center justify-between px-1 py-1">
                 <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
                   Search Results ({searchResults.length})
                 </span>
               </div>
-              <div className="flex flex-col gap-1">
+              <motion.div variants={MODAL_LIST_VARIANTS} className="flex flex-col gap-1">
                 {searchResults.map((item, index) => (
                   <SearchResultRow
                     key={getDraftMediaKey(item)}
@@ -414,10 +427,17 @@ export default function CreateListModal({ close, data }) {
                     Searching titles...
                   </div>
                 )}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           ) : (
-            <div className="flex flex-col gap-1.5">
+            <motion.div
+              key="draft-items"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex flex-col gap-1.5"
+            >
               {draftItems.length > 0 && (
                 <div className="flex items-center justify-between px-1 py-1">
                   <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
@@ -426,9 +446,11 @@ export default function CreateListModal({ close, data }) {
                 </div>
               )}
               {draftItems.length > 0 ? (
-                draftItems.map((item) => (
-                  <DraftItemRow key={getDraftMediaKey(item)} item={item} onRemove={handleRemove} />
-                ))
+                <AnimatePresence initial={false}>
+                  {draftItems.map((item, index) => (
+                    <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
+                  ))}
+                </AnimatePresence>
               ) : (
                 <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 p-6 text-center">
                   <Icon
@@ -444,8 +466,9 @@ export default function CreateListModal({ close, data }) {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
 
         <div className="flex flex-col gap-2 border-t border-black/10 pt-3">
@@ -459,26 +482,20 @@ export default function CreateListModal({ close, data }) {
           </div>
 
           <div className="flex items-center gap-2 overflow-visible p-0.5">
-            <motion.button
+            <button
               type="button"
               onClick={close}
               disabled={isSaving}
-              whileHover={{ scale: 1.012 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               className={cn(
                 CANCEL_BUTTON_CLASS,
                 'inline-flex h-9 flex-1 items-center justify-center gap-2',
               )}
             >
               <span>Cancel</span>
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="submit"
               disabled={isSaving || !canSubmit}
-              whileHover={isSaving || !canSubmit ? undefined : { scale: 1.012 }}
-              whileTap={isSaving || !canSubmit ? undefined : { scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               className={cn(
                 ACTION_BUTTON_CLASS,
                 'inline-flex h-9 flex-1 items-center justify-center gap-2',
@@ -489,7 +506,7 @@ export default function CreateListModal({ close, data }) {
                 size={16}
               />
               <span>{isSaving ? 'Creating...' : 'Create List'}</span>
-            </motion.button>
+            </button>
           </div>
         </div>
       </form>

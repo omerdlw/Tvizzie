@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { createSurfaceEntryDefinition } from '../surface-model';
+import { NAV_COMPACT_TO_SURFACE_DELAY_MS, NAV_SURFACE_EXIT_SETTLE_MS } from '../motion';
 
 function createSurfaceState(surfaceStack = []) {
   const activeSurface = surfaceStack[surfaceStack.length - 1] || null;
@@ -74,7 +75,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
     wasCompactRef.current = false;
     setTimeout(() => {
       setCompactLock('surface-opening', false);
-    }, 150);
+    }, NAV_SURFACE_EXIT_SETTLE_MS);
   }, [setCompactLock]);
 
   const closeSurface = useCallback(
@@ -158,7 +159,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       if (isCompactRef.current) {
         wasCompactRef.current = true;
         setCompactLock('surface-opening', true);
-        setTimeout(runOpen, 250);
+        setTimeout(runOpen, NAV_COMPACT_TO_SURFACE_DELAY_MS);
       } else {
         wasCompactRef.current = false;
         runOpen();

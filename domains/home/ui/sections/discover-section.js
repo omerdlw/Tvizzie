@@ -1,17 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
 import Icon from '@/ui/primitives/icon';
 import { useRegistry } from '@/modules/registry';
-import {
-  homeSectionVariants,
-  getGenreChipProps,
-  genreNavButtonProps,
-  getDiscoverCardProps,
-  loadMoreButtonVariants,
-} from '@/domains/home/ui/motion';
 import {
   ALL_GENRE_ID,
   MOBILE_DISCOVER_MEDIA_QUERY,
@@ -21,17 +13,15 @@ import {
 import { useDiscoverFeed } from '@/domains/home/client/use-discover-feed';
 
 function GenreChip({ genre, isActive, onClick, index = 0 }) {
-  const chipProps = getGenreChipProps(index);
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
       aria-pressed={isActive}
-      {...chipProps}
-      className={`center h-10 w-full rounded-2xl border px-3 text-xs tracking-wide text-black/70 transition-colors duration-200 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
+      className={`center h-10 w-full rounded-2xl border px-3 text-xs tracking-wide text-black/70 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
     >
       <span className="truncate">{genre.name}</span>
-    </motion.button>
+    </button>
   );
 }
 
@@ -257,20 +247,16 @@ export function DiscoverSection({
   }, [updateScrollButtons]);
 
   return (
-    <motion.section
-      variants={homeSectionVariants}
-      className="mx-auto flex w-full max-w-5xl flex-col gap-5"
-    >
+    <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
       <div className="relative flex w-full items-center">
-        <motion.button
+        <button
           type="button"
           disabled={!canScrollLeft}
-          {...genreNavButtonProps}
-          className="hover:bg-primary mr-2 inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm transition-all duration-150 hover:text-black disabled:pointer-events-none disabled:opacity-50"
+          className="hover:bg-primary mr-2 inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm hover:text-black disabled:pointer-events-none disabled:opacity-50"
           onClick={() => scroll('left')}
         >
           <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
-        </motion.button>
+        </button>
         <div
           ref={scrollContainerRef}
           className="scrollbar-hide flex flex-1 cursor-grab snap-x snap-mandatory items-center gap-2 overflow-x-auto scroll-smooth rounded-2xl select-none active:cursor-grabbing"
@@ -290,27 +276,26 @@ export function DiscoverSection({
             </div>
           ))}
         </div>
-        <motion.button
+        <button
           type="button"
           disabled={!canScrollRight}
-          {...genreNavButtonProps}
-          className="hover:bg-primary ml-2 inline-flex size-10 h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm transition-all duration-150 hover:text-black disabled:pointer-events-none disabled:opacity-50"
+          className="hover:bg-primary ml-2 inline-flex size-10 h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm hover:text-black disabled:pointer-events-none disabled:opacity-50"
           onClick={() => scroll('right')}
         >
           <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
-        </motion.button>
+        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
         {gridItems.map((item, index) => (
-          <motion.div key={item.id} {...getDiscoverCardProps(index)}>
+          <div key={item.id}>
             <MediaPosterCard
               item={item}
               className="w-full"
               imageLoading={index === 0 ? 'eager' : undefined}
               imageFetchPriority={index === 0 ? 'high' : undefined}
             />
-          </motion.div>
+          </div>
         ))}
 
         {isFiltering
@@ -336,22 +321,20 @@ export function DiscoverSection({
 
       <div className="flex justify-center pt-1">
         {hasMore ? (
-          <motion.button
+          <button
             type="button"
             onClick={handleLoadMore}
             disabled={isLoadingMore || isFiltering}
-            {...loadMoreButtonVariants}
             className="bg-primary inline-flex h-10 items-center gap-2 rounded-2xl border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon
               icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
               size={16}
-              className={isLoadingMore ? 'animate-spin' : ''}
             />
             {isLoadingMore ? 'Loading' : 'Load more'}
-          </motion.button>
+          </button>
         ) : null}
       </div>
-    </motion.section>
+    </section>
   );
 }

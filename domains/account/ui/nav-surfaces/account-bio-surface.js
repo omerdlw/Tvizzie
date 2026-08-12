@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 
 function formatFollowCount(value) {
@@ -35,10 +34,7 @@ export default function AccountBioSurface({ description = '' }) {
   const normalizedDescription = String(description || '').trim();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
+    <div
       className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-2xl px-4 py-2"
     >
       {normalizedDescription ? (
@@ -48,6 +44,6 @@ export default function AccountBioSurface({ description = '' }) {
           </p>
         </div>
       ) : null}
-    </motion.div>
+    </div>
   );
 }

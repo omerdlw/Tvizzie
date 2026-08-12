@@ -9,14 +9,14 @@ import ImagePreviewModal from '@/domains/media/ui/modals/image-preview-modal';
 import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
 import VideoPreviewModal from '@/domains/media/ui/modals/video-preview-modal';
 import MediaSocialProofModal from '@/domains/media/ui/modals/media-social-proof-modal';
-import ReviewAction from '@/domains/reviews/actions/review-action';
-import SearchAction from '@/domains/search/ui/components/search-action';
-import MovieAction from '@/domains/media/actions/movie-action';
-import PersonAction from '@/domains/media/actions/person-action';
-import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
+import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
+import SearchAction from '@/domains/search/ui/nav-actions/search-action';
+import MovieAction from '@/domains/media/ui/nav-actions/movie-action';
+import PersonAction from '@/domains/media/ui/nav-actions/person-action';
+import WatchProvidersSurface from '@/domains/media/ui/nav-surfaces/watch-providers-surface';
 import ReviewEditorSurface, {
   createReviewEditorSurfaceEntry,
-} from '@/domains/reviews/ui/surfaces/review-editor-surface';
+} from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/shared/review-data';
 import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
 import { TMDB_IMG } from '@/shared/constants';
@@ -27,8 +27,7 @@ import Icon from '@/ui/primitives/icon';
 import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,
-} from '@/domains/media/actions/context-menu-actions';
-import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
+} from '@/domains/media/ui/components/context-menu-actions';
 
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
 const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';
@@ -169,7 +168,6 @@ export default function Registry({
                   noiseStyle: {
                     opacity: 0.2,
                   },
-                  animation: MEDIA_BACKGROUND_ANIMATION,
                 }
               : {
                   image: null,
@@ -179,7 +177,6 @@ export default function Registry({
                   noiseStyle: {
                     opacity: 0,
                   },
-                  animation: MEDIA_BACKGROUND_ANIMATION,
                 },
           }
         : {}),
@@ -390,7 +387,6 @@ export default function Registry({
                 noiseStyle: {
                   opacity: 0.2,
                 },
-                animation: MEDIA_BACKGROUND_ANIMATION,
               }
             : {
                 image: null,
@@ -400,7 +396,6 @@ export default function Registry({
                 noiseStyle: {
                   opacity: 0,
                 },
-                animation: MEDIA_BACKGROUND_ANIMATION,
               },
         }
       : {}),

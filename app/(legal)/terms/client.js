@@ -1,31 +1,34 @@
 'use client';
 
+import { Children } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import LegalNavRegistry from '@/app/(legal)/registry';
 import LegalQuickLinks from '@/domains/legal/ui/components/legal-quick-links';
 import LegalPageShell, {
   LEGAL_PAGE_CONTENT_CLASS,
 } from '@/domains/legal/ui/layouts/legal-page-shell';
-import {
-  articleContainerVariants,
-  contentDividerVariants,
-  headerContainerVariants,
-  legalQuickLinksVariants,
-  listItemVariants,
-  pageContainerVariants,
-  sectionItemVariants,
-  titleVariants,
-} from '@/app/(legal)/motion';
+import { LegalReveal } from '@/app/(legal)/motion';
 
 const LAST_UPDATED = 'April 20, 2026';
 
 function AnimatedLegalSection({ children, title }) {
   return (
-    <motion.section variants={sectionItemVariants} className="space-y-3">
+    <section className="space-y-3">
       <h2 className="text-xl font-semibold tracking-tight text-black sm:text-2xl">{title}</h2>
       <div className="space-y-3 text-sm leading-7 text-black/72 sm:text-[15px]">{children}</div>
-    </motion.section>
+    </section>
+  );
+}
+
+function LegalDocument({ children }) {
+  return (
+    <article className="bg-primary space-y-8 border border-black/5 p-6 sm:p-8">
+      {Children.toArray(children).map((section, index) => (
+        <LegalReveal key={section.key || index} inView itemIndex={index} stage="section">
+          {section}
+        </LegalReveal>
+      ))}
+    </article>
   );
 }
 
@@ -38,59 +41,45 @@ function TermsView() {
         icon="solar:document-text-bold"
       />
       <LegalPageShell>
-        <motion.div
+        <div
           className={LEGAL_PAGE_CONTENT_CLASS}
-          variants={pageContainerVariants}
-          initial={false}
-          animate="visible"
-          exit="exit"
         >
-          <motion.header
-            variants={headerContainerVariants}
-            className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28"
-          >
+          <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
-              <motion.h1
-                variants={titleVariants}
-                className="text-4xl font-semibold tracking-tight text-black sm:text-5xl"
-              >
-                Terms of Service
-              </motion.h1>
-              <motion.p
-                variants={titleVariants}
-                className="mx-auto max-w-2xl text-sm leading-7 text-black/68 sm:text-[15px]"
-              >
-                These terms govern access to and use of Tvizzie. They are written to match the
-                current product: a movie and TV discovery service with accounts, profile pages,
-                watch tracking, reviews, likes, and lists.
-              </motion.p>
+              <LegalReveal stage="title">
+                <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+                  Terms of Service
+                </h1>
+              </LegalReveal>
+              <LegalReveal stage="lead">
+                <p className="mx-auto max-w-2xl text-sm leading-7 text-black/68 sm:text-[15px]">
+                  These terms govern access to and use of Tvizzie. They are written to match the
+                  current product: a movie and TV discovery service with accounts, profile pages,
+                  watch tracking, reviews, likes, and lists.
+                </p>
+              </LegalReveal>
             </div>
-            <motion.p
-              variants={titleVariants}
-              className="text-xs tracking-wide text-black/44 uppercase"
-            >
-              Last updated {LAST_UPDATED}
-            </motion.p>
-          </motion.header>
+            <LegalReveal stage="meta">
+              <p className="text-xs tracking-wide text-black/44 uppercase">
+                Last updated {LAST_UPDATED}
+              </p>
+            </LegalReveal>
+          </header>
 
-          <motion.div
+          <div
             aria-hidden="true"
-            variants={contentDividerVariants}
             className="relative left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
           />
 
-          <LegalQuickLinks variants={legalQuickLinksVariants} />
+          <LegalQuickLinks />
 
           <div className="mt-6 w-full">
-            <motion.article
-              variants={articleContainerVariants}
-              className="bg-primary space-y-8 border border-black/5 p-6 sm:p-8"
-            >
+            <LegalDocument>
               <AnimatedLegalSection title="Acceptance of these terms">
                 <p>
                   By accessing or using Tvizzie, you agree to these Terms of Service and to the{' '}
                   <Link
-                    className="underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
                     href="/privacy"
                   >
                     Privacy Policy
@@ -110,24 +99,24 @@ function TermsView() {
 
               <AnimatedLegalSection title="Accounts and access">
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     You are responsible for the accuracy of information you add to your account.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You are responsible for activity that happens under your account.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You must keep your login credentials and verification codes secure.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     You may not attempt to gain unauthorized access to other accounts or restricted
                     parts of the service.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Tvizzie may suspend or restrict access if account activity appears abusive,
                     fraudulent, automated in a harmful way, or otherwise unsafe for the service or
                     its users.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
@@ -151,26 +140,26 @@ function TermsView() {
               <AnimatedLegalSection title="Acceptable use">
                 <p>You agree not to use Tvizzie to:</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <motion.li variants={listItemVariants}>
+                  <li>
                     Break the law or violate another person&apos;s rights.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Harass, abuse, threaten, impersonate, or dox other people.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Upload malicious code, interfere with the service, or attempt to bypass security
                     controls.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Spam the product with automated or repetitive content.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Scrape or extract data from the service in a way that harms the product, its
                     users, or its infrastructure.
-                  </motion.li>
-                  <motion.li variants={listItemVariants}>
+                  </li>
+                  <li>
                     Post content that you do not have the right to publish.
-                  </motion.li>
+                  </li>
                 </ul>
               </AnimatedLegalSection>
 
@@ -236,7 +225,7 @@ function TermsView() {
                 <p>
                   Questions about these terms can be sent to{' '}
                   <a
-                    className="underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
                     href="mailto:omerdeliavci@outlook.com"
                   >
                     omerdeliavci@outlook.com
@@ -244,9 +233,9 @@ function TermsView() {
                   .
                 </p>
               </AnimatedLegalSection>
-            </motion.article>
+            </LegalDocument>
           </div>
-        </motion.div>
+        </div>
       </LegalPageShell>
     </>
   );

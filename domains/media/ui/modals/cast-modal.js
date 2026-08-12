@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, useMemo, memo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/shared/constants';
 import { Container } from '@/modules/modal';
+import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal/motion';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
@@ -40,7 +41,7 @@ const PersonCard = memo(function PersonCard({ close, person }) {
     <Link
       href={`/person/${person.id}`}
       onClick={close}
-      className="flex h-full w-full items-center gap-3 rounded-lg p-2 transition-colors duration-150 hover:bg-black/5 focus:ring-2 focus:ring-black/20 focus:outline-none"
+      className="flex h-full w-full items-center gap-3 p-2 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 focus:outline-none"
       aria-label={`View details for ${person.name || 'Cast member'}`}
     >
       <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-black/5">
@@ -121,19 +122,25 @@ export default function CastModal({ close, data, header }) {
       bodyClassName="bg-transparent p-0"
     >
       <div ref={contentRef} className="relative min-h-32 overflow-y-auto">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 divide-y divide-black/10 sm:grid-cols-2 lg:grid-cols-3"
+            variants={MODAL_LIST_VARIANTS}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="grid grid-cols-1 divide-x divide-y divide-black/10 sm:grid-cols-2 lg:grid-cols-3"
           >
             {activeEntries.map((person, index) => (
-              <div key={`${activeTab}-${person.id || ''}-${index}`} className="p-1">
+              <motion.div
+                key={`${activeTab}-${person.id || ''}-${index}`}
+                variants={MODAL_LIST_ITEM_VARIANTS}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+              >
                 <PersonCard close={close} person={person} />
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </AnimatePresence>

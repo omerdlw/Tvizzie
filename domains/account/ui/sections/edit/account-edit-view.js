@@ -15,6 +15,7 @@ import { Spinner } from '@/ui/feedback/spinner';
 import { StatusState } from './account-edit-primitives';
 import { AccountGeneralSettingsForm } from './account-general-settings-form';
 import { AccountSecuritySettings } from './account-security-settings';
+import { AccountMotionProvider } from '@/app/(account)/motion';
 
 export function AccountEditView(props) {
   const { navHeight } = useNavHeight();
@@ -120,7 +121,7 @@ export function AccountEditView(props) {
     );
   }
   return (
-    <>
+    <AccountMotionProvider routeKey={`account-edit-${activeTab}`}>
       {editRegistry}
       <PageGradientShell className="overflow-hidden">
         <AccountGridFrame />
@@ -187,6 +188,6 @@ export function AccountEditView(props) {
           </div>
         </div>
       </PageGradientShell>
-    </>
+    </AccountMotionProvider>
   );
 }

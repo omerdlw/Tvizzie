@@ -76,7 +76,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
                 rel="noopener noreferrer"
                 title={link.label}
                 className={cn(
-                  'center hover:text-info hover:bg-primary h-full w-full transition-colors duration-150 ease-linear',
+                  'center hover:text-info hover:bg-primary h-full w-full',
                   isFirst && 'rounded-l-[12px]',
                   isLast && 'rounded-r-[12px]',
                   linkClassName,

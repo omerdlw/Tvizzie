@@ -8,13 +8,19 @@ import Icon from '@/ui/primitives/icon';
 
 import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 import { MODAL_POSITIONS } from '@/modules/modal/config';
-import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './motion';
+import {
+  MODAL_CONTENT_VARIANTS,
+  MODAL_FOOTER_VARIANTS,
+  MODAL_HEADER_VARIANTS,
+  MODAL_MICRO_SPRING,
+  MODAL_MICRO_TAP_SCALE,
+} from './motion';
 
 export const CANCEL_BUTTON_CLASS =
-  'h-8 shrink-0 border rounded-xl border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 hover:bg-black/5 hover:text-black transition-colors duration-150 ease-linear';
+  'h-8 shrink-0 rounded-xl border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black active:scale-[0.97] disabled:active:scale-100';
 
 export const ACTION_BUTTON_CLASS = cn(
-  'h-8 shrink-0 rounded-xl px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-colors duration-150 ease-linear disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50',
+  'h-8 shrink-0 rounded-xl px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50 disabled:active:scale-100',
   INFO_ACTION_TONE_CLASS,
 );
 
@@ -136,7 +142,10 @@ export default function Container({
   return (
     <div className={getContainerClassName({ className, position: resolvedPosition })}>
       {shouldRenderHeader ? (
-        <div
+        <motion.div
+          variants={MODAL_HEADER_VARIANTS}
+          initial="hidden"
+          animate="visible"
           className={cn(
             hasSlotContent(headerCenter)
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
@@ -150,15 +159,25 @@ export default function Container({
             <div className="flex items-center justify-center">{headerCenter}</div>
           )}
           <div className="min-w-0">{headerRight}</div>
-        </div>
+        </motion.div>
       ) : null}
 
-      <div data-lenis-prevent data-lenis-prevent-wheel className={getBodyClassName(bodyClassName)}>
+      <motion.div
+        variants={MODAL_CONTENT_VARIANTS}
+        initial="hidden"
+        animate="visible"
+        data-lenis-prevent
+        data-lenis-prevent-wheel
+        className={getBodyClassName(bodyClassName)}
+      >
         {children}
-      </div>
+      </motion.div>
 
       {shouldRenderFooter ? (
-        <div
+        <motion.div
+          variants={MODAL_FOOTER_VARIANTS}
+          initial="hidden"
+          animate="visible"
           className={cn(
             hasSlotContent(footerCenter)
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
@@ -179,7 +198,7 @@ export default function Container({
           >
             {footerRight}
           </div>
-        </div>
+        </motion.div>
       ) : null}
     </div>
   );

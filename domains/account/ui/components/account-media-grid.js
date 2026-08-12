@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
@@ -22,8 +21,7 @@ import AccountSectionLayout, {
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '../sections/account-section';
 import { MediaCardsSkeletonGrid } from '../skeletons/account-section-skeletons';
-import { getCardProps, paginationVariants, TIMELINES } from '@/app/(account)/motion';
-
+import { AccountReveal } from '@/app/(account)/motion';
 const ITEMS_PER_PAGE = 36;
 
 function createPosterSource(item, mediaType) {
@@ -97,7 +95,7 @@ export function ProfileMediaActions({
 }
 
 export default function AccountMediaGridPage({
-  baseDelay = TIMELINES.CARD_BASE_DELAY,
+  baseDelay = 0,
   currentPage = 1,
   emptyMessage = 'No items yet',
   icon = 'solar:heart-bold',
@@ -166,15 +164,13 @@ export default function AccountMediaGridPage({
         <>
           <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
             {visibleCards.map((card, index) => {
-              const cardProps = getCardProps(index, baseDelay, isInitialSection);
               return (
-                <motion.div
+                <AccountReveal
                   key={`${card.id}-${pageStart + index}`}
-                  initial={cardProps.initial}
-                  animate={cardProps.animate}
-                  transition={cardProps.transition}
-                  whileHover={cardProps.whileHover}
-                  whileTap={cardProps.whileTap}
+                  deferred
+                  interactive
+                  itemIndex={index}
+                  stage="item.media"
                 >
                   <MediaCard
                     href={card.href}
@@ -187,17 +183,13 @@ export default function AccountMediaGridPage({
                     }
                     tooltipText={card.tooltipText}
                   />
-                </motion.div>
+                </AccountReveal>
               );
             })}
           </div>
 
           {totalPages > 1 && (
-            <motion.div
-              initial={paginationVariants.initial}
-              whileInView={paginationVariants.whileInView}
-              viewport={paginationVariants.viewport}
-              transition={paginationVariants.transition}
+            <div
               className={ACCOUNT_SECTION_PAGINATION_CLASS}
             >
               <AccountPagination
@@ -211,7 +203,7 @@ export default function AccountMediaGridPage({
                   }
                 }}
               />
-            </motion.div>
+            </div>
           )}
         </>
       )}

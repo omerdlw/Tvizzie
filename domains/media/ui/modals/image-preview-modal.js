@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/shared/constants';
 import { Container } from '@/modules/modal';
@@ -35,7 +35,7 @@ export default function ImagePreviewModal({ close, data }) {
 
   return (
     <Container
-      className={`relative max-h-[85vh] rounded-[24px] ${frameWidthClass}`}
+      className={`relative max-h-[85vh] rounded-3xl ${frameWidthClass}`}
       close={close}
       header={false}
       bodyClassName="p-0"
@@ -46,9 +46,9 @@ export default function ImagePreviewModal({ close, data }) {
         style={{ aspectRatio: String(aspectRatio) }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isLoaded ? 1 : 0 }}
+          transition={{ duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
           className="absolute inset-0 h-full w-full"
         >
           <Image
@@ -61,11 +61,19 @@ export default function ImagePreviewModal({ close, data }) {
             fill
           />
         </motion.div>
-        {!isLoaded && (
-          <div className="center absolute inset-0 bg-black/5">
-            <Spinner size={40} />
-          </div>
-        )}
+        <AnimatePresence>
+          {!isLoaded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="center absolute inset-0 bg-black/5"
+            >
+              <Spinner size={40} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Container>
   );

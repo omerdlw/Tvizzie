@@ -1,8 +1,7 @@
 'use client';
 
-import SearchAction from '@/domains/search/ui/components/search-action';
+import SearchAction from '@/domains/search/ui/nav-actions/search-action';
 import { createRouteRegistry } from '@/modules/registry/route-registry';
-import { HOME_BACKGROUND_ANIMATION } from '@/domains/home/ui/motion';
 
 export default createRouteRegistry({
   displayName: 'HomeRegistry',
@@ -18,7 +17,6 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0.2,
             },
-            animation: HOME_BACKGROUND_ANIMATION,
           },
         }
       : {
@@ -30,7 +28,6 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0,
             },
-            animation: HOME_BACKGROUND_ANIMATION,
           },
         }),
     loading: { isLoading },

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
-import SearchAction from '@/domains/search/ui/components/search-action';
+import SearchAction from '@/domains/search/ui/nav-actions/search-action';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 import { buildAccountRegistryState } from '../../hooks/account-registry-state';
 import {

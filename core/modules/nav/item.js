@@ -211,7 +211,7 @@ function StandardItemContent({
       </div>
 
       {footerNode ? (
-        <div key="nav-surface-footer" ref={footerRef} className="w-full overflow-hidden pt-2.5">
+        <div key="nav-surface-footer" ref={footerRef} className="w-full overflow-hidden">
           {footerNode}
         </div>
       ) : null}
@@ -263,6 +263,7 @@ const Item = memo(
     );
 
     const renderedActionNode = link.isSurface ? null : ActionComponent;
+    const contentKey = link.isSurface ? `surface:${link.surfaceId ?? 'active'}` : 'standard';
 
     useElementHeight(
       onContentHeightChange,
@@ -323,7 +324,25 @@ const Item = memo(
           itemStyle={itemStyle}
           badge={badge}
           isActive={isActive}
-          footerNode={null}
+          footerNode={
+            renderedActionNode ? (
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key="nav-action-component"
+                  variants={textCrossfadeVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={NAV_FADE_TRANSITION}
+                  className="flow-root overflow-visible"
+                  style={{ overflow: 'visible' }}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <Suspense>{renderedActionNode}</Suspense>
+                </motion.div>
+              </AnimatePresence>
+            ) : null
+          }
           footerRef={null}
         />
       );
@@ -357,40 +376,13 @@ const Item = memo(
         style={cardStyle}
         initial={false}
         animate={{
-          y: motionValues.y,
-          scale:
-            isStackHovered && position > 0
-              ? [
-                  motionValues.scale,
-                  motionValues.scale * 1.04,
-                  motionValues.scale * 0.98,
-                  motionValues.scale,
-                ]
-              : motionValues.scale,
+          y: isStackHovered && position > 0 ? motionValues.y - position * 2 : motionValues.y,
+          scale: motionValues.scale,
           opacity: motionValues.opacity,
-          filter:
-            isStackHovered && position > 0
-              ? ['brightness(1)', 'brightness(1.5)', 'brightness(1)']
-              : 'brightness(1)',
         }}
         transition={{
           ...NAV_CARD_SPRING,
-          filter:
-            isStackHovered && position > 0
-              ? {
-                  duration: 0.55,
-                  delay: (position - 1) * 0.05,
-                  ease: 'easeInOut',
-                }
-              : undefined,
-          scale:
-            isStackHovered && position > 0
-              ? {
-                  duration: 0.55,
-                  delay: (position - 1) * 0.05,
-                  ease: 'easeInOut',
-                }
-              : undefined,
+          delay: isStackHovered && position > 0 ? (position - 1) * 0.055 : 0,
         }}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
@@ -437,22 +429,18 @@ const Item = memo(
             pointerEvents: compact ? 'none' : 'auto',
           }}
         >
-          {renderContent()}
-
-          <AnimatePresence mode="popLayout">
-            {renderedActionNode && (
+          <AnimatePresence mode="wait" initial={false}>
+            {link.isSurface ? (
+              <SurfaceItemContent key={contentKey} link={link} />
+            ) : (
               <motion.div
-                key="nav-action-component"
-                variants={textCrossfadeVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                key={contentKey}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={NAV_FADE_TRANSITION}
-                className="flow-root overflow-visible"
-                style={{ overflow: 'visible' }}
-                onClick={(event) => event.stopPropagation()}
               >
-                <Suspense>{renderedActionNode}</Suspense>
+                {renderContent()}
               </motion.div>
             )}
           </AnimatePresence>

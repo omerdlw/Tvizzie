@@ -1,14 +1,14 @@
 'use client';
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useDraggableScroll } from '@/shared/hooks/use-draggable-scroll';
 import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
+import { MEDIA_ROUTE_INTERACTIONS } from '@/app/(media)/motion';
 const SCROLL_STEP = 2;
 const SCROLL_THRESHOLD = 4;
 const FALLBACK_CARD_WIDTH = 288;
-const ACCENT_EASING = [0.32, 0.72, 0, 1];
 function getScrollState(element) {
   return {
     hasOverflow: element.scrollWidth - element.clientWidth > SCROLL_THRESHOLD,
@@ -38,7 +38,6 @@ export default function Carousel({
   className = '',
   gap = 'gap-2',
   itemClassName = '',
-  buttonProps,
 }) {
   const scrollRef = useDraggableScroll();
   const [scrollState, setScrollState] = useState({
@@ -91,26 +90,6 @@ export default function Carousel({
     [scrollRef],
   );
 
-  const resolveButtonProps = useCallback(
-    (direction) => {
-      if (typeof buttonProps === 'function') {
-        return buttonProps(direction);
-      }
-      if (buttonProps && typeof buttonProps === 'object') {
-        return buttonProps;
-      }
-      return {
-        initial: { opacity: 0, scale: 0.8, filter: 'blur(8px)' },
-        animate: { opacity: 1, scale: 1, filter: 'blur(0px)' },
-        exit: { opacity: 0, scale: 0.8, filter: 'blur(8px)' },
-        transition: { duration: 0.42, ease: ACCENT_EASING },
-        whileHover: { scale: 1.1 },
-        whileTap: { scale: 0.9 },
-      };
-    },
-    [buttonProps],
-  );
-
   return (
     <div className="group/carousel relative w-full">
       <div
@@ -132,39 +111,35 @@ export default function Carousel({
           </div>
         ))}
       </div>
-      <AnimatePresence>
-        {scrollState.canScrollLeft && (
-          <motion.button
-            key="carousel-btn-left"
-            type="button"
-            aria-label="Scroll left"
-            onClick={() => scrollByDirection(-1)}
-            {...resolveButtonProps(-1)}
-            className={cn(
-              'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-left-4',
-            )}
-          >
-            <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {scrollState.canScrollLeft && (
+        <motion.button
+          key="carousel-btn-left"
+          type="button"
+          aria-label="Scroll left"
+          onClick={() => scrollByDirection(-1)}
+          {...MEDIA_ROUTE_INTERACTIONS.control}
+          className={cn(
+            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-left-4',
+          )}
+        >
+          <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
+        </motion.button>
+      )}
 
-      <AnimatePresence>
-        {scrollState.canScrollRight && (
-          <motion.button
-            key="carousel-btn-right"
-            type="button"
-            aria-label="Scroll right"
-            onClick={() => scrollByDirection(1)}
-            {...resolveButtonProps(1)}
-            className={cn(
-              'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-right-4',
-            )}
-          >
-            <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {scrollState.canScrollRight && (
+        <motion.button
+          key="carousel-btn-right"
+          type="button"
+          aria-label="Scroll right"
+          onClick={() => scrollByDirection(1)}
+          {...MEDIA_ROUTE_INTERACTIONS.control}
+          className={cn(
+            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-right-4',
+          )}
+        >
+          <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />
+        </motion.button>
+      )}
     </div>
   );
 }

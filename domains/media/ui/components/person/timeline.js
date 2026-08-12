@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 import MediaThumb from './media-thumb';
 import Icon from '@/ui/primitives/icon';
 import { getTimelineCredits } from '@/domains/media/utils/person-data';
-import { EASINGS } from '@/app/(media)/motion';
+import { MediaRouteReveal } from '@/app/(media)/motion';
 
 function groupByYear(credits) {
   const grouped = {};
@@ -39,21 +39,20 @@ export default function PersonTimeline({ person }) {
   return (
     <section className="relative w-full">
       <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:sort-by-time-bold" size={24} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-widest text-black/70 uppercase">
-            Timeline
-          </h2>
-        </div>
+        <MediaRouteReveal stage="person.sections.timeline" deferred>
+          <div className="flex min-w-0 items-center gap-2">
+            <Icon icon="solar:sort-by-time-bold" size={24} className="text-black/70" />
+            <h2 className="min-w-0 text-xs font-semibold tracking-widest text-black/70 uppercase">
+              Timeline
+            </h2>
+          </div>
+        </MediaRouteReveal>
         <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       </div>
 
       <div className="p-6">
         <div className="relative">
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 0.3, ease: EASINGS.LUXURY }}
+          <div
             className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24"
           />
 
@@ -62,30 +61,20 @@ export default function PersonTimeline({ person }) {
               const isLast = yearIndex === timeline.length - 1;
               return (
                 <div key={year} className="relative flex">
-                  <div className="w-16 shrink-0 sm:w-24">
-                    <motion.span
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.25,
-                        delay: Math.min(yearIndex * 0.02, 0.1),
-                        ease: EASINGS.LUXURY,
-                      }}
+                  <MediaRouteReveal
+                    className="w-16 shrink-0 sm:w-24"
+                    deferred
+                    itemIndex={yearIndex}
+                    stage="person.timeline.year"
+                  >
+                    <span
                       className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base"
                     >
                       {year}
-                    </motion.span>
-                  </div>
+                    </span>
+                  </MediaRouteReveal>
 
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 350,
-                      damping: 20,
-                      delay: Math.min(yearIndex * 0.02, 0.1),
-                    }}
+                  <div
                     className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black sm:left-24"
                   />
 
@@ -101,28 +90,17 @@ export default function PersonTimeline({ person }) {
                         credit.original_name ||
                         'Untitled';
                       const creditLabel = getCreditLabel(credit);
-                      const cardDelay = Math.min(yearIndex * 0.02 + creditIndex * 0.015, 0.15);
-
                       return (
-                        <motion.div
+                        <MediaRouteReveal
                           key={`${credit.credit_id || credit.id}-${credit.media_type}`}
-                          initial={{ opacity: 0, x: 16 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: cardDelay,
-                            ease: EASINGS.LUXURY,
-                          }}
-                          whileHover={{
-                            scale: 1.02,
-                            x: 4,
-                            transition: { type: 'spring', stiffness: 400, damping: 25 },
-                          }}
-                          whileTap={{ scale: 0.98 }}
+                          deferred
+                          interactive
+                          itemIndex={yearIndex * 4 + creditIndex}
+                          stage="person.timeline.item"
                         >
                           <Link
                             href={`/${mediaType}/${credit.id}`}
-                            className="group flex items-center gap-4 rounded-[20px] p-1 transition-colors hover:bg-black/5"
+                            className="group flex items-center gap-4 rounded-[20px] p-1 transition-[background-color] duration-300 ease-out hover:bg-black/5"
                           >
                             <MediaThumb
                               poster={credit.poster_path}
@@ -140,7 +118,7 @@ export default function PersonTimeline({ person }) {
                               )}
                             </div>
                           </Link>
-                        </motion.div>
+                        </MediaRouteReveal>
                       );
                     })}
                   </div>

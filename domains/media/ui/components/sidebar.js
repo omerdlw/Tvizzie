@@ -1,19 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 import { TMDB_IMG } from '@/shared/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
-import {
-  getSidebarRowProps,
-  getTaxonomyChipProps,
-  getTaxonomyHeaderProps,
-  TIMELINES,
-  sidebarPosterVariants,
-} from '@/app/(media)/motion';
+import { MediaRouteReveal } from '@/app/(media)/motion';
 
 const MAX_VISIBLE_PERSONS = 2;
 
@@ -43,7 +37,7 @@ function PersonLink({ person }) {
   return (
     <Link
       href={`/person/${person.id}`}
-      className="text-black/70 transition-colors hover:text-black"
+      className="text-black/70 hover:text-black"
     >
       {person.name}
     </Link>
@@ -87,38 +81,56 @@ function createRow(id, icon, content) {
   };
 }
 
-function SidebarTaxonomy({ genres = [], baseDelay = TIMELINES.TAXONOMY_BASE_DELAY }) {
+function SidebarTaxonomy({ genres = [], tags = [] }) {
   const normalizedGenres = normalizeTaxonomyItems(genres);
-  if (!normalizedGenres.length) {
+  const normalizedTags = normalizeTaxonomyItems(tags, '#');
+  if (!normalizedGenres.length && !normalizedTags.length) {
     return { element: null, count: 0 };
   }
-  let chipIndexCounter = 0;
   const elements = (
-    <div className="mt-2 flex flex-col gap-2">
-      <motion.div {...getTaxonomyHeaderProps(baseDelay)}>
+    <MediaRouteReveal stage="sidebar.taxonomy">
+      <div className="mt-2 flex flex-col gap-2">
+      <div>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
-          GENRES
+          GENRES / TAGS
         </p>
-      </motion.div>
+      </div>
       <div className="flex flex-wrap items-center gap-1.5">
-        {normalizedGenres.map((genre) => {
-          const currentIndex = chipIndexCounter++;
+        {normalizedGenres.map((genre, index) => {
           return (
-            <motion.div
+            <MediaRouteReveal
               key={genre}
-              {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
+              stage="sidebar.taxonomy"
+              interaction="control"
+              interactive
+              itemIndex={index}
             >
-              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase transition-colors hover:border-black/20 hover:text-black">
+              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/20 hover:text-black">
                 {genre}
               </span>
-            </motion.div>
+            </MediaRouteReveal>
           );
         })}
+        {normalizedTags.map((tag, index) => (
+          <MediaRouteReveal
+            key={tag}
+            className="inline-flex"
+            stage="sidebar.taxonomy"
+            interaction="control"
+            interactive
+            itemIndex={normalizedGenres.length + index}
+          >
+            <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/70 uppercase hover:border-black/20 hover:text-black">
+              {tag}
+            </span>
+          </MediaRouteReveal>
+        ))}
       </div>
-    </div>
+      </div>
+    </MediaRouteReveal>
   );
-  return { element: elements, count: chipIndexCounter + 1 };
+  return { element: elements, count: normalizedGenres.length + normalizedTags.length };
 }
 
 export default function Sidebar({
@@ -129,13 +141,14 @@ export default function Sidebar({
   certification,
   topContent,
   genres = [],
+  tags = [],
 }) {
   const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)
       ?.english_name || item.original_language;
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
-  const hasTaxonomy = genres?.length;
+  const hasTaxonomy = genres?.length || tags?.length;
   const personGroups = [
     {
       id: 'writers',
@@ -221,15 +234,13 @@ export default function Sidebar({
 
   const taxonomyData = SidebarTaxonomy({
     genres,
-    baseDelay: TIMELINES.TAXONOMY_BASE_DELAY,
+    tags,
   });
-  const rowBaseDelay =
-    TIMELINES.SIDEBAR_ROWS_DELAY + (hasTaxonomy ? taxonomyData.count * TIMELINES.TAXONOMY_STEP : 0);
 
   return (
     <div className="flex flex-col gap-4">
-      <motion.div {...sidebarPosterVariants}>
-        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden rounded-[24px] sm:max-w-[360px] lg:max-w-none">
+      <MediaRouteReveal stage="sidebar.poster">
+        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden rounded-3xl sm:max-w-[360px] lg:max-w-none">
           {posterSrc ? (
             <AdaptiveImage
               fill
@@ -244,7 +255,7 @@ export default function Sidebar({
               blurDataURL={getImagePlaceholderDataUrl(
                 `${item.id || item.title || item.name}-${item.poster_path}`,
               )}
-              className="rounded-[24px] object-cover"
+              className="rounded-3xl object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (
@@ -253,17 +264,19 @@ export default function Sidebar({
             </div>
           )}
         </div>
-      </motion.div>
+      </MediaRouteReveal>
 
-      {topContent ? <div>{topContent}</div> : null}
+      {topContent ? (
+        <MediaRouteReveal stage="sidebar.actions">{topContent}</MediaRouteReveal>
+      ) : null}
 
       {hasTaxonomy ? taxonomyData.element : null}
 
       <div className="flex flex-col gap-1">
         {rows.map((row, index) => (
-          <motion.div key={row.id} {...getSidebarRowProps(index, rowBaseDelay)}>
+          <MediaRouteReveal key={row.id} stage="sidebar.rows" itemIndex={index}>
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </motion.div>
+          </MediaRouteReveal>
         ))}
       </div>
     </div>

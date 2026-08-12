@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { cn, resolveVersionedImageUrl } from '@/shared/utils';
 import {
   applyAvatarFallback,
@@ -10,17 +9,9 @@ import {
 } from '@/domains/account/utils';
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
-import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import { useModal } from '@/modules/modal';
 import { useAuth } from '@/modules/auth';
-import {
-  heroAvatarVariants,
-  heroNameVariants,
-  heroBioVariants,
-  getHeroStatProps,
-  SPRINGS,
-} from '@/app/(account)/motion';
-
+import { AccountReveal } from '@/app/(account)/motion';
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
@@ -41,7 +32,7 @@ function HeroInlineMetric({
   valueClassName = '',
   index = 0,
 }) {
-  const statProps = getHeroStatProps(index);
+
   const content = (
     <>
       <span className={valueClassName}>{item.value}</span>
@@ -51,28 +42,16 @@ function HeroInlineMetric({
   const wrapperClassName = cn(className, (item.href || typeof item.onClick === 'function') && '');
   if (item.href) {
     return (
-      <motion.div
-        initial={false}
-        animate={statProps.animate}
-        transition={statProps.transition}
-        whileHover={statProps.whileHover}
-        whileTap={statProps.whileTap}
-      >
+      <AccountReveal interactive itemIndex={index} stage="hero.metric">
         <Link href={item.href} className={wrapperClassName}>
           {content}
         </Link>
-      </motion.div>
+      </AccountReveal>
     );
   }
   if (typeof item.onClick === 'function') {
     return (
-      <motion.div
-        initial={false}
-        animate={statProps.animate}
-        transition={statProps.transition}
-        whileHover={statProps.whileHover}
-        whileTap={statProps.whileTap}
-      >
+      <AccountReveal interaction="control" interactive itemIndex={index} stage="hero.metric">
         <button
           type="button"
           onClick={item.onClick}
@@ -80,20 +59,13 @@ function HeroInlineMetric({
         >
           {content}
         </button>
-      </motion.div>
+      </AccountReveal>
     );
   }
   return (
-    <motion.span
-      initial={false}
-      animate={statProps.animate}
-      transition={statProps.transition}
-      whileHover={statProps.whileHover}
-      whileTap={statProps.whileTap}
-      className={wrapperClassName}
-    >
-      {content}
-    </motion.span>
+    <AccountReveal itemIndex={index} stage="hero.metric">
+      <span className={wrapperClassName}>{content}</span>
+    </AccountReveal>
   );
 }
 
@@ -138,7 +110,7 @@ function HeroBioPreview({ description, onReadMore }) {
 
       {shouldShowReadMore ? (
         <button
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-colors hover:text-black"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:text-black active:scale-[0.97]"
           type="button"
           onClick={onReadMore}
         >
@@ -228,33 +200,25 @@ export default function AccountHero({
     <section className="relative flex w-full flex-col items-center gap-5 py-2 text-center sm:gap-7 sm:py-4 lg:gap-8">
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
-        <motion.div
-          className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md transition-shadow duration-300 sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-          initial={false}
-          animate={heroAvatarVariants.animate}
-          transition={heroAvatarVariants.transition}
-          whileHover={{ scale: 1.05, transition: SPRINGS.HERO_AVATAR }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <AdaptiveImage
-            mode="img"
-            className="h-full w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
-            src={heroAvatarSrc}
-            alt={heroDisplayName}
-            decoding="async"
-            onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
-            wrapperClassName="h-full w-full rounded-2xl"
-          />
-        </motion.div>
+        <AccountReveal stage="hero.avatar">
+          <div className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+            <AdaptiveImage
+              mode="img"
+              className="h-full w-full rounded-2xl object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              src={heroAvatarSrc}
+              alt={heroDisplayName}
+              decoding="async"
+              onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
+              wrapperClassName="h-full w-full rounded-2xl"
+            />
+          </div>
+        </AccountReveal>
 
-        <motion.h1
-          className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl"
-          initial={false}
-          animate={heroNameVariants.animate}
-          transition={heroNameVariants.transition}
-        >
-          {heroDisplayName}
-        </motion.h1>
+        <AccountReveal stage="hero.title">
+          <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl">
+            {heroDisplayName}
+          </h1>
+        </AccountReveal>
       </div>
 
       {/* Plain Text Stats Under Title */}
@@ -264,7 +228,7 @@ export default function AccountHero({
             key={`${item.label}-${item.value}-${index}`}
             item={item}
             index={index}
-            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 transition-colors hover:text-black"
+            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 hover:text-black"
             valueClassName="font-semibold text-black leading-none tracking-tight"
             labelClassName="text-black/75 leading-none"
           />
@@ -273,14 +237,9 @@ export default function AccountHero({
 
       {/* Biography */}
       {profile?.description ? (
-        <motion.div
-          initial={false}
-          animate={heroBioVariants.animate}
-          transition={heroBioVariants.transition}
-          className="mx-auto w-full max-w-[72ch] px-4"
-        >
+        <AccountReveal className="mx-auto w-full max-w-[72ch] px-4" stage="hero.bio">
           <HeroBioPreview description={profile.description} onReadMore={onReadMore} />
-        </motion.div>
+        </AccountReveal>
       ) : null}
     </section>
   );

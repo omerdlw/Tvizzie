@@ -1,6 +1,5 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
 import { REVIEW_SORT_OPTIONS } from '@/domains/reviews/shared/review-data';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Select } from '@/ui/primitives';
@@ -55,11 +54,8 @@ export default function MovieAction({
   const label = isActive ? 'Back' : defaultLabel;
 
   return (
-    <motion.button
+    <button
       type="button"
-      whileHover={{ scale: 1.012 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -70,19 +66,10 @@ export default function MovieAction({
         isActive,
       })}
     >
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={`${icon}-${label}`}
-          initial={{ opacity: 0, y: 3 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -3 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
-          className="flex items-center gap-2 truncate"
-        >
-          <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
-          <span className="truncate">{label}</span>
-        </motion.span>
-      </AnimatePresence>
-    </motion.button>
+      <span className="flex items-center gap-2 truncate">
+        <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
+        <span className="truncate">{label}</span>
+      </span>
+    </button>
   );
 }

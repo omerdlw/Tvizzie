@@ -46,25 +46,11 @@ import {
 } from '@/domains/auth/ui';
 import Icon from '@/ui/primitives/icon';
 import { Button, Input } from '@/ui/primitives';
-import {
-  SIGN_UP_TIMELINE,
-  signUpDividerVariants,
-  signUpFieldVariants,
-  signUpFooterVariants,
-  signUpHeaderVariants,
-  signUpLogoVariants,
-  signUpOAuthContainerVariants,
-  signUpOAuthItemVariants,
-  signUpRequirementContainerVariants,
-  signUpRequirementItemVariants,
-  signUpStepVariants,
-  signUpTitleVariants,
-} from '@/app/(auth)/motion';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import AuthRegistry from '@/app/(auth)/registry';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AuthReveal, AuthScene } from '@/app/(auth)/motion';
 import Link from 'next/link';
 
 export default function Client() {
@@ -397,13 +383,6 @@ function SignUpView({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const prevStepRef = useRef(currentStep);
-  const direction = currentStep >= prevStepRef.current ? 1 : -1;
-
-  useEffect(() => {
-    prevStepRef.current = currentStep;
-  }, [currentStep]);
-
   const passwordRequirements = evaluatePasswordRules(form.password);
   const passwordRequirementsSatisfied = arePasswordRulesSatisfied(form.password);
 
@@ -412,27 +391,13 @@ function SignUpView({
 
   return (
     <AuthPageShell>
-      <AnimatePresence mode="wait" custom={direction}>
-        <motion.form
-          key={currentStep}
-          custom={direction}
+      <AuthScene sceneKey={`sign-up-step-${currentStep}`}>
+        <form
           onSubmit={handleStepSubmit}
-          variants={signUpStepVariants}
-          initial={currentStep === 0 ? false : 'hidden'}
-          animate="visible"
-          exit="exit"
           className={AUTH_PAGE_FORM_CLASS}
         >
-          <motion.div
-            variants={signUpHeaderVariants}
-            className="flex flex-col items-center text-center"
-          >
-            <motion.div
-              custom={SIGN_UP_TIMELINE.LOGO_DELAY}
-              variants={signUpLogoVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
+          <div className="flex flex-col items-center text-center">
+            <AuthReveal stage="brand">
               <Link
                 href="/"
                 className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
@@ -445,19 +410,15 @@ function SignUpView({
                   className="size-16"
                 />
               </Link>
-            </motion.div>
-            <motion.h1
-              custom={SIGN_UP_TIMELINE.TITLE_DELAY}
-              variants={signUpTitleVariants}
-              className="text-2xl font-semibold sm:text-3xl"
-            >
-              {stepTitle}
-            </motion.h1>
-          </motion.div>
+            </AuthReveal>
+            <AuthReveal stage="heading">
+              <h1 className="text-2xl font-semibold sm:text-3xl">{stepTitle}</h1>
+            </AuthReveal>
+          </div>
 
           {currentStep === 0 ? (
             <>
-              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
+              <AuthReveal itemIndex={0} stage="field">
                 <AuthField className="pt-1" htmlFor="sign-up-email" label="Email">
                   <Input
                     id="sign-up-email"
@@ -469,44 +430,38 @@ function SignUpView({
                     classNames={AUTH_INPUT_CLASSNAMES}
                   />
                 </AuthField>
-              </motion.div>
+              </AuthReveal>
 
-              <motion.div
-                variants={signUpFieldVariants}
-                custom={SIGN_UP_TIMELINE.FIELD_START + SIGN_UP_TIMELINE.FIELD_STEP}
-              >
+              <AuthReveal stage="submit">
                 <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
                   {submitLabel}
                 </Button>
-              </motion.div>
+              </AuthReveal>
 
-              <motion.div
-                custom={SIGN_UP_TIMELINE.DIVIDER_DELAY}
-                variants={signUpDividerVariants}
-                className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]"
-              >
+              <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
                 <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
                 <div className="h-px grow bg-black/10" />
-                <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+                <AuthReveal stage="divider">
+                  <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+                </AuthReveal>
                 <div className="h-px grow bg-black/10" />
                 <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
-              </motion.div>
+              </div>
 
-              <OAuthProviderList
-                activeProvider={activeOAuthProvider}
-                containerVariants={signUpOAuthContainerVariants}
-                disabled={isBusy}
-                itemDelay={SIGN_UP_TIMELINE.OAUTH_DELAY}
-                itemVariants={signUpOAuthItemVariants}
-                mode="sign-up"
-                onSelect={handleOAuthSignUp}
-              />
+              <AuthReveal stage="oauth">
+                <OAuthProviderList
+                  activeProvider={activeOAuthProvider}
+                  disabled={isBusy}
+                  mode="sign-up"
+                  onSelect={handleOAuthSignUp}
+                />
+              </AuthReveal>
             </>
           ) : null}
 
           {currentStep === 1 ? (
             <>
-              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
+              <AuthReveal itemIndex={0} stage="field">
                 <AuthField className="pt-1" htmlFor="sign-up-username" label="Username">
                   <Input
                     id="sign-up-username"
@@ -517,12 +472,9 @@ function SignUpView({
                     classNames={AUTH_INPUT_CLASSNAMES}
                   />
                 </AuthField>
-              </motion.div>
+              </AuthReveal>
 
-              <motion.div
-                variants={signUpFieldVariants}
-                custom={SIGN_UP_TIMELINE.FIELD_START + SIGN_UP_TIMELINE.FIELD_STEP}
-              >
+              <AuthReveal itemIndex={1} stage="field">
                 <AuthField htmlFor="sign-up-display-name" label="Display name">
                   <Input
                     id="sign-up-display-name"
@@ -533,13 +485,13 @@ function SignUpView({
                     classNames={AUTH_INPUT_CLASSNAMES}
                   />
                 </AuthField>
-              </motion.div>
+              </AuthReveal>
             </>
           ) : null}
 
           {currentStep === 2 ? (
             <>
-              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
+              <AuthReveal itemIndex={0} stage="field">
                 <AuthField className="pt-1" htmlFor="sign-up-password" label="Password">
                   <Input
                     id="sign-up-password"
@@ -557,18 +509,14 @@ function SignUpView({
                     }
                   />
                 </AuthField>
-              </motion.div>
+              </AuthReveal>
 
-              <motion.div
-                variants={signUpRequirementContainerVariants}
-                custom={SIGN_UP_TIMELINE.REQUIREMENTS_DELAY}
-                className="space-y-1.5 overflow-hidden"
-              >
+              <AuthReveal className="space-y-1.5 overflow-hidden" stage="requirement">
                 {passwordRequirements.map((requirement, index) => (
-                  <motion.div
+                  <AuthReveal
                     key={requirement.id}
-                    variants={signUpRequirementItemVariants}
-                    custom={index * 0.055}
+                    itemIndex={index}
+                    stage="requirement"
                     className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
                   >
                     <Icon
@@ -578,14 +526,14 @@ function SignUpView({
                           : 'material-symbols:close-rounded'
                       }
                       size={16}
-                      className="shrink-0 transition-transform duration-200"
+                      className="shrink-0-transform "
                     />
                     <span>{requirement.label}</span>
-                  </motion.div>
+                  </AuthReveal>
                 ))}
-              </motion.div>
+              </AuthReveal>
 
-              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.CONFIRM_DELAY}>
+              <AuthReveal itemIndex={1} stage="field">
                 <AuthField htmlFor="sign-up-confirm-password" label="Confirm password">
                   <Input
                     id="sign-up-confirm-password"
@@ -605,16 +553,12 @@ function SignUpView({
                     }
                   />
                 </AuthField>
-              </motion.div>
+              </AuthReveal>
             </>
           ) : null}
 
           {currentStep > 0 ? (
-            <motion.div
-              variants={signUpFieldVariants}
-              custom={SIGN_UP_TIMELINE.ACTION_DELAY}
-              className="grid gap-2 sm:grid-cols-2"
-            >
+            <AuthReveal className="grid gap-2 sm:grid-cols-2" stage="submit">
               <Button
                 type="button"
                 onClick={handlePreviousStep}
@@ -635,24 +579,22 @@ function SignUpView({
               >
                 {submitLabel}
               </Button>
-            </motion.div>
+            </AuthReveal>
           ) : null}
 
-          <motion.p
-            custom={SIGN_UP_TIMELINE.FOOTER_DELAY}
-            variants={signUpFooterVariants}
-            className="mt-2 text-center text-sm font-medium text-black/50"
-          >
-            Already have an account?{' '}
-            <Link
-              href={signInHref}
-              className="rounded px-1 text-black hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
-            >
-              Sign In
-            </Link>
-          </motion.p>
-        </motion.form>
-      </AnimatePresence>
+          <AuthReveal className="mt-2 text-center text-sm font-medium text-black/50" stage="footer">
+            <p>
+              Already have an account?{' '}
+              <Link
+                href={signInHref}
+                className="inline-block rounded px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+              >
+                Sign In
+              </Link>
+            </p>
+          </AuthReveal>
+        </form>
+      </AuthScene>
     </AuthPageShell>
   );
 }

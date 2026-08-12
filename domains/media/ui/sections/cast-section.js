@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
@@ -18,17 +17,11 @@ import SegmentedControl from '@/ui/primitives/segmented-control';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import { cn } from '@/shared/utils';
+import { MediaRouteReveal } from '@/app/(media)/motion';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import {
-  getCastCardProps,
-  getCastHeaderProps,
-  getCastHoverProps,
-  TIMELINES,
-} from '@/app/(media)/motion';
-
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
@@ -83,7 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-sm transition-all duration-200 hover:border-black/15',
+        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-sm hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
@@ -148,7 +141,7 @@ export default function CastSection({
   cast = [],
   crew = [],
   headerAction = null,
-  baseDelay = TIMELINES.CAST_SECTION_BASE_DELAY,
+  baseDelay = 0,
 }) {
   usePosterPreferenceVersion();
   const { openModal } = useModal();
@@ -218,14 +211,16 @@ export default function CastSection({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {featured.map((person, index) => {
             return (
-              <motion.div
+              <MediaRouteReveal
                 key={buildPersonEntryKey(tabKey, person, index, 'featured')}
-                {...getCastCardProps(index, baseDelay, hasSwitchedTab)}
+                stage="items.cast"
+                interactive
+                itemIndex={index}
               >
-                <motion.div {...getCastHoverProps()} className="h-full w-full">
+                <div className="h-full w-full">
                   <PersonCard person={person} />
-                </motion.div>
-              </motion.div>
+                </div>
+              </MediaRouteReveal>
             );
           })}
         </div>
@@ -235,15 +230,17 @@ export default function CastSection({
             {compact.map((person, index) => {
               const responsiveClass = index > 1 ? 'hidden sm:block' : '';
               return (
-                <motion.div
+                <MediaRouteReveal
                   key={buildPersonEntryKey(tabKey, person, index, 'compact')}
-                  {...getCastCardProps(featured.length + index, baseDelay, hasSwitchedTab)}
                   className={`min-w-0 flex-1 ${responsiveClass}`}
+                  stage="items.cast"
+                  interactive
+                  itemIndex={FEATURED_COUNT + index}
                 >
-                  <motion.div {...getCastHoverProps()} className="h-full w-full">
+                  <div className="h-full w-full">
                     <PersonCard person={person} compact />
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </MediaRouteReveal>
               );
             })}
 
@@ -251,7 +248,7 @@ export default function CastSection({
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer rounded-2xl border border-black/10 text-black/70 backdrop-blur-sm transition-colors hover:border-black/15 hover:text-black"
+              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer rounded-2xl border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -263,8 +260,7 @@ export default function CastSection({
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <motion.div
-        {...getCastHeaderProps(baseDelay, hasSwitchedTab)}
+      <div
         className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -286,7 +282,7 @@ export default function CastSection({
           />
           {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
         </div>
-      </motion.div>
+      </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
         <div className="relative overflow-visible">

@@ -2,8 +2,8 @@
 
 import Icon from '@/ui/primitives/icon';
 
-const S = 'skeleton-block animate-pulse rounded-xl';
-const SOFT = 'skeleton-block-soft animate-pulse rounded-xl';
+const S = 'skeleton-block rounded-xl';
+const SOFT = 'skeleton-block-soft rounded-xl';
 
 export default function PersonTimelineSkeleton() {
   return (
