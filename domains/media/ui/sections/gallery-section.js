@@ -10,10 +10,7 @@ import {
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
 import { MediaRouteReveal } from '@/app/(media)/motion';
-export default function GallerySection({
-  images,
-  baseDelay = 0,
-}) {
+export default function GallerySection({ images, baseDelay = 0 }) {
   const { openModal } = useModal();
   if (!images?.length) {
     return null;
@@ -21,9 +18,7 @@ export default function GallerySection({
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <div
-        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
-      >
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:gallery-wide-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
@@ -44,7 +39,7 @@ export default function GallerySection({
                 itemIndex={index}
               >
                 <MediaCard
-                  imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}
+                  imageSrc={image.file_path ? `${TMDB_IMG}/original${image.file_path}` : null}
                   onClick={() =>
                     openModal('PREVIEW_MODAL', 'center', {
                       data: image,

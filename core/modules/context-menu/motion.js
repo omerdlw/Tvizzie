@@ -21,7 +21,11 @@ export const menuContentVariants = Object.freeze({
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: CONTEXT_MENU_TIERS.FAST.duration, ease: CONTEXT_MENU_EASINGS.SOFT, delay: 0.04 },
+    transition: {
+      duration: CONTEXT_MENU_TIERS.FAST.duration,
+      ease: CONTEXT_MENU_EASINGS.SOFT,
+      delay: 0.04,
+    },
   },
   exit: {
     opacity: 0,

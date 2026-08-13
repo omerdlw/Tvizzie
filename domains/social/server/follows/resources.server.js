@@ -40,10 +40,7 @@ async function withQueryTimeout(
 
   try {
     const timeoutPromise = new Promise((resolve) => {
-      timeoutId = setTimeout(
-        () => resolve({ ...fallbackValue, timedOut: true, label }),
-        timeoutMs,
-      );
+      timeoutId = setTimeout(() => resolve({ ...fallbackValue, timedOut: true, label }), timeoutMs);
     });
 
     return await Promise.race([promise, timeoutPromise]);

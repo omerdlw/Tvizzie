@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-
 import { useToast } from '@/modules/notification';
 import { upsertListReview, upsertMediaReview } from '@/domains/reviews/client';
 import {
@@ -283,11 +282,7 @@ export default function ReviewEditorSurface({ close, data }) {
   }
 
   return (
-    <form
-      id={FORM_ID}
-      onSubmit={handleSubmit}
-      className="flex w-full flex-col gap-2"
-    >
+    <form id={FORM_ID} onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
       {!isListSubject && (
         <div className="flex w-full items-center justify-center pb-2">
           <RatingSelector value={rating} onChange={setRating} />
@@ -305,7 +300,7 @@ export default function ReviewEditorSurface({ close, data }) {
           onChange={handleTextChange}
           className={{
             wrapper:
-              'flex  border border-black/5 focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
+              'flex border border-black/5 focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
             textarea:
               'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
@@ -355,20 +350,20 @@ export default function ReviewEditorSurface({ close, data }) {
           })}
         >
           <span className="flex items-center gap-2">
-              <Icon
-                icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
-                size={NAV_ACTION_STYLES.icon}
-              />
-              <span>
-                {isSaving
-                  ? 'Saving...'
-                  : getPrimaryActionLabel({
-                      hasExistingReview,
-                      isList: isListSubject,
-                      rating,
-                      reviewText,
-                    })}
-              </span>
+            <Icon
+              icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
+              size={NAV_ACTION_STYLES.icon}
+            />
+            <span>
+              {isSaving
+                ? 'Saving...'
+                : getPrimaryActionLabel({
+                    hasExistingReview,
+                    isList: isListSubject,
+                    rating,
+                    reviewText,
+                  })}
+            </span>
           </span>
         </button>
       </div>

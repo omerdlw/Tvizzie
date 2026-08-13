@@ -98,9 +98,7 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
   }
 
   return (
-    <div
-      className="flex w-full flex-row items-center gap-2 overflow-visible"
-    >
+    <div className="flex w-full flex-row items-center gap-2 overflow-visible">
       <button
         type="button"
         disabled={isSubmitting}
@@ -121,11 +119,11 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
-      ><span
-            key={isSubmitting ? 'submitting' : 'confirm'}
-          >
-            {isSubmitting ? confirmLoadingText : confirmText}
-          </span></button>
+      >
+        <span key={isSubmitting ? 'submitting' : 'confirm'}>
+          {isSubmitting ? confirmLoadingText : confirmText}
+        </span>
+      </button>
     </div>
   );
 }

@@ -58,9 +58,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <div
-        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
-      >
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:video-library-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
@@ -105,7 +103,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                   overlay={
                     <>
                       <div className="center absolute inset-0 group-hover:opacity-0">
-                        <div className="center text-primary size-8  border border-white/20 bg-white/20 backdrop-blur-sm">
+                        <div className="center text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm">
                           <Icon icon="solar:play-bold" size={16} />
                         </div>
                       </div>

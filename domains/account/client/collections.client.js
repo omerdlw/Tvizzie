@@ -102,7 +102,12 @@ export function createMediaCollectionToggleRpcParams({ extras = {}, row = {}, us
   };
 }
 
-export async function executeMediaCollectionRpc(fnNameOrOptions, paramsArg, fallbackMessageArg, clientArg) {
+export async function executeMediaCollectionRpc(
+  fnNameOrOptions,
+  paramsArg,
+  fallbackMessageArg,
+  clientArg,
+) {
   let fnName;
   let params;
   let fallbackMessage;
@@ -119,7 +124,8 @@ export async function executeMediaCollectionRpc(fnNameOrOptions, paramsArg, fall
 
   const supabase = client || getSupabaseClient();
   const result = await supabase.rpc(fnName, params);
-  if (result.error) throw new Error(result.error.message || fallbackMessage || 'Collection action failed');
+  if (result.error)
+    throw new Error(result.error.message || fallbackMessage || 'Collection action failed');
   return result.data;
 }
 

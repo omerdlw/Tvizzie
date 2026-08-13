@@ -15,9 +15,9 @@
 
 @layer base {
   :root {
-    --white: #F0F4F9;
-    --black: #141413;
-    --primary: #FFFFFF;
+    --white: #F9F9F9;
+    --black: #141414;
+    --primary: #ffffff;
   }
 
   html,

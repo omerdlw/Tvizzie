@@ -220,7 +220,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0  object-cover"
+          className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           wrapperClassName="size-10 shrink-0"
         />
@@ -545,15 +545,33 @@ export default function AccountSocialModal({ close, data }) {
       <div className="flex h-full min-h-0 flex-col">
         <AnimatePresence mode="wait" initial={false}>
           {isLoading ? (
-            <motion.div key={`loading-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+            <motion.div
+              key={`loading-${activeTab}`}
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
               <LoadingList />
             </motion.div>
           ) : activeErrorMessage ? (
-            <motion.div key={`error-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+            <motion.div
+              key={`error-${activeTab}`}
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
               <EmptyState description={activeErrorMessage} className="h-full" />
             </motion.div>
           ) : list.length === 0 ? (
-            <motion.div key={`empty-${activeTab}`} variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+            <motion.div
+              key={`empty-${activeTab}`}
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
               <EmptyState description={emptyDescription} className="h-full min-h-96" />
             </motion.div>
           ) : (
@@ -604,10 +622,10 @@ function LoadingList() {
           key={index}
           className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
         >
-          <div className="size-10 shrink-0  bg-black/5" />
+          <div className="size-10 shrink-0 bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5  bg-black/5" />
-            <div className="h-2 w-2/5  bg-black/5" />
+            <div className="h-3 w-3/5 bg-black/5" />
+            <div className="h-2 w-2/5 bg-black/5" />
           </div>
         </div>
       ))}

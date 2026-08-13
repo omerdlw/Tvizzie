@@ -145,7 +145,7 @@ export function RatingRangeEditor({ filters, onChange }) {
         <span className="block text-[10px] font-semibold tracking-wide text-black/50 uppercase">
           Rating (or range)
         </span>
-        <div className=" border border-black/10 bg-white px-2 py-2">
+        <div className="border border-black/10 bg-white px-2 py-2">
           <RatingRangeSelector
             maxValue={filters.maxRating}
             minValue={filters.minRating}

@@ -17,11 +17,7 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
             const isSelected = label.toLowerCase() === activeTab.toLowerCase();
             return (
               <div key={label} className="h-14 p-2 sm:min-w-0">
-                <div
-                  className={`center h-full w-full  px-2 ${
-                    isSelected ? 'bg-black' : ''
-                  }`}
-                >
+                <div className={`center h-full w-full px-2 ${isSelected ? 'bg-black' : ''}`}>
                   <div
                     className={`h-2.5 w-12 ${isSelected ? 'bg-white/70' : 'skeleton-block-soft'}`}
                   />
@@ -40,7 +36,7 @@ export function AccountHeroSkeleton() {
     <section className="relative flex min-h-[280px] w-full flex-col items-center gap-5 py-2 text-center sm:gap-7 sm:py-4 lg:gap-8">
       {/* Avatar & Title Row (Matches AccountHero 1-to-1) */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
-        <div className="skeleton-block relative h-12 w-12 shrink-0  bg-white/40 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
+        <div className="skeleton-block relative h-12 w-12 shrink-0 bg-white/40 sm:h-16 sm:w-16 lg:h-20 lg:w-20" />
         <div className="skeleton-block h-10 w-40 sm:h-12 sm:w-44 lg:h-14 lg:w-48" />
       </div>
 

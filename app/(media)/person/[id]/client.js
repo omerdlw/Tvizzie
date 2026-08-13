@@ -25,7 +25,7 @@ import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
 import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
 
 function getMovieBackdropSrc(credit) {
-  return credit?.backdrop_path ? `${TMDB_IMG}/w1280${credit.backdrop_path}` : null;
+  return credit?.backdrop_path ? `${TMDB_IMG}/original${credit.backdrop_path}` : null;
 }
 
 function getFallbackBackgroundImage(person) {
@@ -137,11 +137,7 @@ function PersonMainContent({ person }) {
   );
 }
 
-function PersonDeferredContent({
-  person,
-  secondaryDataPromise,
-  activeView,
-}) {
+function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
   const secondaryPerson = use(secondaryDataPromise);
   const mergedPerson = {
     ...person,
@@ -192,13 +188,11 @@ function PersonView({
                 <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
                   {person?.profile_path ? (
                     <MediaRouteReveal stage="person.hero.portrait">
-                      <div
-                        className="relative h-12 w-12 shrink-0 overflow-hidden  bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-                      >
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
                         <AdaptiveImage
                           mode="img"
-                          className="h-full w-full  object-cover"
-                          src={`${TMDB_IMG}/w342${person.profile_path}`}
+                          className="h-full w-full object-cover"
+                          src={`${TMDB_IMG}/original${person.profile_path}`}
                           alt={person.name}
                           decoding="async"
                           wrapperClassName="h-full w-full "

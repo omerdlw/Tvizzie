@@ -103,7 +103,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
                 interactive
                 itemIndex={index}
               >
-                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center  border border-black/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/15 hover:text-black">
+                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-black/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/15 hover:text-black">
                   {genre}
                 </span>
               </MediaRouteReveal>
@@ -118,7 +118,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
               interactive
               itemIndex={normalizedGenres.length + index}
             >
-              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center  border border-black/5 px-2.5 py-1 text-[11px] text-black/70 uppercase hover:border-black/15 hover:text-black">
+              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-black/5 px-2.5 py-1 text-[11px] text-black/70 uppercase hover:border-black/15 hover:text-black">
                 {tag}
               </span>
             </MediaRouteReveal>
@@ -144,7 +144,7 @@ export default function Sidebar({
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)
       ?.english_name || item.original_language;
-  const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
+  const posterSrc = item.poster_path ? `${TMDB_IMG}/original${item.poster_path}` : null;
   const hasTaxonomy = genres?.length || tags?.length;
   const personGroups = [
     {
@@ -237,7 +237,7 @@ export default function Sidebar({
   return (
     <div className="flex flex-col gap-4">
       <MediaRouteReveal stage="sidebar.poster">
-        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden  sm:max-w-[360px] lg:max-w-none">
+        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden sm:max-w-[360px] lg:max-w-none">
           {posterSrc ? (
             <AdaptiveImage
               fill
@@ -252,7 +252,7 @@ export default function Sidebar({
               blurDataURL={getImagePlaceholderDataUrl(
                 `${item.id || item.title || item.name}-${item.poster_path}`,
               )}
-              className=" object-cover"
+              className="object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (

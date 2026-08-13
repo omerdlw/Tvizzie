@@ -41,14 +41,17 @@ export default function PersonAction({ activeView, setActiveView, externalIds })
           })}
         >
           <span className="flex items-center justify-center gap-2">
-            <Icon icon={activeView === 'awards' ? 'solar:arrow-left-bold' : 'solar:cup-star-bold'} size={NAV_ACTION_STYLES.icon} />
+            <Icon
+              icon={activeView === 'awards' ? 'solar:arrow-left-bold' : 'solar:cup-star-bold'}
+              size={NAV_ACTION_STYLES.icon}
+            />
             {activeView === 'awards' ? 'Back' : 'Awards'}
           </span>
         </button>
       </div>
 
       {externalIds ? (
-        <SocialLinks externalIds={externalIds} className="w-full justify-center " />
+        <SocialLinks externalIds={externalIds} className="w-full justify-center" />
       ) : null}
     </div>
   );

@@ -109,11 +109,7 @@ export default function AccountActivityFeed({
           {hasFilters ? 'No activity matches the current filters' : emptyMessage}
         </AccountInlineSectionState>
       ) : (
-        <ActivityList
-          baseDelay={0}
-          isInitialSection={isInitialSection}
-          items={visibleItems}
-        />
+        <ActivityList baseDelay={0} isInitialSection={isInitialSection} items={visibleItems} />
       )}
 
       {listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && onPageChange && (
@@ -155,12 +151,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
   const hasReview = item?.renderKind === 'text_with_review' && item?.reviewCard;
 
   return (
-    <AccountReveal
-      className={ACTIVITY_ROW_CLASS}
-      deferred
-      itemIndex={index}
-      stage="item.feed"
-    >
+    <AccountReveal className={ACTIVITY_ROW_CLASS} deferred itemIndex={index} stage="item.feed">
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className={ACTIVITY_LINE_CLASS}>
           {(item?.line?.parts || []).map((part, partIndex) => (

@@ -41,9 +41,7 @@ function PrivacyView() {
         icon="solar:shield-user-bold"
       />
       <LegalPageShell>
-        <div
-          className={LEGAL_PAGE_CONTENT_CLASS}
-        >
+        <div className={LEGAL_PAGE_CONTENT_CLASS}>
           <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
               <LegalReveal stage="title">
@@ -110,8 +108,8 @@ function PrivacyView() {
                   </li>
                   <li>
                     Content you create inside the app, such as watched titles, watchlist items,
-                    favorites, ratings, reviews, liked reviews, liked lists, lists, and
-                    comments on lists.
+                    favorites, ratings, reviews, liked reviews, liked lists, lists, and comments on
+                    lists.
                   </li>
                   <li>
                     Messages you send through the product feedback flow, along with limited request
@@ -151,12 +149,8 @@ function PrivacyView() {
 
               <AnimatedLegalSection title="How we use information">
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>
-                    To create and maintain your account and sign you in securely.
-                  </li>
-                  <li>
-                    To let you edit your profile and publish the content you choose to share.
-                  </li>
+                  <li>To create and maintain your account and sign you in securely.</li>
+                  <li>To let you edit your profile and publish the content you choose to share.</li>
                   <li>
                     To operate social features such as reviews, likes, lists, activity feeds, and
                     profile pages.
@@ -243,12 +237,8 @@ function PrivacyView() {
 
               <AnimatedLegalSection title="Your choices">
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>
-                    You can edit your profile information inside the app.
-                  </li>
-                  <li>
-                    You can change your profile privacy setting inside your account settings.
-                  </li>
+                  <li>You can edit your profile information inside the app.</li>
+                  <li>You can change your profile privacy setting inside your account settings.</li>
                   <li>
                     You can remove reviews, list content, watched items, watchlist items, and other
                     profile content that you created.

@@ -21,10 +21,7 @@ export default function LegalQuickLinks() {
   const pathname = usePathname();
 
   return (
-    <section
-      aria-label="Legal page links"
-      className="relative flex flex-col gap-2 py-6"
-    >
+    <section aria-label="Legal page links" className="relative flex flex-col gap-2 py-6">
       <div className="flex flex-col gap-2 sm:flex-row">
         {POLICY_LINKS.map((link, index) => (
           <LegalReveal className="flex flex-1" key={link.href} itemIndex={index} stage="quickLink">
@@ -35,7 +32,7 @@ export default function LegalQuickLinks() {
         ))}
         <LegalReveal className="flex flex-1" itemIndex={2} stage="quickLink">
           <a
-            className="flex-auto  border border-black/5 bg-white/40 px-4 py-3 text-center text-sm font-medium text-black/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-black/10 hover:bg-white hover:text-black active:scale-[0.985]"
+            className="flex-auto border border-black/5 bg-white/40 px-4 py-3 text-center text-sm font-medium text-black/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-black/10 hover:bg-white hover:text-black active:scale-[0.985]"
             href="mailto:tvizzie.app@gmail.com"
           >
             Contact

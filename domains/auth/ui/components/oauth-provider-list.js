@@ -12,10 +12,7 @@ export default function OAuthProviderList({
   return (
     <div className="flex items-center gap-3">
       {OAUTH_PROVIDER_KEYS.map((provider, index) => (
-        <div
-          key={provider}
-          className="flex-1"
-        >
+        <div key={provider} className="flex-1">
           <OAuthProviderButton
             provider={provider}
             mode={mode}

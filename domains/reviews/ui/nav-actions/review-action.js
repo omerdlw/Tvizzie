@@ -1,6 +1,5 @@
 'use client';
 
-
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
 export default function ReviewAction({ reviewState }) {
@@ -33,9 +32,7 @@ export default function ReviewAction({ reviewState }) {
         })}
         disabled={isSubmitting || !canSubmit}
       >
-        <span>
-          {currentLabel}
-        </span>
+        <span>{currentLabel}</span>
       </button>
     </div>
   );

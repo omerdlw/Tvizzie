@@ -95,21 +95,21 @@ export default function WatchProvidersSurface({ close, providers }) {
                   alt={provider.provider_name}
                   loading="lazy"
                   decoding="async"
-                  className="h-7 w-7 shrink-0  object-cover"
+                  className="h-7 w-7 shrink-0 object-cover"
                   wrapperClassName="h-7 w-7 shrink-0  bg-black/5"
                 />
                 <span className="truncate text-sm font-medium text-black/70">
                   {provider.provider_name}
                 </span>
               </div>
-              <span className="bg-primary  border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase">
+              <span className="bg-primary border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase">
                 {provider.type}
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <div key={`empty-${resolvedRegion}`} className="center bg-primary  p-4 text-sm">
+        <div key={`empty-${resolvedRegion}`} className="center bg-primary p-4 text-sm">
           Watch providers are not available for this region
         </div>
       )}

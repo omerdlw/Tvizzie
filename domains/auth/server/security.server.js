@@ -131,7 +131,9 @@ export async function createPendingPasswordSignIn({ email, password }) {
   if (response.error) {
     const message = normalizeValue(response.error?.message).toLowerCase();
     if (message.includes('invalid login credentials') || message.includes('invalid_credentials')) {
-      const err = new Error('The password you entered is incorrect. Please check your password or reset it.');
+      const err = new Error(
+        'The password you entered is incorrect. Please check your password or reset it.',
+      );
       err.code = 'invalid_login_credentials';
       throw err;
     }

@@ -7,7 +7,7 @@ const files = [
   '/Users/omerdlw/Documents/Tvizzie/app/(legal)/terms/client.js',
   '/Users/omerdlw/Documents/Tvizzie/domains/auth/ui/components/oauth-provider-list.js',
   '/Users/omerdlw/Documents/Tvizzie/domains/auth/ui/nav-surfaces/verification-surface.js',
-  '/Users/omerdlw/Documents/Tvizzie/domains/legal/ui/components/legal-quick-links.js'
+  '/Users/omerdlw/Documents/Tvizzie/domains/legal/ui/components/legal-quick-links.js',
 ];
 
 for (const file of files) {
@@ -18,11 +18,20 @@ for (const file of files) {
   content = content.replace(/import\s*motion\s*from\s*['"]framer-motion['"];?\n?/g, '');
 
   // Remove variants imports from @/app/.../motion
-  content = content.replace(/import\s*\{[^}]*\}\s*from\s*['"]@\/app\/\(auth\)\/motion['"];?\n?/g, '');
-  content = content.replace(/import\s*\{[^}]*\}\s*from\s*['"]@\/app\/\(legal\)\/motion['"];?\n?/g, '');
+  content = content.replace(
+    /import\s*\{[^}]*\}\s*from\s*['"]@\/app\/\(auth\)\/motion['"];?\n?/g,
+    '',
+  );
+  content = content.replace(
+    /import\s*\{[^}]*\}\s*from\s*['"]@\/app\/\(legal\)\/motion['"];?\n?/g,
+    '',
+  );
 
   // Convert <motion.div to <div, </motion.div to </div
-  content = content.replace(/<\/?motion\.([a-zA-Z0-9]+)/g, (match, tag) => `<${match.startsWith('</') ? '/' : ''}${tag}`);
+  content = content.replace(
+    /<\/?motion\.([a-zA-Z0-9]+)/g,
+    (match, tag) => `<${match.startsWith('</') ? '/' : ''}${tag}`,
+  );
 
   // Remove AnimatePresence wrapper
   content = content.replace(/<AnimatePresence[^>]*>([\s\S]*?)<\/AnimatePresence>/g, '$1');
@@ -31,7 +40,8 @@ for (const file of files) {
   content = content.replace(/<\/AnimatePresence>\n?/g, '');
 
   // Remove animation props
-  const propRegex = /\s+(?:initial|animate|exit|variants|custom|whileHover|whileTap|whileInView|whileFocus|whileDrag|layout|layoutId|transition|containerVariants|itemDelay|itemVariants)(?:=(?:{(?:[^{}]*|{[^{}]*})*}|"[^"]*"|'[^']*'|[^>\s]+))?/g;
+  const propRegex =
+    /\s+(?:initial|animate|exit|variants|custom|whileHover|whileTap|whileInView|whileFocus|whileDrag|layout|layoutId|transition|containerVariants|itemDelay|itemVariants)(?:=(?:{(?:[^{}]*|{[^{}]*})*}|"[^"]*"|'[^']*'|[^>\s]+))?/g;
   content = content.replace(propRegex, '');
 
   // Specific keys used only for AnimatePresence
@@ -41,8 +51,16 @@ for (const file of files) {
 
   // Clean up tailwind classes
   const tailwindClasses = [
-    'transition-all', 'transition-colors', 'transition-opacity', 'transition-transform', 'transition-shadow', 'transition',
-    /duration-\d+/, /ease-[a-z-]+/, /animate-[a-z-]+/, /delay-\d+/
+    'transition-all',
+    'transition-colors',
+    'transition-opacity',
+    'transition-transform',
+    'transition-shadow',
+    'transition',
+    /duration-\d+/,
+    /ease-[a-z-]+/,
+    /animate-[a-z-]+/,
+    /delay-\d+/,
   ];
 
   for (const twClass of tailwindClasses) {

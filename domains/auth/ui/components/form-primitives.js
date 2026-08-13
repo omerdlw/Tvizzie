@@ -36,7 +36,7 @@ export function PasswordToggleButton({
       type="button"
       onClick={onClick}
       aria-label={visible ? hideLabel : showLabel}
-      className="flex h-full items-center justify-center  p-1 text-black/50 transition-[color,transform] duration-200 ease-out hover:scale-[1.05] hover:text-black/70 active:scale-[0.94] focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+      className="flex h-full items-center justify-center p-1 text-black/50 transition-[color,transform] duration-200 ease-out hover:scale-[1.05] hover:text-black/70 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none active:scale-[0.94]"
     >
       <Icon icon={visible ? 'solar:eye-closed-linear' : 'solar:eye-linear'} size={20} />
     </button>

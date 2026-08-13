@@ -311,15 +311,9 @@ export function useAccountCredentialActions({
     [handleUpdatePassword],
   );
 
-  const handleSetPassword = useCallback(
-    () => handleUpdatePassword(false),
-    [handleUpdatePassword],
-  );
+  const handleSetPassword = useCallback(() => handleUpdatePassword(false), [handleUpdatePassword]);
 
-  const handleCompleteEmailChange = useCallback(
-    () => handleUpdateEmail(true),
-    [handleUpdateEmail],
-  );
+  const handleCompleteEmailChange = useCallback(() => handleUpdateEmail(true), [handleUpdateEmail]);
 
   return {
     handleCompleteEmailChange,

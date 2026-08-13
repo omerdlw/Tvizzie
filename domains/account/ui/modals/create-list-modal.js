@@ -86,14 +86,14 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
       animate="visible"
       onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-between  border p-1 select-none transition-[background-color,border-color,color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.995]',
+        'group flex w-full cursor-pointer items-center justify-between border p-1 transition-[background-color,border-color,color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none active:scale-[0.995]',
         isAdded
           ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
           : 'border-transparent bg-white hover:border-black/5 hover:bg-black/5',
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden ">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden">
           <AdaptiveImage
             mode="img"
             src={item?.poster_path ? `${TMDB_IMG}/w92${item.poster_path}` : undefined}
@@ -108,13 +108,13 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
             {title}
           </span>
           <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center gap-1  border border-black/5">
+            <div className="flex w-fit items-center gap-1 border border-black/5">
               <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
               </span>
             </div>
             {year !== 'N/A' && (
-              <div className="flex w-fit items-center gap-1  border border-black/5">
+              <div className="flex w-fit items-center gap-1 border border-black/5">
                 <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
                   {year}
                 </span>
@@ -126,7 +126,7 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
 
       <div
         className={cn(
-          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5  border px-3 text-xs font-bold tracking-wider uppercase',
+          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 border px-3 text-xs font-bold tracking-wider uppercase',
           isAdded
             ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
             : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
@@ -166,10 +166,10 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove, index }) {
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="group flex w-full items-center justify-between  border border-black/5 bg-white p-1 select-none transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5"
+      className="group flex w-full items-center justify-between border border-black/5 bg-white p-1 transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none hover:bg-black/5"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden ">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden">
           <AdaptiveImage
             mode="img"
             src={item?.poster_path ? `${TMDB_IMG}/w92${item.poster_path}` : undefined}
@@ -184,13 +184,13 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove, index }) {
             {title}
           </span>
           <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center gap-1  border border-black/5">
+            <div className="flex w-fit items-center gap-1 border border-black/5">
               <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
               </span>
             </div>
             {year !== 'N/A' && (
-              <div className="flex w-fit items-center gap-1  border border-black/5">
+              <div className="flex w-fit items-center gap-1 border border-black/5">
                 <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
                   {year}
                 </span>
@@ -207,7 +207,7 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove, index }) {
           e.stopPropagation();
           onRemove(item);
         }}
-        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center  border border-black/10 bg-black/5 text-black/50 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center border border-black/10 bg-black/5 text-black/50 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
@@ -397,77 +397,82 @@ export default function CreateListModal({ close, data }) {
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]"
         >
           <AnimatePresence mode="wait" initial={false}>
-          {showSearchResults ? (
-            <motion.div
-              key="search-results"
-              variants={MODAL_LIST_VARIANTS}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex flex-col gap-1.5"
-            >
-              <div className="flex items-center justify-between px-1 py-1">
-                <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
-                  Search Results ({searchResults.length})
-                </span>
-              </div>
-              <motion.div variants={MODAL_LIST_VARIANTS} className="flex flex-col gap-1">
-                {searchResults.map((item, index) => (
-                  <SearchResultRow
-                    key={getDraftMediaKey(item)}
-                    index={index}
-                    item={item}
-                    isAdded={selectedKeys.has(getDraftMediaKey(item))}
-                    onAdd={handleAdd}
-                    onRemove={handleRemove}
-                  />
-                ))}
-                {isSearching && searchResults.length === 0 && (
-                  <div className="flex h-24 items-center justify-center text-sm font-medium text-black/50">
-                    Searching titles...
+            {showSearchResults ? (
+              <motion.div
+                key="search-results"
+                variants={MODAL_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-1.5"
+              >
+                <div className="flex items-center justify-between px-1 py-1">
+                  <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
+                    Search Results ({searchResults.length})
+                  </span>
+                </div>
+                <motion.div variants={MODAL_LIST_VARIANTS} className="flex flex-col gap-1">
+                  {searchResults.map((item, index) => (
+                    <SearchResultRow
+                      key={getDraftMediaKey(item)}
+                      index={index}
+                      item={item}
+                      isAdded={selectedKeys.has(getDraftMediaKey(item))}
+                      onAdd={handleAdd}
+                      onRemove={handleRemove}
+                    />
+                  ))}
+                  {isSearching && searchResults.length === 0 && (
+                    <div className="flex h-24 items-center justify-center text-sm font-medium text-black/50">
+                      Searching titles...
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="draft-items"
+                variants={MODAL_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-1.5"
+              >
+                {draftItems.length > 0 && (
+                  <div className="flex items-center justify-between px-1 py-1">
+                    <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
+                      Selected Titles ({draftItems.length})
+                    </span>
+                  </div>
+                )}
+                {draftItems.length > 0 ? (
+                  <AnimatePresence initial={false}>
+                    {draftItems.map((item, index) => (
+                      <DraftItemRow
+                        key={getDraftMediaKey(item)}
+                        index={index}
+                        item={item}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                ) : (
+                  <div className="flex h-40 flex-col items-center justify-center gap-2 border border-dashed border-black/15 bg-black/5 p-6 text-center">
+                    <Icon
+                      icon="solar:clapperboard-play-bold-duotone"
+                      size={24}
+                      className="text-black/50"
+                    />
+                    <div>
+                      <p className="text-xs font-semibold text-black/70">No titles added yet</p>
+                      <p className="mt-0.5 text-[11px] text-black/50">
+                        Search movies or TV shows above to start building your list
+                      </p>
+                    </div>
                   </div>
                 )}
               </motion.div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="draft-items"
-              variants={MODAL_LIST_VARIANTS}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex flex-col gap-1.5"
-            >
-              {draftItems.length > 0 && (
-                <div className="flex items-center justify-between px-1 py-1">
-                  <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
-                    Selected Titles ({draftItems.length})
-                  </span>
-                </div>
-              )}
-              {draftItems.length > 0 ? (
-                <AnimatePresence initial={false}>
-                  {draftItems.map((item, index) => (
-                    <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
-                  ))}
-                </AnimatePresence>
-              ) : (
-                <div className="flex h-40 flex-col items-center justify-center gap-2  border border-dashed border-black/15 bg-black/5 p-6 text-center">
-                  <Icon
-                    icon="solar:clapperboard-play-bold-duotone"
-                    size={24}
-                    className="text-black/50"
-                  />
-                  <div>
-                    <p className="text-xs font-semibold text-black/70">No titles added yet</p>
-                    <p className="mt-0.5 text-[11px] text-black/50">
-                      Search movies or TV shows above to start building your list
-                    </p>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
+            )}
           </AnimatePresence>
         </div>
 

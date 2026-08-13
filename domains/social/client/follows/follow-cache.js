@@ -102,4 +102,3 @@ export function primeFollowRelationshipState(viewerId, targetId, relationshipPay
   const key = getRelationshipSubscriptionKey(viewerId, targetId);
   primePollingSubscription(key, relationshipPayload, { emit: true });
 }
-

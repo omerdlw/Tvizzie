@@ -1,17 +1,22 @@
 export const AUTH_ERROR_MESSAGES = Object.freeze({
   'auth/email-already-in-use': 'This email address is already in use',
-  'auth/invalid-credential': 'The password you entered is incorrect. Please check your password or reset it.',
+  'auth/invalid-credential':
+    'The password you entered is incorrect. Please check your password or reset it.',
   'auth/invalid-email': 'Enter a valid email address',
   'auth/missing-credentials': 'Sign-in credentials are missing',
   'auth/network-request-failed': 'A network error occurred. Please try again',
   'auth/operation-not-allowed': 'This sign-in method is not available',
   'auth/too-many-requests': 'Too many attempts were made. Please try again later',
   'auth/user-disabled': 'This account has been disabled',
-  'auth/user-not-found': 'No account was found with this email or username. Please check your credentials or sign up.',
-  USER_NOT_FOUND: 'No account was found with this email or username. Please check your credentials or sign up.',
-  user_not_found: 'No account was found with this email or username. Please check your credentials or sign up.',
+  'auth/user-not-found':
+    'No account was found with this email or username. Please check your credentials or sign up.',
+  USER_NOT_FOUND:
+    'No account was found with this email or username. Please check your credentials or sign up.',
+  user_not_found:
+    'No account was found with this email or username. Please check your credentials or sign up.',
   'auth/weak-password': 'Password is too weak. Use at least 8 characters and 1 number',
-  'auth/wrong-password': 'The password you entered is incorrect. Please check your password or reset it.',
+  'auth/wrong-password':
+    'The password you entered is incorrect. Please check your password or reset it.',
   SIGNIN_IDENTIFIER_REQUIRED: 'Username or email is required',
   PROFILE_EMAIL_MISSING: 'No sign-in email was found for this username. Please contact support',
   USERNAME_TAKEN: 'This username is already taken',
@@ -24,9 +29,12 @@ export const AUTH_ERROR_MESSAGES = Object.freeze({
   GOOGLE_SIGNUP_REQUIRED: 'No account exists for this Google account. Continue with Sign Up.',
   GOOGLE_UNLINK_REQUIRES_PASSWORD:
     'Google can only be unlinked while email/password sign-in remains enabled',
-  INVALID_LOGIN_CREDENTIALS: 'The password you entered is incorrect. Please check your password or reset it.',
-  invalid_login_credentials: 'The password you entered is incorrect. Please check your password or reset it.',
-  invalid_credentials: 'The password you entered is incorrect. Please check your password or reset it.',
+  INVALID_LOGIN_CREDENTIALS:
+    'The password you entered is incorrect. Please check your password or reset it.',
+  invalid_login_credentials:
+    'The password you entered is incorrect. Please check your password or reset it.',
+  invalid_credentials:
+    'The password you entered is incorrect. Please check your password or reset it.',
   PASSWORD_SIGN_IN_DISABLED:
     'Password sign-in is not enabled for this account. Use a connected provider or set a password from Account Security.',
 });

@@ -14,20 +14,12 @@ export default createRouteRegistry({
           background: {
             image: backgroundImage,
             overlay: true,
-            noiseStyle: {
-              opacity: 0.2,
-            },
           },
         }
       : {
           background: {
             image: null,
             video: null,
-            overlay: false,
-            overlayOpacity: 0,
-            noiseStyle: {
-              opacity: 0,
-            },
           },
         }),
     loading: { isLoading },

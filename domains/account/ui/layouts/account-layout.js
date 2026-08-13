@@ -60,13 +60,7 @@ export function AccountHeroReveal({ children, className = '' }) {
 }
 
 export function AccountNavReveal({ children, className = '' }) {
-  return (
-    <div
-      className={className}
-    >
-      {children}
-    </div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 // ─── Nav Items ────────────────────────────────────────────────────────────────
@@ -183,7 +177,6 @@ export function AccountSectionNavWrapper({
 function NavViewItem({ item, isActive, href, index }) {
   const { startTabTransition } = useAccountNavTransition();
 
-
   const handleClick = (e) => {
     if (
       !e.defaultPrevented &&
@@ -199,26 +192,18 @@ function NavViewItem({ item, isActive, href, index }) {
   };
 
   return (
-    <AccountReveal
-      className="flex h-full w-full min-w-0"
-      itemIndex={index}
-      stage="nav"
-    >
+    <AccountReveal className="flex h-full w-full min-w-0" itemIndex={index} stage="nav">
       <Link
         href={href}
         onClick={handleClick}
         className={cn(
-          'center relative h-full w-full shrink-0  px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-[background-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] last:border-none sm:text-xs',
+          'center relative h-full w-full shrink-0 px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-[background-color,color,transform] duration-300 ease-out last:border-none hover:scale-[1.015] active:scale-[0.985] sm:text-xs',
           isActive
             ? 'font-bold text-white'
             : 'hover:bg-primary font-semibold text-black/70 hover:text-black',
         )}
       >
-        {isActive ? (
-          <span
-            className="absolute inset-0  bg-black"
-          />
-        ) : null}
+        {isActive ? <span className="absolute inset-0 bg-black" /> : null}
         <span className="relative z-10">{item.label}</span>
       </Link>
     </AccountReveal>

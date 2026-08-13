@@ -72,7 +72,10 @@ export const MODAL_LIST_VARIANTS = Object.freeze({
     opacity: 1,
     transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.SOFT },
   },
-  exit: { opacity: 0, transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.EXIT } },
+  exit: {
+    opacity: 0,
+    transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.EXIT },
+  },
 });
 
 export const MODAL_LIST_ITEM_VARIANTS = Object.freeze({

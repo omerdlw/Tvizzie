@@ -7,8 +7,10 @@ import { REGISTRY_TYPES, useRegistryValue } from '../registry/context';
 const BackgroundActionsContext = createContext(null);
 const BackgroundStateContext = createContext(null);
 
+const TMDB_IMAGE_VARIANT_PATTERN = /^(https:\/\/image\.tmdb\.org\/t\/p)\/(?:w\d+|h\d+|original)(\/.*)$/i;
+
 const DEFAULT_BACKGROUND = Object.freeze({
-  overlayOpacity: 0.5,
+  overlayOpacity: 0,
   overlayColor: 'var(--white)',
   position: 'center',
   videoOptions: {
@@ -29,31 +31,46 @@ const DEFAULT_BACKGROUND = Object.freeze({
   animation: null,
 });
 
+function resolveOriginalBackgroundImage(image) {
+  if (typeof image !== 'string') {
+    return image;
+  }
+
+  return image.replace(TMDB_IMAGE_VARIANT_PATTERN, '$1/original$2');
+}
+
 function mergeBackgroundState(baseState, patch = {}) {
+  const resolvedPatch = Object.hasOwn(patch, 'image')
+    ? {
+        ...patch,
+        image: resolveOriginalBackgroundImage(patch.image),
+      }
+    : patch;
+
   return {
     ...baseState,
-    ...patch,
+    ...resolvedPatch,
     imageStyle: {
       ...baseState.imageStyle,
-      ...(patch.imageStyle || {}),
+      ...(resolvedPatch.imageStyle || {}),
     },
     videoStyle: {
       ...baseState.videoStyle,
-      ...(patch.videoStyle || {}),
+      ...(resolvedPatch.videoStyle || {}),
     },
     noiseStyle: {
       ...baseState.noiseStyle,
-      ...(patch.noiseStyle || {}),
+      ...(resolvedPatch.noiseStyle || {}),
     },
     videoOptions: {
       ...baseState.videoOptions,
-      ...(patch.videoOptions || {}),
+      ...(resolvedPatch.videoOptions || {}),
     },
     animation:
-      patch.animation !== undefined
-        ? patch.animation
-          ? { ...(baseState.animation || {}), ...patch.animation }
-          : patch.animation
+      resolvedPatch.animation !== undefined
+        ? resolvedPatch.animation
+          ? { ...(baseState.animation || {}), ...resolvedPatch.animation }
+          : resolvedPatch.animation
         : baseState.animation,
   };
 }

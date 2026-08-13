@@ -41,9 +41,7 @@ function TermsView() {
         icon="solar:document-text-bold"
       />
       <LegalPageShell>
-        <div
-          className={LEGAL_PAGE_CONTENT_CLASS}
-        >
+        <div className={LEGAL_PAGE_CONTENT_CLASS}>
           <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
               <LegalReveal stage="title">
@@ -102,12 +100,8 @@ function TermsView() {
                   <li>
                     You are responsible for the accuracy of information you add to your account.
                   </li>
-                  <li>
-                    You are responsible for activity that happens under your account.
-                  </li>
-                  <li>
-                    You must keep your login credentials and verification codes secure.
-                  </li>
+                  <li>You are responsible for activity that happens under your account.</li>
+                  <li>You must keep your login credentials and verification codes secure.</li>
                   <li>
                     You may not attempt to gain unauthorized access to other accounts or restricted
                     parts of the service.
@@ -140,26 +134,18 @@ function TermsView() {
               <AnimatedLegalSection title="Acceptable use">
                 <p>You agree not to use Tvizzie to:</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>
-                    Break the law or violate another person&apos;s rights.
-                  </li>
-                  <li>
-                    Harass, abuse, threaten, impersonate, or dox other people.
-                  </li>
+                  <li>Break the law or violate another person&apos;s rights.</li>
+                  <li>Harass, abuse, threaten, impersonate, or dox other people.</li>
                   <li>
                     Upload malicious code, interfere with the service, or attempt to bypass security
                     controls.
                   </li>
-                  <li>
-                    Spam the product with automated or repetitive content.
-                  </li>
+                  <li>Spam the product with automated or repetitive content.</li>
                   <li>
                     Scrape or extract data from the service in a way that harms the product, its
                     users, or its infrastructure.
                   </li>
-                  <li>
-                    Post content that you do not have the right to publish.
-                  </li>
+                  <li>Post content that you do not have the right to publish.</li>
                 </ul>
               </AnimatedLegalSection>
 

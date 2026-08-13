@@ -55,7 +55,7 @@ const ListPreviewStack = memo(function ListPreviewStack({ list }) {
 
   if (previewItems.length === 0) {
     return (
-      <div className="center absolute bottom-0 left-0 h-[68px] w-[46px]  border border-dashed border-black/10 bg-white text-black/50">
+      <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-black/10 bg-white text-black/50">
         <Icon icon="solar:list-bold" size={20} />
       </div>
     );
@@ -68,7 +68,7 @@ const ListPreviewStack = memo(function ListPreviewStack({ list }) {
         return (
           <div
             key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-            className="border-primary absolute bottom-0 overflow-hidden  border bg-white"
+            className="border-primary absolute bottom-0 overflow-hidden border bg-white"
             style={{
               width: '46px',
               height: `${68 - index * 6}px`,
@@ -83,7 +83,7 @@ const ListPreviewStack = memo(function ListPreviewStack({ list }) {
                 alt={item.title || item.name || 'Poster'}
                 loading="lazy"
                 decoding="async"
-                className="h-full w-full  object-cover"
+                className="h-full w-full object-cover"
                 wrapperClassName="h-full w-full "
               />
             ) : (
@@ -109,7 +109,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
       animate="visible"
       whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       className={cn(
-        'group flex w-full items-center gap-4  border p-3 text-left transition-[background-color,border-color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'group flex w-full items-center gap-4 border p-3 text-left transition-[background-color,border-color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
         isSelected
           ? 'bg-info/10 border-info/20'
           : 'hover:bg-primary border-black/5 hover:border-black/10',
@@ -126,7 +126,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
 
       <span
         className={cn(
-          'mr-1.5 flex size-[22px] shrink-0 items-center justify-center  border',
+          'mr-1.5 flex size-[22px] shrink-0 items-center justify-center border',
           isSelected
             ? 'border-info bg-info text-primary'
             : 'border-black/5 text-black/50 group-hover:border-black/50 group-hover:text-black/70',
@@ -144,13 +144,13 @@ function LoadingSkeleton() {
       {Array.from({ length: 10 }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="flex h-24 items-center gap-4  border border-black/5 p-3"
+          className="flex h-24 items-center gap-4 border border-black/5 p-3"
         >
           <div className="relative h-[68px] w-[82px] shrink-0">
             {[0, 1, 2, 3].map((stackIndex) => (
               <div
                 key={`stack-${index}-${stackIndex}`}
-                className="absolute bottom-0 overflow-hidden  border border-black/5"
+                className="absolute bottom-0 overflow-hidden border border-black/5"
                 style={{
                   backgroundColor:
                     STACK_SKELETON_BG[stackIndex] ||
@@ -164,8 +164,8 @@ function LoadingSkeleton() {
             ))}
           </div>
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-4 w-2/5  bg-black/10" />
-            <div className="h-3 w-4/5  bg-black/10" />
+            <div className="h-4 w-2/5 bg-black/10" />
+            <div className="h-3 w-4/5 bg-black/10" />
           </div>
         </div>
       ))}

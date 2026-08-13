@@ -24,7 +24,9 @@ function normalizeMovieId(movieId) {
 }
 
 function normalizeTitleMediaType(mediaType) {
-  const normalizedType = String(mediaType || '').trim().toLowerCase();
+  const normalizedType = String(mediaType || '')
+    .trim()
+    .toLowerCase();
   return normalizedType === 'movie' || normalizedType === 'tv' ? normalizedType : null;
 }
 
@@ -346,9 +348,7 @@ export function getMediaBackgroundPreferenceFilePath(mediaType, mediaId) {
 
 export function setMediaBackgroundPreference(mediaType, mediaId, filePath) {
   const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
-  return preferenceKey
-    ? setMovieBackgroundPreference(preferenceKey, filePath)
-    : false;
+  return preferenceKey ? setMovieBackgroundPreference(preferenceKey, filePath) : false;
 }
 
 export function clearMediaBackgroundPreference(mediaType, mediaId) {
@@ -356,8 +356,7 @@ export function clearMediaBackgroundPreference(mediaType, mediaId) {
   if (!preferenceKey) return false;
 
   const didClear = clearMovieBackgroundPreference(preferenceKey);
-  const didClearLegacy =
-    mediaType === 'movie' ? clearMovieBackgroundPreference(mediaId) : false;
+  const didClearLegacy = mediaType === 'movie' ? clearMovieBackgroundPreference(mediaId) : false;
   return didClear || didClearLegacy;
 }
 

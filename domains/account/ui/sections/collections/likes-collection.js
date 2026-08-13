@@ -303,7 +303,7 @@ function ReorderableListItem({
 }) {
   return (
     <div className="relative w-full">
-      <div className="flex w-full items-center gap-2  border border-black/15 bg-white/40 px-4 py-3">
+      <div className="flex w-full items-center gap-2 border border-black/15 bg-white/40 px-4 py-3">
         <div className="center size-8 shrink-0 text-[#475569]">
           <Icon icon="solar:reorder-bold" size={18} />
         </div>
@@ -312,7 +312,7 @@ function ReorderableListItem({
         </p>
         <div className="flex shrink-0 items-center gap-1">
           <Button
-            className="center size-8  border border-black/10 bg-white text-black/70 disabled:opacity-50"
+            className="center size-8 border border-black/10 bg-white text-black/70 disabled:opacity-50"
             aria-label={`Move ${getAccountMediaTitle(item)} up`}
             disabled={isFirst}
             onClick={() => onMoveItem(index, index - 1)}
@@ -320,7 +320,7 @@ function ReorderableListItem({
             <Icon icon="solar:alt-arrow-up-bold" size={14} />
           </Button>
           <Button
-            className="center size-8  border border-black/10 bg-white text-black/70 disabled:opacity-50"
+            className="center size-8 border border-black/10 bg-white text-black/70 disabled:opacity-50"
             aria-label={`Move ${getAccountMediaTitle(item)} down`}
             disabled={isLast}
             onClick={() => onMoveItem(index, index + 1)}

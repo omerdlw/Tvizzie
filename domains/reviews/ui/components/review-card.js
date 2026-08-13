@@ -148,7 +148,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center  border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -158,7 +158,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
       <Button
         variant="destructive"
         disabled={disabled}
-        className="size-8 "
+        className="size-8"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -177,14 +177,10 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
-        <ListPreviewComposition
-          className=""
-          emptyIcon="solar:list-broken"
-          items={previewItems}
-        />
+        <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
       ) : src ? (
         <AdaptiveImage
-          className=" object-cover"
+          className="object-cover"
           src={src}
           alt={alt}
           fill
@@ -195,7 +191,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           wrapperClassName="h-full w-full "
         />
       ) : (
-        <div className="bg-primary/30 flex h-full w-full items-center justify-center  border border-black/5">
+        <div className="bg-primary/30 flex h-full w-full items-center justify-center border border-black/5">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -212,7 +208,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3  border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"

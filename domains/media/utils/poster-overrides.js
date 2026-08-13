@@ -75,7 +75,9 @@ export function getPreferredMediaPosterSrc(item, size = 'w342', fallbackMediaTyp
     .trim()
     .toLowerCase();
   const preferredPath =
-    canReadPosterPreferences && mediaId ? getMediaPosterPreferenceFilePath(mediaType, mediaId) : null;
+    canReadPosterPreferences && mediaId
+      ? getMediaPosterPreferenceFilePath(mediaType, mediaId)
+      : null;
 
   return (
     createTmdbImageSrc(preferredPath, size) ||

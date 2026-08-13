@@ -40,10 +40,7 @@ function resolveAvatarUrlCandidate(user = {}) {
     return normalizeAvatarUrl(user);
   }
 
-  const candidates = [
-    user?.avatarUrl,
-    user?.avatar_url,
-  ];
+  const candidates = [user?.avatarUrl, user?.avatar_url];
 
   for (const candidate of candidates) {
     const normalized = normalizeAvatarUrl(candidate);

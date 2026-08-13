@@ -52,7 +52,15 @@ async function loadReviewAuthor(admin, userId) {
   };
 }
 
-function createReviewPayload({ author, content, existingPayload, isSpoiler, payloadPatch, rating, userId }) {
+function createReviewPayload({
+  author,
+  content,
+  existingPayload,
+  isSpoiler,
+  payloadPatch,
+  rating,
+  userId,
+}) {
   const safePatch = Object.fromEntries(
     Object.entries(payloadPatch).filter(([key]) => key !== 'authorId' && key !== 'user'),
   );

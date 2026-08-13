@@ -31,16 +31,16 @@ export default function PersonTimelineSkeleton() {
                 </div>
 
                 {/* Timeline Dot */}
-                <div className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2  border-2 border-white bg-black/30 sm:left-24" />
+                <div className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 border-2 border-white bg-black/30 sm:left-24" />
 
                 <div className="min-w-0 flex-1 space-y-3 pt-1 pl-4 sm:pl-8">
                   {Array.from({ length: yearIndex === 0 ? 2 : 1 }).map((_, itemIndex) => (
                     <div
                       key={itemIndex}
-                      className="flex items-center gap-4  p-2"
+                      className="flex items-center gap-4 p-2"
                       style={{ animationDelay: `${(yearIndex * 2 + itemIndex) * 50}ms` }}
                     >
-                      <div className={`h-24 w-16 shrink-0  ${S} sm:w-20`} />
+                      <div className={`h-24 w-16 shrink-0 ${S} sm:w-20`} />
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
                         <div className={`h-5 w-48 ${S}`} />
                         <div className={`h-4 w-32 ${SOFT}`} />

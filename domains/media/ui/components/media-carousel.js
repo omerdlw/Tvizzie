@@ -33,12 +33,7 @@ function getItemStride(element) {
   const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
   return firstItem.getBoundingClientRect().width + gap;
 }
-export default function Carousel({
-  children,
-  className = '',
-  gap = 'gap-2',
-  itemClassName = '',
-}) {
+export default function Carousel({ children, className = '', gap = 'gap-2', itemClassName = '' }) {
   const scrollRef = useDraggableScroll();
   const [scrollState, setScrollState] = useState({
     hasOverflow: false,
@@ -97,7 +92,7 @@ export default function Carousel({
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth  py-1 select-none',
+          'scrollbar-hide flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth py-1 select-none',
           className,
           gap,
         )}
@@ -119,7 +114,7 @@ export default function Carousel({
           onClick={() => scrollByDirection(-1)}
           {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer  border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-left-4',
+            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-left-4',
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
@@ -134,7 +129,7 @@ export default function Carousel({
           onClick={() => scrollByDirection(1)}
           {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer  border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-right-4',
+            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-right-4',
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />

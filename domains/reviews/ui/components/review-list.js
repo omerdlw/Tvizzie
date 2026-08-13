@@ -1,6 +1,5 @@
 'use client';
 
-
 import { normalizeFeedbackText } from '@/shared/utils';
 import { mergeReviewUser } from '../../shared/review-data';
 import ReviewCard from './review-card';
@@ -80,12 +79,7 @@ export default function ReviewList({
 
         if (accountMotion) {
           return (
-            <AccountReveal
-              key={key}
-              deferred
-              itemIndex={index}
-              stage="item.feed"
-            >
+            <AccountReveal key={key} deferred itemIndex={index} stage="item.feed">
               {card}
             </AccountReveal>
           );

@@ -86,11 +86,7 @@ async function ensureAccountRecord(user) {
   const metadata = user.metadata || user.user_metadata || {};
 
   return ACCOUNT_CLIENT.ensureAccount({
-    displayName:
-      metadata.display_name ||
-      metadata.full_name ||
-      metadata.name ||
-      null,
+    displayName: metadata.display_name || metadata.full_name || metadata.name || null,
     email: user.email || null,
     id: user.id,
   });

@@ -230,7 +230,8 @@ export function useAccountPageActions({
     if (typeof setFollowRelationship === 'function') {
       setFollowRelationship((prev) => ({
         ...prev,
-        canViewPrivateContent: prev.canViewPrivateContent || nextStatus === FOLLOW_STATUSES.ACCEPTED,
+        canViewPrivateContent:
+          prev.canViewPrivateContent || nextStatus === FOLLOW_STATUSES.ACCEPTED,
         isInboundRelationshipLoaded: true,
         isOutboundRelationshipLoaded: true,
         isPrivateProfile: isTargetPrivate,
@@ -239,7 +240,11 @@ export function useAccountPageActions({
         showFollowBack: false,
       }));
     }
-    if (!isCancelRequest && nextStatus === FOLLOW_STATUSES.ACCEPTED && typeof setFollowerCount === 'function') {
+    if (
+      !isCancelRequest &&
+      nextStatus === FOLLOW_STATUSES.ACCEPTED &&
+      typeof setFollowerCount === 'function'
+    ) {
       setFollowerCount((count) => Math.max(0, count + 1));
     }
 
@@ -254,7 +259,11 @@ export function useAccountPageActions({
       if (typeof setFollowRelationship === 'function') {
         setFollowRelationship(previousRelationship);
       }
-      if (!isCancelRequest && nextStatus === FOLLOW_STATUSES.ACCEPTED && typeof setFollowerCount === 'function') {
+      if (
+        !isCancelRequest &&
+        nextStatus === FOLLOW_STATUSES.ACCEPTED &&
+        typeof setFollowerCount === 'function'
+      ) {
         setFollowerCount((count) => Math.max(0, count - 1));
       }
       toast.error(error?.message || 'Follow state could not be updated');

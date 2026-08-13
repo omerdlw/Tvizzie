@@ -92,7 +92,7 @@ export default function MediaSocialProof({ media, viewerId }) {
       type="button"
       aria-label="Open social activity"
       onClick={handleOpenModal}
-      className="group inline-flex items-center gap-1.5  border border-black/10 bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wider text-black/70 uppercase hover:border-black/20 hover:bg-black/10 hover:text-black"
+      className="group inline-flex items-center gap-1.5 border border-black/10 bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wider text-black/70 uppercase hover:border-black/20 hover:bg-black/10 hover:text-black"
     >
       <Icon
         icon="solar:users-group-two-rounded-bold"

@@ -20,10 +20,36 @@ const STAGES = Object.freeze({
   'hero.title': Object.freeze({ at: 0.5, duration: 1.02, y: 12 }),
   'hero.metric': Object.freeze({ at: 0.98, duration: 0.68, y: 8, stagger: 0.075 }),
   'hero.bio': Object.freeze({ at: 1.38, duration: 0.92, y: 14 }),
-  'section.heading': Object.freeze({ at: 1.88, duration: 0.76, y: 12, stagger: 0.1, lateDelay: 0.12 }),
-  'section.content': Object.freeze({ at: 2.14, duration: 0.9, y: 16, stagger: 0.13, lateDelay: 0.16 }),
-  'item.media': Object.freeze({ at: 2.42, duration: 0.76, y: 14, scale: 0.975, stagger: 0.075, lateDelay: 0.12 }),
-  'item.list': Object.freeze({ at: 2.42, duration: 0.8, y: 14, scale: 0.98, stagger: 0.09, lateDelay: 0.12 }),
+  'section.heading': Object.freeze({
+    at: 1.88,
+    duration: 0.76,
+    y: 12,
+    stagger: 0.1,
+    lateDelay: 0.12,
+  }),
+  'section.content': Object.freeze({
+    at: 2.14,
+    duration: 0.9,
+    y: 16,
+    stagger: 0.13,
+    lateDelay: 0.16,
+  }),
+  'item.media': Object.freeze({
+    at: 2.42,
+    duration: 0.76,
+    y: 14,
+    scale: 0.975,
+    stagger: 0.075,
+    lateDelay: 0.12,
+  }),
+  'item.list': Object.freeze({
+    at: 2.42,
+    duration: 0.8,
+    y: 14,
+    scale: 0.98,
+    stagger: 0.09,
+    lateDelay: 0.12,
+  }),
   'item.feed': Object.freeze({ at: 2.42, duration: 0.76, y: 12, stagger: 0.075, lateDelay: 0.1 }),
   control: Object.freeze({ at: 2.16, duration: 0.62, y: 8, stagger: 0.06, lateDelay: 0.1 }),
 });
@@ -32,11 +58,17 @@ export const ACCOUNT_ROUTE_MOTION = Object.freeze({ easings: EASINGS, stages: ST
 
 export const ACCOUNT_INTERACTIONS = Object.freeze({
   card: Object.freeze({
-    whileHover: Object.freeze({ scale: 1.018, transition: { duration: 0.3, ease: EASINGS.ACCENT } }),
+    whileHover: Object.freeze({
+      scale: 1.018,
+      transition: { duration: 0.3, ease: EASINGS.ACCENT },
+    }),
     whileTap: Object.freeze({ scale: 0.985, transition: { duration: 0.16, ease: EASINGS.ACCENT } }),
   }),
   control: Object.freeze({
-    whileHover: Object.freeze({ scale: 1.02, transition: { duration: 0.26, ease: EASINGS.ACCENT } }),
+    whileHover: Object.freeze({
+      scale: 1.02,
+      transition: { duration: 0.26, ease: EASINGS.ACCENT },
+    }),
     whileTap: Object.freeze({ scale: 0.97, transition: { duration: 0.16, ease: EASINGS.ACCENT } }),
   }),
 });
@@ -73,9 +105,7 @@ export function AccountMotionProvider({ children, routeKey }) {
   if (!startedAtRef.current) startedAtRef.current = getNow();
 
   return (
-    <AccountMotionContext.Provider value={startedAtRef}>
-      {children}
-    </AccountMotionContext.Provider>
+    <AccountMotionContext.Provider value={startedAtRef}>{children}</AccountMotionContext.Provider>
   );
 }
 

@@ -322,21 +322,21 @@ export function getGalleryImages(images) {
     .slice(0, 20);
 }
 
-export function createMovieBackdropImageUrl(filePath, size = 'w1280') {
+export function createMovieBackdropImageUrl(filePath, size = 'original') {
   if (typeof filePath !== 'string' || !filePath.trim()) {
     return null;
   }
 
-  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'w1280';
+  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'original';
   return `${TMDB_IMG}/${resolvedSize}${filePath}`;
 }
 
-export function createMoviePosterImageUrl(filePath, size = 'w780') {
+export function createMoviePosterImageUrl(filePath, size = 'original') {
   if (typeof filePath !== 'string' || !filePath.trim()) {
     return null;
   }
 
-  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'w780';
+  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'original';
   return `${TMDB_IMG}/${resolvedSize}${filePath}`;
 }
 

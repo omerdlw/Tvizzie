@@ -23,7 +23,11 @@ export const notificationContentVariants = Object.freeze({
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: NOTIFICATION_TIERS.FAST.duration, ease: NOTIFICATION_EASINGS.SOFT, delay: 0.06 },
+    transition: {
+      duration: NOTIFICATION_TIERS.FAST.duration,
+      ease: NOTIFICATION_EASINGS.SOFT,
+      delay: 0.06,
+    },
   },
   exit: {
     opacity: 0,

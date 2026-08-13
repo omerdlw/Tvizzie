@@ -42,7 +42,7 @@ function RatingsLegend() {
     <div className="flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase sm:gap-x-6">
       {RATING_LEGEND.map((item) => (
         <span key={item.label} className="inline-flex items-center gap-2 whitespace-nowrap">
-          <span aria-hidden="true" className={`size-2.5  ${item.className}`} />
+          <span aria-hidden="true" className={`size-2.5 ${item.className}`} />
           {item.label}
         </span>
       ))}
@@ -53,7 +53,7 @@ function RatingsLegend() {
 function TvSeasonRatingsEmpty() {
   return (
     <section className="flex min-h-64 w-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <span className="center size-11  border border-black/10 bg-white/40 text-black/60">
+      <span className="center size-11 border border-black/10 bg-white/40 text-black/60">
         <Icon icon="solar:chart-2-bold" size={20} />
       </span>
       <div>
@@ -139,7 +139,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
                     key={`${season.seasonNumber}-${episodeNumber}`}
                     aria-label={label}
                     title={label}
-                    className={`center size-14  text-lg font-bold tabular-nums ${tone.className}`}
+                    className={`center size-14 text-lg font-bold tabular-nums ${tone.className}`}
                   >
                     {formatRating(episode.rating)}
                   </div>

@@ -7,7 +7,10 @@ import {
   resolveOptionalSessionRequest,
 } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
-import { claimUsernameForProfile, ensureAccountProfileRecord } from '@/domains/auth/server/account.server.js';
+import {
+  claimUsernameForProfile,
+  ensureAccountProfileRecord,
+} from '@/domains/auth/server/account.server.js';
 import {
   getEditableAccountSnapshotByUserId,
   getAccountProfileByUserId,
@@ -146,7 +149,10 @@ export async function handleAccountProfileGet(request) {
           invalidateCachedAccountProfiles(viewerId);
           profile = await getAccountProfileByUserId(targetUserId, { viewerId });
         } catch (bootstrapErr) {
-          console.error('Failed auto-bootstrapping profile in handleAccountProfileGet:', bootstrapErr);
+          console.error(
+            'Failed auto-bootstrapping profile in handleAccountProfileGet:',
+            bootstrapErr,
+          );
         }
       }
     }

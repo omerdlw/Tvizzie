@@ -245,13 +245,13 @@ export function DiscoverSection({
           </div>
 
           {gridError ? (
-            <div className="mt-6  border border-black/10 bg-white/70 p-3 text-sm text-black/50">
+            <div className="mt-6 border border-black/10 bg-white/70 p-3 text-sm text-black/50">
               {gridError}
             </div>
           ) : null}
 
           {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
-            <div className="mt-6  border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+            <div className="mt-6 border border-black/10 bg-white/70 p-4 text-sm text-black/50">
               No {title.toLowerCase()} are available right now.
             </div>
           ) : null}
@@ -263,7 +263,7 @@ export function DiscoverSection({
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isLoadingMore || isFiltering}
-                  className="bg-primary inline-flex h-10 items-center gap-2  border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-primary inline-flex h-10 items-center gap-2 border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Icon
                     icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

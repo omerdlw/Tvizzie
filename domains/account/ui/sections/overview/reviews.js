@@ -79,14 +79,12 @@ export default function AccountReviewsOverview({
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <div
-          className={ACCOUNT_SECTION_PAGINATION_CLASS}
-        >
+        <div className={ACCOUNT_SECTION_PAGINATION_CLASS}>
           <Button
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className=" border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase"
+            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

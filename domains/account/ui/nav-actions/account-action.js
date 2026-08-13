@@ -173,21 +173,16 @@ export default function AccountAction(props) {
                 tone: followAction.tone,
                 className: '',
               })}
-            >{isFollowLoading ? (
-                  <span
-                    key="loading"
-                  >
-                    Updating
-                  </span>
-                ) : (
-                  <span
-                    key={followAction.label}
-                    className="flex items-center gap-2"
-                  >
-                    <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
-                    {followAction.label}
-                  </span>
-                )}</button>
+            >
+              {isFollowLoading ? (
+                <span key="loading">Updating</span>
+              ) : (
+                <span key={followAction.label} className="flex items-center gap-2">
+                  <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                  {followAction.label}
+                </span>
+              )}
+            </button>
           </div>
         ) : null}
       </div>
@@ -266,21 +261,16 @@ export default function AccountAction(props) {
                   tone: isSaveDisabled ? 'muted' : 'success',
                   className: canShowUploadAction || canShowCancelAction ? 'flex-1' : '',
                 })}
-              >{isSaveLoading ? (
-                    <span
-                      key="saving"
-                    >
-                      Saving
-                    </span>
-                  ) : (
-                    <span
-                      key="save"
-                      className="flex items-center gap-2"
-                    >
-                      <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
-                      {saveLabel}
-                    </span>
-                  )}</button>
+              >
+                {isSaveLoading ? (
+                  <span key="saving">Saving</span>
+                ) : (
+                  <span key="save" className="flex items-center gap-2">
+                    <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+                    {saveLabel}
+                  </span>
+                )}
+              </button>
             ) : null}
           </div>
         ) : null}
@@ -296,21 +286,16 @@ export default function AccountAction(props) {
           onClick={onSave}
           disabled={isSaveLoading || isSaveDisabled}
           className={actionClass({ tone: !isSaveDisabled && 'success', className: '' })}
-        >{isSaveLoading ? (
-              <span
-                key="saving"
-              >
-                Saving
-              </span>
-            ) : (
-              <span
-                key="save"
-                className="flex items-center gap-2"
-              >
-                <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
-                {saveLabel}
-              </span>
-            )}</button>
+        >
+          {isSaveLoading ? (
+            <span key="saving">Saving</span>
+          ) : (
+            <span key="save" className="flex items-center gap-2">
+              <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+              {saveLabel}
+            </span>
+          )}
+        </button>
       </div>
     );
   }
@@ -318,11 +303,7 @@ export default function AccountAction(props) {
   if (mode === 'single-action') {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button
-          type="button"
-          onClick={onAction}
-          className={actionClass({ tone: actionTone })}
-        >
+        <button type="button" onClick={onAction} className={actionClass({ tone: actionTone })}>
           {actionIcon ? <Icon icon={actionIcon} size={NAV_ACTION_STYLES.icon} /> : null}
           {actionLabel}
         </button>
@@ -362,21 +343,16 @@ export default function AccountAction(props) {
               tone: followAction.tone,
               className: '',
             })}
-          >{isFollowLoading ? (
-                <span
-                  key="loading"
-                >
-                  Updating
-                </span>
-              ) : (
-                <span
-                  key={followAction.label}
-                  className="flex items-center gap-2"
-                >
-                  <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
-                  {followAction.label}
-                </span>
-              )}</button>
+          >
+            {isFollowLoading ? (
+              <span key="loading">Updating</span>
+            ) : (
+              <span key={followAction.label} className="flex items-center gap-2">
+                <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                {followAction.label}
+              </span>
+            )}
+          </button>
         ) : null}
 
         {canShowLikeListAction ? (
@@ -388,24 +364,19 @@ export default function AccountAction(props) {
               tone: isLiked ? 'success' : 'muted',
               className: '',
             })}
-          >{isLikeLoading ? (
-                <span
-                  key="loading"
-                >
-                  Updating
-                </span>
-              ) : (
-                <span
-                  key={isLiked ? 'liked' : 'like'}
-                  className="flex items-center gap-2"
-                >
-                  <Icon
-                    icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
-                    size={NAV_ACTION_STYLES.icon}
-                  />
-                  {isLiked ? 'Liked' : 'Like List'}
-                </span>
-              )}</button>
+          >
+            {isLikeLoading ? (
+              <span key="loading">Updating</span>
+            ) : (
+              <span key={isLiked ? 'liked' : 'like'} className="flex items-center gap-2">
+                <Icon
+                  icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
+                  size={NAV_ACTION_STYLES.icon}
+                />
+                {isLiked ? 'Liked' : 'Like List'}
+              </span>
+            )}
+          </button>
         ) : null}
 
         {canShowCommentAction ? (
@@ -460,11 +431,7 @@ export default function AccountAction(props) {
       <div className={NAV_ACTION_STYLES.row}>
         {showListActions ? (
           <>
-            <button
-              type="button"
-              onClick={() => onEditList?.()}
-              className={actionClass()}
-            >
+            <button type="button" onClick={() => onEditList?.()} className={actionClass()}>
               <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
               Edit List
             </button>
@@ -494,11 +461,7 @@ export default function AccountAction(props) {
         ) : null}
 
         {shouldShowInboxAction && (
-          <button
-            type="button"
-            onClick={onOpenInbox}
-            className={actionClass({ tone: 'info' })}
-          >
+          <button type="button" onClick={onOpenInbox} className={actionClass({ tone: 'info' })}>
             <Icon icon="solar:inbox-bold" size={NAV_ACTION_STYLES.icon} />
             Inbox {inboxCount}
           </button>

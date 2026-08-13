@@ -20,9 +20,10 @@ function normalizeReviewReadRequest(query = {}) {
     resource,
   };
 
-  const isValid = resource === 'list'
-    ? Boolean(request.listId && request.ownerId)
-    : Boolean(request.entityId && request.entityType);
+  const isValid =
+    resource === 'list'
+      ? Boolean(request.listId && request.ownerId)
+      : Boolean(request.entityId && request.entityType);
 
   return { isValid, request };
 }
@@ -32,19 +33,20 @@ export async function readReviews(query = {}) {
   if (!isValid) return { data: [] };
 
   const cacheKey = `reviews|resource=${request.resource}|listId=${request.listId}|ownerId=${request.ownerId}|entity=${request.entityType}:${request.entityId}|limit=${request.limitCount}`;
-  const body = request.resource === 'list'
-    ? {
-        limitCount: request.limitCount,
-        listId: request.listId,
-        ownerId: request.ownerId,
-        resource: request.resource,
-      }
-    : {
-        entityId: request.entityId,
-        entityType: request.entityType,
-        limitCount: request.limitCount,
-        resource: request.resource,
-      };
+  const body =
+    request.resource === 'list'
+      ? {
+          limitCount: request.limitCount,
+          listId: request.listId,
+          ownerId: request.ownerId,
+          resource: request.resource,
+        }
+      : {
+          entityId: request.entityId,
+          entityType: request.entityType,
+          limitCount: request.limitCount,
+          resource: request.resource,
+        };
   const payload = await getOrLoadCachedValue({
     cacheKey,
     enabled: true,

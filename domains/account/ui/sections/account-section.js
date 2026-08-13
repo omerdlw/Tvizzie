@@ -58,9 +58,7 @@ export function AccountSectionHeading({
   const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
   const TitleWrapper = titleHref ? Link : 'h2';
   return (
-    <div
-      className={cn('relative flex w-full flex-col', className)}
-    >
+    <div className={cn('relative flex w-full flex-col', className)}>
       <div
         className={cn(
           'flex w-full items-center justify-between gap-4',
@@ -75,7 +73,12 @@ export function AccountSectionHeading({
           </TitleWrapper>
         </AccountReveal>
 
-        <AccountReveal className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right" deferred itemIndex={1} stage="section.heading">
+        <AccountReveal
+          className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right"
+          deferred
+          itemIndex={1}
+          stage="section.heading"
+        >
           {summaryLabel &&
             (titleHref ? (
               <Link href={titleHref} className={summaryClassName}>
@@ -167,43 +170,43 @@ export default function AccountSectionLayout({
           className,
         )}
       >
-          {showTopRule && isInitialSection && (
-            <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
-          )}
-          {showHeader ? (
-            <AccountSectionHeading
-              action={action}
-              icon={icon}
-              isInitialSection={isInitialSection}
-              showDivider={showDivider}
-              showSeeMore={showSeeMore}
-              summaryLabel={summaryLabel}
-              title={title}
-              titleHref={titleHref}
-            />
-          ) : (
-            title && <h2 className="sr-only">{title}</h2>
-          )}
+        {showTopRule && isInitialSection && (
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+        )}
+        {showHeader ? (
+          <AccountSectionHeading
+            action={action}
+            icon={icon}
+            isInitialSection={isInitialSection}
+            showDivider={showDivider}
+            showSeeMore={showSeeMore}
+            summaryLabel={summaryLabel}
+            title={title}
+            titleHref={titleHref}
+          />
+        ) : (
+          title && <h2 className="sr-only">{title}</h2>
+        )}
 
-          {toolbar ? (
-            <AccountSectionBand
-              isInitialSection={isInitialSection}
-              className={cn(toolbarPaddingClassName, toolbarClassName)}
-            >
-              <AccountReveal deferred itemIndex={revealDelay} stage="control">
-                {toolbar}
-              </AccountReveal>
-            </AccountSectionBand>
-          ) : null}
-
-          <AccountReveal
-            className={cn(contentPaddingClassName, contentClassName)}
-            deferred
-            itemIndex={revealDelay}
-            stage="section.content"
+        {toolbar ? (
+          <AccountSectionBand
+            isInitialSection={isInitialSection}
+            className={cn(toolbarPaddingClassName, toolbarClassName)}
           >
-            {children}
-          </AccountReveal>
+            <AccountReveal deferred itemIndex={revealDelay} stage="control">
+              {toolbar}
+            </AccountReveal>
+          </AccountSectionBand>
+        ) : null}
+
+        <AccountReveal
+          className={cn(contentPaddingClassName, contentClassName)}
+          deferred
+          itemIndex={revealDelay}
+          stage="section.content"
+        >
+          {children}
+        </AccountReveal>
       </div>
     </section>
   );

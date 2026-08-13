@@ -76,15 +76,12 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3  border border-black/10 backdrop-blur-sm hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1  p-1 pr-2' : 'h-[84px] p-1 pr-4',
+        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 border border-black/10 backdrop-blur-sm hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
       <div
-        className={cn(
-          'relative shrink-0 overflow-hidden',
-          compact ? 'h-8 w-8 ' : 'h-[76px] w-14 ',
-        )}
+        className={cn('relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-[76px] w-14')}
       >
         <PersonImage
           person={person}
@@ -137,12 +134,7 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
   return `${tabKey}-${variant}-${creditKey}-${index}`;
 }
 
-export default function CastSection({
-  cast = [],
-  crew = [],
-  headerAction = null,
-  baseDelay = 0,
-}) {
+export default function CastSection({ cast = [], crew = [], headerAction = null, baseDelay = 0 }) {
   usePosterPreferenceVersion();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
@@ -248,7 +240,7 @@ export default function CastSection({
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer  border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
+              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -260,9 +252,7 @@ export default function CastSection({
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <div
-        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
-      >
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:users-group-two-rounded-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">

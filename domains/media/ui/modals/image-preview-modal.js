@@ -35,7 +35,7 @@ export default function ImagePreviewModal({ close, data }) {
 
   return (
     <Container
-      className={`relative max-h-[85vh]  ${frameWidthClass}`}
+      className={`relative max-h-[85vh] ${frameWidthClass}`}
       close={close}
       header={false}
       bodyClassName="p-0"

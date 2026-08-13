@@ -63,10 +63,7 @@ export function BlurryText({
         : words.map((word, wordIndex) => {
             const itemDelay = delay + wordIndex * (stagger * 3);
             return (
-              <span
-                key={`word-${wordIndex}`}
-                className={cn('inline-block', segmentClassName)}
-              >
+              <span key={`word-${wordIndex}`} className={cn('inline-block', segmentClassName)}>
                 {word}
                 {wordIndex < words.length - 1 && <span className="inline-block">&nbsp;</span>}
               </span>

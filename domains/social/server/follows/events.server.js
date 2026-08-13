@@ -65,4 +65,3 @@ export function invalidateFollowCachesForUsers(userIds = []) {
     invalidateCachedAccountProfiles(userId);
   });
 }
-

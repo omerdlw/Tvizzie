@@ -24,15 +24,11 @@ export default function AccountBackgroundRegistry({ bannerUrl = null }) {
       heroBannerSrc
         ? {
             image: heroBannerSrc,
-            overlay: true,
-            overlayOpacity: .2,
             animation: false,
           }
         : {
             image: null,
             video: null,
-            overlay: false,
-            overlayOpacity: 0,
             animation: false,
           },
     [heroBannerSrc],

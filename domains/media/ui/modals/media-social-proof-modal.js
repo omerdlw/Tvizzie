@@ -67,13 +67,18 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
   const username = user?.username || 'user';
 
   return (
-    <motion.div variants={MODAL_LIST_ITEM_VARIANTS} custom={index} initial="hidden" animate="visible">
+    <motion.div
+      variants={MODAL_LIST_ITEM_VARIANTS}
+      custom={index}
+      initial="hidden"
+      animate="visible"
+    >
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3  border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
       >
-        <div className="center size-10 shrink-0 overflow-hidden  border border-black/5">
+        <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
           <AdaptiveImage
             mode="img"
             src={getUserAvatarUrl(user)}
@@ -94,10 +99,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 self-center">
-          <span
-            aria-hidden="true"
-            className="center size-7  border border-black/10 text-black/70"
-          >
+          <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70">
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
         </div>
@@ -111,7 +113,7 @@ export default function MediaSocialProofModal({ close, data }) {
 
   return (
     <Container
-      className="relative max-h-[85vh] w-[min(92vw,560px)] "
+      className="relative max-h-[85vh] w-[min(92vw,560px)]"
       close={close}
       header={{
         left: (
@@ -126,7 +128,12 @@ export default function MediaSocialProofModal({ close, data }) {
       bodyClassName="p-0"
     >
       {userEntries.length > 0 ? (
-        <motion.div variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" className="flex flex-col">
+        <motion.div
+          variants={MODAL_LIST_VARIANTS}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col"
+        >
           {userEntries.map(({ user, actions }, index) => (
             <SocialUserRow
               key={user.id || user.username || index}

@@ -60,7 +60,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer  border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
           aria-label={closeLabel}
           whileTap={{ scale: NAV_TAP_SCALE }}
           transition={NAV_MICRO_TRANSITION}

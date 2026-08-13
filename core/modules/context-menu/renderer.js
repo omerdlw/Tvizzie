@@ -1,6 +1,14 @@
 'use client';
 
-import { isValidElement, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  isValidElement,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
@@ -427,7 +435,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden  border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
+          'max-w-sm min-w-64 overflow-hidden border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
           classNames.content,
         )}
         role="menu"

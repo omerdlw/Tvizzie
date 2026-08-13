@@ -277,9 +277,5 @@ export async function fetchProfileReviewFeedLegacyServer({
           fetchLimit: reviewWindow.fetchLimit,
         });
 
-  return paginateReviewItems(
-    dedupeReviews(reviews),
-    reviewWindow.offset,
-    reviewWindow.pageSize,
-  );
+  return paginateReviewItems(dedupeReviews(reviews), reviewWindow.offset, reviewWindow.pageSize);
 }

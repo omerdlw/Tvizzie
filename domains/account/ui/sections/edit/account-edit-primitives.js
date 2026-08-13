@@ -116,12 +116,7 @@ export function MediaField({
       </div>
 
       <div>
-        <div
-          className={cn(
-            'overflow-hidden  border border-black/10 bg-black/5',
-            previewClassName,
-          )}
-        >
+        <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
           {preview ? (
             <AdaptiveImage
               mode="img"

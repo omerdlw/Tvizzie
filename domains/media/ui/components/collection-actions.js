@@ -121,7 +121,7 @@ function ActionButton({
       disabled={disabled}
       {...MEDIA_ROUTE_INTERACTIONS.control}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5  px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
+        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >

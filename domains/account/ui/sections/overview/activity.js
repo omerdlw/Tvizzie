@@ -53,10 +53,7 @@ export default function AccountActivityOverview({
     [initialFeed, effectiveResolvedUserId],
   );
   const hasUsableSeededFeed = useMemo(
-    () =>
-      hasInitialFeed &&
-      Array.isArray(initialFeed?.items) &&
-      initialFeed.items.length > 0,
+    () => hasInitialFeed && Array.isArray(initialFeed?.items) && initialFeed.items.length > 0,
     [hasInitialFeed, initialFeed],
   );
   const [hasRequestedFeed, setHasRequestedFeed] = useState(hasUsableSeededFeed);

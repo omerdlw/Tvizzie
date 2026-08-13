@@ -32,7 +32,6 @@ function HeroInlineMetric({
   valueClassName = '',
   index = 0,
 }) {
-
   const content = (
     <>
       <span className={valueClassName}>{item.value}</span>
@@ -201,10 +200,10 @@ export default function AccountHero({
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <AccountReveal stage="hero.avatar">
-          <div className="group relative h-12 w-12 shrink-0 overflow-hidden  bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+          <div className="group relative h-12 w-12 shrink-0 overflow-hidden bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
             <AdaptiveImage
               mode="img"
-              className="h-full w-full  object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               src={heroAvatarSrc}
               alt={heroDisplayName}
               decoding="async"

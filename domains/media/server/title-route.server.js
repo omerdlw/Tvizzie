@@ -122,7 +122,15 @@ function createTitleReviewsMetadata(media, { fallbackTitle }) {
   });
 }
 
-export function createTitleDetailRoute({ Client, fallbackTitle, getBase, getSecondary, isDisplayable, mediaType, openGraphType }) {
+export function createTitleDetailRoute({
+  Client,
+  fallbackTitle,
+  getBase,
+  getSecondary,
+  isDisplayable,
+  mediaType,
+  openGraphType,
+}) {
   return {
     async generateMetadata({ params }) {
       const { media, response } = await loadMediaRouteData(params, getBase);
@@ -134,7 +142,9 @@ export function createTitleDetailRoute({ Client, fallbackTitle, getBase, getSeco
       const { id, media, response } = await loadMediaRouteData(params, getBase);
       if (isMissingMedia(media, response, isDisplayable)) notFound();
 
-      const secondaryDataPromise = getSecondary(id).then((secondaryResponse) => secondaryResponse?.data || {});
+      const secondaryDataPromise = getSecondary(id).then(
+        (secondaryResponse) => secondaryResponse?.data || {},
+      );
 
       return (
         <Client
@@ -149,7 +159,13 @@ export function createTitleDetailRoute({ Client, fallbackTitle, getBase, getSeco
   };
 }
 
-export function createTitleReviewsRoute({ Client, fallbackTitle, getBase, isDisplayable, mediaType }) {
+export function createTitleReviewsRoute({
+  Client,
+  fallbackTitle,
+  getBase,
+  isDisplayable,
+  mediaType,
+}) {
   return {
     async generateMetadata({ params }) {
       const { media, response } = await loadMediaRouteData(params, getBase);

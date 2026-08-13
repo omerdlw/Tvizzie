@@ -97,7 +97,7 @@ export default function FileUploadSurface({ close, data }) {
       }}
       onDrop={handleDrop}
       className={cn(
-        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4  border px-6 py-8 text-center',
+        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 border px-6 py-8 text-center',
         isDragActive
           ? 'border-info/30 bg-info/10'
           : 'bg-primary border-transparent hover:border-black/10',
@@ -105,7 +105,7 @@ export default function FileUploadSurface({ close, data }) {
     >
       <div
         className={cn(
-          'center size-14  border',
+          'center size-14 border',
           isDragActive
             ? 'border-info/20 bg-info/10 text-info'
             : 'border-black/5 bg-black/5 text-black/70',
@@ -127,7 +127,7 @@ export default function FileUploadSurface({ close, data }) {
             inputRef.current?.click();
           }}
           className={cn(
-            'inline-flex h-9 items-center justify-center  border px-4 text-xs font-bold tracking-wider uppercase',
+            'inline-flex h-9 items-center justify-center border px-4 text-xs font-bold tracking-wider uppercase',
             isDragActive
               ? 'border-info/20 bg-info/10 text-info hover:bg-info/20'
               : 'hover:bg-primary border-black/5 bg-black/5 hover:border-black/10',

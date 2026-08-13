@@ -52,7 +52,6 @@ export default function AccountWatchlistOverview({
       ) : cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
-
             return (
               <AccountReveal
                 key={`${card.id}-${index}`}
@@ -76,7 +75,7 @@ export default function AccountWatchlistOverview({
                         <Button
                           variant="destructive-icon"
                           className={
-                            'text-error hover:border-error hover:bg-error  border border-black/15 bg-white hover:text-white'
+                            'text-error hover:border-error hover:bg-error border border-black/15 bg-white hover:text-white'
                           }
                           aria-label={`Remove ${card.imageAlt} from ${title.toLowerCase()}`}
                           disabled={pendingItemId === card.id}

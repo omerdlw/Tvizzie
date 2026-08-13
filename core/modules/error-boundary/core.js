@@ -111,8 +111,8 @@ export class ErrorBoundaryCore extends React.Component {
       }
 
       return (
-        <div className="bg-error/5 border-error/10 flex min-h-[300px] w-full flex-col items-center justify-center  border p-6 text-center">
-          <div className="bg-error/10 text-error mb-4 flex size-12 items-center justify-center  text-xl font-bold">
+        <div className="bg-error/5 border-error/10 flex min-h-[300px] w-full flex-col items-center justify-center border p-6 text-center">
+          <div className="bg-error/10 text-error mb-4 flex size-12 items-center justify-center text-xl font-bold">
             !
           </div>
           <h3 className="text-foreground mb-1 text-lg font-semibold">
@@ -126,7 +126,7 @@ export class ErrorBoundaryCore extends React.Component {
           <button
             type="button"
             onClick={this.resetError}
-            className="bg-error hover:bg-error/90  px-4 py-2 text-xs font-medium text-white transition-colors"
+            className="bg-error hover:bg-error/90 px-4 py-2 text-xs font-medium text-white transition-colors"
           >
             Try Again
           </button>

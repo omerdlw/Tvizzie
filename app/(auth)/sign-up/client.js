@@ -392,15 +392,12 @@ function SignUpView({
   return (
     <AuthPageShell>
       <AuthScene sceneKey={`sign-up-step-${currentStep}`}>
-        <form
-          onSubmit={handleStepSubmit}
-          className={AUTH_PAGE_FORM_CLASS}
-        >
+        <form onSubmit={handleStepSubmit} className={AUTH_PAGE_FORM_CLASS}>
           <div className="flex flex-col items-center text-center">
             <AuthReveal stage="brand">
               <Link
                 href="/"
-                className="mb-6 block  p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
+                className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
               >
                 <Image
                   src="/tvizzie.png"
@@ -526,7 +523,7 @@ function SignUpView({
                           : 'material-symbols:close-rounded'
                       }
                       size={16}
-                      className="shrink-0-transform "
+                      className="shrink-0-transform"
                     />
                     <span>{requirement.label}</span>
                   </AuthReveal>
@@ -587,7 +584,7 @@ function SignUpView({
               Already have an account?{' '}
               <Link
                 href={signInHref}
-                className="inline-block  px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+                className="inline-block px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
               >
                 Sign In
               </Link>

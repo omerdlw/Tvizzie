@@ -2,11 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import {
-  NAV_BUTTON_TRANSITION,
-  NAV_FADE_TRANSITION,
-  NAV_TAP_SCALE,
-} from '@/modules/nav/motion';
+import { NAV_BUTTON_TRANSITION, NAV_FADE_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav/motion';
 import { cn } from '@/shared/utils';
 import { Input } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
@@ -27,7 +23,7 @@ function PaginationArrow({ direction, onClick }) {
             button: SEARCH_STYLES.tabButton,
             isActive: false,
           }),
-          'center h-[38px] w-[38px] cursor-pointer  p-0',
+          'center h-[38px] w-[38px] cursor-pointer p-0',
         )}
         onClick={onClick}
         whileHover={{ x: isLeft ? -2 : 2 }}

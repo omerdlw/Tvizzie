@@ -64,8 +64,7 @@ export async function toggleUserLike({ media, userId }) {
     fallbackMessage: 'Like could not be updated',
   });
   const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
-  let isLiked =
-    resolvedRpcRow?.is_liked === true || resolvedRpcRow?.isLiked === true;
+  let isLiked = resolvedRpcRow?.is_liked === true || resolvedRpcRow?.isLiked === true;
 
   // Toggle RPCs may return the previous row state. The status resource is the
   // authoritative post-mutation value, so use it to drive the button state.

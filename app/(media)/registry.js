@@ -127,7 +127,7 @@ export default function Registry({
   if (isPerson) {
     const title = person?.name || (isLoading ? '' : undefined);
     const description = getPersonNavDescription(person, age) || undefined;
-    const icon = person?.profile_path ? `${TMDB_IMG}/w342${person.profile_path}` : undefined;
+    const icon = person?.profile_path ? `${TMDB_IMG}/original${person.profile_path}` : undefined;
     const shouldResetBackgroundForLoading = isLoading && !backgroundImage;
 
     useRegistry({
@@ -162,20 +162,11 @@ export default function Registry({
             background: backgroundImage
               ? {
                   image: backgroundImage,
-                  overlay: true,
-                  overlayOpacity: 0.2,
-                  noiseStyle: {
-                    opacity: 0.2,
-                  },
                 }
               : {
                   image: null,
                   video: null,
                   overlay: false,
-                  overlayOpacity: 0,
-                  noiseStyle: {
-                    opacity: 0,
-                  },
                 },
           }
         : {}),
@@ -267,7 +258,7 @@ export default function Registry({
   const resolvedBackgroundImage = shouldClearBackgroundForReviews
     ? undefined
     : backgroundImage ||
-      (movie?.backdrop_path ? `${TMDB_IMG}/w1280${movie.backdrop_path}` : undefined);
+      (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading =
     !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
 
@@ -371,7 +362,7 @@ export default function Registry({
       ],
       contextMenuDescription: contextMenuDescription || undefined,
       description: navDescription || undefined,
-      icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,
+      icon: movie?.poster_path ? `${TMDB_IMG}/original${movie.poster_path}` : undefined,
       title: getMediaTitle(movie) || (isLoading ? '' : undefined),
     },
     ...(shouldClearBackgroundForReviews ||
@@ -382,19 +373,11 @@ export default function Registry({
             ? {
                 image: resolvedBackgroundImage,
                 overlay: true,
-                overlayOpacity: 0.2,
-                noiseStyle: {
-                  opacity: 0.2,
-                },
               }
             : {
                 image: null,
                 video: null,
                 overlay: false,
-                overlayOpacity: 0,
-                noiseStyle: {
-                  opacity: 0,
-                },
               },
         }
       : {}),

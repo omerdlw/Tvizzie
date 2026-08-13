@@ -136,7 +136,10 @@ export function useMediaReviews({
     [currentUserId, reviews],
   );
   const ratingStats = useMemo(() => getRatingStats(reviews), [reviews]);
-  const sortedReviews = useMemo(() => sortReviews(reviews, currentUserId), [currentUserId, reviews]);
+  const sortedReviews = useMemo(
+    () => sortReviews(reviews, currentUserId),
+    [currentUserId, reviews],
+  );
 
   const handleSignInRequest = useCallback(() => {
     router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, { next: currentPath }));
@@ -148,7 +151,9 @@ export function useMediaReviews({
     try {
       await deleteMediaReview({ media, userId: currentUserId });
       const ownReviewId = getReviewIdentity(ownReview);
-      setReviews((current) => current.filter((review) => getReviewIdentity(review) !== ownReviewId));
+      setReviews((current) =>
+        current.filter((review) => getReviewIdentity(review) !== ownReviewId),
+      );
       return true;
     } catch (error) {
       toast.error(error?.message || 'Failed to delete review');

@@ -112,7 +112,7 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
   return (
     <MediaRouteReveal className="flex flex-1" deferred itemIndex={index} stage="person.awards.stat">
       <div
-        className={`flex min-w-[110px] flex-1 flex-col items-center justify-center  border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
+        className={`flex min-w-[110px] flex-1 flex-col items-center justify-center border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
       >
         <div className={`flex items-center gap-1.5 ${variantStyles.iconText}`}>
           <Icon icon={icon} size={20} />
@@ -148,7 +148,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`max-w-[200px] truncate  px-3.5 py-1.5 text-xs font-semibold ${
+        className={`max-w-[200px] truncate px-3.5 py-1.5 text-xs font-semibold ${
           isActive ? `${activeColorClass}` : 'bg-black/5 text-black/70 hover:bg-black/10'
         }`}
       >
@@ -165,7 +165,7 @@ function AwardCard({ award, index }) {
 
   const cardContent = (
     <div
-      className={`group relative flex items-center gap-2  border p-1 sm:gap-4 sm:p-2 ${
+      className={`group relative flex items-center gap-2 border p-1 sm:gap-4 sm:p-2 ${
         isWin
           ? 'hover:bg-primary border border-yellow-500 bg-white/50'
           : 'hover:bg-primary border-black/10 bg-white/50'
@@ -175,7 +175,7 @@ function AwardCard({ award, index }) {
         <MediaThumb
           poster={award.poster}
           alt={award.project || 'Project'}
-          className="h-auto w-14 shrink-0  sm:w-16"
+          className="h-auto w-14 shrink-0 sm:w-16"
         />
       ) : null}
 
@@ -183,12 +183,12 @@ function AwardCard({ award, index }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-black/40 sm:text-sm">{award.year}</span>
           {isWin ? (
-            <span className="inline-flex items-center gap-1  bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-white uppercase">
+            <span className="inline-flex items-center gap-1 bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-white uppercase">
               <Icon icon="solar:cup-bold" size={12} />
               Win
             </span>
           ) : (
-            <span className=" bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/70 uppercase">
+            <span className="bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/70 uppercase">
               Nominee
             </span>
           )}
@@ -224,7 +224,7 @@ function AwardCard({ award, index }) {
 function AwardsMessage({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="flex size-14 items-center justify-center  bg-black/5 text-black/40">
+      <div className="flex size-14 items-center justify-center bg-black/5 text-black/40">
         <Icon icon="solar:cup-star-linear" size={32} />
       </div>
       <p className="mt-4 text-sm font-medium text-black/60">{children}</p>

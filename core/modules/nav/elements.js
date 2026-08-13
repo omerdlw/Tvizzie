@@ -106,13 +106,13 @@ export const IconOverlay = memo(function IconOverlay({ overlay }) {
         whileTap={onClick ? { scale: NAV_TAP_SCALE } : undefined}
         transition={NAV_BADGE_TRANSITION}
         className={cn(
-          'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden ',
+          'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden',
           typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default',
         )}
       >
         {isImageSource ? (
           <span
-            className="size-full  bg-cover bg-center bg-no-repeat"
+            className="size-full bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${icon})` }}
           />
         ) : (
@@ -135,12 +135,12 @@ export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovere
     <div className="relative">
       {isImageSource ? (
         <div
-          className={cn('size-12 shrink-0  bg-cover bg-center bg-no-repeat', className)}
+          className={cn('size-12 shrink-0 bg-cover bg-center bg-no-repeat', className)}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
-          className={cn('center size-12 ', className)}
+          className={cn('center size-12', className)}
           animate={{
             backgroundColor:
               isStackHovered && !hasCustomBackground ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.05)',

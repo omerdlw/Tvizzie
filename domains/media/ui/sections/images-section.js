@@ -18,7 +18,7 @@ const TABS = Object.freeze([
     label: 'Backdrops',
     aspect: 'aspect-video',
     width: 'w-[min(18rem,calc(100vw-4.5rem))] sm:w-72',
-    size: 'w780',
+    size: 'original',
     sizes: '288px',
   },
   {
@@ -26,7 +26,7 @@ const TABS = Object.freeze([
     label: 'Posters',
     aspect: 'aspect-2/3',
     width: 'w-36',
-    size: 'w342',
+    size: 'original',
     sizes: '144px',
   },
   {
@@ -34,7 +34,7 @@ const TABS = Object.freeze([
     label: 'Logos',
     aspect: 'aspect-video',
     width: 'w-[min(13rem,calc(100vw-5rem))] sm:w-52',
-    size: 'w500',
+    size: 'original',
     sizes: '208px',
   },
 ]);
@@ -99,9 +99,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <div
-        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
-      >
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:gallery-minimalistic-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">

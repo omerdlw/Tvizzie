@@ -279,8 +279,12 @@ export default function Client({ routeData = null }) {
         ? Number(current.likesCount)
         : likesList.length;
       const nextLikesCount = optimisticIsLiked
-        ? (currentlyLiked ? baseLikesCount : baseLikesCount + 1)
-        : (currentlyLiked ? Math.max(0, baseLikesCount - 1) : baseLikesCount);
+        ? currentlyLiked
+          ? baseLikesCount
+          : baseLikesCount + 1
+        : currentlyLiked
+          ? Math.max(0, baseLikesCount - 1)
+          : baseLikesCount;
 
       return {
         ...current,

@@ -142,7 +142,12 @@ const NotificationContent = memo(function NotificationContent({ type, actor, pay
   }
 });
 
-const NotificationRow = memo(function NotificationRow({ notification, onMarkRead, onDelete, index }) {
+const NotificationRow = memo(function NotificationRow({
+  notification,
+  onMarkRead,
+  onDelete,
+  index,
+}) {
   const isUnread = !notification.read;
 
   return (
@@ -163,7 +168,7 @@ const NotificationRow = memo(function NotificationRow({ notification, onMarkRead
             mode="img"
             src={getUserAvatarUrl(notification.actor)}
             alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full  object-cover"
+            className="size-full object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) =>
@@ -389,19 +394,47 @@ export default function NotificationsModal({ close, header, data }) {
       <div className="min-h-0 overflow-y-auto">
         <AnimatePresence mode="wait" initial={false}>
           {isLoading ? (
-            <motion.div key="loading" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
-              {Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)}
+            <motion.div
+              key="loading"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                <NotificationSkeleton key={index} />
+              ))}
             </motion.div>
           ) : loadError ? (
-            <motion.div key="error" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit" className="center h-52 px-6 text-center text-sm font-medium text-black/50">
+            <motion.div
+              key="error"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="center h-52 px-6 text-center text-sm font-medium text-black/50"
+            >
               Notifications could not be loaded. Please try again.
             </motion.div>
           ) : notifications.length === 0 ? (
-            <motion.div key="empty" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit" className="center h-screen text-sm font-medium text-black/50">
+            <motion.div
+              key="empty"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="center h-screen text-sm font-medium text-black/50"
+            >
               You have no notifications yet
             </motion.div>
           ) : (
-            <motion.div key="notifications" variants={MODAL_LIST_VARIANTS} initial="hidden" animate="visible" exit="exit">
+            <motion.div
+              key="notifications"
+              variants={MODAL_LIST_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
               <AnimatePresence initial={false}>
                 {notifications.map((notification, index) => (
                   <NotificationRow

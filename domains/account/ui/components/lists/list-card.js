@@ -105,7 +105,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
           <motion.div
-            className="relative z-0  border border-black/10 bg-white/40"
+            className="relative z-0 border border-black/10 bg-white/40"
             animate={{ rotateX: isHovered ? 15 : 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
             style={{
@@ -167,7 +167,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                     }}
                     style={{ zIndex }}
                   >
-                    <div className="h-[156px] w-[98px] overflow-hidden  border border-black/10 bg-white/70">
+                    <div className="h-[156px] w-[98px] overflow-hidden border border-black/10 bg-white/70">
                       {imageUrl ? (
                         <motion.img
                           src={imageUrl}
@@ -191,7 +191,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  border border-black/10"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/10"
             animate={{
               rotateX: isHovered ? -25 : 0,
               backgroundColor: 'rgba(255, 255, 255, 1)',

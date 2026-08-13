@@ -39,7 +39,6 @@ export default function AccountListsOverview({
       ) : visibleLists.length > 0 ? (
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {visibleLists.map((list, index) => {
-
             return (
               <AccountReveal
                 key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
@@ -65,7 +64,7 @@ export default function AccountListsOverview({
                                   event.stopPropagation();
                                   onEditList(targetList);
                                 }}
-                                className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center  border border-black/10 text-black/70 hover:border-black/20"
+                                className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/10 text-black/70 hover:border-black/20"
                               >
                                 <Icon icon="solar:pen-bold" size={13} />
                               </button>
@@ -79,7 +78,7 @@ export default function AccountListsOverview({
                                   event.stopPropagation();
                                   onDeleteList(targetList);
                                 }}
-                                className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center  border border-black/10 text-black/70 hover:text-white"
+                                className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center border border-black/10 text-black/70 hover:text-white"
                               >
                                 <Icon icon="solar:trash-bin-trash-bold" size={13} />
                               </button>
