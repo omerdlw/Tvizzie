@@ -43,7 +43,7 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="group bg-primary flex min-h-10 items-center gap-3 rounded-xl border border-black/5 px-3 py-1.5 transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/10"
+      className="group bg-primary flex min-h-10 items-center gap-3  border border-black/5 px-3 py-1.5 transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/10"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
@@ -53,7 +53,7 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
         type="button"
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer rounded-lg border border-transparent text-black/35 opacity-100 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer  border border-transparent text-black/35 opacity-100 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
@@ -201,7 +201,7 @@ export default function ListEditorModal({ close, data, header }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-10 items-center rounded-xl border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
+                'flex h-10 items-center  border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
               input:
                 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
             }}
@@ -213,7 +213,7 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={120}
             className={{
               wrapper:
-                'flex min-h-10 rounded-xl border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
+                'flex min-h-10  border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
               textarea:
                 'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
             }}
@@ -240,7 +240,7 @@ export default function ListEditorModal({ close, data, header }) {
                 </AnimatePresence>
               </motion.div>
             ) : (
-              <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-black/10 bg-black/5 text-center">
+              <div className="flex h-28 flex-col items-center justify-center gap-2  border border-dashed border-black/10 bg-black/5 text-center">
                 <Icon icon="solar:list-broken" size={24} className="text-black/50" />
                 <p className="text-xs text-black/50">No titles in this list</p>
               </div>

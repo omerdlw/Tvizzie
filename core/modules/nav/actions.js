@@ -211,7 +211,7 @@ export const NavAction = memo(function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer rounded-[10px] p-1 text-black/70 hover:bg-black/5 hover:text-black"
+        className="center relative cursor-pointer  p-1 text-black/70 hover:bg-black/5 hover:text-black"
         onClick={action.onClick}
         type="button"
         whileHover={{ y: -1, scale: 1.035 }}
@@ -227,7 +227,7 @@ export const NavAction = memo(function NavAction({ action }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               transition={NAV_BADGE_TRANSITION}
-              className="center bg-info absolute -top-1 -right-1 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-white"
+              className="center bg-info absolute -top-1 -right-1 h-4 min-w-4  p-1 text-[11px] leading-none font-semibold text-white"
             >
               {action.badge}
             </motion.span>

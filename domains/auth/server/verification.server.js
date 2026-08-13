@@ -87,10 +87,10 @@ export async function sendVerificationEmail({ code, email, expiresAt, purpose })
 
   const subject = `Tvizzie - Your verification code is ${code}`;
   const html = `
-    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; rounded: 12px;">
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb;">
       <h2 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 16px;">Tvizzie Verification Code</h2>
       <p style="font-size: 14px; color: #4b5563; margin-bottom: 24px;">Use the following 6-digit code to complete your ${purpose} request:</p>
-      <div style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #4f46e5; background-color: #f3f4f6; padding: 16px; text-align: center; border-radius: 8px; margin-bottom: 24px;">
+      <div style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #4f46e5; background-color: #f3f4f6; padding: 16px; text-align: center; margin-bottom: 24px;">
         ${code}
       </div>
       <p style="font-size: 12px; color: #9ca3af;">This code expires in 10 minutes. If you did not request this, please ignore this email.</p>

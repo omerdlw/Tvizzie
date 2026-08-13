@@ -100,6 +100,32 @@ function getGenreIds(movie = {}) {
   );
 }
 
+function normalizeCastCredit(person = {}) {
+  const { roles, ...credit } = person;
+  const characters = [
+    person?.character,
+    ...(Array.isArray(roles) ? roles.map((role) => role?.character) : []),
+  ].filter(Boolean);
+
+  return {
+    ...credit,
+    character: Array.from(new Set(characters)).join(' / ') || 'Cast',
+  };
+}
+
+function normalizeCrewCredit(person = {}) {
+  const { jobs: creditJobs, ...credit } = person;
+  const jobs = [
+    person?.job,
+    ...(Array.isArray(creditJobs) ? creditJobs.map((job) => job?.job) : []),
+  ].filter(Boolean);
+
+  return {
+    ...credit,
+    job: Array.from(new Set(jobs)).join(' / ') || person?.department || 'Crew',
+  };
+}
+
 function countOverlap(source = [], target = []) {
   if (!source.length || !target.length) {
     return 0;
@@ -226,17 +252,20 @@ export function getMediaComputedData(movie) {
 
   const genres = getHeroGenres(movie);
 
-  const credits = movie.credits || movie.aggregate_credits || {};
-  const director = credits?.crew?.find((member) => member.job === 'Director');
-
+  // TV details expose a short `credits` list and the complete cast/crew in
+  // `aggregate_credits`. Prefer the aggregate payload when available so the
+  // section preview and full cast modal do not silently lose people.
+  const credits = movie.aggregate_credits || movie.credits || {};
+  const creators = uniqueBy(movie.created_by || [], 'id').slice(0, MAX_WRITERS);
+  const cast = uniqueBy((credits?.cast || []).map(normalizeCastCredit));
+  const crew = uniqueBy((credits?.crew || []).map(normalizeCrewCredit)).filter(
+    (member) => member?.id && member?.name && member?.job,
+  );
+  const director = crew.find((member) => member.job.split(' / ').includes('Director'));
   const writers = uniqueBy(
-    credits?.crew?.filter((member) => member.department === 'Writing') || [],
+    crew.filter((member) => member.department === 'Writing'),
     'id',
   ).slice(0, MAX_WRITERS);
-
-  const creators = uniqueBy(movie.created_by || [], 'id').slice(0, MAX_WRITERS);
-  const cast = uniqueBy(credits?.cast || []);
-  const crew = (credits?.crew || []).filter((member) => member?.id && member?.name && member?.job);
   const recommendations = uniqueBy(movie.recommendations?.results || [], 'id').slice(
     0,
     MAX_RECOMMENDATIONS,

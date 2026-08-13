@@ -42,7 +42,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 rounded-xl border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0  border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-black/5';
 
 const ACTION_CLASSES = Object.freeze({
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
@@ -220,7 +220,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0 rounded-xl object-cover"
+          className="size-10 shrink-0  object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           wrapperClassName="size-10 shrink-0"
         />
@@ -604,10 +604,10 @@ function LoadingList() {
           key={index}
           className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
         >
-          <div className="size-10 shrink-0 rounded-xl bg-black/5" />
+          <div className="size-10 shrink-0  bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 rounded bg-black/5" />
-            <div className="h-2 w-2/5 rounded bg-black/5" />
+            <div className="h-3 w-3/5  bg-black/5" />
+            <div className="h-2 w-2/5  bg-black/5" />
           </div>
         </div>
       ))}

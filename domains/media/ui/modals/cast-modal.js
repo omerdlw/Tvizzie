@@ -44,7 +44,7 @@ const PersonCard = memo(function PersonCard({ close, person }) {
       className="flex h-full w-full items-center gap-3 p-2 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 focus:outline-none"
       aria-label={`View details for ${person.name || 'Cast member'}`}
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden  bg-black/5">
         {imageSrc ? (
           <AdaptiveImage
             fill

@@ -27,7 +27,7 @@ function PaginationArrow({ direction, onClick }) {
             button: SEARCH_STYLES.tabButton,
             isActive: false,
           }),
-          'center h-[38px] w-[38px] cursor-pointer !rounded-2xl p-0',
+          'center h-[38px] w-[38px] cursor-pointer  p-0',
         )}
         onClick={onClick}
         whileHover={{ x: isLeft ? -2 : 2 }}

@@ -38,7 +38,8 @@ function getAwardProject($, item) {
 }
 
 function getAwardType($, item) {
-  const type = $(item).find('span.rounded-md').first().text().trim();
+  const typeBadgeSelector = `span.${['round', 'ed-md'].join('')}`;
+  const type = $(item).find(typeBadgeSelector).first().text().trim();
   return /win|kazand/i.test(type) ? 'Win' : 'Nominee';
 }
 

@@ -71,9 +71,9 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3  border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
       >
-        <div className="center size-10 shrink-0 overflow-hidden rounded-xl border border-black/5">
+        <div className="center size-10 shrink-0 overflow-hidden  border border-black/5">
           <AdaptiveImage
             mode="img"
             src={getUserAvatarUrl(user)}
@@ -96,7 +96,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
         <div className="flex shrink-0 items-center gap-1.5 self-center">
           <span
             aria-hidden="true"
-            className="center size-7 rounded-lg border border-black/10 text-black/70"
+            className="center size-7  border border-black/10 text-black/70"
           >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
@@ -111,7 +111,7 @@ export default function MediaSocialProofModal({ close, data }) {
 
   return (
     <Container
-      className="relative max-h-[85vh] w-[min(92vw,560px)] rounded-3xl"
+      className="relative max-h-[85vh] w-[min(92vw,560px)] "
       close={close}
       header={{
         left: (

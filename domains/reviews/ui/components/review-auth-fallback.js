@@ -38,7 +38,7 @@ export default function ReviewAuthFallback({
       </div>
       <Button
         type="button"
-        className="bg-primary/40 inline-flex items-center justify-between gap-2 rounded-xl border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black hover:text-white"
+        className="bg-primary/40 inline-flex items-center justify-between gap-2  border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black hover:text-white"
         onClick={onSignIn}
       >
         Sign In

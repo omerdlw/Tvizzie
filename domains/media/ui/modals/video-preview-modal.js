@@ -8,7 +8,7 @@ export default function VideoPreviewModal({ close, data }) {
 
   return (
     <Container
-      className="relative max-h-[85vh] w-[min(92vw,1200px)] rounded-3xl"
+      className="relative max-h-[85vh] w-[min(92vw,1200px)] "
       close={close}
       header={false}
       bodyClassName="p-0"

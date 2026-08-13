@@ -193,15 +193,15 @@ function PersonView({
                   {person?.profile_path ? (
                     <MediaRouteReveal stage="person.hero.portrait">
                       <div
-                        className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+                        className="relative h-12 w-12 shrink-0 overflow-hidden  bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
                       >
                         <AdaptiveImage
                           mode="img"
-                          className="h-full w-full rounded-2xl object-cover"
+                          className="h-full w-full  object-cover"
                           src={`${TMDB_IMG}/w342${person.profile_path}`}
                           alt={person.name}
                           decoding="async"
-                          wrapperClassName="h-full w-full rounded-2xl"
+                          wrapperClassName="h-full w-full "
                         />
                       </div>
                     </MediaRouteReveal>

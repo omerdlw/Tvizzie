@@ -116,7 +116,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         transition={MODAL_MICRO_SPRING}
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5  px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -130,7 +130,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         {getModalLabel(previousEntry.modalType)}
       </motion.button>
       <span className="text-[10px] text-black/20">/</span>
-      <span className="bg-primary rounded-xl px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="bg-primary  px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </div>
@@ -230,19 +230,19 @@ function ModalLayer({
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
-                ? 'rounded-3xl'
+                ? ''
                 : activePosition === MODAL_POSITIONS.BOTTOM
-                  ? 'rounded-t-[24px]'
+                  ? ''
                   : activePosition === MODAL_POSITIONS.TOP
-                    ? 'rounded-b-[24px]'
+                    ? ''
                     : activePosition === MODAL_POSITIONS.LEFT
                       ? isMobileViewport
-                        ? 'rounded-none'
-                        : 'rounded-r-[24px]'
+                        ? ''
+                        : ''
                       : activePosition === MODAL_POSITIONS.RIGHT
                         ? isMobileViewport
-                          ? 'rounded-none'
-                          : 'rounded-l-[24px]'
+                          ? ''
+                          : ''
                         : ''),
             isPanelChrome && isTopModalPosition && 'border-t-0',
             isPanelChrome && isBottomModalPosition && 'border-b-0',

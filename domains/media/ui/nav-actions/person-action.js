@@ -48,7 +48,7 @@ export default function PersonAction({ activeView, setActiveView, externalIds })
       </div>
 
       {externalIds ? (
-        <SocialLinks externalIds={externalIds} className="w-full justify-center rounded-2xl" />
+        <SocialLinks externalIds={externalIds} className="w-full justify-center " />
       ) : null}
     </div>
   );

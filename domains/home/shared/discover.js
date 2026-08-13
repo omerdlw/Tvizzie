@@ -8,10 +8,13 @@ export function getUniqueDiscoverItems(items = [], limit = items.length) {
   return items
     .filter((item) => {
       const id = item?.id;
-      if (!id || seen.has(id)) {
+      const mediaType = item?.media_type || item?.entityType || 'movie';
+      const key = `${mediaType}:${id}`;
+
+      if (!id || seen.has(key)) {
         return false;
       }
-      seen.add(id);
+      seen.add(key);
       return true;
     })
     .slice(0, limit);

@@ -107,7 +107,7 @@ export default function MediaCard({
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden rounded-[20px]', className)}
+      className={cn('group flex shrink-0 flex-col overflow-hidden ', className)}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>

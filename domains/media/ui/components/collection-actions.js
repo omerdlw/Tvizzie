@@ -92,7 +92,7 @@ function createCollectionActionState(isLoading = true) {
 
 function getActionPalette(palette, active) {
   if (!active) {
-    return 'border border-black/10 bg-primary/30 hover:border-black/20 hover:bg-primary/60 text-black/70 hover:text-black';
+    return 'border border-black/10 bg-primary/60 hover:border-black/15 hover:bg-primary/80 text-black/70 hover:text-black';
   }
   if (palette === 'like') {
     return 'border border-success/20 bg-success/15 text-success hover:border-success/10 hover:bg-success/25';
@@ -100,7 +100,8 @@ function getActionPalette(palette, active) {
   if (palette === 'watched' || palette === 'watchlist') {
     return 'border border-info/20 bg-info/15 text-info hover:border-info/10 hover:bg-info/25';
   }
-  return 'border border-black/10 bg-primary/30 hover:border-black/15 hover:bg-primary/60';
+
+  return 'border border-black/10 bg-primary/60 hover:border-black/15 hover:bg-primary/80 text-black/70 hover:text-black';
 }
 
 function ActionButton({
@@ -120,7 +121,7 @@ function ActionButton({
       disabled={disabled}
       {...MEDIA_ROUTE_INTERACTIONS.control}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5 rounded-[20px] px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
+        'group center xs:text-xs h-11 w-full gap-1.5  px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >
@@ -146,7 +147,7 @@ function ActionItem({ children, index = 0 }) {
   );
 }
 
-export default function CollectionActions({ media }) {
+export default function CollectionActions({ additionalActions = [], media }) {
   const auth = useAuth();
   const toast = useToast();
   const router = useRouter();
@@ -432,6 +433,11 @@ export default function CollectionActions({ media }) {
   const showWatchlistAction = !state.watched;
   const shouldShowAuthActions = auth.isReady && auth.isAuthenticated;
   const canGoToMedia = Boolean(mediaSnapshot?.entityId) && isMediaReviewsRoute;
+  const resolvedAdditionalActions = Array.isArray(additionalActions)
+    ? additionalActions.filter((action) => action?.key && action?.icon && action?.label)
+    : [];
+  const inlineAdditionalActions = shouldShowAuthActions ? [] : resolvedAdditionalActions;
+  const stackedAdditionalActions = shouldShowAuthActions ? resolvedAdditionalActions : [];
 
   function handleGoToMedia() {
     if (!mediaSnapshot?.entityId) {
@@ -512,7 +518,12 @@ export default function CollectionActions({ media }) {
         ) : null}
       </div>
 
-      <div className={cn('grid gap-2', shouldShowAuthActions ? 'grid-cols-2' : 'grid-cols-1')}>
+      <div
+        className={cn(
+          'grid gap-2',
+          shouldShowAuthActions || inlineAdditionalActions.length ? 'grid-cols-2' : 'grid-cols-1',
+        )}
+      >
         <ActionItem index={4}>
           <ActionButton
             icon="solar:list-broken"
@@ -532,7 +543,33 @@ export default function CollectionActions({ media }) {
             />
           </ActionItem>
         ) : null}
+
+        {inlineAdditionalActions.map((action, index) => (
+          <ActionItem key={action.key} index={5 + index}>
+            <ActionButton
+              active={action.active}
+              disabled={action.disabled}
+              icon={action.icon}
+              label={action.label}
+              onClick={action.onClick}
+              palette={action.palette || 'neutral'}
+            />
+          </ActionItem>
+        ))}
       </div>
+
+      {stackedAdditionalActions.map((action, index) => (
+        <ActionItem key={action.key} index={6 + index}>
+          <ActionButton
+            active={action.active}
+            disabled={action.disabled}
+            icon={action.icon}
+            label={action.label}
+            onClick={action.onClick}
+            palette={action.palette || 'neutral'}
+          />
+        </ActionItem>
+      ))}
     </div>
   );
 }

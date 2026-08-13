@@ -152,7 +152,7 @@ function isScrollLockKey(event) {
 
 function ContextMenuHeaderIcon({ classNames, icon }) {
   const iconClassName = joinClassNames(
-    'flex size-10 shrink-0 rounded-[10px] items-center justify-center overflow-hidden bg-black/5 bg-cover bg-center bg-no-repeat text-black/70',
+    'flex size-10 shrink-0  items-center justify-center overflow-hidden bg-black/5 bg-cover bg-center bg-no-repeat text-black/70',
     classNames.headerIcon,
   );
 
@@ -215,7 +215,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5 rounded-2xl px-3 text-left text-[13px] font-medium text-black/75 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full items-center gap-2.5  px-3 text-left text-[13px] font-medium text-black/70 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -427,7 +427,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
+          'max-w-sm min-w-64 overflow-hidden  border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
           classNames.content,
         )}
         role="menu"

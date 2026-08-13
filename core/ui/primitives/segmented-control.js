@@ -12,11 +12,9 @@ function defaultGetLabel(item) {
 }
 
 const PADDING = 2;
-const BORDER_WIDTH = 1;
-const OUTER_RADIUS = 12;
-const INNER_RADIUS = OUTER_RADIUS - PADDING - BORDER_WIDTH;
 
 export default function SegmentedControl({
+  ariaLabel,
   className = '',
   classNames = {},
   getLabel = defaultGetLabel,
@@ -102,9 +100,11 @@ export default function SegmentedControl({
 
   return (
     <div
-      style={{ padding: `${PADDING}px`, borderRadius: `${OUTER_RADIUS}px` }}
+      aria-label={ariaLabel}
+      role={ariaLabel ? 'group' : undefined}
+      style={{ padding: `${PADDING}px` }}
       className={cn(
-        'inline-flex w-fit max-w-full shrink-0 items-stretch border border-black/10',
+        'inline-flex w-fit max-w-full shrink-0 items-stretch border border-black/5',
         className,
         classNames.wrapper,
       )}
@@ -123,7 +123,6 @@ export default function SegmentedControl({
             'relative flex h-full w-max items-stretch overflow-hidden',
             classNames.innerWrapper,
           )}
-          style={{ borderRadius: `${INNER_RADIUS}px` }}
         >
           <span
             aria-hidden="true"
@@ -132,7 +131,6 @@ export default function SegmentedControl({
               classNames.indicator,
             )}
             style={{
-              borderRadius: `${INNER_RADIUS}px`,
               ...(indicator
                 ? {
                     transform: `translateX(${indicator._x}px)`,
@@ -167,7 +165,6 @@ export default function SegmentedControl({
                     : classNames.inactive || 'text-black/70',
                   classNames.button,
                 )}
-                style={{ borderRadius: `${INNER_RADIUS}px` }}
               >
                 <span className="relative z-10 inline-flex items-center gap-1">
                   {getLabel(item)}

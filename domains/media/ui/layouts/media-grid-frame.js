@@ -3,10 +3,11 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 
-export default function MediaGridFrame({ className = '' }) {
+export default function MediaGridFrame({ className = '', style }) {
   return (
     <div
       aria-hidden="true"
+      style={style}
       className={cn(
         `pointer-events-none absolute inset-y-0 left-1/2 z-0 min-h-dvh w-full -translate-x-1/2 ${PAGE_SHELL_MAX_WIDTH_CLASS}`,
         className,

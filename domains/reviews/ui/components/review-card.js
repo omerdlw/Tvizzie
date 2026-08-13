@@ -148,7 +148,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center  border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -158,7 +158,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
       <Button
         variant="destructive"
         disabled={disabled}
-        className="size-8 rounded-xl"
+        className="size-8 "
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -171,20 +171,20 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-xl border border-black/10'
-    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-primary/30';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]  border border-black/10'
+    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden  border border-black/10 bg-primary/30';
 
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
         <ListPreviewComposition
-          className="rounded-xl"
+          className=""
           emptyIcon="solar:list-broken"
           items={previewItems}
         />
       ) : src ? (
         <AdaptiveImage
-          className="rounded-xl object-cover"
+          className=" object-cover"
           src={src}
           alt={alt}
           fill
@@ -192,10 +192,10 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
           decoding="async"
           unoptimized={!canUseNextImageOptimization(src)}
-          wrapperClassName="h-full w-full rounded-xl"
+          wrapperClassName="h-full w-full "
         />
       ) : (
-        <div className="bg-primary/30 flex h-full w-full items-center justify-center rounded-xl border border-black/5">
+        <div className="bg-primary/30 flex h-full w-full items-center justify-center  border border-black/5">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -212,7 +212,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-xl border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3  border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"

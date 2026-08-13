@@ -35,7 +35,7 @@ export default function AccountBioSurface({ description = '' }) {
 
   return (
     <div
-      className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-2xl px-4 py-2"
+      className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto  px-4 py-2"
     >
       {normalizedDescription ? (
         <div className="py-1">

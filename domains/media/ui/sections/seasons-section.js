@@ -48,7 +48,7 @@ function EpisodeCard({ episode, index = 0 }) {
       data-backdrop-file-path={episode?.still_path || ''}
       topOverlay={
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white">
-          <p className="text-[10px] font-semibold tracking-widest text-white/75 uppercase tabular-nums">
+          <p className="text-[10px] font-semibold tracking-widest text-white/70 uppercase tabular-nums">
             E{getEpisodeNumber(episode, index)}
           </p>
           <h3 className="mt-1 truncate text-sm font-bold text-white">{title}</h3>
@@ -72,11 +72,7 @@ function buildSeasonTabs(seasons, detailsBySeason) {
     });
 }
 
-export default function TvSeasonsSection({
-  seasonDetails = [],
-  seasons = [],
-  baseDelay = 0,
-}) {
+export default function TvSeasonsSection({ seasonDetails = [], seasons = [], baseDelay = 0 }) {
   const detailsBySeason = useMemo(() => normalizeSeasonDetails(seasonDetails), [seasonDetails]);
   const seasonTabs = useMemo(
     () => buildSeasonTabs(seasons, detailsBySeason),
@@ -106,15 +102,13 @@ export default function TvSeasonsSection({
     ? activeSeason.details.episodes
     : [];
 
-  if (!activeSeason || !episodes.length) {
+  if (!activeSeason) {
     return null;
   }
 
   return (
     <section className="relative w-full border-b border-black/10">
-      <div
-        className={MEDIA_DETAIL_SECTION_HEADER_CLASS}
-      >
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:calendar-mark-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
@@ -135,19 +129,25 @@ export default function TvSeasonsSection({
       </div>
 
       <div key={`tv-season-${activeSeason.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-        <Carousel gap="gap-3">
-          {episodes.map((episode, index) => (
-            <MediaRouteReveal
-              key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
-              stage="items.seasons"
-              deferred
-              interactive
-              itemIndex={index}
-            >
-              <EpisodeCard episode={episode} index={index} />
-            </MediaRouteReveal>
-          ))}
-        </Carousel>
+        {episodes.length ? (
+          <Carousel gap="gap-3">
+            {episodes.map((episode, index) => (
+              <MediaRouteReveal
+                key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
+                stage="items.seasons"
+                deferred
+                interactive
+                itemIndex={index}
+              >
+                <EpisodeCard episode={episode} index={index} />
+              </MediaRouteReveal>
+            ))}
+          </Carousel>
+        ) : (
+          <p className="text-sm text-black/50">
+            Episodes for this season are unavailable right now.
+          </p>
+        )}
       </div>
     </section>
   );

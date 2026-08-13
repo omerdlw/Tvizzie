@@ -84,9 +84,9 @@ export const getTvBase = cache(async (id) =>
 );
 
 async function getTvSeasonDetails(tvId, seasons = []) {
-  const visibleSeasons = (Array.isArray(seasons) ? seasons : [])
-    .filter((season) => Number(season?.season_number) > 0 && Number(season?.episode_count) > 0)
-    .slice(0, 12);
+  const visibleSeasons = (Array.isArray(seasons) ? seasons : []).filter(
+    (season) => Number(season?.season_number) > 0 && Number(season?.episode_count) > 0,
+  );
 
   if (!visibleSeasons.length) {
     return [];

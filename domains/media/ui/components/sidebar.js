@@ -24,8 +24,8 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-center gap-2.5 py-1.5 text-xs text-black sm:text-sm">
-      <span className="inline-flex shrink-0 items-center justify-center text-black/70">
+    <div className="flex items-start gap-2.5 py-1.5 text-xs text-black sm:text-sm">
+      <span className="inline-flex shrink-0 items-center justify-center pt-0.5 text-black/70">
         <Icon icon={icon} size={18} />
       </span>
       <div className="min-w-0 flex-1 leading-snug font-medium">{children}</div>
@@ -35,10 +35,7 @@ function SidebarRow({ icon, children }) {
 
 function PersonLink({ person }) {
   return (
-    <Link
-      href={`/person/${person.id}`}
-      className="text-black/70 hover:text-black"
-    >
+    <Link href={`/person/${person.id}`} className="text-black/70 hover:text-black">
       {person.name}
     </Link>
   );
@@ -51,11 +48,11 @@ function PersonsDisplay({ persons, label }) {
   const visible = persons.slice(0, MAX_VISIBLE_PERSONS);
   const hidden = persons.slice(MAX_VISIBLE_PERSONS);
   return (
-    <div className="flex min-w-0 items-center gap-1.5">
+    <div className="flex min-w-0 items-start gap-1.5">
       <span className="shrink-0">{label}</span>
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="flex flex-wrap items-start gap-1">
         {visible.map((person, index) => (
-          <div key={person.id} className="flex items-center gap-1">
+          <div key={person.id} className="flex items-start gap-1">
             <PersonLink person={person} />
             {index < visible.length - 1 && <span className="text-black/50">,</span>}
           </div>
@@ -90,43 +87,43 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
   const elements = (
     <MediaRouteReveal stage="sidebar.taxonomy">
       <div className="mt-2 flex flex-col gap-2">
-      <div>
-        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
-          GENRES / TAGS
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        {normalizedGenres.map((genre, index) => {
-          return (
+        <div>
+          <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
+            GENRES / TAGS
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {normalizedGenres.map((genre, index) => {
+            return (
+              <MediaRouteReveal
+                key={genre}
+                className="inline-flex"
+                stage="sidebar.taxonomy"
+                interaction="control"
+                interactive
+                itemIndex={index}
+              >
+                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center  border border-black/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/15 hover:text-black">
+                  {genre}
+                </span>
+              </MediaRouteReveal>
+            );
+          })}
+          {normalizedTags.map((tag, index) => (
             <MediaRouteReveal
-              key={genre}
+              key={tag}
               className="inline-flex"
               stage="sidebar.taxonomy"
               interaction="control"
               interactive
-              itemIndex={index}
+              itemIndex={normalizedGenres.length + index}
             >
-              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/20 hover:text-black">
-                {genre}
+              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center  border border-black/5 px-2.5 py-1 text-[11px] text-black/70 uppercase hover:border-black/15 hover:text-black">
+                {tag}
               </span>
             </MediaRouteReveal>
-          );
-        })}
-        {normalizedTags.map((tag, index) => (
-          <MediaRouteReveal
-            key={tag}
-            className="inline-flex"
-            stage="sidebar.taxonomy"
-            interaction="control"
-            interactive
-            itemIndex={normalizedGenres.length + index}
-          >
-            <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/70 uppercase hover:border-black/20 hover:text-black">
-              {tag}
-            </span>
-          </MediaRouteReveal>
-        ))}
-      </div>
+          ))}
+        </div>
       </div>
     </MediaRouteReveal>
   );
@@ -240,7 +237,7 @@ export default function Sidebar({
   return (
     <div className="flex flex-col gap-4">
       <MediaRouteReveal stage="sidebar.poster">
-        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden rounded-3xl sm:max-w-[360px] lg:max-w-none">
+        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden  sm:max-w-[360px] lg:max-w-none">
           {posterSrc ? (
             <AdaptiveImage
               fill
@@ -255,7 +252,7 @@ export default function Sidebar({
               blurDataURL={getImagePlaceholderDataUrl(
                 `${item.id || item.title || item.name}-${item.poster_path}`,
               )}
-              className="rounded-3xl object-cover"
+              className=" object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (

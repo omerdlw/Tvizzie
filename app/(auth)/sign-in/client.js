@@ -528,7 +528,7 @@ function View({
               <AuthReveal stage="brand">
                 <Link
                   href="/"
-                  className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
+                  className="mb-6 block  p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
                 >
                   <Image
                     src="/tvizzie.png"
@@ -611,7 +611,7 @@ function View({
                 Don&apos;t have an account?{' '}
                 <Link
                   href={signUpHref}
-                  className="inline-block rounded px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+                  className="inline-block  px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
                 >
                   Sign Up
                 </Link>

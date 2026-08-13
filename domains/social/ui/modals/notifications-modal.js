@@ -27,7 +27,7 @@ import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants/index';
 
 const TOOL_BUTTON_CLASS =
-  'size-7 rounded-xl transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97]';
+  'size-7  transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97]';
 const SKELETON_COUNT = 16;
 
 function formatRelativeTime(dateValue) {
@@ -163,7 +163,7 @@ const NotificationRow = memo(function NotificationRow({ notification, onMarkRead
             mode="img"
             src={getUserAvatarUrl(notification.actor)}
             alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full rounded-xl object-cover"
+            className="size-full  object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) =>

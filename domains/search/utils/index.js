@@ -104,12 +104,12 @@ export const SEARCH_STYLES = Object.freeze({
     active: 'border border-black/10 bg-primary/50 hover:bg-primary/70 text-black',
   }),
   input:
-    'flex w-full items-center rounded-2xl p-2 pl-4 text-sm transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+    'flex w-full items-center  p-2 pl-4 text-sm transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
   tabButton:
-    'relative w-full shrink-0 flex-auto whitespace-nowrap rounded-xl px-3 py-1.5 text-xs transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+    'relative w-full shrink-0 flex-auto whitespace-nowrap  px-3 py-1.5 text-xs transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
   tabList: 'hide-scrollbar flex items-center gap-2 overflow-x-auto',
   resultItem:
-    'group flex cursor-pointer items-center justify-between rounded-2xl p-0.5 transition-colors duration-300 ease-out hover:bg-primary/50',
-  thumbnail: 'relative rounded-xl h-20 w-16 shrink-0 overflow-hidden ',
-  metaBadge: 'flex  w-fit items-center rounded-[8px] gap-1 border border-black/5',
+    'group flex cursor-pointer items-center justify-between  p-0.5 transition-colors duration-300 ease-out hover:bg-primary/50',
+  thumbnail: 'relative  h-20 w-16 shrink-0 overflow-hidden ',
+  metaBadge: 'flex  w-fit items-center  gap-1 border border-black/5',
 });

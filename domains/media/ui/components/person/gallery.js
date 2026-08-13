@@ -48,7 +48,7 @@ export default function PersonGallery({ images }) {
 
   return (
     <section className="relative w-full">
-      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-4">
+      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
         <MediaRouteReveal stage="person.sections.gallery" deferred>
           <div className="flex min-w-0 items-center gap-2">
             <Icon icon="solar:gallery-wide-bold" size={20} className="text-black/70" />

@@ -163,8 +163,7 @@ export default function Registry({
               ? {
                   image: backgroundImage,
                   overlay: true,
-                  overlayOpacity: 0,
-                  overlayColor: 'var(--white)',
+                  overlayOpacity: 0.2,
                   noiseStyle: {
                     opacity: 0.2,
                   },
@@ -383,7 +382,7 @@ export default function Registry({
             ? {
                 image: resolvedBackgroundImage,
                 overlay: true,
-                overlayOpacity: 0,
+                overlayOpacity: 0.2,
                 noiseStyle: {
                   opacity: 0.2,
                 },

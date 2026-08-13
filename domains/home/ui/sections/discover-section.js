@@ -1,47 +1,35 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
-import Icon from '@/ui/primitives/icon';
-import { useRegistry } from '@/modules/registry';
-import {
-  ALL_GENRE_ID,
-  MOBILE_DISCOVER_MEDIA_QUERY,
-  getUniqueDiscoverItems,
-  getDiscoverBatchSize,
-} from '@/domains/home/shared/discover';
-import { useDiscoverFeed } from '@/domains/home/client/use-discover-feed';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-function GenreChip({ genre, isActive, onClick, index = 0 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isActive}
-      className={`center h-10 w-full rounded-2xl border px-3 text-xs tracking-wide text-black/70 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
-    >
-      <span className="truncate">{genre.name}</span>
-    </button>
-  );
-}
+import { HomeReveal } from '@/app/motion';
+import { useDiscoverFeed } from '@/domains/home/client/use-discover-feed';
+import {
+  MOBILE_DISCOVER_MEDIA_QUERY,
+  getDiscoverBatchSize,
+  getUniqueDiscoverItems,
+} from '@/domains/home/shared/discover';
+import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
+import { useRegistry } from '@/modules/registry';
+import SegmentedControl from '@/ui/primitives/segmented-control';
+import Icon from '@/ui/primitives/icon';
+import {
+  HOME_SECTION_CONTENT_CLASS,
+  HOME_SECTION_HEADER_CLASS,
+} from '@/domains/home/ui/layouts/home-section';
+
+const MEDIA_TYPE_ITEMS = Object.freeze([
+  { key: 'movie', label: 'Movies' },
+  { key: 'tv', label: 'TV Shows' },
+]);
 
 export function DiscoverSection({
   initialDiscoverItems = [],
-  initialGenres = [],
   initialDiscoverPage = 1,
   initialHasMore = false,
 }) {
-  const scrollContainerRef = useRef(null);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const draggedDistanceRef = useRef(0);
-  const genreItems = useMemo(
-    () => [{ id: ALL_GENRE_ID, name: 'All' }, ...initialGenres],
-    [initialGenres],
-  );
+  const [mediaType, setMediaType] = useState('movie');
   const [isMobileGrid, setIsMobileGrid] = useState(false);
-  const [activeGenreId, setActiveGenreId] = useState(ALL_GENRE_ID);
   const [discoverItems, setDiscoverItems] = useState(initialDiscoverItems);
   const [discoverPage, setDiscoverPage] = useState(initialDiscoverPage);
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -50,44 +38,46 @@ export function DiscoverSection({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [gridError, setGridError] = useState('');
   const requestDiscoverPage = useDiscoverFeed();
-
-  const activeGenreName = useMemo(() => {
-    return genreItems.find((g) => String(g.id) === String(activeGenreId))?.name || '';
-  }, [activeGenreId, genreItems]);
-
-  useRegistry(
-    useMemo(
-      () => ({
-        nav: {
-          description: activeGenreId === ALL_GENRE_ID ? 'Discover titles' : activeGenreName,
-        },
-      }),
-      [activeGenreId, activeGenreName],
-    ),
-  );
   const batchSize = getDiscoverBatchSize(isMobileGrid);
   const gridItems = getUniqueDiscoverItems(discoverItems, discoverItems.length).slice(
     0,
     sectionsLoaded * batchSize,
   );
+
+  useRegistry(
+    useMemo(
+      () => ({
+        nav: {
+          description: mediaType === 'tv' ? 'Discover TV shows' : 'Discover movies',
+        },
+      }),
+      [mediaType],
+    ),
+  );
+
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return undefined;
     }
+
     const mediaQuery = window.matchMedia(MOBILE_DISCOVER_MEDIA_QUERY);
     const handleChange = (event) => setIsMobileGrid(event.matches);
     setIsMobileGrid(mediaQuery.matches);
+
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
+
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
   }, []);
+
   const loadDiscover = useCallback(
-    async ({ append = false, genreId, minimumCount = 0, page }) => {
+    async ({ append = false, minimumCount = 0, page, nextMediaType = mediaType }) => {
       const payload = await requestDiscoverPage({
-        genreId,
+        genreId: 'all',
+        mediaType: nextMediaType,
         items: append ? discoverItems : [],
         minimumCount,
         page,
@@ -102,88 +92,78 @@ export function DiscoverSection({
       setHasMore(payload.hasMore);
       return true;
     },
-    [discoverItems, requestDiscoverPage],
+    [discoverItems, mediaType, requestDiscoverPage],
   );
-  async function handleGenreChange(nextGenreId) {
-    if (nextGenreId === activeGenreId || isFiltering) {
-      return;
-    }
-    setActiveGenreId(nextGenreId);
-    setGridError('');
-    setSectionsLoaded(1);
-    setIsFiltering(true);
-    try {
-      await loadDiscover({
-        genreId: nextGenreId,
-        page: 1,
-        minimumCount: batchSize,
-      });
-    } catch {
-      setGridError('Could not refresh this genre right now.');
-    } finally {
-      setIsFiltering(false);
-    }
-  }
-  const handleMouseDown = (e) => {
-    isDraggingRef.current = true;
-    draggedDistanceRef.current = 0;
-    startXRef.current = e.pageX - scrollContainerRef.current.offsetLeft;
-    scrollLeftRef.current = scrollContainerRef.current.scrollLeft;
-  };
-  const handleMouseLeave = () => {
-    isDraggingRef.current = false;
-  };
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
-  };
-  const handleMouseMove = (e) => {
-    if (!isDraggingRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startXRef.current) * 1.5;
-    draggedDistanceRef.current = Math.abs(walk);
-    scrollContainerRef.current.scrollLeft = scrollLeftRef.current - walk;
-  };
-  const handleChipClick = (genreId) => {
-    if (draggedDistanceRef.current > 10) return;
-    handleGenreChange(genreId);
-  };
+
+  const handleMediaTypeChange = useCallback(
+    async (nextMediaType) => {
+      if (nextMediaType === mediaType || isFiltering) {
+        return;
+      }
+
+      setMediaType(nextMediaType);
+      setDiscoverItems([]);
+      setDiscoverPage(1);
+      setHasMore(true);
+      setSectionsLoaded(1);
+      setGridError('');
+      setIsFiltering(true);
+
+      try {
+        await loadDiscover({
+          nextMediaType,
+          page: 1,
+          minimumCount: batchSize,
+        });
+      } catch {
+        setGridError(`Could not load ${nextMediaType === 'tv' ? 'TV shows' : 'movies'} right now.`);
+      } finally {
+        setIsFiltering(false);
+      }
+    },
+    [batchSize, isFiltering, loadDiscover, mediaType],
+  );
+
   async function handleLoadMore() {
     if (!hasMore || isLoadingMore || isFiltering) {
       return;
     }
+
     setGridError('');
     const nextSectionsLoaded = sectionsLoaded + 1;
     const nextVisibleCount = nextSectionsLoaded * batchSize;
     setSectionsLoaded(nextSectionsLoaded);
-    if (discoverItems.length >= nextVisibleCount || !hasMore) {
+
+    if (discoverItems.length >= nextVisibleCount) {
       return;
     }
+
     setIsLoadingMore(true);
     try {
       await loadDiscover({
-        genreId: activeGenreId,
         page: discoverPage + 1,
         append: true,
         minimumCount: nextVisibleCount,
       });
     } catch {
-      setGridError('Could not load more movies right now.');
+      setGridError('Could not load more titles right now.');
       setSectionsLoaded((currentValue) => Math.max(1, currentValue - 1));
     } finally {
       setIsLoadingMore(false);
     }
   }
+
   useEffect(() => {
     const nextVisibleCount = sectionsLoaded * batchSize;
     if (discoverItems.length >= nextVisibleCount || !hasMore || isFiltering || isLoadingMore) {
       return;
     }
+
     let isCancelled = false;
+
     async function fillVisibleGrid() {
       try {
         await loadDiscover({
-          genreId: activeGenreId,
           page: discoverPage + 1,
           append: discoverItems.length > 0,
           minimumCount: nextVisibleCount,
@@ -194,147 +174,109 @@ export function DiscoverSection({
         }
       }
     }
+
     void fillVisibleGrid();
+
     return () => {
       isCancelled = true;
     };
   }, [
-    activeGenreId,
     batchSize,
     discoverItems.length,
     discoverPage,
     hasMore,
     isFiltering,
     isLoadingMore,
-    sectionsLoaded,
     loadDiscover,
+    sectionsLoaded,
   ]);
 
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const updateScrollButtons = useCallback(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 1);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
-  }, []);
-
-  const scroll = (direction) => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const scrollAmount = el.clientWidth + 8;
-    el.scrollTo({
-      left: el.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount),
-      behavior: 'smooth',
-    });
-  };
-
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-
-    updateScrollButtons();
-    el.addEventListener('scroll', updateScrollButtons, { passive: true });
-    const observer =
-      typeof ResizeObserver === 'function' ? new ResizeObserver(updateScrollButtons) : null;
-    observer?.observe(el);
-
-    return () => {
-      el.removeEventListener('scroll', updateScrollButtons);
-      observer?.disconnect();
-    };
-  }, [updateScrollButtons]);
+  const title = mediaType === 'tv' ? 'TV shows' : 'Movies';
 
   return (
-    <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <div className="relative flex w-full items-center">
-        <button
-          type="button"
-          disabled={!canScrollLeft}
-          className="hover:bg-primary mr-2 inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm hover:text-black disabled:pointer-events-none disabled:opacity-50"
-          onClick={() => scroll('left')}
-        >
-          <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
-        </button>
-        <div
-          ref={scrollContainerRef}
-          className="scrollbar-hide flex flex-1 cursor-grab snap-x snap-mandatory items-center gap-2 overflow-x-auto scroll-smooth rounded-2xl select-none active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-        >
-          {genreItems.map((genre, index) => (
-            <div key={genre.id} className="w-[calc((100%-72px)/10)] shrink-0 snap-start">
-              <GenreChip
-                genre={genre}
-                index={index}
-                isActive={String(genre.id) === String(activeGenreId)}
-                onClick={() => handleChipClick(String(genre.id))}
-              />
+    <section className="relative w-full">
+      <div className="relative">
+        <HomeReveal stage="discover.controls">
+          <div className={HOME_SECTION_HEADER_CLASS}>
+            <div className="flex min-w-0 flex-col justify-center">
+              <p className="text-xs leading-4 font-semibold tracking-wide text-black/45 uppercase">
+                Discover
+              </p>
+              <h1 className="text-base leading-5 font-semibold tracking-tight text-black">
+                {title}
+              </h1>
             </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          disabled={!canScrollRight}
-          className="hover:bg-primary ml-2 inline-flex size-10 h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm hover:text-black disabled:pointer-events-none disabled:opacity-50"
-          onClick={() => scroll('right')}
-        >
-          <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
-        {gridItems.map((item, index) => (
-          <div key={item.id}>
-            <MediaPosterCard
-              item={item}
-              className="w-full"
-              imageLoading={index === 0 ? 'eager' : undefined}
-              imageFetchPriority={index === 0 ? 'high' : undefined}
+            <SegmentedControl
+              ariaLabel="Choose media type"
+              items={MEDIA_TYPE_ITEMS}
+              value={mediaType}
+              onChange={handleMediaTypeChange}
+              className="shrink-0 self-start sm:self-auto"
             />
           </div>
-        ))}
-
-        {isFiltering
-          ? Array.from({
-              length: batchSize,
-            }).map((_, index) => (
-              <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
-            ))
-          : null}
+        </HomeReveal>
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       </div>
 
-      {gridError ? (
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-3 text-sm text-black/50">
-          {gridError}
-        </div>
-      ) : null}
+      <HomeReveal stage="discover.grid">
+        <div className={HOME_SECTION_CONTENT_CLASS}>
+          <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
+            {gridItems.map((item, index) => (
+              <HomeReveal
+                key={`${item.media_type || mediaType}-${item.id}`}
+                itemIndex={index}
+                stage="discover.item"
+              >
+                <MediaPosterCard
+                  item={item}
+                  className="w-full"
+                  imageLoading={index === 0 ? 'eager' : undefined}
+                  imageFetchPriority={index === 0 ? 'high' : undefined}
+                  fallbackMediaType={mediaType}
+                />
+              </HomeReveal>
+            ))}
 
-      {gridItems.length === 0 && !isFiltering ? (
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-4 text-sm text-black/50">
-          No movies found for this genre.
-        </div>
-      ) : null}
+            {isFiltering || isLoadingMore
+              ? Array.from({ length: batchSize }, (_, index) => (
+                  <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
+                ))
+              : null}
+          </div>
 
-      <div className="flex justify-center pt-1">
-        {hasMore ? (
-          <button
-            type="button"
-            onClick={handleLoadMore}
-            disabled={isLoadingMore || isFiltering}
-            className="bg-primary inline-flex h-10 items-center gap-2 rounded-2xl border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Icon
-              icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
-              size={16}
-            />
-            {isLoadingMore ? 'Loading' : 'Load more'}
-          </button>
-        ) : null}
-      </div>
+          {gridError ? (
+            <div className="mt-6  border border-black/10 bg-white/70 p-3 text-sm text-black/50">
+              {gridError}
+            </div>
+          ) : null}
+
+          {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
+            <div className="mt-6  border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+              No {title.toLowerCase()} are available right now.
+            </div>
+          ) : null}
+
+          <HomeReveal stage="control">
+            <div className="flex justify-center pt-6">
+              {hasMore ? (
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore || isFiltering}
+                  className="bg-primary inline-flex h-10 items-center gap-2  border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Icon
+                    icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
+                    size={16}
+                  />
+                  {isLoadingMore ? 'Loading' : `Load more ${title.toLowerCase()}`}
+                </button>
+              ) : null}
+            </div>
+          </HomeReveal>
+        </div>
+      </HomeReveal>
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
     </section>
   );
 }

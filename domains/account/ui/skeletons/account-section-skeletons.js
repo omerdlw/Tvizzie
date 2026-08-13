@@ -89,7 +89,7 @@ export function PosterCardsSkeletonRow({ count = 6, wideGrid = true }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`aspect-[2/3] w-full rounded-[20px] ${S}`}
+          className={`aspect-[2/3] w-full  ${S}`}
           style={{ animationDelay: `${i * 45}ms` }}
         />
       ))}
@@ -103,7 +103,7 @@ export function MediaCardsSkeletonGrid({ count = 12 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`aspect-[2/3] w-full rounded-[20px] ${S}`}
+          className={`aspect-[2/3] w-full  ${S}`}
           style={{ animationDelay: `${i * 45}ms` }}
         />
       ))}
@@ -149,12 +149,12 @@ function SingleListCardSkeleton({ delay = 0 }) {
 
   return (
     <article className="relative w-full" style={{ animationDelay: `${delay}ms` }}>
-      <div className="relative h-[232px] w-full rounded-2xl border border-black/10 bg-white/40">
+      <div className="relative h-[232px] w-full  border border-black/10 bg-white/40">
         <div className="absolute inset-0">
           {previewPosters.map((poster, index) => (
             <div
               key={index}
-              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden rounded-xl border border-black/10 bg-black/[0.08]"
+              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden  border border-black/10 bg-black/[0.08]"
               style={{
                 opacity: poster.opacity,
                 transform: `translateX(calc(-50% + ${poster.x}px)) translateY(${poster.y}px) rotate(${poster.rotate}deg) scale(${poster.scale})`,
@@ -165,7 +165,7 @@ function SingleListCardSkeleton({ delay = 0 }) {
           ))}
         </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-2xl border border-black/10 bg-white">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  border border-black/10 bg-white">
         <div className="px-4 py-4">
           <div className={`h-5 w-2/3 ${S}`} />
           <div className={`mt-2 h-3.5 w-full ${SOFT}`} />

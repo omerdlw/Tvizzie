@@ -8,12 +8,12 @@ import Icon from '@/ui/primitives/icon';
 import { AccountReveal } from '@/app/(account)/motion';
 
 export const INPUT_BASE_CLASSES =
-  'h-11 w-full rounded-xl border border-black/15 bg-primary px-3 text-sm text-black outline-none placeholder:text-black/50 transition-[background-color,border-color,box-shadow] duration-300 ease-out focus:border-black';
+  'h-11 w-full  border border-black/15 bg-primary px-3 text-sm text-black outline-none placeholder:text-black/50 transition-[background-color,border-color,box-shadow] duration-300 ease-out focus:border-black';
 export const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  'rounded-xl border border-black/15 bg-white px-3 py-2 text-black transition-[background-color,border-color,transform] duration-300 ease-out hover:scale-[1.015] hover:bg-black/5 active:scale-[0.985] disabled:opacity-50';
+  ' border border-black/15 bg-white px-3 py-2 text-black transition-[background-color,border-color,transform] duration-300 ease-out hover:scale-[1.015] hover:bg-black/5 active:scale-[0.985] disabled:opacity-50';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed rounded-xl';
+  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed ';
 export function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
     <button
@@ -118,7 +118,7 @@ export function MediaField({
       <div>
         <div
           className={cn(
-            'overflow-hidden rounded-2xl border border-black/10 bg-black/5',
+            'overflow-hidden  border border-black/10 bg-black/5',
             previewClassName,
           )}
         >

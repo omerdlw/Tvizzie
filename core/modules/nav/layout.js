@@ -81,7 +81,7 @@ export function getNavItemCardProps({
 
   return {
     className: cn(
-      'absolute h-auto w-full rounded-3xl border border-black/10 bg-white p-2 transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+      'absolute h-auto w-full  border border-black/10 bg-white p-2 transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
       isAnchoredToBottom || isTop ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
       showBorder && 'border-black/15',

@@ -43,8 +43,12 @@ export default function PersonFilmographySection({ person }) {
 
   return (
     <section className="relative w-full">
-      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-4">
-        <MediaRouteReveal className="flex min-w-0 items-center gap-2" stage="person.sections.filmography" deferred>
+      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
+        <MediaRouteReveal
+          className="flex min-w-0 items-center gap-2"
+          stage="person.sections.filmography"
+          deferred
+        >
           <Icon icon="solar:clapperboard-play-bold" size={20} className="text-black/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
             Filmography

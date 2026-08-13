@@ -82,7 +82,7 @@ export function ProfileMediaActions({
       {typeof onRemoveItem === 'function' && (
         <Button
           variant="destructive-icon"
-          className="center text-error hover:border-error hover:bg-error size-8 rounded-xl border border-black/15 bg-white hover:text-white disabled:cursor-default"
+          className="center text-error hover:border-error hover:bg-error size-8  border border-black/15 bg-white hover:text-white disabled:cursor-default"
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}

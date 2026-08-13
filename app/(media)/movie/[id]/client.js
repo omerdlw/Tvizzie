@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   clearMediaBackgroundPreference,
   clearMediaPosterPreference,
@@ -27,6 +28,8 @@ import { getGalleryImages, getMediaComputedData } from '@/domains/media/services
 import VideosSection from '@/domains/media/ui/sections/videos-section';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
 import TvSeasonsSection from '@/domains/media/ui/sections/seasons-section';
+import TvSeasonRatings from '@/domains/media/ui/components/tv-season-ratings';
+import TvSeasonRatingsSkeleton from '@/domains/media/ui/components/tv-season-ratings-skeleton';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
 import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
@@ -38,6 +41,11 @@ import {
 import Icon from '@/ui/primitives/icon';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import { cn } from '@/core/shared/utils';
+
+const TV_VIEW_TRANSITION = {
+  duration: 0.38,
+  ease: [0.16, 1, 0.3, 1],
+};
 
 function createReviewState() {
   return {
@@ -99,7 +107,13 @@ async function resolveFirstLoadablePosterFilePath(candidates = []) {
   return null;
 }
 
-export default function Client({ computed, mediaType = 'movie', movie, secondaryDataPromise }) {
+export default function Client({
+  computed,
+  mediaType = 'movie',
+  movie,
+  ratingsPromise,
+  secondaryDataPromise,
+}) {
   const movieId = movie?.id;
   const fallbackPosterFilePath = movie?.poster_path || null;
   const fallbackBackgroundImage = createMovieBackdropImageUrl(movie?.backdrop_path);
@@ -109,6 +123,7 @@ export default function Client({ computed, mediaType = 'movie', movie, secondary
   const [canResetMovieBackground, setCanResetMovieBackground] = useState(false);
   const [canResetMoviePoster, setCanResetMoviePoster] = useState(false);
   const [reviewState, setReviewState] = useState(createReviewState);
+  const [activeView, setActiveView] = useState('main');
 
   const resolvedMovie = useMemo(
     () => ({
@@ -256,9 +271,12 @@ export default function Client({ computed, mediaType = 'movie', movie, secondary
       computed={computed}
       mediaType={mediaType}
       movie={resolvedMovie}
+      ratingsPromise={ratingsPromise}
       reviewState={reviewState}
       secondaryDataPromise={secondaryDataPromise}
       setReviewState={setReviewState}
+      activeView={activeView}
+      setActiveView={setActiveView}
     />
   );
 }
@@ -271,33 +289,33 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
   return (
     <MediaRouteReveal stage="sections.discovery" deferred={isDeferred}>
       <div className={cn('relative w-full', hasBottomBorder && 'border-b border-black/10')}>
-      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
-            {title}
-          </h2>
+        <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
+          <div className="flex min-w-0 items-center gap-2">
+            <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-black/70" />
+            <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+              {title}
+            </h2>
+          </div>
         </div>
-      </div>
 
         <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-        <Carousel
-          gap="gap-3"
-          itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]"
-        >
-          {items.map((item, index) => (
-            <MediaRouteReveal
-              key={`${item.id}-${index}`}
-              stage="items.discovery"
-              deferred={isDeferred}
-              interactive
-              itemIndex={index}
-            >
-              <RecommendationCard movie={item} index={index} />
-            </MediaRouteReveal>
-          ))}
-        </Carousel>
-      </div>
+          <Carousel
+            gap="gap-3"
+            itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]"
+          >
+            {items.map((item, index) => (
+              <MediaRouteReveal
+                key={`${item.id}-${index}`}
+                stage="items.discovery"
+                deferred={isDeferred}
+                interactive
+                itemIndex={index}
+              >
+                <RecommendationCard movie={item} index={index} />
+              </MediaRouteReveal>
+            ))}
+          </Carousel>
+        </div>
       </div>
     </MediaRouteReveal>
   );
@@ -361,9 +379,7 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   if (videos.length > 0) {
     sections.push({
       key: 'videos',
-      content: (
-        <VideosSection videos={videos} />
-      ),
+      content: <VideosSection videos={videos} />,
     });
   }
 
@@ -415,10 +431,7 @@ function TvSeasonsDeferred({ secondaryDataPromise, seasons = [] }) {
 
   return (
     <MediaRouteReveal stage="sections.seasons" deferred>
-      <TvSeasonsSection
-        seasons={seasons}
-        seasonDetails={secondaryMovie?.seasonDetails || []}
-      />
+      <TvSeasonsSection seasons={seasons} seasonDetails={secondaryMovie?.seasonDetails || []} />
     </MediaRouteReveal>
   );
 }
@@ -439,10 +452,7 @@ function MovieSecondaryContent({
     <div className="flex w-full flex-col">
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
         <MediaRouteReveal stage="sections.cast">
-          <CastSection
-            cast={computed.cast}
-            crew={computed.crew}
-          />
+          <CastSection cast={computed.cast} crew={computed.crew} />
         </MediaRouteReveal>
       ) : null}
 
@@ -488,15 +498,30 @@ function MovieView({
   computed,
   mediaType = 'movie',
   movie,
+  ratingsPromise,
   reviewState,
   secondaryDataPromise,
   setReviewState,
+  activeView,
+  setActiveView,
 }) {
   const collectionMedia = useMemo(() => ({ ...movie, entityType: mediaType }), [mediaType, movie]);
   const { certification, creators, director, genres, rating, runtimeText, tags, writers, year } =
     computed;
   const mediaTitle =
     movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
+  const isRatingsView = mediaType === 'tv' && activeView === 'ratings' && Boolean(ratingsPromise);
+  const hasRatingsView = mediaType === 'tv' && Boolean(ratingsPromise);
+  const ratingSeasonCount = (Array.isArray(movie?.seasons) ? movie.seasons : []).filter(
+    (season) => Number(season?.season_number) > 0,
+  ).length;
+  const ratingPanelWidth = Math.max(48, 5 + ratingSeasonCount * 4);
+  const ratingsLayoutStyle = isRatingsView
+    ? {
+        '--ratings-panel-width': `${ratingPanelWidth}rem`,
+        '--ratings-shell-width': `${24 + ratingPanelWidth}rem`,
+      }
+    : undefined;
 
   return (
     <MediaRouteMotionProvider routeKey={`${mediaType}-${movie.id}`}>
@@ -516,15 +541,21 @@ function MovieView({
         year={year}
       />
 
-      <PageGradientShell className="overflow-hidden">
-        <MediaGridFrame />
+      <PageGradientShell>
+        <MediaGridFrame
+          className={isRatingsView ? 'lg:w-[var(--ratings-shell-width)] lg:max-w-none' : ''}
+          style={ratingsLayoutStyle}
+        />
         <div
-          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12 [overflow-anchor:none]`}
+          style={ratingsLayoutStyle}
+          className={`relative z-10 mx-auto flex w-full flex-col pb-12 [overflow-anchor:none] ${
+            isRatingsView
+              ? 'lg:w-[var(--ratings-shell-width)] lg:max-w-none lg:pb-0'
+              : PAGE_SHELL_MAX_WIDTH_CLASS
+          }`}
         >
-          {/* Main 2-Column Section */}
-          <div className="relative flex w-full flex-col items-start lg:flex-row lg:items-start">
-            {/* Left Column: Sticky Sidebar */}
-            <div className="order-1 w-full shrink-0 self-start p-6 lg:sticky lg:top-6 lg:w-96 lg:pt-3 lg:pb-0">
+          <div className="relative flex w-full flex-col items-start lg:flex-row lg:items-stretch">
+            <div className="order-1 w-full shrink-0 p-6 lg:w-96">
               <Sidebar
                 item={movie}
                 certification={certification}
@@ -532,74 +563,124 @@ function MovieView({
                 director={director}
                 genres={genres}
                 tags={tags}
-                topContent={<CollectionActions media={collectionMedia} />}
+                topContent={
+                  <CollectionActions
+                    media={collectionMedia}
+                    additionalActions={
+                      hasRatingsView
+                        ? [
+                            {
+                              active: isRatingsView,
+                              icon: isRatingsView ? 'solar:arrow-left-bold' : 'solar:chart-2-bold',
+                              key: 'ratings',
+                              label: isRatingsView ? 'Back to Details' : 'Ratings',
+                              onClick: () => setActiveView(isRatingsView ? 'main' : 'ratings'),
+                            },
+                          ]
+                        : []
+                    }
+                  />
+                }
                 writers={writers}
               />
             </div>
 
-            {/* Right Column: Title, Overview & Media Sections */}
-            <div className="order-2 flex w-full min-w-0 flex-col self-start lg:flex-1 lg:border-l lg:border-black/10">
-              <div className="flex w-full flex-col border-b border-black/10 p-6">
-                <MediaRouteReveal stage="hero.title">
-                  <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-                    {mediaTitle}
-                  </h1>
-                </MediaRouteReveal>
+            <div
+              className={`order-2 flex w-full min-w-0 flex-col lg:border-l lg:border-black/10 ${
+                isRatingsView ? 'lg:w-[var(--ratings-panel-width)] lg:flex-none' : 'lg:flex-1'
+              }`}
+            >
+              <AnimatePresence mode="wait">
+                {isRatingsView ? (
+                  <motion.div
+                    key="tv-ratings"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={TV_VIEW_TRANSITION}
+                  >
+                    <Suspense fallback={<TvSeasonRatingsSkeleton />}>
+                      <TvSeasonRatings ratingsPromise={ratingsPromise} />
+                    </Suspense>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="media-details"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={TV_VIEW_TRANSITION}
+                  >
+                    <div className="flex w-full flex-col border-b border-black/10 p-6">
+                      <MediaRouteReveal stage="hero.title">
+                        <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+                          {mediaTitle}
+                        </h1>
+                      </MediaRouteReveal>
 
-                {movie.tagline ? (
-                  <MediaRouteReveal stage="hero.tagline">
-                    <p className="mt-4 text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
-                      {movie.tagline}
-                    </p>
-                  </MediaRouteReveal>
-                ) : null}
+                      {movie.tagline ? (
+                        <MediaRouteReveal stage="hero.tagline">
+                          <p className="mt-4 text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
+                            {movie.tagline}
+                          </p>
+                        </MediaRouteReveal>
+                      ) : null}
 
-                {movie.overview ? (
-                  <MediaRouteReveal stage="hero.overview">
-                    <div className="mt-3 flex w-full flex-col">
-                      <p className="max-w-[70ch] text-left text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
-                        {movie.overview}
-                      </p>
+                      {movie.overview ? (
+                        <MediaRouteReveal stage="hero.overview">
+                          <div className="mt-3 flex w-full flex-col">
+                            <p className="max-w-[70ch] text-left text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
+                              {movie.overview}
+                            </p>
+                          </div>
+                        </MediaRouteReveal>
+                      ) : null}
                     </div>
-                  </MediaRouteReveal>
-                ) : null}
-              </div>
 
-              {/* Secondary Content Sections inside right column */}
-              <MovieSecondaryContent
-                computed={computed}
-                mediaType={mediaType}
-                movie={movie}
-                onSetMovieBackground={onSetMovieBackground}
-                onSetMoviePoster={onSetMoviePoster}
-                onResetMovieBackground={onResetMovieBackground}
-                onResetMoviePoster={onResetMoviePoster}
-                canResetMovieBackground={canResetMovieBackground}
-                canResetMoviePoster={canResetMoviePoster}
-                secondaryDataPromise={secondaryDataPromise}
-              />
+                    <MovieSecondaryContent
+                      computed={computed}
+                      mediaType={mediaType}
+                      movie={movie}
+                      onSetMovieBackground={onSetMovieBackground}
+                      onSetMoviePoster={onSetMoviePoster}
+                      onResetMovieBackground={onResetMovieBackground}
+                      onResetMoviePoster={onResetMoviePoster}
+                      canResetMovieBackground={canResetMovieBackground}
+                      canResetMoviePoster={canResetMoviePoster}
+                      secondaryDataPromise={secondaryDataPromise}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          {/* Bottom Full-Width Reviews Section */}
-          <MediaRouteReveal className="w-full" stage="sections.reviews">
-            <MediaReviews
-              entityId={movie.id}
-              entityType={mediaType}
-              title={mediaTitle}
-              headerTitle="Recent Reviews"
-              listMode="recent"
-              showBackdropGradient={false}
-              allReviewsHref={`/${mediaType}/${movie.id}/reviews`}
-              posterPath={movie.poster_path}
-              backdropPath={movie.backdrop_path}
-              onReviewStateChange={setReviewState}
-              motionStage="items.reviews"
-              motionDeferred
-            />
-          </MediaRouteReveal>
+          {!isRatingsView ? (
+            <MediaRouteReveal className="w-full" stage="sections.reviews">
+              <MediaReviews
+                entityId={movie.id}
+                entityType={mediaType}
+                title={mediaTitle}
+                headerTitle="Recent Reviews"
+                listMode="recent"
+                showBackdropGradient={false}
+                allReviewsHref={`/${mediaType}/${movie.id}/reviews`}
+                posterPath={movie.poster_path}
+                backdropPath={movie.backdrop_path}
+                onReviewStateChange={setReviewState}
+                motionStage="items.reviews"
+                motionDeferred
+              />
+            </MediaRouteReveal>
+          ) : null}
+
+          {isRatingsView ? (
+            <div className="hidden lg:ml-96 lg:block lg:border-l lg:border-black/10 lg:pb-12">
+              <NavHeightSpacer />
+            </div>
+          ) : null}
         </div>
-        <NavHeightSpacer />
+        <NavHeightSpacer className={isRatingsView ? 'lg:hidden' : ''} />
       </PageGradientShell>
     </MediaRouteMotionProvider>
   );

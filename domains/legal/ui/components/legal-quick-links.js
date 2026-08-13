@@ -10,7 +10,7 @@ const POLICY_LINKS = [
 ];
 
 function quickLinkClassName(isActive) {
-  return `flex-auto rounded-2xl border px-4 py-3 text-center text-sm font-medium transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] ${
+  return `flex-auto  border px-4 py-3 text-center text-sm font-medium transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] ${
     isActive
       ? 'border-black/10 bg-black/5 text-black'
       : 'border-black/5 bg-white/40 text-black/60 hover:border-black/10 hover:bg-white hover:text-black'
@@ -35,7 +35,7 @@ export default function LegalQuickLinks() {
         ))}
         <LegalReveal className="flex flex-1" itemIndex={2} stage="quickLink">
           <a
-            className="flex-auto rounded-2xl border border-black/5 bg-white/40 px-4 py-3 text-center text-sm font-medium text-black/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-black/10 hover:bg-white hover:text-black active:scale-[0.985]"
+            className="flex-auto  border border-black/5 bg-white/40 px-4 py-3 text-center text-sm font-medium text-black/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-black/10 hover:bg-white hover:text-black active:scale-[0.985]"
             href="mailto:tvizzie.app@gmail.com"
           >
             Contact

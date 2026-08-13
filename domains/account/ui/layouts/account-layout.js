@@ -208,7 +208,7 @@ function NavViewItem({ item, isActive, href, index }) {
         href={href}
         onClick={handleClick}
         className={cn(
-          'center relative h-full w-full shrink-0 rounded-2xl px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-[background-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] last:border-none sm:text-xs',
+          'center relative h-full w-full shrink-0  px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-[background-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] last:border-none sm:text-xs',
           isActive
             ? 'font-bold text-white'
             : 'hover:bg-primary font-semibold text-black/70 hover:text-black',
@@ -216,7 +216,7 @@ function NavViewItem({ item, isActive, href, index }) {
       >
         {isActive ? (
           <span
-            className="absolute inset-0 rounded-2xl bg-black"
+            className="absolute inset-0  bg-black"
           />
         ) : null}
         <span className="relative z-10">{item.label}</span>

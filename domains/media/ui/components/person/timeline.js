@@ -38,7 +38,7 @@ export default function PersonTimeline({ person }) {
 
   return (
     <section className="relative w-full">
-      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-4">
+      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
         <MediaRouteReveal stage="person.sections.timeline" deferred>
           <div className="flex min-w-0 items-center gap-2">
             <Icon icon="solar:sort-by-time-bold" size={24} className="text-black/70" />
@@ -52,9 +52,7 @@ export default function PersonTimeline({ person }) {
 
       <div className="p-6">
         <div className="relative">
-          <div
-            className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24"
-          />
+          <div className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24" />
 
           <div className="flex flex-col">
             {timeline.map(([year, credits], yearIndex) => {
@@ -67,16 +65,12 @@ export default function PersonTimeline({ person }) {
                     itemIndex={yearIndex}
                     stage="person.timeline.year"
                   >
-                    <span
-                      className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base"
-                    >
+                    <span className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base">
                       {year}
                     </span>
                   </MediaRouteReveal>
 
-                  <div
-                    className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black sm:left-24"
-                  />
+                  <div className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2  border-2 border-white bg-black sm:left-24" />
 
                   <div
                     className={`min-w-0 flex-1 pt-[18px] pl-4 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
@@ -100,12 +94,12 @@ export default function PersonTimeline({ person }) {
                         >
                           <Link
                             href={`/${mediaType}/${credit.id}`}
-                            className="group flex items-center gap-4 rounded-[20px] p-1 transition-[background-color] duration-300 ease-out hover:bg-black/5"
+                            className="group flex items-center gap-4  p-1 transition-[background-color] duration-300 ease-out hover:bg-black/5"
                           >
                             <MediaThumb
                               poster={credit.poster_path}
                               alt={title}
-                              className="w-16 rounded-2xl sm:w-20"
+                              className="w-16  sm:w-20"
                             />
                             <div className="flex min-w-0 flex-1 flex-col gap-1">
                               <span className="truncate text-base leading-tight font-semibold tracking-tight sm:text-lg">

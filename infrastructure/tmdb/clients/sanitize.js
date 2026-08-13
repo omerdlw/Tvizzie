@@ -441,6 +441,15 @@ function isDisplayablePerson(person, { context = 'credits', role = 'cast' } = {}
   return getPersonQualityScore(person, role) >= getPersonListThreshold(context);
 }
 
+function isValidCreditPerson(person = {}) {
+  return Boolean(
+    person &&
+    typeof person === 'object' &&
+    person?.id &&
+    hasText(person?.name || person?.original_name),
+  );
+}
+
 export function sanitizeMovieResults(items = [], context = 'browse') {
   return (Array.isArray(items) ? items : []).filter((item) => isDisplayableMovie(item, context));
 }
@@ -450,9 +459,16 @@ export function sanitizeTvResults(items = [], context = 'browse') {
 }
 
 export function sanitizePersonResults(items = [], { context = 'credits', role = 'cast' } = {}) {
-  return (Array.isArray(items) ? items : []).filter((item) =>
-    isDisplayablePerson(item, { context, role }),
-  );
+  const entries = Array.isArray(items) ? items : [];
+
+  // Detail credits are authoritative TMDB records. Do not apply browse/search
+  // quality scoring here: missing popularity or profile art must not remove a
+  // valid cast or crew member from the detail section and its modal.
+  if (context === 'credits') {
+    return entries.filter(isValidCreditPerson);
+  }
+
+  return entries.filter((item) => isDisplayablePerson(item, { context, role }));
 }
 
 export function sanitizeMovieDetail(movie) {

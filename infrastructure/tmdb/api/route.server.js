@@ -70,11 +70,14 @@ function createSearchEmptyResponse() {
 async function handleDiscover(request) {
   const searchParams = request.nextUrl.searchParams;
   const genreId = searchParams.get('genreId') || 'all';
+  const rawMediaType = searchParams.get('mediaType');
+  const mediaType = rawMediaType === 'all' ? 'all' : rawMediaType === 'tv' ? 'tv' : 'movie';
   const page = Number(searchParams.get('page') || 1);
   const sortBy = searchParams.get('sortBy') || 'popularity.desc';
 
   const response = await discoverContent({
     genreId,
+    mediaType,
     page,
     sortBy,
   });
@@ -85,8 +88,9 @@ async function handleDiscover(request) {
   });
 }
 
-async function handleGenres() {
-  const response = await getGenres();
+async function handleGenres(request) {
+  const mediaType = request.nextUrl.searchParams.get('mediaType') === 'tv' ? 'tv' : 'movie';
+  const response = await getGenres(mediaType);
 
   return NextResponse.json(response.data || [], {
     status: response.status || 200,
@@ -171,7 +175,7 @@ export async function GET(request) {
     case TMDB_ACTIONS.DISCOVER:
       return handleDiscover(request);
     case TMDB_ACTIONS.GENRES:
-      return handleGenres();
+      return handleGenres(request);
     case TMDB_ACTIONS.SEARCH:
       return handleSearch(request);
     case TMDB_ACTIONS.TRENDING:

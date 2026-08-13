@@ -81,15 +81,21 @@ export class TmdbService {
     });
   }
 
-  static async getGenres() {
-    return requestJson('/api/tmdb?action=genres');
+  static async getGenres(mediaType = 'movie') {
+    return requestJson(createApiUrl('/api/tmdb', { action: 'genres', mediaType }));
   }
 
-  static async discoverContent({ genreId, page = 1, sortBy = 'popularity.desc' }) {
+  static async discoverContent({
+    genreId,
+    mediaType = 'movie',
+    page = 1,
+    sortBy = 'popularity.desc',
+  }) {
     return requestJson(
       createApiUrl('/api/tmdb', {
         action: 'discover',
         genreId,
+        mediaType,
         page,
         sortBy,
       }),

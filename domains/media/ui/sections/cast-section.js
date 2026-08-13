@@ -64,7 +64,7 @@ function PersonImage({
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className={cn('h-full w-full object-cover', compact ? 'rounded-xl' : 'rounded-2xl')}
+      className={cn('h-full w-full object-cover', compact ? '' : '')}
       onError={() => setError(true)}
     />
   );
@@ -76,14 +76,14 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-sm hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'h-[84px] p-1 pr-4',
+        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3  border border-black/10 backdrop-blur-sm hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1  p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
       <div
         className={cn(
           'relative shrink-0 overflow-hidden',
-          compact ? 'h-8 w-8 rounded-xl' : 'h-[76px] w-14 rounded-2xl',
+          compact ? 'h-8 w-8 ' : 'h-[76px] w-14 ',
         )}
       >
         <PersonImage
@@ -248,7 +248,7 @@ export default function CastSection({
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer rounded-2xl border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
+              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer  border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>

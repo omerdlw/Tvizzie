@@ -110,14 +110,9 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
   }[variant];
 
   return (
-    <MediaRouteReveal
-      className="flex flex-1"
-      deferred
-      itemIndex={index}
-      stage="person.awards.stat"
-    >
+    <MediaRouteReveal className="flex flex-1" deferred itemIndex={index} stage="person.awards.stat">
       <div
-        className={`flex min-w-[110px] flex-1 flex-col items-center justify-center rounded-2xl border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
+        className={`flex min-w-[110px] flex-1 flex-col items-center justify-center  border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
       >
         <div className={`flex items-center gap-1.5 ${variantStyles.iconText}`}>
           <Icon icon={icon} size={20} />
@@ -153,7 +148,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`max-w-[200px] truncate rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+        className={`max-w-[200px] truncate  px-3.5 py-1.5 text-xs font-semibold ${
           isActive ? `${activeColorClass}` : 'bg-black/5 text-black/70 hover:bg-black/10'
         }`}
       >
@@ -170,17 +165,17 @@ function AwardCard({ award, index }) {
 
   const cardContent = (
     <div
-      className={`group relative flex items-center gap-2 rounded-3xl border p-1 sm:gap-4 sm:p-2 ${
+      className={`group relative flex items-center gap-2  border p-1 sm:gap-4 sm:p-2 ${
         isWin
-          ? 'border-yellow-500 border bg-white/50 hover:bg-primary'
-          : 'border-black/10 bg-white/50 hover:bg-primary'
+          ? 'hover:bg-primary border border-yellow-500 bg-white/50'
+          : 'hover:bg-primary border-black/10 bg-white/50'
       } transition-[background-color,border-color,box-shadow] duration-300 ease-out`}
     >
       {award.poster || award.project ? (
         <MediaThumb
           poster={award.poster}
           alt={award.project || 'Project'}
-          className="h-auto w-14 shrink-0 rounded-2xl sm:w-16"
+          className="h-auto w-14 shrink-0  sm:w-16"
         />
       ) : null}
 
@@ -188,25 +183,23 @@ function AwardCard({ award, index }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-black/40 sm:text-sm">{award.year}</span>
           {isWin ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-white uppercase">
+            <span className="inline-flex items-center gap-1  bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-white uppercase">
               <Icon icon="solar:cup-bold" size={12} />
               Win
             </span>
           ) : (
-            <span className="rounded-full bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/70 uppercase">
+            <span className=" bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/70 uppercase">
               Nominee
             </span>
           )}
         </div>
-        <h3 className="truncate text-sm font-semibold text-black sm:text-base">
-          {award.category}
-        </h3>
+        <h3 className="truncate text-sm font-semibold text-black sm:text-base">{award.category}</h3>
         <p className="truncate text-xs text-black/60 sm:text-sm">
           {[award.organization, award.project].filter(Boolean).join(' · ')}
         </p>
       </div>
       {hasProjectLink && (
-        <div className="shrink-0 opacity-0 group-hover:opacity-100 pr-1">
+        <div className="shrink-0 pr-1 opacity-0 group-hover:opacity-100">
           <Icon icon="solar:alt-arrow-right-bold" size={18} className="text-black/40" />
         </div>
       )}
@@ -222,12 +215,7 @@ function AwardCard({ award, index }) {
   );
 
   return (
-    <MediaRouteReveal
-      deferred
-      interactive
-      itemIndex={index}
-      stage="person.awards.item"
-    >
+    <MediaRouteReveal deferred interactive itemIndex={index} stage="person.awards.item">
       {resolvedCard}
     </MediaRouteReveal>
   );
@@ -236,7 +224,7 @@ function AwardCard({ award, index }) {
 function AwardsMessage({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-black/5 text-black/40">
+      <div className="flex size-14 items-center justify-center  bg-black/5 text-black/40">
         <Icon icon="solar:cup-star-linear" size={32} />
       </div>
       <p className="mt-4 text-sm font-medium text-black/60">{children}</p>
@@ -268,7 +256,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
   return (
     <section className="relative w-full">
       <div className="relative w-full pt-2 pb-6 sm:pt-3 sm:pb-8">
-        <div className="mx-auto flex max-w-[72ch] items-center justify-center gap-3 px-4 sm:gap-4">
+        <div className="mx-auto flex max-w-[72ch] items-center justify-center gap-3 px-6 sm:gap-4">
           <AwardStatCard icon="solar:cup-bold" index={0} label="Wins" value={wins} variant="win" />
           <AwardStatCard
             icon="solar:medal-ribbons-star-bold"
@@ -300,7 +288,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
         <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       </div>
 
-      <MediaRouteReveal className="p-4 sm:p-6" stage="person.sections.awards" deferred>
+      <MediaRouteReveal className="p-6" stage="person.sections.awards" deferred>
         {/* Filter Pills */}
         <div className="mx-auto flex max-w-[72ch] flex-wrap items-center justify-center gap-2 pt-2 sm:pt-4">
           <AwardFilterPill
@@ -331,10 +319,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
 
         {/* Award Items List */}
-        <div
-          key={activeFilter}
-          className="mx-auto mt-6 flex max-w-[72ch] flex-col gap-3 sm:mt-8"
-        >
+        <div key={activeFilter} className="mx-auto mt-6 flex max-w-[72ch] flex-col gap-3 sm:mt-8">
           {filteredItems.map((award, index) => (
             <AwardCard key={`${activeFilter}-${award.key}`} award={award} index={index} />
           ))}

@@ -6,6 +6,7 @@ export const TMDB_HEADERS = Object.freeze({
 
 export const TMDB_REVALIDATE = Object.freeze({
   TRENDING: 600,
+  IMDB_TOP_100_ENRICHMENT: 60 * 60 * 6,
   DISCOVER: 1800,
   GENRES: 60 * 60 * 24 * 7,
   DETAIL_BASE: 3600,

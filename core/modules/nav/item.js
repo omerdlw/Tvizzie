@@ -94,10 +94,10 @@ function Badge({ badge }) {
 function LoadingItemContent() {
   return (
     <div className="flex h-auto w-full items-center gap-3">
-      <div className="skeleton-block size-12 shrink-0 animate-pulse rounded-2xl" />
+      <div className="skeleton-block size-12 shrink-0 animate-pulse " />
       <div className="h-full w-full space-y-2">
-        <div className="skeleton-block h-4 w-3/4 animate-pulse rounded-full" />
-        <div className="skeleton-block-soft h-3 w-1/2 animate-pulse rounded-full" />
+        <div className="skeleton-block h-4 w-3/4 animate-pulse " />
+        <div className="skeleton-block-soft h-3 w-1/2 animate-pulse " />
       </div>
     </div>
   );
