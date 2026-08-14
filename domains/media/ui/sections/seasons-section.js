@@ -47,11 +47,11 @@ function EpisodeCard({ episode, index = 0 }) {
       data-context-menu-target="movie-backdrop-card"
       data-backdrop-file-path={episode?.still_path || ''}
       topOverlay={
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/70 via-white/30 to-transparent p-3 text-black">
-          <p className="text-[10px] font-semibold tracking-widest text-black/70 uppercase tabular-nums">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white">
+          <p className="text-[10px] font-semibold tracking-widest text-white/70 uppercase tabular-nums">
             E{getEpisodeNumber(episode, index)}
           </p>
-          <h3 className="mt-1 truncate text-sm font-bold text-black">{title}</h3>
+          <h3 className="mt-1 truncate text-sm font-semibold text-white">{title}</h3>
         </div>
       }
     />

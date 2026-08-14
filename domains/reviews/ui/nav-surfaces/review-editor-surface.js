@@ -12,7 +12,6 @@ import { REVIEW_MAX_LENGTH } from '@/domains/reviews/shared/review-utils';
 import RatingSelector from '@/domains/reviews/ui/components/rating-selector';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Textarea } from '@/ui/primitives';
-import Icon from '@/ui/primitives/icon';
 import { cn } from '@/shared/utils';
 import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 
@@ -330,10 +329,6 @@ export default function ReviewEditorSurface({ close, data }) {
               ),
             })}
           >
-            <Icon
-              icon={isSpoiler && hasText ? 'solar:danger-triangle-bold' : 'solar:eye-closed-bold'}
-              size={NAV_ACTION_STYLES.icon}
-            />
             <span>{isSpoiler && hasText ? 'Contains Spoilers' : 'Mark as Spoiler'}</span>
           </button>
         )}
@@ -349,21 +344,15 @@ export default function ReviewEditorSurface({ close, data }) {
             ),
           })}
         >
-          <span className="flex items-center gap-2">
-            <Icon
-              icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
-              size={NAV_ACTION_STYLES.icon}
-            />
-            <span>
-              {isSaving
-                ? 'Saving...'
-                : getPrimaryActionLabel({
-                    hasExistingReview,
-                    isList: isListSubject,
-                    rating,
-                    reviewText,
-                  })}
-            </span>
+          <span>
+            {isSaving
+              ? 'Saving...'
+              : getPrimaryActionLabel({
+                  hasExistingReview,
+                  isList: isListSubject,
+                  rating,
+                  reviewText,
+                })}
           </span>
         </button>
       </div>

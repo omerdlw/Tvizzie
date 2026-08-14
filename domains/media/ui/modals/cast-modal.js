@@ -73,7 +73,6 @@ const PersonCard = memo(function PersonCard({ close, person }) {
 
 export default function CastModal({ close, data, header }) {
   usePosterPreferenceVersion();
-  const contentRef = useRef(null);
 
   const castEntries = useMemo(() => normalizeEntries(data?.cast, 'Cast'), [data?.cast]);
   const crewEntries = useMemo(() => normalizeEntries(data?.crew, 'Crew'), [data?.crew]);
@@ -121,7 +120,7 @@ export default function CastModal({ close, data, header }) {
       header={resolvedHeader}
       bodyClassName="bg-transparent p-0"
     >
-      <div ref={contentRef} className="relative min-h-32 overflow-y-auto">
+      <div className="relative min-h-32">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
@@ -129,7 +128,7 @@ export default function CastModal({ close, data, header }) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="grid grid-cols-1 divide-x divide-y divide-white/10 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 border-t border-white/10 sm:grid-cols-2 lg:grid-cols-3"
           >
             {activeEntries.map((person, index) => (
               <motion.div
@@ -138,6 +137,7 @@ export default function CastModal({ close, data, header }) {
                 custom={index}
                 initial="hidden"
                 animate="visible"
+                className="border-b border-white/10 border-r-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 border-white/10"
               >
                 <PersonCard close={close} person={person} />
               </motion.div>

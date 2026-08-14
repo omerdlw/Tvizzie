@@ -101,7 +101,7 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
       aria-label={isAdded ? `Remove ${title} from list` : `Add ${title} to list`}
       className={cn(
         SEARCH_STYLES.resultItem,
-        'w-full gap-2 border text-left active:scale-[0.995]',
+        'group/result w-full gap-2 border text-left active:scale-[0.995]',
         isAdded
           ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
           : 'border-transparent',
@@ -121,6 +121,32 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
           <span className="truncate leading-tight font-bold uppercase">{title}</span>
           <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                SEARCH_STYLES.metaBadge,
+                'relative size-6 shrink-0 justify-center text-white/70',
+                isAdded
+                  ? 'group-hover/result:border-error/20 group-hover/result:bg-error/10 group-hover/result:text-error'
+                  : 'group-hover/result:text-white',
+              )}
+            >
+              {isAdded ? (
+                <>
+                  <Icon
+                    icon="solar:check-circle-bold"
+                    size={14}
+                    className="transition-opacity duration-150 group-hover/result:opacity-0"
+                  />
+                  <Icon
+                    icon="solar:trash-bin-trash-bold"
+                    size={14}
+                    className="absolute opacity-0 transition-opacity duration-150 group-hover/result:opacity-100"
+                  />
+                </>
+              ) : (
+                <Icon icon="solar:add-circle-bold" size={14} />
+              )}
+            </div>
             <div className={SEARCH_STYLES.metaBadge}>
               <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
@@ -135,28 +161,6 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
             )}
           </div>
         </div>
-      </div>
-
-      <div
-        className={cn(
-          'mr-2 flex size-8 shrink-0 items-center justify-center border p-0 text-xs font-bold tracking-wider uppercase',
-          isAdded
-            ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
-            : 'border-white/10 bg-white/5 text-white/70 group-hover:border-transparent group-hover:bg-white group-hover:text-black',
-        )}
-      >
-        {isAdded ? (
-          <>
-            <Icon icon="solar:check-circle-bold" size={16} className="group-hover:hidden" />
-            <Icon
-              icon="solar:trash-bin-trash-bold"
-              size={16}
-              className="hidden group-hover:block"
-            />
-          </>
-        ) : (
-          <Icon icon="solar:add-circle-bold" size={16} />
-        )}
       </div>
     </motion.button>
   );
@@ -189,6 +193,22 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
           <span className="truncate leading-tight font-bold uppercase">{title}</span>
           <div className="flex items-center gap-2">
+            <motion.button
+              type="button"
+              whileTap={{ scale: NAV_TAP_SCALE }}
+              transition={NAV_MICRO_TRANSITION}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(item);
+              }}
+              className={cn(
+                SEARCH_STYLES.metaBadge,
+                'hover:border-error/20 hover:bg-error/10 hover:text-error size-6 shrink-0 cursor-pointer justify-center text-white/70 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+              )}
+              aria-label={`Remove ${title}`}
+            >
+              <Icon icon="solar:trash-bin-trash-bold" size={14} />
+            </motion.button>
             <div className={SEARCH_STYLES.metaBadge}>
               <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
@@ -204,20 +224,6 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
           </div>
         </div>
       </div>
-
-      <motion.button
-        type="button"
-        whileTap={{ scale: NAV_TAP_SCALE }}
-        transition={NAV_MICRO_TRANSITION}
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(item);
-        }}
-        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-2 flex size-8 shrink-0 cursor-pointer items-center justify-center border border-white/10 bg-white/5 text-white/50 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-        aria-label={`Remove ${title}`}
-      >
-        <Icon icon="solar:trash-bin-trash-bold" size={16} />
-      </motion.button>
     </motion.div>
   );
 });
@@ -493,13 +499,14 @@ export default function CreateListSurface({ close, data }) {
         />
       </div>
 
-      <div
-        data-lenis-prevent
-        data-lenis-prevent-wheel
-        className="max-h-[min(48dvh,20rem)] overflow-y-auto overscroll-contain"
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {showSearchResults ? (
+      {showSearchResults || draftItems.length > 0 ? (
+        <div
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          className="max-h-[min(48dvh,20rem)] overflow-y-auto overscroll-contain"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {showSearchResults ? (
             <motion.div
               key="search-results"
               variants={SURFACE_LIST_VARIANTS}
@@ -525,7 +532,7 @@ export default function CreateListSurface({ close, data }) {
                 )}
               </div>
             </motion.div>
-          ) : (
+            ) : (
             <motion.div
               key="draft-items"
               variants={SURFACE_LIST_VARIANTS}
@@ -546,9 +553,10 @@ export default function CreateListSurface({ close, data }) {
                 </AnimatePresence>
               ) : null}
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : null}
 
       <AnimatePresence initial={false}>
         {searchQuery.trim() ? (
@@ -566,10 +574,6 @@ export default function CreateListSurface({ close, data }) {
             className: 'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
           })}
         >
-          <Icon
-            icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:add-folder-bold'}
-            size={16}
-          />
           <span>{isSaving ? 'Creating...' : 'Create List'}</span>
         </button>
       </div>

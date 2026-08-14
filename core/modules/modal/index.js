@@ -110,7 +110,7 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center shrink-0 gap-1.5 border-t border-white/10 bg-black px-3 py-2">
+    <div className="center shrink-0 gap-1.5 border-t border-white/10 bg-white/5 px-3 py-2">
       <motion.button
         type="button"
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
@@ -226,7 +226,7 @@ function ModalLayer({
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden border border-white/10 bg-black'
+              ? 'overflow-hidden border border-white/10 bg-black/50 backdrop-blur-lg'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
@@ -286,7 +286,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/15 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               aria-label="Close active top modal"
             />
           )}

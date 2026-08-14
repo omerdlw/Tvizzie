@@ -47,7 +47,7 @@ function getContainerClassName({ className, position }) {
 
 function getBodyClassName(bodyClassName) {
   return cn(
-    'bg-primary  min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
+    'min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
     bodyClassName,
   );
 }

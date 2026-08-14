@@ -400,7 +400,6 @@ export default function ListPickerSurface({ close, data }) {
           disabled={isApplying}
           className={getNavActionClass({ className: 'w-full' })}
         >
-          <Icon icon="solar:add-folder-bold" size={16} />
           <span>Create List</span>
         </button>
         <button
