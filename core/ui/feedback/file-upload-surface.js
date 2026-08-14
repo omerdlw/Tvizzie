@@ -100,7 +100,7 @@ export default function FileUploadSurface({ close, data }) {
         'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 border px-6 py-8 text-center',
         isDragActive
           ? 'border-info/30 bg-info/10'
-          : 'bg-primary border-transparent hover:border-black/10',
+          : 'bg-primary border-transparent hover:border-white/10',
       )}
     >
       <div
@@ -108,16 +108,16 @@ export default function FileUploadSurface({ close, data }) {
           'center size-14 border',
           isDragActive
             ? 'border-info/20 bg-info/10 text-info'
-            : 'border-black/5 bg-black/5 text-black/70',
+            : 'border-white/5 bg-white/5 text-white/70',
         )}
       >
         <Icon icon="solar:cloud-upload-bold" size={24} />
       </div>
       <div className="space-y-1 px-4">
-        <p className="text-base font-semibold tracking-tight text-black">
+        <p className="text-base font-semibold tracking-tight text-white">
           Click to upload or drag and drop
         </p>
-        <p className="text-xs leading-relaxed text-black/50">{hint}</p>
+        <p className="text-xs leading-relaxed text-white/50">{hint}</p>
       </div>
       <div className="overflow-visible p-1">
         <button
@@ -130,7 +130,7 @@ export default function FileUploadSurface({ close, data }) {
             'inline-flex h-9 items-center justify-center border px-4 text-xs font-bold tracking-wider uppercase',
             isDragActive
               ? 'border-info/20 bg-info/10 text-info hover:bg-info/20'
-              : 'hover:bg-primary border-black/5 bg-black/5 hover:border-black/10',
+              : 'hover:bg-primary border-white/5 bg-white/5 hover:border-white/10',
           )}
         >
           {buttonLabel}

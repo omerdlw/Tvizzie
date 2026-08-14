@@ -1,29 +1,30 @@
 @import 'tailwindcss';
+@import 'lenis/dist/lenis.css';
 
 @theme {
   --color-white: var(--white);
   --color-black: var(--black);
   --color-primary: var(--primary);
 
-  --color-error: #8e2626;
-  --color-warning: #734500;
-  --color-success: #006300;
-  --color-info: #184f95;
+  --color-error: #E63946;
+  --color-warning: #F59E0B;
+  --color-success: #10B981;
+  --color-info: #3B82F6;
 
   --font-zuume: var(--font-zuume);
 }
 
 @layer base {
   :root {
-    --white: #F9F9F9;
-    --black: #141414;
-    --primary: #ffffff;
+    --white: #F0EFEB;
+    --black: #0A0A0A;
+    --primary: #1A1A1A;
   }
 
   html,
   body {
     overscroll-behavior: none;
-    color-scheme: light;
+    color-scheme: dark;
   }
 }
 
@@ -42,14 +43,13 @@
   .page-gradient-backdrop {
     background-image: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--white) 40%, transparent) 0%,
-      color-mix(in srgb, var(--white) 52%, transparent) 15vh,
-      color-mix(in srgb, var(--white) 68%, transparent) 30vh,
-      color-mix(in srgb, var(--white) 76%, transparent) 45vh,
-      color-mix(in srgb, var(--white) 88%, transparent) 60vh,
-      color-mix(in srgb, var(--white) 98%, transparent) 75vh,
-      var(--white) 85vh,
-      var(--white) 100%
+      color-mix(in srgb, var(--black) 60%, transparent) 0%,
+      color-mix(in srgb, var(--black) 70%, transparent) 15vh,
+      color-mix(in srgb, var(--black) 75%, transparent) 30vh,
+      color-mix(in srgb, var(--black) 90%, transparent) 45vh,
+      color-mix(in srgb, var(--black) 94%, transparent) 60vh,
+      var(--black) 75vh,
+      var(--black) 100%
     );
   }
 
@@ -66,10 +66,10 @@
   }
 
   .skeleton-block {
-    background-color: rgb(23 23 23 / 0.1);
+    background-color: rgb(252 252 251 / 0.1);
   }
 
   .skeleton-block-soft {
-    background-color: rgb(23 23 23 / 0.05);
+    background-color: rgb(252 252 251 / 0.05);
   }
 }

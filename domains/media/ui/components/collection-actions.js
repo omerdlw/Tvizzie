@@ -19,6 +19,7 @@ import { cn } from '@/shared/utils';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import { useNavigationActions } from '@/modules/nav';
+import { createListPickerSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-picker-surface';
 import WatchProvidersSurface from '@/domains/media/ui/nav-surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';
 import { MediaRouteReveal, MEDIA_ROUTE_INTERACTIONS } from '@/app/(media)/motion';
@@ -92,16 +93,16 @@ function createCollectionActionState(isLoading = true) {
 
 function getActionPalette(palette, active) {
   if (!active) {
-    return 'border border-black/10 bg-primary/60 hover:border-black/15 hover:bg-primary/80 text-black/70 hover:text-black';
+    return 'border cursor-pointer border-white/5 hover:border-white/10 hover:bg-white/5 text-white/70 hover:text-white';
   }
   if (palette === 'like') {
-    return 'border border-success/20 bg-success/15 text-success hover:border-success/10 hover:bg-success/25';
+    return 'border border-success/20 cursor-pointer bg-success/15 text-success hover:border-success/10 hover:bg-success/25';
   }
   if (palette === 'watched' || palette === 'watchlist') {
-    return 'border border-info/20 bg-info/15 text-info hover:border-info/10 hover:bg-info/25';
+    return 'border border-info/20 cursor-pointer bg-info/15 text-info hover:border-info/10 hover:bg-info/25';
   }
 
-  return 'border border-black/10 bg-primary/60 hover:border-black/15 hover:bg-primary/80 text-black/70 hover:text-black';
+  return 'border cursor-pointer border-white/10 bg-primary/60 hover:border-white/15 hover:bg-primary/80 text-white/70 hover:text-white';
 }
 
 function ActionButton({
@@ -413,11 +414,12 @@ export default function CollectionActions({ additionalActions = [], media }) {
     if (!mediaSnapshot?.entityId) {
       return;
     }
-    openModal('LIST_PICKER_MODAL', 'center', {
-      data: {
+    openSurface(
+      createListPickerSurfaceEntry({
         media: mediaSnapshot,
-      },
-    });
+        userId,
+      }),
+    );
   };
 
   const handleOpenWatchProviders = () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
@@ -10,9 +10,9 @@ const EASINGS = Object.freeze({
 });
 
 /**
- * Account data arrives in independently cached/server-rendered groups. `at`
- * establishes the intended page rhythm while `lateDelay` prevents a resolved
- * request from appearing as an abrupt visual pop after the initial sequence.
+ * Account data arrives in independently cached/server-rendered groups. The
+ * authored map records hierarchy, then `getStage` compresses it into a short
+ * arrival window; `lateDelay` keeps later streamed content from popping in.
  */
 const STAGES = Object.freeze({
   nav: Object.freeze({ at: 0.14, duration: 0.66, y: 8, stagger: 0.05 }),
@@ -80,7 +80,13 @@ function getNow() {
 }
 
 function getStage(stage) {
-  return STAGES[stage] || STAGES['section.content'];
+  const config = STAGES[stage] || STAGES['section.content'];
+
+  return {
+    ...config,
+    at: Math.min(config.at * 0.36, 0.9),
+    duration: Math.min(config.duration, 0.74),
+  };
 }
 
 function getDelay({ config, deferred, itemIndex, startedAt }) {
@@ -121,6 +127,7 @@ export function AccountReveal({
   style,
 }) {
   const startedAtRef = useContext(AccountMotionContext);
+  const reduceMotion = useReducedMotion();
   const config = getStage(stage);
   const delay = getDelay({ config, deferred, itemIndex, startedAt: startedAtRef?.current });
   const hidden = { opacity: 0 };
@@ -139,16 +146,18 @@ export function AccountReveal({
     <motion.div
       className={className}
       style={style}
-      initial="hidden"
+      initial={reduceMotion ? false : 'hidden'}
       animate="visible"
-      {...(interactive ? ACCOUNT_INTERACTIONS[interaction] || ACCOUNT_INTERACTIONS.card : {})}
+      {...(!reduceMotion && interactive
+        ? ACCOUNT_INTERACTIONS[interaction] || ACCOUNT_INTERACTIONS.card
+        : {})}
       variants={{
         hidden,
         visible: {
           ...visible,
           transition: { delay, duration: config.duration, ease: EASINGS.CINEMATIC },
         },
-        exit: { opacity: 0, transition: { duration: 0.28, ease: EASINGS.EXIT } },
+        exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: EASINGS.EXIT } },
       }}
     >
       {children}

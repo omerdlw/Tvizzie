@@ -12,8 +12,8 @@ export default function PersonGridFrame({ className = '' }) {
         className,
       )}
     >
-      <div className="absolute inset-y-0 left-0 w-px bg-black/10" />
-      <div className="absolute inset-y-0 right-0 w-px bg-black/10" />
+      <div className="absolute inset-y-0 left-0 w-px bg-white/10" />
+      <div className="absolute inset-y-0 right-0 w-px bg-white/10" />
     </div>
   );
 }

@@ -357,16 +357,52 @@ export function createSupabaseAuthAdapter(options = {}) {
 
     async unlinkProvider(payload = {}) {
       const providerKey = resolveProviderKey(payload);
+      const provider = normalizeOAuthProvider(providerKey);
 
-      if (providerKey !== 'google') {
-        throw new Error('Only Google provider unlinking is currently supported');
+      if (!provider || !isSupportedOAuthProvider(provider)) {
+        throw new Error('Only supported OAuth provider unlinking is currently supported');
       }
 
-      const error = new Error(
-        'Google unlink is currently disabled while account linking is being stabilized.',
+      const client = getClient(providedClient);
+      if (!client?.auth?.getUserIdentities || !client?.auth?.unlinkIdentity) {
+        throw new Error('Provider unlinking is not available in this browser session');
+      }
+
+      const { data, error: identitiesError } = await client.auth.getUserIdentities();
+      if (identitiesError) {
+        throw toAdapterError(identitiesError, 'Connected sign-in methods could not be loaded');
+      }
+
+      const identities = Array.isArray(data?.identities) ? data.identities : [];
+      const identity = identities.find(
+        (candidate) => normalizeOAuthProvider(candidate?.provider) === provider,
       );
-      error.code = 'GOOGLE_UNLINK_DISABLED';
-      throw error;
+
+      if (!identity) {
+        throw new Error(`${getOAuthProviderLabel(provider)} is not connected to this account`);
+      }
+
+      if (identities.length < 2) {
+        throw new Error('Keep at least one sign-in method connected to this account');
+      }
+
+      const { error } = await client.auth.unlinkIdentity(identity);
+      if (error) {
+        const normalizedError = toAdapterError(
+          error,
+          `${getOAuthProviderLabel(provider)} could not be disconnected`,
+        );
+
+        if (isManualLinkingDisabledError(error)) {
+          normalizedError.code = 'OAUTH_UNLINK_MANUAL_LINKING_DISABLED';
+          normalizedError.message = `${getOAuthProviderLabel(provider)} disconnecting is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
+        }
+
+        throw normalizedError;
+      }
+
+      clearCanonicalSessionPayloadCache();
+      return fetchCanonicalSession({ force: true });
     },
 
     async requestPasswordReset() {

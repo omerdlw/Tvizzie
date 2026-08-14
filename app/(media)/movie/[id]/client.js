@@ -288,11 +288,11 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
 
   return (
     <MediaRouteReveal stage="sections.discovery" deferred={isDeferred}>
-      <div className={cn('relative w-full', hasBottomBorder && 'border-b border-black/10')}>
+      <div className={cn('relative w-full', hasBottomBorder && 'border-b border-white/10')}>
         <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
           <div className="flex min-w-0 items-center gap-2">
-            <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-black/70" />
-            <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+            <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-white/70" />
+            <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
               {title}
             </h2>
           </div>
@@ -586,7 +586,7 @@ function MovieView({
             </div>
 
             <div
-              className={`order-2 flex w-full min-w-0 flex-col lg:border-l lg:border-black/10 ${
+              className={`order-2 flex w-full min-w-0 flex-col lg:border-l lg:border-white/10 ${
                 isRatingsView ? 'lg:w-[var(--ratings-panel-width)] lg:flex-none' : 'lg:flex-1'
               }`}
             >
@@ -611,7 +611,7 @@ function MovieView({
                     exit={{ opacity: 0, y: -8 }}
                     transition={TV_VIEW_TRANSITION}
                   >
-                    <div className="flex w-full flex-col border-b border-black/10 p-6">
+                    <div className="flex w-full flex-col border-b border-white/10 p-6">
                       <MediaRouteReveal stage="hero.title">
                         <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
                           {mediaTitle}
@@ -620,7 +620,7 @@ function MovieView({
 
                       {movie.tagline ? (
                         <MediaRouteReveal stage="hero.tagline">
-                          <p className="mt-4 text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
+                          <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
                             {movie.tagline}
                           </p>
                         </MediaRouteReveal>
@@ -629,7 +629,7 @@ function MovieView({
                       {movie.overview ? (
                         <MediaRouteReveal stage="hero.overview">
                           <div className="mt-3 flex w-full flex-col">
-                            <p className="max-w-[70ch] text-left text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
+                            <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
                               {movie.overview}
                             </p>
                           </div>
@@ -675,7 +675,7 @@ function MovieView({
           ) : null}
 
           {isRatingsView ? (
-            <div className="hidden lg:ml-96 lg:block lg:border-l lg:border-black/10 lg:pb-12">
+            <div className="hidden lg:ml-96 lg:block lg:border-l lg:border-white/10 lg:pb-12">
               <NavHeightSpacer />
             </div>
           ) : null}

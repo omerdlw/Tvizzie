@@ -56,7 +56,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
   return (
     <div
       className={cn(
-        'inline-flex h-10 w-fit items-center overflow-hidden border border-black/5 bg-black/5 text-black/70',
+        'inline-flex h-10 w-fit items-center overflow-hidden border border-white/5 bg-white/5 text-white/70',
         className,
       )}
     >
@@ -67,7 +67,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
         return (
           <div
             key={link.key}
-            className={cn('center h-10 flex-auto p-1', !isLast && 'border-r border-black/5')}
+            className={cn('center h-10 flex-auto p-1', !isLast && 'border-r border-white/5')}
           >
             <Tooltip text={link.label}>
               <a

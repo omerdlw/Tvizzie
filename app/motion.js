@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
@@ -10,13 +10,13 @@ const EASINGS = Object.freeze({
 });
 
 const STAGES = Object.freeze({
-  'discover.controls': Object.freeze({ at: 0.12, duration: 0.72, y: 12 }),
-  'discover.grid': Object.freeze({ at: 0.28, duration: 0.96, y: 20 }),
-  'discover.item': Object.freeze({ at: 0.42, duration: 0.72, y: 14, scale: 0.975, stagger: 0.055 }),
-  'section.heading': Object.freeze({ at: 0.88, duration: 0.68, y: 12 }),
-  'section.rail': Object.freeze({ at: 1.02, duration: 0.86, y: 18 }),
-  'section.item': Object.freeze({ at: 1.16, duration: 0.7, y: 14, scale: 0.975, stagger: 0.05 }),
-  control: Object.freeze({ at: 0.92, duration: 0.6, y: 8 }),
+  'discover.controls': Object.freeze({ at: 0.06, duration: 0.58, y: 8 }),
+  'discover.grid': Object.freeze({ at: 0.16, duration: 0.7, y: 14 }),
+  'discover.item': Object.freeze({ at: 0.26, duration: 0.56, y: 10, scale: 0.985, stagger: 0.04 }),
+  'section.heading': Object.freeze({ at: 0.46, duration: 0.54, y: 8 }),
+  'section.rail': Object.freeze({ at: 0.56, duration: 0.64, y: 12 }),
+  'section.item': Object.freeze({ at: 0.66, duration: 0.54, y: 10, scale: 0.985, stagger: 0.04 }),
+  control: Object.freeze({ at: 0.5, duration: 0.46, y: 6 }),
 });
 
 export const HOME_ROUTE_MOTION = Object.freeze({ easings: EASINGS, stages: STAGES });
@@ -54,6 +54,7 @@ export function HomeMotionProvider({ children, routeKey = 'home' }) {
 
 export function HomeReveal({ children, className, itemIndex = 0, stage, style }) {
   const startedAtRef = useContext(HomeMotionContext);
+  const reduceMotion = useReducedMotion();
   const config = getStage(stage);
   const delay = getDelay({ config, itemIndex, startedAt: startedAtRef?.current });
   const hidden = { opacity: 0 };
@@ -72,7 +73,7 @@ export function HomeReveal({ children, className, itemIndex = 0, stage, style })
     <motion.div
       className={className}
       style={style}
-      initial="hidden"
+      initial={reduceMotion ? false : 'hidden'}
       animate="visible"
       variants={{
         hidden,
@@ -80,7 +81,7 @@ export function HomeReveal({ children, className, itemIndex = 0, stage, style })
           ...visible,
           transition: { delay, duration: config.duration, ease: EASINGS.CINEMATIC },
         },
-        exit: { opacity: 0, transition: { duration: 0.28, ease: EASINGS.EXIT } },
+        exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: EASINGS.EXIT } },
       }}
     >
       {children}

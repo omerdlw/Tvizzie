@@ -144,10 +144,27 @@ export function sortActivityItemsForMode(items = [], sort = 'newest') {
   return normalizedItems;
 }
 
+function getActivityDeduplicationKey(item = {}) {
+  const eventType = normalizeValue(item?.eventType).toUpperCase();
+  const actorId = normalizeValue(item?.sourceUserId || item?.actor?.id);
+  const subjectId = normalizeValue(item?.subject?.id);
+  const subjectType = normalizeMediaType(item?.subject?.type);
+
+  // Persisted activity uses canonical slot keys, while legacy fallbacks use
+  // derived keys. They still describe the same user action, so reconcile them
+  // by their stable event/actor/subject identity before falling back to a row
+  // identifier for events without a complete subject.
+  if (eventType && actorId && subjectType && subjectId) {
+    return `activity:${eventType}:${actorId}:${subjectType}:${subjectId}`;
+  }
+
+  return normalizeValue(item?.dedupeKey) || normalizeValue(item?.id);
+}
+
 export function dedupeActivityItems(items = []) {
   const seenKeys = new Set();
   return (Array.isArray(items) ? items : []).filter((item) => {
-    const key = normalizeValue(item?.dedupeKey) || normalizeValue(item?.id);
+    const key = getActivityDeduplicationKey(item);
     if (!key || seenKeys.has(key)) return false;
     seenKeys.add(key);
     return true;

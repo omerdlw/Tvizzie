@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 const EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
@@ -15,14 +15,14 @@ const EASINGS = Object.freeze({
 export const AUTH_MOTION = Object.freeze({
   easings: EASINGS,
   stages: Object.freeze({
-    brand: Object.freeze({ at: 0.14, duration: 0.9, y: 14, scale: 0.96 }),
-    heading: Object.freeze({ at: 0.42, duration: 0.88, y: 12 }),
-    field: Object.freeze({ at: 0.82, duration: 0.72, y: 12, stagger: 0.12 }),
-    requirement: Object.freeze({ at: 1.06, duration: 0.56, y: 8, stagger: 0.07 }),
-    submit: Object.freeze({ at: 1.22, duration: 0.68, y: 10 }),
-    divider: Object.freeze({ at: 1.5, duration: 0.62 }),
-    oauth: Object.freeze({ at: 1.72, duration: 0.72, y: 10, stagger: 0.1 }),
-    footer: Object.freeze({ at: 2.06, duration: 0.66, y: 8 }),
+    brand: Object.freeze({ at: 0.06, duration: 0.68, y: 10, scale: 0.98 }),
+    heading: Object.freeze({ at: 0.16, duration: 0.62, y: 8 }),
+    field: Object.freeze({ at: 0.3, duration: 0.52, y: 8, stagger: 0.08 }),
+    requirement: Object.freeze({ at: 0.44, duration: 0.42, y: 6, stagger: 0.05 }),
+    submit: Object.freeze({ at: 0.56, duration: 0.5, y: 8 }),
+    divider: Object.freeze({ at: 0.7, duration: 0.44 }),
+    oauth: Object.freeze({ at: 0.8, duration: 0.5, y: 8, stagger: 0.07 }),
+    footer: Object.freeze({ at: 0.96, duration: 0.46, y: 6 }),
   }),
 });
 
@@ -31,13 +31,15 @@ function getStage(stage) {
 }
 
 export function AuthScene({ children, sceneKey }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <AnimatePresence initial={false} mode="wait">
       <motion.div
         key={sceneKey}
-        initial={{ opacity: 0 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, transition: { duration: 0.34, ease: EASINGS.CINEMATIC } }}
-        exit={{ opacity: 0, transition: { duration: 0.22, ease: EASINGS.EXIT } }}
+        exit={{ opacity: 0, y: -8, transition: { duration: 0.18, ease: EASINGS.EXIT } }}
       >
         {children}
       </motion.div>
@@ -47,6 +49,7 @@ export function AuthScene({ children, sceneKey }) {
 
 export function AuthReveal({ children, className, itemIndex = 0, stage }) {
   const config = getStage(stage);
+  const reduceMotion = useReducedMotion();
   const hidden = { opacity: 0 };
   const visible = { opacity: 1 };
 
@@ -62,7 +65,7 @@ export function AuthReveal({ children, className, itemIndex = 0, stage }) {
   return (
     <motion.div
       className={className}
-      initial={hidden}
+      initial={reduceMotion ? false : hidden}
       animate={visible}
       transition={{
         delay: config.at + Math.min(Math.max(0, itemIndex) * (config.stagger || 0), 0.48),

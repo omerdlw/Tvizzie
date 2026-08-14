@@ -24,16 +24,16 @@ function SectionSkeleton({
     <section className="relative bg-transparent">
       <div
         className={`${ACCOUNT_SECTION_SHELL_CLASS} relative ${
-          showTopRule && !isInitialSection ? 'border-t border-black/10' : ''
+          showTopRule && !isInitialSection ? 'border-t border-white/10' : ''
         }`}
       >
         {showTopRule && isInitialSection ? (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
         ) : null}
         {showHeader ? (
           <div
             className={`relative flex w-full flex-col ${
-              !isInitialSection ? 'border-b border-black/10' : ''
+              !isInitialSection ? 'border-b border-white/10' : ''
             }`}
           >
             <div
@@ -46,18 +46,18 @@ function SectionSkeleton({
               {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
             </div>
             {isInitialSection ? (
-              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
             ) : null}
           </div>
         ) : null}
         {toolbar ? (
           <div
             className={`relative ${TOOLBAR_PADDING_CLASS} ${
-              !isInitialSection ? 'border-b border-black/10' : ''
+              !isInitialSection ? 'border-b border-white/10' : ''
             }`}
           >
             {isInitialSection ? (
-              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
             ) : null}
             {toolbar}
           </div>
@@ -78,7 +78,7 @@ export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
         </div>
         <div className={`h-3 w-16 ${SOFT}`} />
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </div>
   );
 }
@@ -121,7 +121,7 @@ export function ActivityItemsSkeletonList({ count = 6 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-black/10 py-5 first:pt-0 last:border-b-0 last:pb-0"
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-white/10 py-5 first:pt-0 last:border-b-0 last:pb-0"
         >
           <div className="min-w-0 space-y-2 pt-0.5">
             <div className={`h-4 ${ACTIVITY_LINE_WIDTHS[i % ACTIVITY_LINE_WIDTHS.length]} ${S}`} />
@@ -151,12 +151,12 @@ function SingleListCardSkeleton({ delay = 0 }) {
 
   return (
     <article className="relative w-full" style={{ animationDelay: `${delay}ms` }}>
-      <div className="relative h-[232px] w-full border border-black/10 bg-white/40">
+      <div className="relative h-[232px] w-full border border-white/10 bg-black/40">
         <div className="absolute inset-0">
           {previewPosters.map((poster, index) => (
             <div
               key={index}
-              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden border border-black/10 bg-black/[0.08]"
+              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden border border-white/10 bg-white/[0.08]"
               style={{
                 opacity: poster.opacity,
                 transform: `translateX(calc(-50% + ${poster.x}px)) translateY(${poster.y}px) rotate(${poster.rotate}deg) scale(${poster.scale})`,
@@ -167,13 +167,13 @@ function SingleListCardSkeleton({ delay = 0 }) {
           ))}
         </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/10 bg-white">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/10 bg-black">
         <div className="px-4 py-4">
           <div className={`h-5 w-2/3 ${S}`} />
           <div className={`mt-2 h-3.5 w-full ${SOFT}`} />
           <div className={`mt-1.5 h-3.5 w-4/5 ${SOFT}`} />
         </div>
-        <div className="flex h-11 items-center justify-between border-t border-black/10 px-3">
+        <div className="flex h-11 items-center justify-between border-t border-white/10 px-3">
           <div className={`h-3 w-24 ${SOFT}`} />
           <div className={`h-3 w-20 ${SOFT}`} />
         </div>
@@ -200,7 +200,7 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex gap-4 border-b border-black/10 py-3.5 first:pt-0 last:border-b-0 last:pb-0 sm:py-4 sm:first:pt-0 sm:last:pb-0"
+          className="flex gap-4 border-b border-white/10 py-3.5 first:pt-0 last:border-b-0 last:pb-0 sm:py-4 sm:first:pt-0 sm:last:pb-0"
         >
           <div className={`h-24 w-16 shrink-0 sm:h-28 sm:w-[72px] ${S}`} />
           <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
@@ -254,7 +254,7 @@ export function AccountListDetailSkeleton() {
   return (
     <div className="w-full">
       <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative p-4`}>
-        <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-screen -translate-x-1/2 border-y border-black/10" />
+        <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-screen -translate-x-1/2 border-y border-white/10" />
         <div className="flex w-full flex-col gap-3">
           <div className={`h-9 w-2/3 ${S}`} />
           <div className={`h-4 w-full max-w-2xl ${SOFT}`} />
@@ -300,31 +300,72 @@ export function AccountOverviewSkeleton() {
   );
 }
 
-export function AccountEditSkeleton() {
+function AccountEditSectionSkeleton({ children, titleWidth = 'w-20' }) {
   return (
-    <SectionSkeleton titleWidth="w-28" summary={false} contentClassName="mx-auto w-full max-w-xl">
-      <div className="space-y-4 bg-white/40">
-        <div className="flex flex-col items-center gap-3">
-          <div className={`size-28 ${S}`} />
-          <div className={`h-3.5 w-28 ${SOFT}`} />
+    <section className="relative bg-transparent">
+      <div className={`${ACCOUNT_SECTION_SHELL_CLASS} relative flex flex-col`}>
+        <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+        <div className="relative flex min-h-14 w-full items-center px-4">
+          <div className={`h-3 ${titleWidth} ${S}`} />
+          <div className="pointer-events-none absolute right-1/2 bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
         </div>
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className={`h-3 w-24 ${SOFT}`} />
-              <div className={`h-12 w-full bg-white/50 ${S}`} />
-            </div>
-          ))}
-          <div className="space-y-2">
-            <div className={`h-3 w-20 ${SOFT}`} />
-            <div className={`h-24 w-full bg-white/50 ${S}`} />
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <div className={`h-12 w-36 ${S}`} />
+        <div className="flex flex-col gap-4 p-6">{children}</div>
+      </div>
+    </section>
+  );
+}
+
+function AccountEditFieldSkeleton({ className = '', multiline = false, labelWidth = 'w-20' }) {
+  return (
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <div className={`h-2.5 ${labelWidth} ${SOFT}`} />
+      <div className={`${multiline ? 'h-[150px]' : 'h-11'} w-full border border-white/5 bg-white/5 ${S}`} />
+    </div>
+  );
+}
+
+function AccountEditMediaFieldSkeleton({ previewClassName }) {
+  return (
+    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_172px] lg:items-start">
+      <div className="space-y-3">
+        <AccountEditFieldSkeleton labelWidth="w-16" />
+        <div className="flex gap-2">
+          <div className={`h-10 w-36 ${S}`} />
+          <div className={`h-10 w-16 ${SOFT}`} />
         </div>
       </div>
-    </SectionSkeleton>
+      <div className={`${previewClassName} w-full overflow-hidden border border-white/10 bg-white/5 ${S}`} />
+    </div>
+  );
+}
+
+export function AccountEditSkeleton() {
+  return (
+    <div className="flex flex-col">
+      <AccountEditSectionSkeleton titleWidth="w-14">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <AccountEditFieldSkeleton labelWidth="w-20" />
+          <AccountEditFieldSkeleton labelWidth="w-16" />
+        </div>
+        <AccountEditFieldSkeleton multiline labelWidth="w-10" />
+      </AccountEditSectionSkeleton>
+
+      <AccountEditSectionSkeleton titleWidth="w-28">
+        <AccountEditMediaFieldSkeleton previewClassName="aspect-square" />
+        <div className="h-px w-full bg-white/10" />
+        <AccountEditMediaFieldSkeleton previewClassName="aspect-[16/7]" />
+      </AccountEditSectionSkeleton>
+
+      <AccountEditSectionSkeleton titleWidth="w-16">
+        <div className="flex w-full items-center justify-between gap-3">
+          <div className="flex flex-col gap-2">
+            <div className={`h-2.5 w-20 ${SOFT}`} />
+            <div className={`h-3 w-64 max-w-full ${SOFT}`} />
+          </div>
+          <div className={`h-6 w-11 shrink-0 ${S}`} />
+        </div>
+      </AccountEditSectionSkeleton>
+    </div>
   );
 }
 
@@ -332,7 +373,7 @@ export function FilterBarSkeleton() {
   return (
     <div className="flex w-full items-center gap-2">
       {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className={`h-10 min-w-0 flex-auto bg-white/40 ${S}`} />
+        <div key={index} className={`h-10 min-w-0 flex-auto bg-black/40 ${S}`} />
       ))}
     </div>
   );

@@ -120,14 +120,14 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       onClick={onClick}
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97] disabled:cursor-default disabled:opacity-50',
-        hasLiked ? 'text-error' : 'text-black/50 hover:text-black/70',
+        'inline-flex items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-300 ease-in-out cursor-pointer disabled:cursor-default disabled:opacity-50',
+        hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
       )}
     >
       <Icon
         icon="solar:heart-bold"
         size={16}
-        className={hasLiked ? 'text-error' : 'text-black/50'}
+        className={hasLiked ? 'text-error' : 'text-white/50'}
       />
       <span>{getReviewLikeText(likesCount)}</span>
     </button>
@@ -148,7 +148,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/5 text-black/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-black/10 hover:text-black active:scale-[0.97]"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-white/10 hover:text-white active:scale-[0.97]"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -171,8 +171,8 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]  border border-black/10'
-    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden  border border-black/10 bg-primary/30';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]  border border-white/10'
+    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden  border border-white/10 bg-primary/30';
 
   return (
     <div className={wrapperClass}>
@@ -191,7 +191,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           wrapperClassName="h-full w-full "
         />
       ) : (
-        <div className="bg-primary/30 flex h-full w-full items-center justify-center border border-black/5">
+        <div className="bg-primary/30 flex h-full w-full items-center justify-center border border-white/5">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -208,21 +208,21 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-white/10 p-3 text-left hover:border-white/15 hover:bg-white/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-wider text-black/50 uppercase group-hover:text-black/70">
+        <span className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase group-hover:text-white/70">
           Spoiler warning
         </span>
-        <span className="block text-sm leading-6 text-black/70 group-hover:text-black">
+        <span className="block text-sm leading-6 text-white/70 group-hover:text-white">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
 
-      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase group-hover:text-black">
+      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase group-hover:text-white">
         Show
       </span>
     </button>
@@ -300,7 +300,7 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-black/10 transition-[background-color,border-color] duration-[340ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-b-0 hover:bg-black/[0.02]',
+        'relative border-b border-white/10 transition-[background-color,border-color] duration-[340ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-b-0',
         removeTopPadding ? 'pt-0 sm:pt-0' : 'pt-3.5 sm:pt-4',
         removeBottomPadding ? 'pb-0 sm:pb-0' : 'pb-3.5 sm:pb-4',
         isSpoilerHidden && 'cursor-pointer',
@@ -347,7 +347,7 @@ export default function ReviewCard({
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-white/70">
                     {hasRating && <RatingStars rating={resolvedRating} />}
                     {hasLikedSubject && (
                       <Icon icon="solar:heart-bold" size={16} className="text-error" />
@@ -360,7 +360,7 @@ export default function ReviewCard({
                   </div>
                 </>
               ) : hasRating ? (
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-white/70">
                   <RatingStars rating={resolvedRating} />
                 </div>
               ) : null}
@@ -396,40 +396,40 @@ export default function ReviewCard({
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex flex-col gap-0.5 sm:hidden">
-                  <div className="flex items-center gap-1.5 text-xs text-black/50">
+                  <div className="flex items-center gap-1.5 text-xs text-white/50">
                     {hasRating && <RatingStars rating={resolvedRating} />}
-                    {hasRating && <span className="text-black/30">-</span>}
+                    {hasRating && <span className="text-white/30">-</span>}
                     <span>{formattedDate}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-black/80">
-                    <span className="text-black/60">{activityLabel}</span>
-                    <Link href={accountHref} className="font-semibold text-black hover:underline">
+                  <div className="flex items-center gap-1 text-xs text-white/80">
+                    <span className="text-white/60">{activityLabel}</span>
+                    <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
                   </div>
                 </div>
 
-                <div className="hidden text-sm text-black/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
+                <div className="hidden text-sm text-white/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
                   {hasRating && <RatingStars rating={resolvedRating} />}
-                  <span className="text-black/60">{activityLabel}</span>
-                  <Link href={accountHref} className="font-semibold text-black hover:underline">
+                  <span className="text-white/60">{activityLabel}</span>
+                  <Link href={accountHref} className="font-semibold text-white hover:underline">
                     {displayName}
                   </Link>
-                  <span className="text-black/30">•</span>
-                  <span className="text-xs text-black/50">{formattedDate}</span>
+                  <span className="text-white/30">•</span>
+                  <span className="text-xs text-white/50">{formattedDate}</span>
                 </div>
 
                 {hasText ? (
                   isSpoilerHidden ? (
                     <SpoilerNotice onReveal={revealSpoiler} />
                   ) : (
-                    <p className="text-sm leading-normal [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/80">
+                    <p className="text-sm leading-normal [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white/80">
                       {review.content}
                     </p>
                   )
                 ) : (
                   hasRating && (
-                    <p className="text-xs text-black/50 sm:text-sm">- Rated without review</p>
+                    <p className="text-xs text-white/50 sm:text-sm">- Rated without review</p>
                   )
                 )}
 

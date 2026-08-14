@@ -42,7 +42,7 @@ function PersonImage({
   if (!src) {
     return (
       <div className="center h-full w-full">
-        <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-black/50" />
+        <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-white/50" />
       </div>
     );
   }
@@ -76,7 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group hover:bg-primary/60 isolation-isolate flex items-center gap-3 border border-black/10 backdrop-blur-sm hover:border-black/15',
+        'group hover:bg-white/5 isolation-isolate flex items-center gap-3 border border-white/5 backdrop-blur-sm hover:border-white/10',
         compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
@@ -94,11 +94,11 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       </div>
 
       {compact ? (
-        <span className="truncate text-xs font-semibold text-black">{person.name}</span>
+        <span className="truncate text-xs font-semibold text-white">{person.name}</span>
       ) : (
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-black">{person.name}</span>
-          <span className="truncate text-xs text-black/70">{person.subtitle}</span>
+          <span className="truncate text-sm font-semibold text-white">{person.name}</span>
+          <span className="truncate text-xs text-white/70">{person.subtitle}</span>
         </div>
       )}
     </Link>
@@ -240,7 +240,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center hover:bg-primary/60 isolation-isolate size-10 shrink-0 cursor-pointer border border-black/10 text-black/70 backdrop-blur-sm hover:border-black/15 hover:text-black"
+              className="center hover:bg-white/5 isolation-isolate size-10 shrink-0 cursor-pointer border border-white/5 text-white/70 backdrop-blur-sm hover:border-white/10 hover:text-white"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -251,11 +251,11 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
   };
 
   return (
-    <section className="relative w-full border-b border-black/10">
+    <section className="relative w-full border-b border-white/5">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:users-group-two-rounded-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <Icon icon="solar:users-group-two-rounded-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Cast & Crew
           </h2>
         </div>

@@ -68,7 +68,7 @@ export default function ImagePreviewModal({ close, data }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="center absolute inset-0 bg-black/5"
+              className="center absolute inset-0 bg-white/5"
             >
               <Spinner size={40} />
             </motion.div>

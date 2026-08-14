@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[96px] items-center justify-center  border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+  'inline-flex h-10 min-w-[96px] items-center justify-center  border border-white/10 bg-black px-3 text-[11px] font-semibold tracking-widest text-white/70 uppercase hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {
     return Array.from(
@@ -93,7 +93,7 @@ export default function AccountPagination({
     ) : (
       <span
         key={`${item}-${index}`}
-        className={ellipsisClassName ?? 'px-1 text-sm text-black/50 select-none'}
+        className={ellipsisClassName ?? 'px-1 text-sm text-white/50 select-none'}
       >
         ...
       </span>
@@ -166,8 +166,8 @@ function PaginationPageItem({
 }) {
   const isActive = pageNumber === safeCurrentPage;
   const toneClass = isActive
-    ? (activePageClassName ?? 'text-black')
-    : (inactivePageClassName ?? 'text-black/55');
+    ? (activePageClassName ?? 'text-white')
+    : (inactivePageClassName ?? 'text-white/55');
   const resolvedClass = cn(
     pageClassName ?? 'px-1 text-sm font-semibold leading-none select-none',
     toneClass,

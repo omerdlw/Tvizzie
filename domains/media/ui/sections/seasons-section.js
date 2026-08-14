@@ -47,11 +47,11 @@ function EpisodeCard({ episode, index = 0 }) {
       data-context-menu-target="movie-backdrop-card"
       data-backdrop-file-path={episode?.still_path || ''}
       topOverlay={
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white">
-          <p className="text-[10px] font-semibold tracking-widest text-white/70 uppercase tabular-nums">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/70 via-white/30 to-transparent p-3 text-black">
+          <p className="text-[10px] font-semibold tracking-widest text-black/70 uppercase tabular-nums">
             E{getEpisodeNumber(episode, index)}
           </p>
-          <h3 className="mt-1 truncate text-sm font-bold text-white">{title}</h3>
+          <h3 className="mt-1 truncate text-sm font-bold text-black">{title}</h3>
         </div>
       }
     />
@@ -107,11 +107,11 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
   }
 
   return (
-    <section className="relative w-full border-b border-black/10">
+    <section className="relative w-full border-b border-white/10">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:calendar-mark-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <Icon icon="solar:calendar-mark-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Seasons
           </h2>
         </div>
@@ -144,7 +144,7 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
             ))}
           </Carousel>
         ) : (
-          <p className="text-sm text-black/50">
+          <p className="text-sm text-white/50">
             Episodes for this season are unavailable right now.
           </p>
         )}

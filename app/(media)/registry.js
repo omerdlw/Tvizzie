@@ -4,9 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import CastModal from '@/domains/media/ui/modals/cast-modal';
-import CreateListModal from '@/domains/account/ui/modals/create-list-modal';
 import ImagePreviewModal from '@/domains/media/ui/modals/image-preview-modal';
-import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
 import VideoPreviewModal from '@/domains/media/ui/modals/video-preview-modal';
 import MediaSocialProofModal from '@/domains/media/ui/modals/media-social-proof-modal';
 import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
@@ -254,13 +252,10 @@ export default function Registry({
   const navDescription = renderMetaDescription(detailMetaParts);
   const contextMenuDescription = renderMetaDescription(detailMetaParts, { compact: true });
 
-  const shouldClearBackgroundForReviews = isMediaReviewsRoute;
-  const resolvedBackgroundImage = shouldClearBackgroundForReviews
-    ? undefined
-    : backgroundImage ||
-      (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
+  const resolvedBackgroundImage =
+    backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading =
-    !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
+    isLoading && !resolvedBackgroundImage;
 
   const handleToggleAction = () => {
     if (isAuthenticated) {
@@ -365,9 +360,7 @@ export default function Registry({
       icon: movie?.poster_path ? `${TMDB_IMG}/original${movie.poster_path}` : undefined,
       title: getMediaTitle(movie) || (isLoading ? '' : undefined),
     },
-    ...(shouldClearBackgroundForReviews ||
-    resolvedBackgroundImage ||
-    shouldResetBackgroundForLoading
+    ...(resolvedBackgroundImage || shouldResetBackgroundForLoading
       ? {
           background: resolvedBackgroundImage
             ? {
@@ -465,8 +458,6 @@ export default function Registry({
     loading: { isLoading, showOverlay: false },
     modal: {
       CAST_MODAL: CastModal,
-      CREATE_LIST_MODAL: CreateListModal,
-      LIST_PICKER_MODAL: ListPickerModal,
       MEDIA_SOCIAL_PROOF_MODAL: MediaSocialProofModal,
       PREVIEW_MODAL: ImagePreviewModal,
       VIDEO_PREVIEW_MODAL: VideoPreviewModal,

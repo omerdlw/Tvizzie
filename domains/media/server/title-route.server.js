@@ -163,6 +163,7 @@ export function createTitleReviewsRoute({
   Client,
   fallbackTitle,
   getBase,
+  getSecondary,
   isDisplayable,
   mediaType,
 }) {
@@ -176,7 +177,18 @@ export function createTitleReviewsRoute({
       const { media, response } = await loadMediaRouteData(params, getBase);
       if (isMissingMedia(media, response, isDisplayable)) notFound();
 
-      return <Client computed={getMediaComputedData(media)} mediaType={mediaType} movie={media} />;
+      const secondaryDataPromise = getSecondary
+        ? getSecondary(media.id).then((secondaryResponse) => secondaryResponse?.data || {})
+        : null;
+
+      return (
+        <Client
+          computed={getMediaComputedData(media)}
+          mediaType={mediaType}
+          movie={media}
+          secondaryDataPromise={secondaryDataPromise}
+        />
+      );
     },
   };
 }

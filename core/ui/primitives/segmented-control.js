@@ -104,7 +104,7 @@ export default function SegmentedControl({
       role={ariaLabel ? 'group' : undefined}
       style={{ padding: `${PADDING}px` }}
       className={cn(
-        'inline-flex w-fit max-w-full shrink-0 items-stretch border border-black/5',
+        'inline-flex w-fit max-w-full shrink-0 items-stretch border border-white/5',
         className,
         classNames.wrapper,
       )}
@@ -127,7 +127,7 @@ export default function SegmentedControl({
           <span
             aria-hidden="true"
             className={cn(
-              'bg-primary pointer-events-none absolute inset-y-0 left-0',
+              'pointer-events-none absolute inset-y-0 left-0 bg-white/10',
               classNames.indicator,
             )}
             style={{
@@ -159,10 +159,10 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap',
+                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] whitespace-nowrap',
                   isActive
-                    ? classNames.active || 'text-black'
-                    : classNames.inactive || 'text-black/70',
+                    ? classNames.active || 'text-white font-bold'
+                    : classNames.inactive || 'text-white/70',
                   classNames.button,
                 )}
               >

@@ -6,10 +6,10 @@ import { NAV_SURFACE_RENDER_MODE } from '@/modules/nav';
 
 const BUTTON_TONES = Object.freeze({
   danger:
-    'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error',
-  muted: 'border border-black/5 bg-black/5 hover:bg-transparent',
+    'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-black hover:border-error',
+  muted: 'border border-white/5 bg-white/5 hover:bg-transparent',
   primary:
-    'border border-info/20 bg-info/10 text-info hover:bg-info hover:text-white hover:border-info',
+    'border border-info/20 bg-info/10 text-info hover:bg-info hover:text-black hover:border-info',
 });
 
 function resolveButtonTone(tone) {

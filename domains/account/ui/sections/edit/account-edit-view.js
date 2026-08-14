@@ -47,6 +47,7 @@ export function AccountEditView(props) {
     mediaUploadState,
     canUsePasswordSecurity,
     isPasswordLinked,
+    linkedOAuthProviders,
     formRef,
     handleChange,
     handleClearMedia,
@@ -59,10 +60,12 @@ export function AccountEditView(props) {
     handleCompleteEmailChange,
     handleCompletePasswordChange,
     handleDeleteAccount,
+    handleUnlinkProvider,
     handleSetPassword,
     setEmailFlow,
     setPasswordFlow,
     setDeleteFlow,
+    unlinkingProvider,
   } = props;
   const resolvedNavHeight = Math.max(0, Math.round(navHeight || 0));
   const editRegistry = (
@@ -176,12 +179,15 @@ export function AccountEditView(props) {
                   handleCompleteEmailChange={handleCompleteEmailChange}
                   handleCompletePasswordChange={handleCompletePasswordChange}
                   handleDeleteAccount={handleDeleteAccount}
+                  handleUnlinkProvider={handleUnlinkProvider}
                   handleSetPassword={handleSetPassword}
                   isPasswordLinked={isPasswordLinked}
+                  linkedOAuthProviders={linkedOAuthProviders}
                   passwordFlow={passwordFlow}
                   setDeleteFlow={setDeleteFlow}
                   setEmailFlow={setEmailFlow}
                   setPasswordFlow={setPasswordFlow}
+                  unlinkingProvider={unlinkingProvider}
                 />
               )}
             </main>

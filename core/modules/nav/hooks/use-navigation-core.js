@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { useNavigationActions } from '../context';
 import { useNavRuntimeRegistry } from '@/modules/registry';
+import { shouldSweepRouteTransition } from '@/shared/route-transitions';
+import { useRouteSweepNavigation } from '@/shared/route-transition-coordinator';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
@@ -19,6 +21,7 @@ function blurActiveElement() {
 export function useNavigationCore() {
   const pathname = usePathname();
   const router = useRouter();
+  const navigateWithSweep = useRouteSweepNavigation();
   const { closeSurface, openSurface } = useNavigationActions();
   const { createGuardSurface } = useNavRuntimeRegistry();
   const previousPathRef = useRef(pathname);
@@ -36,7 +39,11 @@ export function useNavigationCore() {
       NAV_EVENT_HANDLERS.navigateStart(href, from);
       const confirmNavigation = () => {
         blurActiveElement();
-        router.push(href);
+        if (shouldSweepRouteTransition(from, href)) {
+          navigateWithSweep(href);
+        } else {
+          router.push(href);
+        }
         NAV_EVENT_HANDLERS.navigate(href, from);
       };
       const cancelNavigation = () =>
@@ -70,7 +77,7 @@ export function useNavigationCore() {
         cancelNavigation();
       }
     },
-    [closeSurface, createGuardSurface, openSurface, router],
+    [closeSurface, createGuardSurface, navigateWithSweep, openSurface, router],
   );
 
   const navigate = useCallback(
@@ -93,12 +100,16 @@ export function useNavigationCore() {
 
       blurActiveElement();
       NAV_EVENT_HANDLERS.navigateStart(href, from);
-      router.push(href);
+      if (shouldSweepRouteTransition(from, href)) {
+        navigateWithSweep(href);
+      } else {
+        router.push(href);
+      }
       NAV_EVENT_HANDLERS.navigate(href, from);
 
       return true;
     },
-    [openGuardConfirmation, pathname, router],
+    [navigateWithSweep, openGuardConfirmation, pathname, router],
   );
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
@@ -14,11 +14,11 @@ const EASINGS = Object.freeze({
 export const LEGAL_MOTION = Object.freeze({
   easings: EASINGS,
   stages: Object.freeze({
-    title: Object.freeze({ delay: 0.18, duration: 1.02, y: 16 }),
-    lead: Object.freeze({ delay: 0.62, duration: 0.94, y: 14 }),
-    meta: Object.freeze({ delay: 1.02, duration: 0.72, y: 8 }),
-    quickLink: Object.freeze({ delay: 1.28, duration: 0.64, y: 10, stagger: 0.09 }),
-    section: Object.freeze({ delay: 0.08, duration: 0.86, y: 18, stagger: 0.09 }),
+    title: Object.freeze({ delay: 0.08, duration: 0.7, y: 10 }),
+    lead: Object.freeze({ delay: 0.22, duration: 0.64, y: 10 }),
+    meta: Object.freeze({ delay: 0.4, duration: 0.5, y: 6 }),
+    quickLink: Object.freeze({ delay: 0.54, duration: 0.48, y: 8, stagger: 0.06 }),
+    section: Object.freeze({ delay: 0.04, duration: 0.62, y: 12, stagger: 0.06 }),
   }),
 });
 
@@ -26,20 +26,16 @@ function getStage(stage) {
   return LEGAL_MOTION.stages[stage] || LEGAL_MOTION.stages.section;
 }
 
-export function LegalReveal({ children, className, inView = false, itemIndex = 0, stage }) {
+export function LegalReveal({ children, className, itemIndex = 0, stage }) {
   const config = getStage(stage);
+  const reduceMotion = useReducedMotion();
   const delay = config.delay + Math.min(Math.max(0, itemIndex) * (config.stagger || 0), 0.72);
 
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: config.y || 0 }}
-      {...(inView
-        ? {
-            viewport: { amount: 0.16, once: true },
-            whileInView: { opacity: 1, y: 0 },
-          }
-        : { animate: { opacity: 1, y: 0 } })}
+      initial={reduceMotion ? false : { opacity: 0, y: config.y || 0 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: config.duration, ease: EASINGS.CINEMATIC }}
     >
       {children}

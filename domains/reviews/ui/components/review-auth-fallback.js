@@ -18,27 +18,27 @@ export default function ReviewAuthFallback({
     <div
       className={
         isAccountSection
-          ? 'flex w-full items-center justify-between border-b border-black/10 p-4'
+          ? 'flex w-full items-center justify-between border-b border-white/10 p-4'
           : `flex w-full items-center justify-between ${
               mode === 'comment' ? 'border-b' : 'border-y'
-            } border-black/10 py-4`
+            } border-white/10 py-4`
       }
     >
       <div className="min-w-0">
         <p
           className={
             isAccountSection
-              ? 'text-xs font-semibold tracking-widest text-black/70 uppercase'
+              ? 'text-xs font-semibold tracking-widest text-white/70 uppercase'
               : 'text-sm font-semibold'
           }
         >
           Join the conversation
         </p>
-        <p className="text-xs text-black/70">{helperText}</p>
+        <p className="text-xs text-white/70">{helperText}</p>
       </div>
       <Button
         type="button"
-        className="bg-primary/40 inline-flex items-center justify-between gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black hover:text-white"
+        className="bg-primary/40 inline-flex items-center justify-between gap-2 border border-white/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white hover:text-black"
         onClick={onSignIn}
       >
         Sign In

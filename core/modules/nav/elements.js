@@ -70,7 +70,7 @@ export const Description = memo(function Description({ text, style, maxLines = 1
           transition={NAV_FADE_TRANSITION}
           className={cn(
             isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
-            'text-black',
+            'text-white',
             className,
           )}
           style={{ opacity: targetOpacity, ...getLineClampStyle(maxLines, restStyle) }}
@@ -116,7 +116,7 @@ export const IconOverlay = memo(function IconOverlay({ overlay }) {
             style={{ backgroundImage: `url(${icon})` }}
           />
         ) : (
-          <span className="text-black">{renderIconNode(icon, 12)}</span>
+          <span className="text-white">{renderIconNode(icon, 12)}</span>
         )}
       </motion.button>
     </AnimatePresence>
@@ -143,8 +143,10 @@ export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovere
           className={cn('center size-12', className)}
           animate={{
             backgroundColor:
-              isStackHovered && !hasCustomBackground ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.05)',
-            color: isStackHovered && !hasCustomColor ? 'rgba(0,0,0,1)' : undefined,
+              isStackHovered && !hasCustomBackground
+                ? 'rgba(252,252,251,0.10)'
+                : 'rgba(252,252,251,0.05)',
+            color: isStackHovered && !hasCustomColor ? 'rgba(252,252,251,1)' : undefined,
           }}
           transition={NAV_FADE_TRANSITION}
           style={iconStyle}

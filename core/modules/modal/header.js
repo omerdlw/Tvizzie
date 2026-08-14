@@ -72,7 +72,6 @@ const DEFAULT_MODAL_HEADERS = {
   AUTH_VERIFICATION_MODAL: resolveAuthVerificationHeader,
   FOLLOW_LIST_MODAL: resolveFollowListHeader,
   LIST_EDITOR_MODAL: resolveListEditorHeader,
-  LIST_PICKER_MODAL: false,
   NOTIFICATIONS_MODAL: resolveNotificationsHeader,
   MEDIA_SOCIAL_PROOF_MODAL: () => ({
     title: 'Social Activity',

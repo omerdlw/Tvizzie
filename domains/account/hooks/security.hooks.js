@@ -17,7 +17,7 @@ import {
   resolveSecurityErrorMessage,
 } from '@/domains/account/utils';
 import { AuthVerificationSurface } from '@/domains/auth/ui';
-import { AUTH_ROUTES, buildAuthHref } from '@/domains/auth/utils';
+import { AUTH_ROUTES, buildAuthHref, getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils';
 
 export function resetLinkedProviderOverrides({
   setLinkedProviderDescriptorsOverride,
@@ -26,6 +26,23 @@ export function resetLinkedProviderOverrides({
   if (typeof setLinkedProviderIdsOverride === 'function') setLinkedProviderIdsOverride(null);
   if (typeof setLinkedProviderDescriptorsOverride === 'function')
     setLinkedProviderDescriptorsOverride(null);
+}
+
+function resolveLinkedProviderIds(session) {
+  const providerIds =
+    session?.capabilities?.providerIds ||
+    session?.user?.metadata?.authCapabilities?.providerIds ||
+    session?.user?.metadata?.providerIds ||
+    session?.user?.providerIds ||
+    [];
+
+  return Array.from(
+    new Set(
+      (Array.isArray(providerIds) ? providerIds : [])
+        .map((provider) => String(provider || '').trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
 }
 
 export async function logCredentialAuditSuccess(event, metadata = {}) {
@@ -448,6 +465,7 @@ export function useAccountSecurityActions({
   setPasswordFlow,
   toast,
 }) {
+  const [unlinkingProvider, setUnlinkingProvider] = useState(null);
   const credentialActions = useAccountCredentialActions({
     auth,
     canUsePasswordSecurity: true,
@@ -476,8 +494,62 @@ export function useAccountSecurityActions({
     toast,
   });
 
+  const handleUnlinkProvider = useCallback(
+    (provider) => {
+      const normalizedProvider = normalizeOAuthProvider(provider);
+      if (!normalizedProvider || unlinkingProvider) return;
+
+      const providerLabel = getOAuthProviderLabel(normalizedProvider);
+      setDeleteConfirmation({
+        cancelText: 'Cancel',
+        confirmLoadingText: 'Disconnecting',
+        confirmText: `Disconnect ${providerLabel}`,
+        description: `You will no longer be able to sign in with ${providerLabel}. Your other sign-in methods will remain available.`,
+        icon: 'solar:shield-warning-bold',
+        isDestructive: true,
+        title: `Disconnect ${providerLabel}?`,
+        onCancel: () => setDeleteConfirmation(null),
+        onConfirm: async () => {
+          setUnlinkingProvider(normalizedProvider);
+
+          try {
+            const updatedSession = await auth.unlinkProvider({ provider: normalizedProvider });
+            setLinkedProviderIdsOverride(
+              resolveLinkedProviderIds(updatedSession).filter(
+                (providerId) => normalizeOAuthProvider(providerId) !== normalizedProvider,
+              ),
+            );
+            setLinkedProviderDescriptorsOverride(null);
+            toast.success(`${providerLabel} disconnected`);
+            await logCredentialAuditSuccess('unlink-provider', {
+              provider: normalizedProvider,
+              userId: auth?.user?.id,
+            });
+          } catch (error) {
+            toast.error(resolveSecurityErrorMessage(error, `${providerLabel} could not be disconnected`));
+            await logCredentialAuditFailure('unlink-provider', error);
+            throw error;
+          } finally {
+            setUnlinkingProvider(null);
+            setDeleteConfirmation(null);
+          }
+        },
+      });
+    },
+    [
+      auth,
+      setDeleteConfirmation,
+      setLinkedProviderDescriptorsOverride,
+      setLinkedProviderIdsOverride,
+      toast,
+      unlinkingProvider,
+    ],
+  );
+
   return {
     ...credentialActions,
     ...deleteAction,
+    handleUnlinkProvider,
+    unlinkingProvider,
   };
 }

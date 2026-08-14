@@ -1,11 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import CollectionActions from '@/domains/media/ui/components/collection-actions';
 import Sidebar from '@/domains/media/ui/components/sidebar';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
+import {
+  createMovieBackdropImageUrl,
+  getPreferredMovieBackground,
+} from '@/domains/media/services/media-data';
+import { getMediaBackgroundPreferenceFilePath } from '@/domains/media/utils/background-preferences';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
 import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
@@ -20,21 +25,62 @@ function createReviewState() {
   };
 }
 
-export default function Client({ computed, mediaType = 'movie', movie }) {
+export default function Client({ computed, mediaType = 'movie', movie, secondaryDataPromise }) {
   const [reviewState, setReviewState] = useState(createReviewState);
+  const [backgroundImage, setBackgroundImage] = useState(() =>
+    createMovieBackdropImageUrl(movie?.backdrop_path),
+  );
+
+  useEffect(() => {
+    let isActive = true;
+    const fallbackBackgroundImage = createMovieBackdropImageUrl(movie?.backdrop_path);
+    const preferredFilePath = getMediaBackgroundPreferenceFilePath(mediaType, movie?.id);
+    const preferredBackgroundImage = createMovieBackdropImageUrl(preferredFilePath);
+
+    setBackgroundImage(preferredBackgroundImage || fallbackBackgroundImage || null);
+
+    void Promise.resolve(secondaryDataPromise)
+      .then((secondaryMovie) => {
+        if (!isActive) return;
+
+        const autoBackgroundImage = getPreferredMovieBackground(secondaryMovie?.images);
+        setBackgroundImage(
+          preferredBackgroundImage || autoBackgroundImage || fallbackBackgroundImage || null,
+        );
+      })
+      .catch(() => {
+        if (isActive) {
+          setBackgroundImage(preferredBackgroundImage || fallbackBackgroundImage || null);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [mediaType, movie?.backdrop_path, movie?.id, secondaryDataPromise]);
 
   return (
     <View
       computed={computed}
       mediaType={mediaType}
       movie={movie}
+      backgroundImage={backgroundImage}
+      secondaryDataPromise={secondaryDataPromise}
       reviewState={reviewState}
       setReviewState={setReviewState}
     />
   );
 }
 
-function View({ computed, mediaType = 'movie', movie, reviewState, setReviewState }) {
+function View({
+  backgroundImage,
+  computed,
+  mediaType = 'movie',
+  movie,
+  reviewState,
+  secondaryDataPromise,
+  setReviewState,
+}) {
   const { certification, creators, director, genres, runtimeText, tags, writers, year } = computed;
   const mediaTitle =
     movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
@@ -44,6 +90,7 @@ function View({ computed, mediaType = 'movie', movie, reviewState, setReviewStat
       <Registry
         mediaType={mediaType}
         movie={movie}
+        backgroundImage={backgroundImage}
         rating={null}
         runtimeText={runtimeText}
         reviewState={reviewState}
@@ -51,33 +98,49 @@ function View({ computed, mediaType = 'movie', movie, reviewState, setReviewStat
       />
 
       <PageGradientShell>
-        <MediaGridFrame />
+        <MediaGridFrame showSidebarBorder />
         <div
-          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
+          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12 [overflow-anchor:none]`}
         >
-          <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:items-stretch lg:gap-12">
-            <div className="w-full shrink-0 self-start lg:w-[400px] lg:self-stretch">
-              <div className="lg:sticky lg:top-6">
-                <Sidebar
-                  item={movie}
-                  certification={certification}
-                  creators={creators}
-                  director={director}
-                  genres={genres}
-                  tags={tags}
-                  topContent={<CollectionActions media={{ ...movie, entityType: mediaType }} />}
-                  writers={writers}
-                />
-              </div>
+          <div className="relative flex w-full flex-col items-start lg:flex-row lg:items-stretch">
+            <div className="order-1 w-full shrink-0 p-6 lg:w-96">
+              <Sidebar
+                item={movie}
+                certification={certification}
+                creators={creators}
+                director={director}
+                genres={genres}
+                tags={tags}
+                topContent={<CollectionActions media={{ ...movie, entityType: mediaType }} />}
+                writers={writers}
+              />
             </div>
 
-            <div className="flex w-full min-w-0 flex-col gap-6 lg:self-stretch">
-              <div className="min-w-0">
+            <div className="order-2 flex w-full min-w-0 flex-col lg:flex-1">
+              <div className="flex w-full flex-col p-6">
                 <MediaRouteReveal stage="hero.title">
-                  <h1 className="font-zuume text-5xl leading-none font-bold uppercase sm:text-6xl lg:text-7xl">
+                  <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
                     {mediaTitle}
                   </h1>
                 </MediaRouteReveal>
+
+                {movie.tagline ? (
+                  <MediaRouteReveal stage="hero.tagline">
+                    <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
+                      {movie.tagline}
+                    </p>
+                  </MediaRouteReveal>
+                ) : null}
+
+                {movie.overview ? (
+                  <MediaRouteReveal stage="hero.overview">
+                    <div className="mt-3 flex w-full flex-col">
+                      <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
+                        {movie.overview}
+                      </p>
+                    </div>
+                  </MediaRouteReveal>
+                ) : null}
               </div>
 
               <MediaRouteReveal className="w-full" stage="sections.reviews">
@@ -87,6 +150,7 @@ function View({ computed, mediaType = 'movie', movie, reviewState, setReviewStat
                   title={mediaTitle}
                   headerTitle="All Reviews"
                   sectionClassName="mt-1 md:mt-2"
+                  dividerPositionClassName="left-0 w-full translate-x-0"
                   showBackdropGradient={false}
                   useQuerySortMode={true}
                   useQueryUserFilter={true}

@@ -102,14 +102,14 @@ function HeroBioPreview({ description, onReadMore }) {
     <div className="flex w-full flex-col items-center gap-2 text-center">
       <p
         ref={textRef}
-        className="line-clamp-3 text-sm leading-relaxed text-pretty break-words text-black/70 sm:text-base sm:leading-7"
+        className="line-clamp-3 text-sm leading-relaxed text-pretty break-words text-white/70 sm:text-base sm:leading-7"
       >
         {description}
       </p>
 
       {shouldShowReadMore ? (
         <button
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:text-black active:scale-[0.97]"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-white/70 uppercase transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:text-white active:scale-[0.97]"
           type="button"
           onClick={onReadMore}
         >
@@ -200,7 +200,7 @@ export default function AccountHero({
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <AccountReveal stage="hero.avatar">
-          <div className="group relative h-12 w-12 shrink-0 overflow-hidden bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+          <div className="group relative h-12 w-12 shrink-0 overflow-hidden bg-black/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
             <AdaptiveImage
               mode="img"
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
@@ -214,7 +214,7 @@ export default function AccountHero({
         </AccountReveal>
 
         <AccountReveal stage="hero.title">
-          <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl">
+          <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-white uppercase sm:text-7xl lg:text-8xl">
             {heroDisplayName}
           </h1>
         </AccountReveal>
@@ -227,9 +227,9 @@ export default function AccountHero({
             key={`${item.label}-${item.value}-${index}`}
             item={item}
             index={index}
-            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 hover:text-black"
-            valueClassName="font-semibold text-black leading-none tracking-tight"
-            labelClassName="text-black/70 leading-none"
+            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-white/80 hover:text-white"
+            valueClassName="font-semibold text-white leading-none tracking-tight"
+            labelClassName="text-white/70 leading-none"
           />
         ))}
       </div>

@@ -92,21 +92,21 @@ export default function MediaSocialProof({ media, viewerId }) {
       type="button"
       aria-label="Open social activity"
       onClick={handleOpenModal}
-      className="group inline-flex items-center gap-1.5 border border-black/10 bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wider text-black/70 uppercase hover:border-black/20 hover:bg-black/10 hover:text-black"
+      className="group inline-flex items-center gap-1.5 border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold tracking-wider text-white/70 uppercase hover:border-white/20 hover:bg-white/10 hover:text-white"
     >
       <Icon
         icon="solar:users-group-two-rounded-bold"
         size={15}
-        className="shrink-0 text-black/60 group-hover:text-black"
+        className="shrink-0 text-white/60 group-hover:text-white"
       />
       <span>Social activity</span>
       {summaryParts.length > 0 && (
-        <span className="font-normal text-black/40">({summaryParts.join(' • ')})</span>
+        <span className="font-normal text-white/40">({summaryParts.join(' • ')})</span>
       )}
       <Icon
         icon="solar:alt-arrow-right-linear"
         size={14}
-        className="shrink-0 text-black/40 group-hover:text-black"
+        className="shrink-0 text-white/40 group-hover:text-white"
       />
     </button>
   );

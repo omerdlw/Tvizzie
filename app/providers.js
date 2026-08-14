@@ -3,10 +3,15 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
+import { accentChain } from 'glimm';
+import { GlimmProvider } from 'glimm/next';
 
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
+import { RouteTransitionInterceptor } from '@/app/_shell/route-transition-interceptor';
+import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 import { pipe } from '@/shared/utils';
+import { RouteTransitionCoordinator } from '@/shared/route-transition-coordinator';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
 import { AuthProvider, createSupabaseAuthAdapter } from '@/modules/auth';
@@ -56,6 +61,29 @@ const APP_AUTH_CONFIG = {
   persistSession: false,
 };
 
+const GLIMM_MONOCHROME_PALETTE = accentChain(['#F7F7F5', '#8D8D89', '#0A0B0C']);
+
+const GLIMM_SWEEP = Object.freeze({
+  bandTight: 9,
+  brightness: 0.82,
+  direction: 'ltr',
+  easing: 'easeInOutCubic',
+  midpoint: 0.58,
+  outroMs: 620,
+  palette: {
+      a: [0.49, 0.54, 0.85],
+      b: [0.59, 0.41, 0.77],
+      c: [0.50, 0.50, 0.50],
+      d: [0.86, 0.61, 0.28],
+    },
+  peakAlpha: 0.76,
+  rippleAmount: 0.16,
+  sweepMs: 1350,
+  swellAmount: 0.2,
+  waveAmount: 0,
+  waveSpeed: 0.8,
+});
+
 function AppRegistryBootstrap({ children }) {
   return (
     <>
@@ -93,14 +121,19 @@ function AccountRouteNavGuard() {
 
 export const AppProviders = ({ children }) => {
   return (
-    <>
-      <CoreShellProviders>
-        <AccountRouteNavGuard />
-        <BackgroundOverlay />
-        <LoadingOverlay />
-        <Nav />
-        <GlobalError>{children}</GlobalError>
-      </CoreShellProviders>
-    </>
+    <GlimmProvider reducedMotion="instant" zIndex={1000} {...GLIMM_SWEEP}>
+      <RouteTransitionCoordinator>
+        <RouteTransitionInterceptor />
+        <CoreShellProviders>
+          <AccountRouteNavGuard />
+          <BackgroundOverlay />
+          <LoadingOverlay />
+          <Nav />
+          <SmoothScrollProvider>
+            <GlobalError>{children}</GlobalError>
+          </SmoothScrollProvider>
+        </CoreShellProviders>
+      </RouteTransitionCoordinator>
+    </GlimmProvider>
   );
 };

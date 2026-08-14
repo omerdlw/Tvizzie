@@ -76,9 +76,9 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black lg:p-4"
       >
-        <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
+        <div className="center size-10 shrink-0 overflow-hidden border border-white/5">
           <AdaptiveImage
             mode="img"
             src={getUserAvatarUrl(user)}
@@ -93,13 +93,13 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
 
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-semibold">@{username}</span>
-          <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
+          <span className="truncate text-[10px] tracking-widest text-white/50 uppercase">
             {formatActionSummary(actions)}
           </span>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 self-center">
-          <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70">
+          <span aria-hidden="true" className="center size-7 border border-white/10 text-white/70">
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
         </div>
@@ -117,12 +117,12 @@ export default function MediaSocialProofModal({ close, data }) {
       close={close}
       header={{
         left: (
-          <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">
+          <h2 className="text-[11px] font-bold tracking-widest text-white/50 uppercase">
             Friends activity
           </h2>
         ),
         right: data?.title ? (
-          <span className="truncate text-xs text-black/50">{data.title}</span>
+          <span className="truncate text-xs text-white/50">{data.title}</span>
         ) : null,
       }}
       bodyClassName="p-0"
@@ -146,9 +146,9 @@ export default function MediaSocialProofModal({ close, data }) {
         </motion.div>
       ) : (
         <div className="center flex-col gap-2 p-8 text-center">
-          <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-black/30" />
-          <p className="text-sm font-medium text-black/60">No social activity found yet</p>
-          <p className="text-xs text-black/40">
+          <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-white/30" />
+          <p className="text-sm font-medium text-white/60">No social activity found yet</p>
+          <p className="text-xs text-white/40">
             When people you follow like, review, or watch this title, their activity will appear
             here.
           </p>

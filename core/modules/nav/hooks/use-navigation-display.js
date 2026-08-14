@@ -151,7 +151,7 @@ function applyStatusOverlay(item, statusState) {
   };
 }
 
-function applySurface(item, surfaceEntry, closeSurface) {
+function applySurface(item, surfaceEntry, closeSurface, surfaceStack = []) {
   const surfaceComponent = surfaceEntry?.component ?? null;
   const surfaceContent = surfaceEntry?.content ?? null;
 
@@ -181,6 +181,7 @@ function applySurface(item, surfaceEntry, closeSurface) {
     surfaceDescription: surfaceEntry.description ?? null,
     surfaceTrailing: surfaceEntry.trailing ?? null,
     surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
+    surfaceCanGoBack: surfaceStack.length > 1,
     expandHorizontal: surfaceEntry.expandHorizontal ?? false,
     width: surfaceEntry.width ?? null,
   };
@@ -255,8 +256,11 @@ function resolveActiveItem({
   }
 
   if (surfaceState?.isSurfaceOpen) {
-    return applySurface(baseActiveItem, surfaceState.activeSurfaceEntry, (result) =>
-      closeSurface(result, surfaceState.activeSurfaceId),
+    return applySurface(
+      baseActiveItem,
+      surfaceState.activeSurfaceEntry,
+      (result) => closeSurface(result, surfaceState.activeSurfaceId),
+      surfaceState.surfaceStack,
     );
   }
 
@@ -343,15 +347,22 @@ export function useNavigationDisplay() {
 
   const { rawItems } = useNavigationItems();
   const { closeSurface } = useNavigationActions();
-  const { expanded, searchQuery, activeSurfaceId, activeSurfaceEntry, isSurfaceOpen } =
-    useNavigationState();
+  const {
+    expanded,
+    searchQuery,
+    activeSurfaceId,
+    activeSurfaceEntry,
+    isSurfaceOpen,
+    surfaceStack,
+  } = useNavigationState();
   const surfaceState = useMemo(
     () => ({
       activeSurfaceId,
       activeSurfaceEntry,
       isSurfaceOpen,
+      surfaceStack,
     }),
-    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen],
+    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen, surfaceStack],
   );
   const statusState = useNavigationStatus();
   const { mediaAction } = useNavRuntimeRegistry();

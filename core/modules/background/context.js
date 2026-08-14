@@ -7,11 +7,12 @@ import { REGISTRY_TYPES, useRegistryValue } from '../registry/context';
 const BackgroundActionsContext = createContext(null);
 const BackgroundStateContext = createContext(null);
 
-const TMDB_IMAGE_VARIANT_PATTERN = /^(https:\/\/image\.tmdb\.org\/t\/p)\/(?:w\d+|h\d+|original)(\/.*)$/i;
+const TMDB_IMAGE_VARIANT_PATTERN =
+  /^(https:\/\/image\.tmdb\.org\/t\/p)\/(?:w\d+|h\d+|original)(\/.*)$/i;
 
 const DEFAULT_BACKGROUND = Object.freeze({
   overlayOpacity: 0,
-  overlayColor: 'var(--white)',
+  overlayColor: 'var(--black)',
   position: 'center',
   videoOptions: {
     playbackRate: 1,

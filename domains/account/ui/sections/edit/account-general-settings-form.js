@@ -72,7 +72,7 @@ export function AccountGeneralSettingsForm({
           onOpenUpload={() => handleOpenMediaUpload('avatar')}
         />
 
-        <div className="h-px w-full bg-black/10" />
+        <div className="h-px w-full bg-white/10" />
 
         <MediaField
           fieldLabel="Logo URL"
@@ -95,20 +95,20 @@ export function AccountGeneralSettingsForm({
           className="flex w-full items-center justify-between gap-3 text-left"
         >
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">
+            <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">
               {form.isPrivate ? 'Private profile' : 'Public profile'}
             </span>
-            <span className="text-xs leading-5 text-black/70">
+            <span className="text-xs leading-5 text-white/70">
               {form.isPrivate
                 ? 'Only approved followers can inspect your collections.'
                 : 'Anyone can inspect your collections and profile activity.'}
             </span>
           </div>
 
-          <span className="flex h-6 w-11 border border-black/15 bg-white p-px" aria-hidden="true">
+          <span className="flex h-6 w-11 border border-white/15 bg-black p-px" aria-hidden="true">
             <span
               className={cn(
-                'h-full w-5 bg-black',
+                'h-full w-5 bg-white',
                 form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0',
               )}
             />

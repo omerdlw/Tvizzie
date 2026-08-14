@@ -15,6 +15,7 @@ import {
   PURPOSES,
   RESEND_COOLDOWN_MS,
   resolveAuthCapabilities,
+  getOAuthProviderLabel,
   resolveProviderIds,
   SECURE_PURPOSES,
   TOKEN_VERSION,
@@ -639,6 +640,14 @@ export async function lookupAccountByEmail(email) {
   }
 
   const userId = normalizeValue(userRecord?.uid);
+  const matchedOAuthProvider = (userRecord?.providerData || []).find((provider) => {
+    const providerId = normalizeValue(provider?.providerId).toLowerCase();
+    return (
+      providerId !== 'email' &&
+      providerId !== 'password' &&
+      normalizeEmailValue(provider?.email) === normalizedEmail
+    );
+  })?.providerId;
   const providerIds = resolveProviderIds({
     providerData: userRecord?.providerData || [],
     appMetadata: userRecord?.app_metadata || {},
@@ -650,11 +659,44 @@ export async function lookupAccountByEmail(email) {
     code: null,
     email: normalizedEmail,
     exists: Boolean(userId),
+    matchedOAuthProvider: normalizeValue(matchedOAuthProvider) || null,
     providerIds,
     signInMethods: providerIds,
     supportsPasswordAuth: authCapabilities.passwordEnabled,
     userId: userId || null,
   };
+}
+
+export function createSignUpEmailAlreadyRegisteredError(account) {
+  const email = normalizeEmailValue(account?.email);
+  const matchedOAuthProvider = normalizeValue(account?.matchedOAuthProvider);
+  const oauthProvider = matchedOAuthProvider
+    ? resolvePrimaryProvider([matchedOAuthProvider])
+    : !account?.supportsPasswordAuth
+      ? resolvePrimaryProvider(account?.providerIds)
+      : null;
+  const oauthProviderLabel = oauthProvider ? getOAuthProviderLabel(oauthProvider) : null;
+  const error = new Error(
+    oauthProviderLabel
+      ? `This email is used to sign in with ${oauthProviderLabel} on another account. Continue with ${oauthProviderLabel}, or disconnect it from that account’s security settings before using this email here.`
+      : 'This email is already registered',
+  );
+
+  error.code = oauthProvider ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED' : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
+  error.data = {
+    email,
+    needsPasswordSetup: Boolean(oauthProvider),
+    provider: oauthProvider,
+  };
+  return error;
+}
+
+export async function assertSignUpEmailAvailable(email) {
+  const account = await lookupAccountByEmail(email);
+  if (account.exists) {
+    throw createSignUpEmailAlreadyRegisteredError(account);
+  }
+  return account;
 }
 
 export async function lookupPasswordAccountByEmail(email, { requireProfile = false } = {}) {

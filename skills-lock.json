@@ -30,6 +30,24 @@
       "sourceType": "github",
       "skillPath": "skills/make-interfaces-feel-better/SKILL.md",
       "computedHash": "c8b15b529e088a318b2d3c17f0a97e15a7b1ce9ddab8bbdf9209e6ab7315cbde"
+    },
+    "mem0": {
+      "source": "mem0ai/mem0",
+      "sourceType": "github",
+      "skillPath": "skills/mem0/SKILL.md",
+      "computedHash": "b70a0151f31849e71d4d641e4c1e5b0d7d601e49c1587d4aefb753219622d6e6"
+    },
+    "mem0-cli": {
+      "source": "mem0ai/mem0",
+      "sourceType": "github",
+      "skillPath": "skills/mem0-cli/SKILL.md",
+      "computedHash": "d50e4d9c2c9cc02a727b11f66a15d3414f93b30cefb54f0709fcb9959b51bc79"
+    },
+    "mem0-vercel-ai-sdk": {
+      "source": "mem0ai/mem0",
+      "sourceType": "github",
+      "skillPath": "skills/mem0-vercel-ai-sdk/SKILL.md",
+      "computedHash": "7a3e6666463b9f92829cad03db1950554a019aa859ae9dde7041ddee7c8a8bcc"
     }
   }
 }

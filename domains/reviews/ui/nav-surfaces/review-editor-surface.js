@@ -300,12 +300,12 @@ export default function ReviewEditorSurface({ close, data }) {
           onChange={handleTextChange}
           className={{
             wrapper:
-              'flex border border-black/5 focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
+              'flex bg-white/5 border border-white/5 focus-within:bg-white/10 transition-colors duration-300 ease-in-out',
             textarea:
-              'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
+              'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-white/50',
           }}
         />
-        <div className="pointer-events-none absolute right-3.5 bottom-2.5 flex items-center gap-2 text-[11px] font-medium text-black/50 select-none">
+        <div className="pointer-events-none absolute right-3.5 bottom-2.5 flex items-center gap-2 text-[11px] font-medium text-white/50 select-none">
           {validationError ? (
             <span className="text-error/80 font-semibold">{validationError}</span>
           ) : hasText ? (
@@ -314,7 +314,7 @@ export default function ReviewEditorSurface({ close, data }) {
         </div>
       </div>
 
-      <div className={NAV_ACTION_STYLES.row}>
+      <div className={cn(NAV_ACTION_STYLES.row, 'mt-0')}>
         {!isListSubject && (
           <button
             type="button"

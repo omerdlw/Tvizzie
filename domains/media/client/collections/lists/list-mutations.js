@@ -26,7 +26,6 @@ import {
   validateListDescription,
   validateListTitle,
 } from './list-shared.js';
-import { syncUserListDerivedState } from './derived-state.js';
 
 async function applyProfileListCounterDelta(client, userId, delta) {
   const result = await client.rpc('profile_counter_apply_delta', {
@@ -152,8 +151,6 @@ export async function createUserListWithItems({
     .single();
 
   assertSupabaseResult(insertResult, 'List could not be created');
-  await applyProfileListCounterDelta(client, userId, 1);
-
   if (normalizedItems.length > 0) {
     const itemRows = normalizedItems.map((item) => {
       const mediaPayload = createMediaPayload(
@@ -185,11 +182,14 @@ export async function createUserListWithItems({
       };
     });
 
-    const itemInsertResult = await client.from('list_items').insert(itemRows);
+    const [itemInsertResult] = await Promise.all([
+      client.from('list_items').insert(itemRows),
+      applyProfileListCounterDelta(client, userId, 1),
+    ]);
 
     assertSupabaseResult(itemInsertResult, 'List items could not be created');
-
-    await syncUserListDerivedState({ userId, listId: insertResult.data.id });
+  } else {
+    await applyProfileListCounterDelta(client, userId, 1);
   }
 
   fireListCreatedActivity({
@@ -200,7 +200,7 @@ export async function createUserListWithItems({
     userId,
   });
 
-  return fetchListById(userId, insertResult.data.id);
+  return normalizeListRow(insertResult.data, new Map());
 }
 
 export async function updateUserList({ userId, listId, title, description = '', coverUrl = '' }) {

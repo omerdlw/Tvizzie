@@ -14,7 +14,7 @@ export default function PersonAwardsSkeleton() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="flex h-24 min-w-[110px] flex-1 flex-col items-center justify-center border border-black/10 bg-white/40 p-4 backdrop-blur-md"
+              className="flex h-24 min-w-[110px] flex-1 flex-col items-center justify-center border border-white/10 bg-black/40 p-4 backdrop-blur-md"
             >
               <div className={`h-8 w-14 ${S}`} />
               <div className={`mt-2 h-3 w-16 ${SOFT}`} />
@@ -23,7 +23,7 @@ export default function PersonAwardsSkeleton() {
         </div>
 
         {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       </div>
 
       <div className="p-6">
@@ -39,7 +39,7 @@ export default function PersonAwardsSkeleton() {
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 border border-black/10 bg-white/40 p-4"
+              className="flex items-center gap-4 border border-white/10 bg-black/40 p-4"
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <div className={`h-16 w-12 shrink-0 ${S}`} />
@@ -55,7 +55,7 @@ export default function PersonAwardsSkeleton() {
           ))}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

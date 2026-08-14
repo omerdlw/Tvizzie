@@ -341,9 +341,10 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── account-layout.js
 │   │   │   │   └── account-page-factory.js
 │   │   │   ├── modals
-│   │   │   │   ├── create-list-modal.js
 │   │   │   │   ├── list-editor-modal.js
 │   │   │   │   └── list-picker-modal.js
+│   │   │   ├── nav-surfaces
+│   │   │   │   └── create-list-surface.js
 │   │   │   ├── sections
 │   │   │   │   ├── feeds
 │   │   │   │   │   ├── list-detail

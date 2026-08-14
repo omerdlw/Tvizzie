@@ -12,8 +12,8 @@ const POLICY_LINKS = [
 function quickLinkClassName(isActive) {
   return `flex-auto  border px-4 py-3 text-center text-sm font-medium transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] ${
     isActive
-      ? 'border-black/10 bg-black/5 text-black'
-      : 'border-black/5 bg-white/40 text-black/60 hover:border-black/10 hover:bg-white hover:text-black'
+      ? 'border-white/10 bg-white/5 text-white'
+      : 'border-white/5 bg-black/40 text-white/60 hover:border-white/10 hover:bg-black hover:text-white'
   }`;
 }
 
@@ -32,7 +32,7 @@ export default function LegalQuickLinks() {
         ))}
         <LegalReveal className="flex flex-1" itemIndex={2} stage="quickLink">
           <a
-            className="flex-auto border border-black/5 bg-white/40 px-4 py-3 text-center text-sm font-medium text-black/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-black/10 hover:bg-white hover:text-black active:scale-[0.985]"
+            className="flex-auto border border-white/5 bg-black/40 px-4 py-3 text-center text-sm font-medium text-white/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-white/10 hover:bg-black hover:text-white active:scale-[0.985]"
             href="mailto:tvizzie.app@gmail.com"
           >
             Contact
@@ -41,7 +41,7 @@ export default function LegalQuickLinks() {
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
+        className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10"
       />
     </section>
   );

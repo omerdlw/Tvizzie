@@ -8,7 +8,7 @@ import {
   requireSessionRequest,
   setDeviceIdCookie,
 } from './session.server';
-import { revokeRefreshTokens } from './session/admin.server';
+import { getUserById, revokeRefreshTokens } from './session/admin.server';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   assertCsrfRequest,
@@ -21,6 +21,7 @@ import {
 import {
   claimVerificationProof,
   completeVerificationProof,
+  assertSignUpEmailAvailable,
   clearPendingSignInCookie,
   createPendingSignInToken,
   isDeviceTrusted,
@@ -45,7 +46,6 @@ import { ensureAccountProfileRecord } from './account.server';
 import {
   PURPOSES,
   resolveAuthCapabilities,
-  resolvePrimaryProvider,
   resolveProviderIds,
   SECURE_PURPOSES,
 } from '@/domains/auth/utils';
@@ -207,6 +207,7 @@ export async function handleSignUpCompletePost(request) {
       },
     });
     validateStrongPassword(password);
+    await assertSignUpEmailAvailable(email);
     claimedProofKey = await claimVerificationProof({
       ...verifiedProof,
       email,
@@ -221,10 +222,7 @@ export async function handleSignUpCompletePost(request) {
     });
 
     if (createRes.error || !createRes.data?.user?.id) {
-      return NextResponse.json(
-        { error: createRes.error?.message || 'Failed to create user' },
-        { status: 400 },
-      );
+      throw createRes.error || new Error('Failed to create user');
     }
 
     const userId = createRes.data.user.id;
@@ -332,26 +330,7 @@ export async function handleVerificationPost(request) {
 
     if (action === 'send') {
       if (normalizedPurpose === 'sign-up') {
-        const lookup = await lookupAccountByEmail(email);
-        if (lookup.exists) {
-          const oauthProvider = !lookup.supportsPasswordAuth
-            ? resolvePrimaryProvider(lookup.providerIds)
-            : null;
-          const error = new Error(
-            oauthProvider
-              ? `This email is already registered with ${oauthProvider}. Continue with ${oauthProvider} sign-in, then set a password from Account Settings.`
-              : 'This email is already registered',
-          );
-          error.code = oauthProvider
-            ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED'
-            : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
-          error.data = {
-            email,
-            needsPasswordSetup: Boolean(oauthProvider),
-            provider: oauthProvider,
-          };
-          throw error;
-        }
+        await assertSignUpEmailAvailable(email);
       }
 
       await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.VERIFICATION_SEND, {
@@ -489,25 +468,39 @@ export async function handleSessionGet(request) {
     if (sessionContext?.userId) {
       const user = sessionContext.user || {};
       const tokenClaims = sessionContext.decodedToken || {};
-      const appMetadata = tokenClaims.app_metadata || user.app_metadata || {};
+      let currentUser = null;
+      try {
+        currentUser = await getUserById(sessionContext.userId);
+      } catch {}
+
+      const providerData = currentUser?.providerData || [];
+      const identities = providerData.length
+        ? providerData.map((provider) => ({
+            identity_data: { email: provider.email || null },
+            provider: provider.providerId,
+            user_id: provider.uid,
+          }))
+        : user.identities || [];
+      const appMetadata = currentUser?.app_metadata || tokenClaims.app_metadata || user.app_metadata || {};
       const providerIds = resolveProviderIds({
-        appMetadata,
-        identities: user.identities || [],
-        tokenClaims,
+        appMetadata: providerData.length ? {} : appMetadata,
+        identities,
+        providerData,
+        tokenClaims: providerData.length ? {} : tokenClaims,
       });
       return NextResponse.json({
         status: 'authenticated',
         expiresAt: tokenClaims.exp ? tokenClaims.exp * 1000 : null,
         user: {
           id: sessionContext.userId,
-          email: sessionContext.email || null,
-          metadata: tokenClaims.user_metadata || user.user_metadata || {},
+          email: currentUser?.email || sessionContext.email || null,
+          metadata: currentUser?.user_metadata || tokenClaims.user_metadata || user.user_metadata || {},
           app_metadata: appMetadata,
-          identities: user.identities || [],
+          identities,
         },
         capabilities: {
           ...resolveAuthCapabilities({
-            email: sessionContext.email || user.email || null,
+            email: currentUser?.email || sessionContext.email || user.email || null,
             providerIds,
           }),
           providerIds,

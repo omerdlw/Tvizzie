@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useModalActions } from '@/modules/modal';
+import { useNavigationActions } from '@/modules/nav';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
+import { createCreateListSurfaceEntry } from '@/domains/account/ui/nav-surfaces/create-list-surface';
 // ListsView is defined in this route client.
 import AccountListsFeed from '@/domains/account/ui/sections/lists/lists-collection';
 import AccountAction from '@/domains/account/ui/nav-actions/account-action';
@@ -12,13 +13,13 @@ import {
 } from '@/domains/account/ui/sections/account-section-factory';
 
 function useListsClientState({ sectionState }) {
-  const { openModal } = useModalActions();
+  const { openSurface } = useNavigationActions();
   const { handleDeleteList, handleEditList, isListsLoading, listDeleteConfirmation, lists } =
     sectionState;
 
   const handleOpenListCreator = useCallback(() => {
-    openModal('CREATE_LIST_MODAL');
-  }, [openModal]);
+    openSurface(createCreateListSurfaceEntry());
+  }, [openSurface]);
 
   return {
     handleDeleteList,
@@ -34,18 +35,26 @@ export const Registry = createAccountSectionRegistry({
   displayName: 'AccountListsRegistry',
   navDescription: 'Lists',
   navRegistrySource: 'account-lists',
-  resolveOverrides: (sectionState, { listDeleteConfirmation, onCreateList = null }) => ({
-    listDeleteConfirmation,
-    navActionOverride:
-      sectionState.isOwner && typeof onCreateList === 'function' ? (
-        <AccountAction
-          mode="single-action"
-          actionIcon="material-symbols:add-rounded"
-          actionLabel="Create List"
-          onAction={onCreateList}
-        />
-      ) : null,
-  }),
+  resolveOverrides: (sectionState, { listDeleteConfirmation, onCreateList = null }) => {
+    const canCreateList =
+      sectionState.isOwner ||
+      (sectionState.auth?.isAuthenticated &&
+        sectionState.auth.user?.id &&
+        sectionState.resolvedUserId === sectionState.auth.user.id);
+
+    return {
+      listDeleteConfirmation,
+      navActionOverride:
+        canCreateList && typeof onCreateList === 'function' ? (
+          <AccountAction
+            mode="single-action"
+            actionIcon="material-symbols:add-rounded"
+            actionLabel="Create List"
+            onAction={onCreateList}
+          />
+        ) : null,
+    };
+  },
 });
 
 const ListsView = createAccountSectionView({

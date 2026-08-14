@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
@@ -11,9 +11,10 @@ const EASINGS = Object.freeze({
 });
 
 /**
- * Movie and TV share one deliberately unhurried, top-to-bottom sequence.
- * `at` is measured from route mount; `lateDelay` protects the rhythm when a
- * streamed/API-backed chapter arrives after its intended moment.
+ * Movie and TV share one coordinated, top-to-bottom sequence. The authored
+ * map keeps the semantic order legible; `getStage` normalizes it into the
+ * first second so streamed chapters never leave the page waiting for a long
+ * waterfall of entrances.
  */
 const STAGES = Object.freeze({
   'sidebar.poster': Object.freeze({ at: 0.18, duration: 1.45, y: 24, scale: 0.94 }),
@@ -151,8 +152,7 @@ export const MOVIE_TV_ROUTE_MOTION = Object.freeze({ easings: EASINGS, stages: S
 export const MEDIA_ROUTE_INTERACTIONS = Object.freeze({
   card: Object.freeze({
     whileHover: Object.freeze({
-      scale: 1.018,
-      transition: { duration: 0.34, ease: EASINGS.ACCENT },
+      transition: { duration: 0.3, ease: EASINGS.ACCENT },
     }),
     whileTap: Object.freeze({ scale: 0.985, transition: { duration: 0.18, ease: EASINGS.ACCENT } }),
   }),
@@ -172,7 +172,13 @@ function getNow() {
 }
 
 function getStage(stage) {
-  return STAGES[stage] || STAGES['items.discovery'];
+  const config = STAGES[stage] || STAGES['items.discovery'];
+
+  return {
+    ...config,
+    at: Math.min(config.at * 0.16, 0.94),
+    duration: Math.min(config.duration, 0.78),
+  };
 }
 
 function getDelay({ config, deferred, itemIndex, startedAt }) {
@@ -219,6 +225,7 @@ export function MediaRouteReveal({
   style,
 }) {
   const startedAtRef = useContext(MediaRouteMotionContext);
+  const reduceMotion = useReducedMotion();
   const config = getStage(stage);
   const delay = getDelay({
     config,
@@ -246,9 +253,9 @@ export function MediaRouteReveal({
     <motion.div
       className={className}
       style={style}
-      initial="hidden"
+      initial={reduceMotion ? false : 'hidden'}
       animate="visible"
-      {...(interactive
+      {...(!reduceMotion && interactive
         ? MEDIA_ROUTE_INTERACTIONS[interaction] || MEDIA_ROUTE_INTERACTIONS.card
         : {})}
       variants={{
@@ -259,7 +266,8 @@ export function MediaRouteReveal({
         },
         exit: {
           opacity: 0,
-          transition: { duration: 0.32, ease: EASINGS.EXIT },
+          y: -8,
+          transition: { duration: 0.18, ease: EASINGS.EXIT },
         },
       }}
     >

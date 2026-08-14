@@ -3,7 +3,7 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 
-export default function MediaGridFrame({ className = '', style }) {
+export default function MediaGridFrame({ className = '', style, showSidebarBorder = false }) {
   return (
     <div
       aria-hidden="true"
@@ -13,8 +13,11 @@ export default function MediaGridFrame({ className = '', style }) {
         className,
       )}
     >
-      <div className="absolute inset-y-0 left-0 w-px bg-black/10" />
-      <div className="absolute inset-y-0 right-0 w-px bg-black/10" />
+      <div className="absolute inset-y-0 left-0 w-px bg-white/10" />
+      {showSidebarBorder ? (
+        <div className="absolute inset-y-0 left-96 hidden w-px bg-white/10 lg:block" />
+      ) : null}
+      <div className="absolute inset-y-0 right-0 w-px bg-white/10" />
     </div>
   );
 }

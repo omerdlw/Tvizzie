@@ -33,15 +33,15 @@ function readPasswordStatusCache(cacheKey) {
   return entry.value;
 }
 
-function resolvePasswordAccountStatus({ email, identifier, intent }) {
+function resolvePasswordAccountStatus({ email, identifier, intent, useCache = true }) {
   const cacheKey = createPasswordStatusCacheKey({ email, identifier, intent });
-  const cachedValue = readPasswordStatusCache(cacheKey);
+  const cachedValue = useCache ? readPasswordStatusCache(cacheKey) : null;
 
   if (cachedValue) {
     return Promise.resolve(cachedValue);
   }
 
-  if (passwordStatusInFlight.has(cacheKey)) {
+  if (useCache && passwordStatusInFlight.has(cacheKey)) {
     return passwordStatusInFlight.get(cacheKey);
   }
 
@@ -53,19 +53,25 @@ function resolvePasswordAccountStatus({ email, identifier, intent }) {
         if (payload.data) error.data = payload.data;
         throw error;
       }
-      passwordStatusCache.set(cacheKey, {
-        expiresAt: Date.now() + PASSWORD_STATUS_CACHE_TTL_MS,
-        value: payload,
-      });
-      passwordStatusInFlight.delete(cacheKey);
+      if (useCache) {
+        passwordStatusCache.set(cacheKey, {
+          expiresAt: Date.now() + PASSWORD_STATUS_CACHE_TTL_MS,
+          value: payload,
+        });
+        passwordStatusInFlight.delete(cacheKey);
+      }
       return payload;
     })
     .catch((error) => {
-      passwordStatusInFlight.delete(cacheKey);
+      if (useCache) {
+        passwordStatusInFlight.delete(cacheKey);
+      }
       throw error;
     });
 
-  passwordStatusInFlight.set(cacheKey, requestPromise);
+  if (useCache) {
+    passwordStatusInFlight.set(cacheKey, requestPromise);
+  }
   return requestPromise;
 }
 
@@ -74,7 +80,7 @@ export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-
 }
 
 export function assertSignUpEmailAvailable({ email }) {
-  return resolvePasswordAccountStatus({ email, intent: 'sign-up' });
+  return resolvePasswordAccountStatus({ email, intent: 'sign-up', useCache: false });
 }
 
 export async function requestVerificationCode({ email, initial, purpose, forceNew }) {

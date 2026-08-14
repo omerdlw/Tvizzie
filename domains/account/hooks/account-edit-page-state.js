@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getCurrentPathWithSearch,
+  normalizeOAuthProvider,
+} from '@/domains/auth/utils';
 import { uploadAccountMediaFile } from '@/domains/account/client';
 import { useAccountEditData, useAccountSecurityActions } from '@/domains/account/hooks';
 import {
@@ -75,6 +80,7 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
       : [];
 
   const providerIdsFromAuth =
+    auth?.capabilities?.providerIds ||
     auth?.user?.metadata?.providerIds ||
     auth?.user?.providerIds ||
     userIdentities.map((i) => i?.provider || i?.identity_provider) ||
@@ -100,6 +106,9 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     );
 
   const canUsePasswordSecurity = isPasswordLinked;
+  const linkedOAuthProviders = Array.from(
+    new Set(linkedProviderIds.map(normalizeOAuthProvider).filter(Boolean)),
+  );
 
   const avatarPreview = useMemo(() => {
     const url = form?.avatarUrl?.trim();
@@ -320,7 +329,9 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     handleCompleteEmailChange,
     handleCompletePasswordChange,
     handleDeleteAccount,
+    handleUnlinkProvider,
     handleSetPassword,
+    unlinkingProvider,
   } = useAccountSecurityActions({
     auth,
     canUsePasswordSecurity,
@@ -363,6 +374,7 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     handleCompleteEmailChange,
     handleCompletePasswordChange,
     handleDeleteAccount,
+    handleUnlinkProvider,
     handleOpenMediaUpload,
     handleSave,
     handleSetPassword,
@@ -376,6 +388,7 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     isSaving,
     likesCount,
     listsCount,
+    linkedOAuthProviders,
     mediaUploadFileName: activeMediaUpload?.fileName || '',
     mediaUploadState,
     passwordFlow,
@@ -384,6 +397,7 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     setDeleteFlow,
     setEmailFlow,
     setPasswordFlow,
+    unlinkingProvider,
     watchedCount,
     watchlistCount,
   };

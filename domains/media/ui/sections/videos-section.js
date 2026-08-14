@@ -57,11 +57,11 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
   }
 
   return (
-    <section className="relative w-full border-b border-black/10">
+    <section className="relative w-full border-b border-white/10">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:video-library-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <Icon icon="solar:video-library-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Videos
           </h2>
         </div>
@@ -103,12 +103,12 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                   overlay={
                     <>
                       <div className="center absolute inset-0 group-hover:opacity-0">
-                        <div className="center text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm">
+                        <div className="center text-primary size-8 border border-black/20 bg-black/20 backdrop-blur-sm">
                           <Icon icon="solar:play-bold" size={16} />
                         </div>
                       </div>
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white group-hover:from-black">
-                        <h3 className="truncate text-sm font-bold text-white">{video.name}</h3>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/70 via-white/30 to-transparent p-3 text-black group-hover:from-white">
+                        <h3 className="truncate text-sm font-bold text-black">{video.name}</h3>
                       </div>
                     </>
                   }

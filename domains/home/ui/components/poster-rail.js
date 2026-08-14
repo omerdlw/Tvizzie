@@ -16,7 +16,7 @@ export function PosterRail({ fallbackMediaType = 'movie', items = [], showRank =
           <div className="relative">
             <MediaPosterCard item={item} fallbackMediaType={fallbackMediaType} />
             {showRank ? (
-              <span className="pointer-events-none absolute top-2 left-2 grid size-7 place-items-center border border-white/20 bg-black/80 text-[11px] font-bold text-white shadow-sm">
+              <span className="pointer-events-none absolute top-2 left-2 grid size-7 place-items-center border border-black/20 bg-white/80 text-[11px] font-bold text-black">
                 {item.imdb_rank || index + 1}
               </span>
             ) : null}

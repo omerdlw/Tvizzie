@@ -55,7 +55,7 @@ export function resolveSignInNoticeToast(notice, provider = null) {
     case AUTH_ROUTE_NOTICE.OAUTH_ACCOUNT_ALREADY_REGISTERED:
       return {
         type: 'warning',
-        message: `This email is already registered with ${getOAuthProviderLabel(provider, 'a social provider')}. Continue with it, then set a password from Account Settings.`,
+        message: `This email is used to sign in with ${getOAuthProviderLabel(provider, 'a social provider')} on another account. Continue with it, or disconnect it from that account’s security settings before using this email here.`,
       };
     case AUTH_ROUTE_NOTICE.GOOGLE_PASSWORD_LOGIN_REQUIRED:
       return {

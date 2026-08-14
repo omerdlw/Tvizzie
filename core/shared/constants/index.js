@@ -16,42 +16,42 @@ export const Z_INDEX = {
 
 export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
-    icon: 'text-error bg-transparent border-none',
-    description: 'text-error',
+    icon: 'text-error bg-error/20 border-error/20',
     surface: 'border border-error',
+    description: 'text-error',
     title: 'text-error',
   }),
   info: Object.freeze({
-    icon: 'text-info bg-transparent border-none',
-    description: 'text-info',
+    icon: 'text-info bg-info/20 border-info/20',
     surface: 'border border-info',
+    description: 'text-info',
     title: 'text-info',
   }),
   success: Object.freeze({
-    icon: 'text-success bg-transparent border-none',
+    icon: 'text-success bg-success/20 border-success/20',
     description: 'text-success',
-    surface: 'border border-success',
+    surface: 'bg-success/10 border border-success',
     title: 'text-success',
   }),
   warning: Object.freeze({
-    icon: 'text-warning bg-transparent border-none',
+    icon: 'text-warning bg-warning/20 border-success/20',
     description: 'text-warning',
-    surface: 'border border-warning',
+    surface: 'bg-warning/20 border border-warning',
     title: 'text-warning',
   }),
 });
 
 export const DESTRUCTIVE_ACTION_TONE_CLASS =
-  'border border-error/10 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error';
+  'border border-error/10 bg-error/10 text-error hover:bg-error hover:text-black hover:border-error';
 
 export const INFO_ACTION_TONE_CLASS =
-  'border border-info/10 bg-info/10 text-info hover:bg-info hover:text-white hover:border-info';
+  'border border-info/10 bg-info/10 text-info hover:bg-info hover:text-black hover:border-info';
 
 export const SUCCESS_ACTION_TONE_CLASS =
-  'border border-success/10 bg-success/10 text-success hover:bg-success hover:text-white hover:border-success';
+  'border border-success/10 bg-success/10 text-success hover:bg-success hover:text-black hover:border-success';
 
 export const WARNING_ACTION_TONE_CLASS =
-  'border border-warning/10 bg-warning/10 text-warning hover:bg-warning hover:text-white hover:border-warning';
+  'border border-warning/10 bg-warning/10 text-warning hover:bg-warning hover:text-black hover:border-warning';
 
 export const API_URL = '';
 export const AUTH_API_URL = '';

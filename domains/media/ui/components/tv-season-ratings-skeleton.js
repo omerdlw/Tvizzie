@@ -1,7 +1,7 @@
 export default function TvSeasonRatingsSkeleton() {
   return (
     <section className="w-full">
-      <div className="flex min-h-14 items-center justify-between gap-4 border-b border-black/10 px-6">
+      <div className="flex min-h-14 items-center justify-between gap-4 border-b border-white/10 px-6">
         <div className="skeleton-block h-3 w-28" />
         <div className="skeleton-block-soft h-3 w-64" />
       </div>

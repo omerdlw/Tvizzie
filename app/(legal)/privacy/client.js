@@ -14,15 +14,15 @@ const LAST_UPDATED = 'April 20, 2026';
 function AnimatedLegalSection({ children, title }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold tracking-tight text-black sm:text-2xl">{title}</h2>
-      <div className="space-y-3 text-sm leading-7 text-black/72 sm:text-[15px]">{children}</div>
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">{title}</h2>
+      <div className="space-y-3 text-sm leading-7 text-white/72 sm:text-[15px]">{children}</div>
     </section>
   );
 }
 
 function LegalDocument({ children }) {
   return (
-    <article className="bg-primary space-y-8 border border-black/5 p-6 sm:p-8">
+    <article className="bg-primary space-y-8 border border-white/5 p-6 sm:p-8">
       {Children.toArray(children).map((section, index) => (
         <LegalReveal key={section.key || index} inView itemIndex={index} stage="section">
           {section}
@@ -45,12 +45,12 @@ function PrivacyView() {
           <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
               <LegalReveal stage="title">
-                <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+                <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                   Privacy Policy
                 </h1>
               </LegalReveal>
               <LegalReveal stage="lead">
-                <p className="mx-auto max-w-2xl text-sm leading-7 text-black/68 sm:text-[15px]">
+                <p className="mx-auto max-w-2xl text-sm leading-7 text-white/68 sm:text-[15px]">
                   This policy explains what information Tvizzie processes, why it is processed, and
                   what choices you have. It is written to reflect the current product and
                   infrastructure used by the app today.
@@ -58,7 +58,7 @@ function PrivacyView() {
               </LegalReveal>
             </div>
             <LegalReveal stage="meta">
-              <p className="text-xs tracking-wide text-black/44 uppercase">
+              <p className="text-xs tracking-wide text-white/44 uppercase">
                 Last updated {LAST_UPDATED}
               </p>
             </LegalReveal>
@@ -66,7 +66,7 @@ function PrivacyView() {
 
           <div
             aria-hidden="true"
-            className="relative left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
+            className="relative left-1/2 h-px w-screen -translate-x-1/2 bg-white/10"
           />
 
           <LegalQuickLinks />
@@ -83,7 +83,7 @@ function PrivacyView() {
                 <p>
                   If you have privacy questions, you can contact{' '}
                   <a
-                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
+                    className="underline decoration-white/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-white"
                     href="mailto:omerdeliavci@outlook.com"
                   >
                     omerdeliavci@outlook.com
@@ -274,7 +274,7 @@ function PrivacyView() {
                 <p>
                   Please also review the{' '}
                   <Link
-                    className="underline decoration-black/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-black"
+                    className="underline decoration-white/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-white"
                     href="/terms"
                   >
                     Terms of Service

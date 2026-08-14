@@ -25,15 +25,19 @@ export function NavSurfaceHeader({
   title = '',
   description = '',
   trailing = null,
+  onBack = null,
   onClose = null,
+  backLabel = 'Back to previous surface',
   closeLabel = 'Close surface',
   descriptionMaxLines = 2,
   className = '',
 }) {
+  const hasBack = typeof onBack === 'function';
   const hasClose = typeof onClose === 'function';
+  const actionPadding = hasBack && hasClose ? 'pr-20' : hasBack || hasClose ? 'pr-10' : null;
 
   return (
-    <div className={cn('relative flex w-full items-center gap-3', hasClose && 'pr-10', className)}>
+    <div className={cn('relative flex w-full items-center gap-3', actionPadding, className)}>
       {icon ? (
         <motion.div
           className="center relative shrink-0"
@@ -53,6 +57,22 @@ export function NavSurfaceHeader({
         {trailing ? <div className="shrink-0">{trailing}</div> : null}
       </div>
 
+      {hasBack ? (
+        <motion.button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onBack();
+          }}
+          className="center absolute top-0 right-9 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+          aria-label={backLabel}
+          whileTap={{ scale: NAV_TAP_SCALE }}
+          transition={NAV_MICRO_TRANSITION}
+        >
+          <Icon icon="solar:alt-arrow-left-bold" size={16} />
+        </motion.button>
+      ) : null}
+
       {hasClose ? (
         <motion.button
           type="button"
@@ -60,7 +80,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           aria-label={closeLabel}
           whileTap={{ scale: NAV_TAP_SCALE }}
           transition={NAV_MICRO_TRANSITION}
@@ -78,7 +98,9 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     title = '',
     description = '',
     trailing = null,
+    onBack = null,
     onClose = null,
+    backLabel = 'Back to previous surface',
     closeLabel = 'Close surface',
     descriptionMaxLines = 2,
     className = '',
@@ -125,12 +147,14 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
             trailing={headerState.trailing}
             title={headerState.title}
             icon={headerState.icon}
+            backLabel={backLabel}
             closeLabel={closeLabel}
+            onBack={onBack}
             onClose={onClose}
           />
         </motion.div>
         <motion.div
-          className={cn('w-full overflow-visible p-0.5', contentClassName)}
+          className={cn('w-full overflow-visible', contentClassName)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ ...NAV_FADE_TRANSITION, delay: 0.08 }}

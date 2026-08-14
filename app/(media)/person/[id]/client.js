@@ -188,7 +188,7 @@ function PersonView({
                 <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
                   {person?.profile_path ? (
                     <MediaRouteReveal stage="person.hero.portrait">
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-black/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
                         <AdaptiveImage
                           mode="img"
                           className="h-full w-full object-cover"
@@ -214,7 +214,7 @@ function PersonView({
                   </MediaRouteReveal>
                 ) : null}
 
-                <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+                <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
               </div>
             )}
 
@@ -225,7 +225,7 @@ function PersonView({
               key={`person-view-${activeView}`}
             >
               {activeView !== 'main' ? (
-                <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+                <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
               ) : null}
               {activeView === 'awards' ? (
                 <Suspense fallback={<PersonAwardsSkeleton />}>

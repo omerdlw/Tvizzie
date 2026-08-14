@@ -15,7 +15,7 @@ function CloseButton({ onClick }) {
       whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       transition={MODAL_MICRO_SPRING}
       onClick={onClick}
-      className="center inline-flex size-8 shrink-0 cursor-pointer border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+      className="center inline-flex size-8 shrink-0 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
     </motion.button>
@@ -33,7 +33,7 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
   return (
     <div
       className={cn(
-        'bg-primary flex items-center justify-between gap-2 border border-black/10 px-3 py-2',
+        'bg-primary flex items-center justify-between gap-2 border border-white/10 px-3 py-2',
         placement === 'embedded' && 'w-full border-x-0 border-t-0',
         isAttachedTop && 'max-w-full border-b-0',
         isAttachedBottom && 'max-w-full border-t-0',
@@ -42,7 +42,7 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
       style={style}
     >
       <div className="min-w-0 flex-1 px-1 sm:px-2">
-        <h2 id={titleId} className="text-base font-semibold tracking-wide text-black">
+        <h2 id={titleId} className="text-base font-semibold tracking-wide text-white">
           {title}
         </h2>
       </div>

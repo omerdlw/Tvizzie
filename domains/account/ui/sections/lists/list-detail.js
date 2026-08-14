@@ -183,7 +183,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                     onReset={hasMediaFilters ? resetMediaFilters : null}
                   />
                   {hasMediaFilters && (
-                    <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                    <p className="text-xs font-semibold tracking-widest text-white/50 uppercase">
                       {filteredListItems.length} of {listItems.length} titles shown
                     </p>
                   )}
@@ -223,7 +223,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                         onReset={hasReviewFilters ? resetReviewFilters : null}
                       />
                       {hasReviewFilters && (
-                        <p className="mt-3 text-xs font-semibold tracking-widest text-black/50 uppercase">
+                        <p className="mt-3 text-xs font-semibold tracking-widest text-white/50 uppercase">
                           {filteredReviews.length} of {reviews.length} comments shown
                         </p>
                       )}

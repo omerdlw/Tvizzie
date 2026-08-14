@@ -5,13 +5,13 @@ import { Fragment, use } from 'react';
 import Icon from '@/ui/primitives/icon';
 
 const RATING_LEGEND = [
-  { label: 'Absolute Cinema', className: 'bg-[#259be8] text-white' },
-  { label: 'Awesome', className: 'bg-[#17713c] text-white' },
-  { label: 'Great', className: 'bg-[#2ab665] text-black' },
-  { label: 'Good', className: 'bg-[#f8d33b] text-black' },
-  { label: 'Average', className: 'bg-[#f89b13] text-black' },
-  { label: 'Bad', className: 'bg-[#ed4b3d] text-white' },
-  { label: 'Garbage', className: 'bg-[#683c77] text-white' },
+  { label: 'Absolute Cinema', className: 'bg-[#259be8] text-black' },
+  { label: 'Awesome', className: 'bg-[#17713c] text-black' },
+  { label: 'Great', className: 'bg-[#2ab665] text-white' },
+  { label: 'Good', className: 'bg-[#f8d33b] text-white' },
+  { label: 'Average', className: 'bg-[#f89b13] text-white' },
+  { label: 'Bad', className: 'bg-[#ed4b3d] text-black' },
+  { label: 'Garbage', className: 'bg-[#683c77] text-black' },
 ];
 
 function getRatingTone(rating) {
@@ -39,7 +39,7 @@ function getEpisodeMap(seasons) {
 
 function RatingsLegend() {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase sm:gap-x-6">
+    <div className="flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase sm:gap-x-6">
       {RATING_LEGEND.map((item) => (
         <span key={item.label} className="inline-flex items-center gap-2 whitespace-nowrap">
           <span aria-hidden="true" className={`size-2.5 ${item.className}`} />
@@ -53,12 +53,12 @@ function RatingsLegend() {
 function TvSeasonRatingsEmpty() {
   return (
     <section className="flex min-h-64 w-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <span className="center size-11 border border-black/10 bg-white/40 text-black/60">
+      <span className="center size-11 border border-white/10 bg-black/40 text-white/60">
         <Icon icon="solar:chart-2-bold" size={20} />
       </span>
       <div>
-        <h2 className="text-sm font-semibold text-black">Ratings unavailable</h2>
-        <p className="mt-1 max-w-sm text-sm leading-6 text-black/60">
+        <h2 className="text-sm font-semibold text-white">Ratings unavailable</h2>
+        <p className="mt-1 max-w-sm text-sm leading-6 text-white/60">
           Episode ratings are not available for this series yet.
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
 
   return (
     <section className="relative w-full">
-      <div className="flex min-h-14 flex-col gap-3 border-b border-black/10 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+      <div className="flex min-h-14 flex-col gap-3 border-b border-white/10 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
         <RatingsLegend />
       </div>
 
@@ -100,7 +100,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
           {seasons.map((season) => (
             <div
               key={season.seasonNumber}
-              className="center size-14 text-xs font-semibold tracking-wide text-black/60 uppercase"
+              className="center size-14 text-xs font-semibold tracking-wide text-white/60 uppercase"
             >
               S{season.seasonNumber}
             </div>
@@ -108,7 +108,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
 
           {episodeNumbers.map((episodeNumber) => (
             <Fragment key={`episode-${episodeNumber}`}>
-              <div className="center size-8 self-center text-[10px] font-semibold tracking-wide text-black/60 uppercase">
+              <div className="center size-8 self-center text-[10px] font-semibold tracking-wide text-white/60 uppercase">
                 E{episodeNumber}
               </div>
               {seasons.map((season) => {

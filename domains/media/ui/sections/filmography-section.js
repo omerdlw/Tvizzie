@@ -49,8 +49,8 @@ export default function PersonFilmographySection({ person }) {
           stage="person.sections.filmography"
           deferred
         >
-          <Icon icon="solar:clapperboard-play-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <Icon icon="solar:clapperboard-play-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Filmography
           </h2>
         </MediaRouteReveal>
@@ -69,7 +69,7 @@ export default function PersonFilmographySection({ person }) {
             </div>
           </MediaRouteReveal>
         ) : null}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       </div>
 
       <MediaRouteReveal className="p-6" stage="person.sections.filmography" deferred>
@@ -87,7 +87,7 @@ export default function PersonFilmographySection({ person }) {
           ))}
         </div>
       </MediaRouteReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

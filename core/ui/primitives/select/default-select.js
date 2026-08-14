@@ -71,7 +71,6 @@ const DefaultSelect = forwardRef(
             side={side}
             align={align}
             sideOffset={sideOffset}
-            onOpenAutoFocus={(event) => event.preventDefault()}
             onCloseAutoFocus={(event) => event.preventDefault()}
             style={{ zIndex: Z_INDEX.SELECT }}
           >

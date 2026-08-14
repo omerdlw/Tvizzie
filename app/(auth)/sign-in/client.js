@@ -439,7 +439,7 @@ function View({
           <form onSubmit={handleResetSubmit} className={AUTH_PAGE_FORM_CLASS}>
             <AuthReveal className="text-center" stage="heading">
               <h1 className="text-3xl font-semibold sm:text-4xl">Reset Password</h1>
-              <p className="mt-2 text-base text-black/50">{resetFlow.email}</p>
+              <p className="mt-2 text-base text-white/50">{resetFlow.email}</p>
             </AuthReveal>
 
             <AuthReveal itemIndex={0} stage="field">
@@ -490,7 +490,7 @@ function View({
               />
             </AuthReveal>
 
-            <AuthReveal className="grid gap-2 sm:grid-cols-2" stage="submit">
+            <AuthReveal className="grid gap-3 sm:grid-cols-2" stage="submit">
               <Button
                 type="button"
                 onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
@@ -514,7 +514,7 @@ function View({
               <AuthReveal stage="brand">
                 <Link
                   href="/"
-                  className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
+                  className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
                 >
                   <Image
                     src="/tvizzie.png"
@@ -574,13 +574,13 @@ function View({
             </AuthReveal>
 
             <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
-              <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
-              <div className="h-px grow bg-black/10" />
+              <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
+              <div className="h-px grow bg-white/10" />
               <AuthReveal stage="divider">
-                <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+                <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
               </AuthReveal>
-              <div className="h-px grow bg-black/10" />
-              <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
+              <div className="h-px grow bg-white/10" />
+              <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
             </div>
 
             <AuthReveal stage="oauth">
@@ -593,14 +593,14 @@ function View({
             </AuthReveal>
 
             <AuthReveal
-              className="mt-2 text-center text-sm font-medium text-black/50"
+              className="mt-2 text-center text-sm font-medium text-white/50"
               stage="footer"
             >
               <p>
                 Don&apos;t have an account?{' '}
                 <Link
                   href={signUpHref}
-                  className="inline-block px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+                  className="inline-block px-1 text-white transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
                 >
                   Sign Up
                 </Link>

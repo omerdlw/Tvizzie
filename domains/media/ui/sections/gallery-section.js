@@ -17,11 +17,11 @@ export default function GallerySection({ images, baseDelay = 0 }) {
   }
 
   return (
-    <section className="relative w-full border-b border-black/10">
+    <section className="relative w-full border-b border-white/10">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:gallery-wide-bold" size={20} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <Icon icon="solar:gallery-wide-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Gallery
           </h2>
         </div>

@@ -102,10 +102,10 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
       valueText: 'text-warning',
     },
     base: {
-      border: 'border-black/10',
-      bg: 'bg-white/50',
-      iconText: 'text-black/70',
-      valueText: 'text-black',
+      border: 'border-white/10',
+      bg: 'bg-black/50',
+      iconText: 'text-white/70',
+      valueText: 'text-white',
     },
   }[variant];
 
@@ -133,7 +133,7 @@ function AwardFilterPill({
   count,
   isActive,
   onClick,
-  activeColorClass = 'bg-black text-white',
+  activeColorClass = 'bg-white text-black',
   index,
 }) {
   return (
@@ -149,7 +149,7 @@ function AwardFilterPill({
         type="button"
         onClick={onClick}
         className={`max-w-[200px] truncate px-3.5 py-1.5 text-xs font-semibold ${
-          isActive ? `${activeColorClass}` : 'bg-black/5 text-black/70 hover:bg-black/10'
+          isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
         {label} {count !== undefined ? `(${count})` : ''}
@@ -167,8 +167,8 @@ function AwardCard({ award, index }) {
     <div
       className={`group relative flex items-center gap-2 border p-1 sm:gap-4 sm:p-2 ${
         isWin
-          ? 'hover:bg-primary border border-yellow-500 bg-white/50'
-          : 'hover:bg-primary border-black/10 bg-white/50'
+          ? 'hover:bg-primary border border-yellow-500 bg-black/50'
+          : 'hover:bg-primary border-white/10 bg-black/50'
       } transition-[background-color,border-color,box-shadow] duration-300 ease-out`}
     >
       {award.poster || award.project ? (
@@ -181,26 +181,26 @@ function AwardCard({ award, index }) {
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-black/40 sm:text-sm">{award.year}</span>
+          <span className="text-xs font-bold text-white/40 sm:text-sm">{award.year}</span>
           {isWin ? (
-            <span className="inline-flex items-center gap-1 bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-white uppercase">
+            <span className="inline-flex items-center gap-1 bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-black uppercase">
               <Icon icon="solar:cup-bold" size={12} />
               Win
             </span>
           ) : (
-            <span className="bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/70 uppercase">
+            <span className="bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70 uppercase">
               Nominee
             </span>
           )}
         </div>
-        <h3 className="truncate text-sm font-semibold text-black sm:text-base">{award.category}</h3>
-        <p className="truncate text-xs text-black/60 sm:text-sm">
+        <h3 className="truncate text-sm font-semibold text-white sm:text-base">{award.category}</h3>
+        <p className="truncate text-xs text-white/60 sm:text-sm">
           {[award.organization, award.project].filter(Boolean).join(' · ')}
         </p>
       </div>
       {hasProjectLink && (
         <div className="shrink-0 pr-1 opacity-0 group-hover:opacity-100">
-          <Icon icon="solar:alt-arrow-right-bold" size={18} className="text-black/40" />
+          <Icon icon="solar:alt-arrow-right-bold" size={18} className="text-white/40" />
         </div>
       )}
     </div>
@@ -224,10 +224,10 @@ function AwardCard({ award, index }) {
 function AwardsMessage({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="flex size-14 items-center justify-center bg-black/5 text-black/40">
+      <div className="flex size-14 items-center justify-center bg-white/5 text-white/40">
         <Icon icon="solar:cup-star-linear" size={32} />
       </div>
-      <p className="mt-4 text-sm font-medium text-black/60">{children}</p>
+      <p className="mt-4 text-sm font-medium text-white/60">{children}</p>
     </div>
   );
 }
@@ -285,7 +285,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
 
         {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       </div>
 
       <MediaRouteReveal className="p-6" stage="person.sections.awards" deferred>
@@ -304,7 +304,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
             count={wins}
             isActive={activeFilter === 'wins'}
             onClick={() => setActiveFilter('wins')}
-            activeColorClass="bg-yellow-500 text-white"
+            activeColorClass="bg-yellow-500 text-black"
           />
 
           {organizations.map((org, index) => (
@@ -326,7 +326,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
       </MediaRouteReveal>
 
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

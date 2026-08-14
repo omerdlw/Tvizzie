@@ -110,13 +110,13 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center shrink-0 gap-1.5 border-t border-black/10 bg-white px-3 py-2">
+    <div className="center shrink-0 gap-1.5 border-t border-white/10 bg-black px-3 py-2">
       <motion.button
         type="button"
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         transition={MODAL_MICRO_SPRING}
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white/5 hover:text-white"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -129,7 +129,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         </svg>
         {getModalLabel(previousEntry.modalType)}
       </motion.button>
-      <span className="text-[10px] text-black/20">/</span>
+      <span className="text-[10px] text-white/20">/</span>
       <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
@@ -226,7 +226,7 @@ function ModalLayer({
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden border border-black/10 bg-white'
+              ? 'overflow-hidden border border-white/10 bg-black'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
@@ -286,7 +286,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-black/15 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/15 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               aria-label="Close active top modal"
             />
           )}
@@ -307,6 +307,12 @@ function ModalLayer({
 export default function Modal() {
   const { modalStack = [], isOpen, closeModal } = useModal();
   const registry = useModalRegistry();
+  const visibleModalStack = useMemo(
+    () => modalStack.filter((entry) => Boolean(registry.get(entry.modalType))),
+    [modalStack, registry],
+  );
+  const topModalEntry = visibleModalStack[visibleModalStack.length - 1] || null;
+  const isModalVisible = Boolean(isOpen && topModalEntry);
 
   const [mounted, setMounted] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
@@ -314,9 +320,9 @@ export default function Modal() {
   const previousTopModalIdRef = useRef(null);
 
   useLayoutEffect(() => {
-    const currentTopModalId = modalStack[modalStack.length - 1]?.id || null;
+    const currentTopModalId = topModalEntry?.id || null;
     const previousTopModalId = previousTopModalIdRef.current;
-    const previousTopStillMounted = modalStack.some((entry) => entry.id === previousTopModalId);
+    const previousTopStillMounted = visibleModalStack.some((entry) => entry.id === previousTopModalId);
 
     if (
       previousTopModalId &&
@@ -327,7 +333,7 @@ export default function Modal() {
     }
 
     previousTopModalIdRef.current = currentTopModalId;
-  }, [modalStack]);
+  }, [topModalEntry?.id, visibleModalStack]);
 
   useEffect(() => {
     setMounted(true);
@@ -349,7 +355,7 @@ export default function Modal() {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isModalVisible) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -358,7 +364,7 @@ export default function Modal() {
     window.dispatchEvent(
       new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
         detail: {
-          locked: isOpen,
+          locked: isModalVisible,
           source: 'modal',
         },
       }),
@@ -375,25 +381,23 @@ export default function Modal() {
         }),
       );
     };
-  }, [isOpen]);
+  }, [isModalVisible]);
 
   if (!mounted) {
     return null;
   }
 
-  const topModalEntry = modalStack[modalStack.length - 1] || null;
-
   return createPortal(
     <>
       <AnimatePresence>
-        {isOpen && topModalEntry && (
+        {isModalVisible && (
           <motion.div
             key="global-modal-backdrop"
             variants={modalBackdropVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-0 bg-white/40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             style={{ zIndex: Z_INDEX.MODAL }}
             onClick={() => {
               if (!isTopExitSettling) {
@@ -405,16 +409,16 @@ export default function Modal() {
       </AnimatePresence>
 
       <AnimatePresence onExitComplete={() => setIsTopExitSettling(false)}>
-        {modalStack.map((entry, index) => (
+        {visibleModalStack.map((entry, index) => (
           <ModalLayer
             key={entry.id}
             entry={entry}
             stackIndex={index}
-            isTopModal={index === modalStack.length - 1 && !isTopExitSettling}
+            isTopModal={index === visibleModalStack.length - 1 && !isTopExitSettling}
             isMobileViewport={isMobileViewport}
             closeModal={closeModal}
             registry={registry}
-            modalStack={modalStack}
+            modalStack={visibleModalStack}
           />
         ))}
       </AnimatePresence>

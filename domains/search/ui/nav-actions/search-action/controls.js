@@ -33,7 +33,7 @@ function PaginationArrow({ direction, onClick }) {
         <Icon
           icon={isLeft ? 'solar:alt-arrow-left-linear' : 'solar:alt-arrow-right-linear'}
           size={16}
-          className="text-black/70"
+          className="text-white/70"
         />
       </motion.button>
     </div>
@@ -44,6 +44,9 @@ export default function SearchActionControls({
   loading = false,
   query = '',
   searchType,
+  ariaLabel = 'Search',
+  placeholder = 'Search movies, TV series, people or users',
+  tabItems = SEARCH_TAB_ITEMS,
   showTabs = true,
   showTabsWhenEmpty = false,
   hasPrevPage = false,
@@ -62,11 +65,12 @@ export default function SearchActionControls({
         {hasPrevPage && <PaginationArrow direction="left" onClick={onPrevPage} />}
         <div className="min-w-0 flex-1">
           <Input
+            aria-label={ariaLabel}
             value={query}
             onFocus={() => setIsActive(true)}
             onBlur={() => setIsActive(false)}
             classNames={{
-              input: 'w-full text-sm placeholder:text-black/50 outline-none',
+              input: 'w-full text-sm placeholder:text-white/50 outline-none',
               wrapper: navActionClass({
                 cn,
                 button: SEARCH_STYLES.input,
@@ -77,12 +81,12 @@ export default function SearchActionControls({
             enterKeyHint="search"
             leftIcon={
               <Icon
-                className={`${query ? 'text-black' : 'text-black/50'}`}
+                className={`${query ? 'text-white' : 'text-white/50'}`}
                 icon="solar:magnifer-linear"
                 size={16}
               />
             }
-            placeholder="Search movies, TV series, people or users"
+            placeholder={placeholder}
             type="text"
             spellCheck={false}
             onChange={(event) => onQueryChange?.(event.target.value)}
@@ -116,7 +120,7 @@ export default function SearchActionControls({
             transition={NAV_FADE_TRANSITION}
           >
             <div className={SEARCH_STYLES.tabList}>
-              {SEARCH_TAB_ITEMS.map((item) => {
+              {tabItems.map((item) => {
                 const isActive = searchType === item.key;
                 return (
                   <motion.button

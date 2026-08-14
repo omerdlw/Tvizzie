@@ -27,7 +27,7 @@ export default function PersonBioSurface({
     <div className="bg-primary max-h-[min(50dvh,24rem)] w-full overflow-y-auto px-4 py-3">
       {normalizedBiography ? (
         <div className="py-1">
-          <p className="text-justify text-sm leading-relaxed wrap-break-word whitespace-pre-line text-black/70">
+          <p className="text-justify text-sm leading-relaxed wrap-break-word whitespace-pre-line text-white/70">
             {normalizedBiography}
           </p>
         </div>

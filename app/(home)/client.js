@@ -72,7 +72,7 @@ function View({ homeData = {} }) {
             title="IMDb Top 100 TV series"
           />
         </div>
-        <NavHeightSpacer className="w-full bg-white" />
+        <NavHeightSpacer className="w-full bg-black" />
       </PageGradientShell>
     </HomeMotionProvider>
   );

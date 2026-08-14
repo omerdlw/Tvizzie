@@ -38,7 +38,7 @@ export default function ListPreviewComposition({
   return (
     <div
       className={cn(
-        'grid h-full w-full grid-cols-3 overflow-hidden border border-black/5',
+        'grid h-full w-full grid-cols-3 overflow-hidden border border-white/5',
         className,
       )}
     >
@@ -49,7 +49,7 @@ export default function ListPreviewComposition({
               item.mediaKey ||
               `${item.entityType || 'movie'}-${item.entityId || item.id || index}-${index}`
             }
-            className="h-full overflow-hidden border-r border-black/5 last:border-r-0"
+            className="h-full overflow-hidden border-r border-white/5 last:border-r-0"
           >
             {getPreviewImage(item) ? (
               <AdaptiveImage

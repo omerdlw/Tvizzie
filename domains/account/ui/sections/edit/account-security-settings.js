@@ -1,6 +1,8 @@
 'use client';
 
 import { ActionButton, Field, INPUT_BASE_CLASSES, SectionCard } from './account-edit-primitives';
+import { getOAuthProviderIcon, getOAuthProviderLabel } from '@/domains/auth/utils';
+import Icon from '@/ui/primitives/icon';
 
 export function AccountSecuritySettings({
   canUsePasswordSecurity,
@@ -10,18 +12,21 @@ export function AccountSecuritySettings({
   handleCompleteEmailChange,
   handleCompletePasswordChange,
   handleDeleteAccount,
+  handleUnlinkProvider,
   handleSetPassword,
   isPasswordLinked,
+  linkedOAuthProviders = [],
   passwordFlow,
   setDeleteFlow,
   setEmailFlow,
   setPasswordFlow,
+  unlinkingProvider,
 }) {
   return (
     <div className="flex flex-col">
       {!canUsePasswordSecurity ? (
         <SectionCard title="Enable Password Sign-In">
-          <div className="bg-black/5 p-3 text-sm leading-6 text-black/50">
+          <div className="bg-white/5 p-3 text-sm leading-6 text-white/50">
             Email/password sign-in is not linked yet. Complete the set password flow below to
             continue.
           </div>
@@ -33,7 +38,7 @@ export function AccountSecuritySettings({
           title="Change Email"
           summaryLabel={
             currentAuthEmail && (
-              <span className="text-[10px] font-medium tracking-normal text-black/50 lowercase">
+              <span className="text-[10px] font-medium tracking-normal text-white/50 lowercase">
                 {currentAuthEmail}
               </span>
             )
@@ -142,6 +147,44 @@ export function AccountSecuritySettings({
               : 'Verify and Set Password'}
         </ActionButton>
       </SectionCard>
+
+      {linkedOAuthProviders.length ? (
+        <SectionCard
+          title="Connected providers"
+          contentClassName="gap-3"
+        >
+          <div className="flex flex-col gap-3">
+            {linkedOAuthProviders.map((provider) => {
+              const label = getOAuthProviderLabel(provider);
+              const icon = getOAuthProviderIcon(provider);
+              const isDisconnecting = unlinkingProvider === provider;
+
+              return (
+                <div
+                  key={provider}
+                  className="flex flex-wrap items-center gap-3 bg-white/5 p-2"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="size-10 center shrink-0 text-white/80">
+                      {icon ? <Icon icon={icon} size={20} aria-hidden="true" /> : null}
+                    </span>
+                    <span className="min-w-0 text-sm font-medium text-white">{label}</span>
+                  </div>
+                  <ActionButton
+                    type="button"
+                    tone="danger"
+                    disabled={Boolean(unlinkingProvider)}
+                    onClick={() => handleUnlinkProvider(provider)}
+                    className="w-full sm:ml-auto sm:w-auto"
+                  >
+                    {isDisconnecting ? 'Disconnecting' : `Disconnect ${label}`}
+                  </ActionButton>
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      ) : null}
 
       <SectionCard title="Delete Account">
         <Field label="Type DELETE to Confirm">

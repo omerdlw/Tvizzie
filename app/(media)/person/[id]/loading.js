@@ -5,6 +5,7 @@ import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
+import SkeletonScene from '@/ui/motion/skeleton-scene';
 
 const SKELETON = 'skeleton-block';
 const SOFT_SKELETON = 'skeleton-block-soft';
@@ -16,7 +17,7 @@ function Line({ className = '', soft = false }) {
 function FullBleedRule({ edge = 'bottom' }) {
   return (
     <div
-      className={`pointer-events-none absolute left-1/2 w-screen -translate-x-1/2 border-black/10 ${
+      className={`pointer-events-none absolute left-1/2 w-screen -translate-x-1/2 border-white/10 ${
         edge === 'top' ? 'top-0 border-t' : 'bottom-0 border-b'
       }`}
     />
@@ -25,7 +26,7 @@ function FullBleedRule({ edge = 'bottom' }) {
 
 function SegmentedControlSkeleton() {
   return (
-    <div className="inline-flex shrink-0 items-stretch border border-black/10 p-[2px]">
+    <div className="inline-flex shrink-0 items-stretch border border-white/10 p-[2px]">
       <div className="flex overflow-hidden">
         <div className="bg-primary flex h-7 items-center px-3">
           <Line className="h-2 w-12" soft />
@@ -111,12 +112,12 @@ function PersonDetailRouteSkeleton() {
   return (
     <PageGradientShell className="overflow-hidden">
       <PersonGridFrame />
-      <div
+      <SkeletonScene
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12`}
       >
         <PersonHeroSkeleton />
         <PersonDeferredContentSkeleton />
-      </div>
+      </SkeletonScene>
       <NavHeightSpacer />
     </PageGradientShell>
   );

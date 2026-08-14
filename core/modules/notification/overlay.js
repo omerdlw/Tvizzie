@@ -35,7 +35,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden border shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
+        'pointer-events-auto relative w-full overflow-hidden border shadow-[0_18px_56px_rgba(0,0,0,0.40)]',
         dismissible && 'touch-pan-y',
         config.colorClass,
       )}
@@ -57,7 +57,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer border border-black/5 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer border border-white/5 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={14} />
           </motion.button>
@@ -66,7 +66,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
         <div className={cn('space-y-1', dismissible && 'pr-7')}>
           <p className="text-sm leading-5 font-semibold">{primaryText}</p>
           {secondaryText ? (
-            <p className="text-sm leading-5 text-black/70">{secondaryText}</p>
+            <p className="text-sm leading-5 text-white/70">{secondaryText}</p>
           ) : null}
         </div>
 
@@ -84,7 +84,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-[background-color,border-color,color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/10 hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+                className="min-h-10 flex-1 border border-white/5 bg-white/5 px-3 text-sm font-semibold text-white transition-[background-color,border-color,color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/10 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
               >
                 {action.label}
               </motion.button>

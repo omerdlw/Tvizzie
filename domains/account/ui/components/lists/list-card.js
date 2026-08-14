@@ -105,7 +105,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
           <motion.div
-            className="relative z-0 border border-black/10 bg-white/40"
+            className="relative z-0 border border-white/10 bg-black/40"
             animate={{ rotateX: isHovered ? 15 : 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
             style={{
@@ -167,7 +167,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                     }}
                     style={{ zIndex }}
                   >
-                    <div className="h-[156px] w-[98px] overflow-hidden border border-black/10 bg-white/70">
+                    <div className="h-[156px] w-[98px] overflow-hidden border border-white/10 bg-black/70">
                       {imageUrl ? (
                         <motion.img
                           src={imageUrl}
@@ -179,7 +179,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         />
                       ) : (
-                        <div className="center h-full w-full bg-white/60 text-black/40">
+                        <div className="center h-full w-full bg-black/60 text-white/40">
                           <Icon icon="solar:videocamera-record-bold" size={20} />
                         </div>
                       )}
@@ -191,10 +191,10 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/10"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/10"
             animate={{
               rotateX: isHovered ? -25 : 0,
-              backgroundColor: 'rgba(255, 255, 255, 1)',
+              backgroundColor: 'rgba(11, 11, 11, 1)',
             }}
             transition={{
               rotateX: { type: 'spring', stiffness: 180, damping: 22, mass: 0.8 },
@@ -203,19 +203,19 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             style={{ transformOrigin: 'center bottom' }}
           >
             <div className="relative px-4 py-4">
-              <h3 className="line-clamp-1 text-[19px] leading-[1.22] font-semibold text-black transition-colors duration-200 group-hover:text-black">
+              <h3 className="line-clamp-1 text-[19px] leading-[1.22] font-semibold text-white transition-colors duration-200 group-hover:text-white">
                 {listTitle}
               </h3>
               <p
                 className={`mt-1 line-clamp-2 text-xs leading-relaxed ${
-                  listDescription ? 'font-normal text-black/60' : 'font-normal text-black/40 italic'
+                  listDescription ? 'font-normal text-white/60' : 'font-normal text-white/40 italic'
                 }`}
               >
                 {listDescription || 'No description'}
               </p>
             </div>
-            <div className="relative h-11 border-t border-black/10">
-              <div className="absolute inset-0 flex items-center justify-between px-3 text-[13px] text-black/70">
+            <div className="relative h-11 border-t border-white/10">
+              <div className="absolute inset-0 flex items-center justify-between pl-3 pr-0 text-[13px] text-white/70">
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <Icon icon="solar:calendar-mark-bold" size={14} />
                   <span>{updatedLabel}</span>

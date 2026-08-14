@@ -39,6 +39,7 @@ export default function MediaReviews({
   onReviewStateChange,
   motionStage = null,
   motionDeferred = false,
+  dividerPositionClassName = 'left-1/2 w-screen -translate-x-1/2',
 }) {
   const [sortMode, setSortMode] = useState(defaultSortMode);
   const searchParams = useSearchParams();
@@ -201,7 +202,9 @@ export default function MediaReviews({
 
   return (
     <section data-community-reviews="true" className="relative w-full">
-      <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+      <div
+        className={`pointer-events-none absolute top-0 ${dividerPositionClassName} border-t border-white/10`}
+      />
       <div className="relative flex w-full flex-col p-6">
         <ReviewHeader
           ratingStats={effectiveRatingStats}
@@ -212,21 +215,23 @@ export default function MediaReviews({
           onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
           onAddReview={!currentUserId ? handleSignInRequest : null}
         />
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div
+          className={`pointer-events-none absolute bottom-0 ${dividerPositionClassName} border-b border-white/10`}
+        />
       </div>
 
       <div className="p-6">
         {showComposer && !ownReview && (
           <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
-            <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full flex-col items-start gap-3 border-y border-white/10 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Rate or review this title</p>
-                <p className="text-xs text-black/70">
+                <p className="text-xs text-white/70">
                   Share your rating and thoughts from the review modal.
                 </p>
               </div>
               <Button
-                className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-white/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white hover:text-black sm:w-auto sm:justify-between"
                 type="button"
                 onClick={() => openReviewModal()}
               >
@@ -236,8 +241,8 @@ export default function MediaReviews({
           </AuthGate>
         )}
         {isSortControlEnabled && (
-          <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
-            <span className="text-[11px] font-semibold tracking-wider text-black/50 uppercase">
+          <div className="flex w-full items-center justify-between border-b border-white/10 pb-4">
+            <span className="text-[11px] font-semibold tracking-wider text-white/50 uppercase">
               Sort
             </span>
             <Select
@@ -245,14 +250,14 @@ export default function MediaReviews({
               options={REVIEW_SORT_OPTIONS}
               classNames={{
                 trigger:
-                  'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between  border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
-                menu: 'overflow-hidden  border border-black/10 bg-white p-1',
+                  'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between  border border-white/10 px-3 text-[11px] font-semibold tracking-wide text-white/70 uppercase',
+                menu: 'overflow-hidden  border border-white/10 bg-black p-1',
                 optionsList: 'flex flex-col gap-1',
                 option:
-                  'cursor-pointer  px-3 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
-                optionActive: 'bg-black/5 text-black',
-                indicator: 'ml-auto text-black',
-                icon: 'text-black/50',
+                  'cursor-pointer  px-3 py-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase outline-none data-[highlighted]:bg-white/5 data-[highlighted]:text-white',
+                optionActive: 'bg-white/5 text-white',
+                indicator: 'ml-auto text-white',
+                icon: 'text-white/50',
               }}
               aria-label="Sort reviews"
             />

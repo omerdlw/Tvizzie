@@ -42,7 +42,7 @@ function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft,
           </clipPath>
         </defs>
 
-        <path d={STAR_PATH} className="fill-black/10" />
+        <path d={STAR_PATH} className="fill-white/10" />
 
         {fillPercent > 0 && (
           <path d={STAR_PATH} className="fill-success" clipPath={`url(#${clipId})`} />

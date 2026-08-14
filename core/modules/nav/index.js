@@ -201,7 +201,7 @@ export default function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={NAV_BACKDROP_TRANSITION}
-            className="fixed inset-0 cursor-pointer bg-white/40"
+            className="fixed inset-0 cursor-pointer bg-black/50 backdrop-blur-sm"
             style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
             onClick={handleOutsideDismiss}
           />

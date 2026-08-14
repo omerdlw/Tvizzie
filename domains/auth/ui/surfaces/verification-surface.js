@@ -86,13 +86,13 @@ function OtpBoxes({
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center text-black/70-colors h-14 border border-black/5 text-lg font-semibold hover:text-black',
+                'center text-white/70-colors h-14 border border-white/5 text-lg font-semibold hover:text-white',
                 hasError &&
                   digit &&
                   'border-error/30 bg-error/15 text-error hover:border-error/20 hover:bg-error/20 border',
                 isActive &&
                   !digit &&
-                  'border border-black/5 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
+                  'border border-white/5 bg-white/5 text-white hover:border-white/10 hover:bg-white/10',
                 digit &&
                   !hasError &&
                   'border-success/30 bg-success/15 text-success hover:border-success/20 hover:bg-success/20 border',
@@ -539,7 +539,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
       <div className="flex flex-col gap-2.5">
         <button
-          className="center hover:bg-info h-11 w-full flex-auto border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase hover:text-white disabled:cursor-not-allowed"
+          className="center hover:bg-info h-11 w-full flex-auto border border-white/5 bg-white/5 px-3 text-xs font-bold tracking-wide text-white/70 uppercase hover:text-black disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"
@@ -558,19 +558,19 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'uppercase-colors flex h-11 w-full items-center gap-2.5 border px-3.5 text-left text-xs font-semibold tracking-wider',
+              'uppercase-colors flex h-11 w-full items-center gap-2.5 border px-3.5 text-left text-xs',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
-                : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
+                : 'border-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
               (isSubmitting || isSending) && 'cursor-not-allowed opacity-60',
             )}
           >
             <span
               className={cn(
-                'center border-colors size-4 shrink-0',
+                'center border size-4 shrink-0',
                 rememberDevice
-                  ? 'border-success/40 bg-success text-white'
-                  : 'border-black/20 bg-transparent text-transparent',
+                  ? 'border-success/40 bg-success text-black'
+                  : 'border-white/5 bg-transparent text-transparent',
               )}
               aria-hidden="true"
             >

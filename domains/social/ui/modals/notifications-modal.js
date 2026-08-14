@@ -78,7 +78,7 @@ function getNotificationSubject(payload, type) {
 }
 
 const InlineEntity = memo(function InlineEntity({ href, children, muted = false }) {
-  const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
+  const className = muted ? 'font-semibold text-white/70' : 'font-semibold';
   return href ? (
     <Link href={href} className={className}>
       {children}
@@ -135,7 +135,7 @@ const NotificationContent = memo(function NotificationContent({ type, actor, pay
       );
     default:
       return (
-        <p className="text-sm text-black/70">
+        <p className="text-sm text-white/70">
           <InlineEntity href={actorHref}>{actorName}</InlineEntity> interacted with you
         </p>
       );
@@ -158,8 +158,8 @@ const NotificationRow = memo(function NotificationRow({
       animate="visible"
       exit="exit"
       className={cn(
-        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4',
-        isUnread ? 'bg-white' : 'hover:bg-white',
+        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4',
+        isUnread ? 'bg-black' : 'hover:bg-black',
       )}
     >
       <div className="center size-10 shrink-0 overflow-hidden">
@@ -177,7 +177,7 @@ const NotificationRow = memo(function NotificationRow({
             wrapperClassName="size-full"
           />
         ) : (
-          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
+          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-white/70" />
         )}
       </div>
 
@@ -187,7 +187,7 @@ const NotificationRow = memo(function NotificationRow({
           actor={notification.actor}
           payload={notification.payload}
         />
-        <span className="text-[10px] tracking-widest text-black/50 uppercase">
+        <span className="text-[10px] tracking-widest text-white/50 uppercase">
           {formatRelativeTime(notification.createdAt)}
         </span>
       </div>
@@ -217,11 +217,11 @@ const NotificationRow = memo(function NotificationRow({
 
 function NotificationSkeleton() {
   return (
-    <div className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-      <div className="size-10 shrink-0 bg-black/5" />
+    <div className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
+      <div className="size-10 shrink-0 bg-white/5" />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-3/5 bg-black/5" />
-        <div className="h-2 w-2/5 bg-black/5" />
+        <div className="h-3 w-3/5 bg-white/5" />
+        <div className="h-2 w-2/5 bg-white/5" />
       </div>
     </div>
   );
@@ -412,7 +412,7 @@ export default function NotificationsModal({ close, header, data }) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="center h-52 px-6 text-center text-sm font-medium text-black/50"
+              className="center h-52 px-6 text-center text-sm font-medium text-white/50"
             >
               Notifications could not be loaded. Please try again.
             </motion.div>
@@ -423,7 +423,7 @@ export default function NotificationsModal({ close, header, data }) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="center h-screen text-sm font-medium text-black/50"
+              className="center h-screen text-sm font-medium text-white/50"
             >
               You have no notifications yet
             </motion.div>

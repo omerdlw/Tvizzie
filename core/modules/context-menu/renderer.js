@@ -160,7 +160,7 @@ function isScrollLockKey(event) {
 
 function ContextMenuHeaderIcon({ classNames, icon }) {
   const iconClassName = joinClassNames(
-    'flex size-10 shrink-0  items-center justify-center overflow-hidden bg-black/5 bg-cover bg-center bg-no-repeat text-black/70',
+    'flex size-10 shrink-0  items-center justify-center overflow-hidden bg-white/5 bg-cover bg-center bg-no-repeat text-white/70',
     classNames.headerIcon,
   );
 
@@ -179,22 +179,22 @@ function ContextMenuHeader({ classNames, header }) {
   if (!header) return null;
 
   const containerClassName = joinClassNames(
-    'mb-1.5 flex items-center gap-2.5 border-b border-black/10 px-1 pb-3',
+    'mb-1.5 flex items-center gap-2.5 border-b border-white/10 px-1 pb-3',
     classNames.header,
   );
 
   const eyebrowClassName = joinClassNames(
-    'text-[10px] font-semibold tracking-wide text-black/50 uppercase',
+    'text-[10px] font-semibold tracking-wide text-white/50 uppercase',
     classNames.headerEyebrow,
   );
 
   const titleClassName = joinClassNames(
-    'truncate text-[15px] leading-tight font-semibold text-black',
+    'truncate text-[15px] leading-tight font-semibold text-white',
     classNames.headerTitle,
   );
 
   const descriptionClassName = joinClassNames(
-    'text-[12px] leading-snug text-black/70',
+    'text-[12px] leading-snug text-white/70',
     classNames.headerDescription,
   );
 
@@ -216,14 +216,14 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   if (item.type === 'separator') {
     return (
       <div
-        className={joinClassNames('my-1 h-px bg-black/10', classNames.separator)}
+        className={joinClassNames('my-1 h-px bg-white/10', classNames.separator)}
         role="separator"
       />
     );
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5  px-3 text-left text-[13px] font-medium text-black/70 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full items-center gap-2.5  px-3 text-left text-[13px] font-medium text-white/70 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/5 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -231,7 +231,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   );
 
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-black/55 transition-colors duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-black/80',
+    'shrink-0 text-white/55 transition-colors duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,
@@ -256,7 +256,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
       {item.shortcut ? (
         <span
           className={joinClassNames(
-            'ml-2 shrink-0 text-[10px] tracking-wide text-black/45 uppercase',
+            'ml-2 shrink-0 text-[10px] tracking-wide text-white/45 uppercase',
             classNames.itemShortcut,
           )}
         >
@@ -435,7 +435,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden border border-black/10 bg-white shadow-[0_18px_56px_rgba(0,0,0,0.10)]',
+          'max-w-sm min-w-64 overflow-hidden border border-white/10 bg-black shadow-[0_18px_56px_rgba(0,0,0,0.40)]',
           classNames.content,
         )}
         role="menu"

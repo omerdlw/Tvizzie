@@ -41,10 +41,10 @@ const PersonCard = memo(function PersonCard({ close, person }) {
     <Link
       href={`/person/${person.id}`}
       onClick={close}
-      className="flex h-full w-full items-center gap-3 p-2 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 focus:outline-none"
+      className="flex h-full w-full items-center gap-3 p-2 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 focus:outline-none"
       aria-label={`View details for ${person.name || 'Cast member'}`}
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-white/5">
         {imageSrc ? (
           <AdaptiveImage
             fill
@@ -58,14 +58,14 @@ const PersonCard = memo(function PersonCard({ close, person }) {
           />
         ) : (
           <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={16} className="text-black/50" />
+            <Icon icon="solar:user-bold" size={16} className="text-white/50" />
           </div>
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
-        <p className="truncate text-xs text-black/70">{person.subtitle}</p>
+        <p className="truncate text-sm font-semibold text-white">{person.name || 'Unknown'}</p>
+        <p className="truncate text-xs text-white/70">{person.subtitle}</p>
       </div>
     </Link>
   );
@@ -129,7 +129,7 @@ export default function CastModal({ close, data, header }) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="grid grid-cols-1 divide-x divide-y divide-black/10 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 divide-x divide-y divide-white/10 sm:grid-cols-2 lg:grid-cols-3"
           >
             {activeEntries.map((person, index) => (
               <motion.div

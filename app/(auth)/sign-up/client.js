@@ -196,6 +196,7 @@ export default function Client() {
 
     try {
       const pendingPayload = await createPendingSignUpPayload(form);
+      await validateSignUpEmail(pendingPayload.email);
 
       const verification = await openSurface(AuthVerificationSurface, {
         header: {
@@ -397,7 +398,7 @@ function SignUpView({
             <AuthReveal stage="brand">
               <Link
                 href="/"
-                className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
+                className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
               >
                 <Image
                   src="/tvizzie.png"
@@ -436,13 +437,13 @@ function SignUpView({
               </AuthReveal>
 
               <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
-                <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
-                <div className="h-px grow bg-black/10" />
+                <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
+                <div className="h-px grow bg-white/10" />
                 <AuthReveal stage="divider">
-                  <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
+                  <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
                 </AuthReveal>
-                <div className="h-px grow bg-black/10" />
-                <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
+                <div className="h-px grow bg-white/10" />
+                <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
               </div>
 
               <AuthReveal stage="oauth">
@@ -555,7 +556,7 @@ function SignUpView({
           ) : null}
 
           {currentStep > 0 ? (
-            <AuthReveal className="grid gap-2 sm:grid-cols-2" stage="submit">
+            <AuthReveal className="grid gap-3 sm:grid-cols-2" stage="submit">
               <Button
                 type="button"
                 onClick={handlePreviousStep}
@@ -579,12 +580,12 @@ function SignUpView({
             </AuthReveal>
           ) : null}
 
-          <AuthReveal className="mt-2 text-center text-sm font-medium text-black/50" stage="footer">
+          <AuthReveal className="mt-2 text-center text-sm font-medium text-white/50" stage="footer">
             <p>
               Already have an account?{' '}
               <Link
                 href={signInHref}
-                className="inline-block px-1 text-black transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
+                className="inline-block px-1 text-white transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
               >
                 Sign In
               </Link>

@@ -17,10 +17,10 @@ export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = `min-h-14 ${ACCOUNT_SECTION_
 export const ACCOUNT_SECTION_CONTENT_PADDING_CLASS = 'p-6';
 export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = `${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS} py-4`;
 export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-6 flex justify-center';
-const ACCOUNT_SECTION_BORDER_CLASS = 'border-black/10';
+const ACCOUNT_SECTION_BORDER_CLASS = 'border-white/10';
 
 export const ACCOUNT_EMPTY_SECTION_CLASS =
-  'center min-h-24 w-full  border border-black/10 p-6 text-center text-xs sm:text-sm font-semibold tracking-wider text-black/50 uppercase';
+  'center min-h-24 w-full  border border-white/10 p-6 text-center text-xs sm:text-sm font-semibold tracking-wider text-white/50 uppercase';
 
 export function AccountInlineSectionState({ children, className = '' }) {
   return (
@@ -54,8 +54,8 @@ export function AccountSectionHeading({
   title,
   titleHref = null,
 }) {
-  const titleClassName = 'min-w-0 text-xs font-semibold tracking-widest uppercase text-black/70';
-  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
+  const titleClassName = 'min-w-0 text-xs font-semibold tracking-widest uppercase text-white/70';
+  const summaryClassName = 'text-xs font-semibold tracking-widest text-white/50 uppercase';
   const TitleWrapper = titleHref ? Link : 'h2';
   return (
     <div className={cn('relative flex w-full flex-col', className)}>
@@ -67,7 +67,7 @@ export function AccountSectionHeading({
         )}
       >
         <AccountReveal className="flex min-w-0 items-center gap-2" deferred stage="section.heading">
-          {icon && <Icon icon={icon} size={24} className="text-black/70" />}
+          {icon && <Icon icon={icon} size={24} className="text-white/70" />}
           <TitleWrapper href={titleHref} className={titleClassName}>
             {title}
           </TitleWrapper>
@@ -96,7 +96,7 @@ export function AccountSectionHeading({
         </AccountReveal>
       </div>
       {showDivider && isInitialSection && (
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       )}
     </div>
   );
@@ -112,7 +112,7 @@ export function AccountSectionBand({ children, className = '', isInitialSection 
       )}
     >
       {isInitialSection && (
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       )}
       {children}
     </div>
@@ -130,7 +130,7 @@ export function AccountSectionState({ message, isInitialSection = true }) {
         )}
       >
         {isInitialSection && (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
         )}
         <div className={ACCOUNT_SECTION_CONTENT_PADDING_CLASS}>
           <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{normalizeFeedbackContent(message)}</div>
@@ -171,7 +171,7 @@ export default function AccountSectionLayout({
         )}
       >
         {showTopRule && isInitialSection && (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
         )}
         {showHeader ? (
           <AccountSectionHeading

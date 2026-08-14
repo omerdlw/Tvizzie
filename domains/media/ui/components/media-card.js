@@ -134,7 +134,7 @@ export default function MediaCard({
             />
           ) : (
             fallbackContent || (
-              <div className="center h-full w-full border border-black/5 bg-black/5">
+              <div className="center h-full w-full border border-white/5 bg-white/5">
                 <Icon
                   icon={fallbackIcon}
                   size={fallbackIconSize}

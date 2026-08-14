@@ -63,11 +63,11 @@ function VideoOverlayIcon({ icon }) {
     <div
       className={cn(
         'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white',
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-white/5 bg-black',
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
     >
-      {!isImageIcon && <Iconify icon={icon} size={14} className="text-black" />}
+      {!isImageIcon && <Iconify icon={icon} size={14} className="text-white" />}
     </div>
   );
 }
@@ -112,6 +112,7 @@ function SurfaceItemContent({ link }) {
   const trailing = link.surfaceTrailing ?? link.trailing ?? null;
   const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
   const onClose = link.dismissible === false ? null : link.closeSurface || link.onClose;
+  const onBack = link.surfaceCanGoBack ? link.closeSurface : null;
 
   return (
     <div className="relative w-full overflow-visible" onClick={(event) => event.stopPropagation()}>
@@ -121,6 +122,7 @@ function SurfaceItemContent({ link }) {
           title={title}
           description={description}
           trailing={trailing}
+          onBack={onBack}
           onClose={onClose}
           closeLabel={closeLabel}
           descriptionMaxLines={2}

@@ -10,18 +10,18 @@ export default function PersonTimelineSkeleton() {
     <section className="relative w-full">
       <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
         <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:sort-by-time-bold" size={24} className="text-black/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-widest text-black/70 uppercase">
+          <Icon icon="solar:sort-by-time-bold" size={24} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-widest text-white/70 uppercase">
             Timeline
           </h2>
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       </div>
 
       <div className="p-6">
         <div className="relative">
           {/* Vertical Timeline Line */}
-          <div className="absolute top-[18px] bottom-0 left-16 w-px bg-black/10 sm:left-24" />
+          <div className="absolute top-[18px] bottom-0 left-16 w-px bg-white/10 sm:left-24" />
 
           <div className="flex flex-col gap-8">
             {Array.from({ length: 4 }).map((_, yearIndex) => (
@@ -31,7 +31,7 @@ export default function PersonTimelineSkeleton() {
                 </div>
 
                 {/* Timeline Dot */}
-                <div className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 border-2 border-white bg-black/30 sm:left-24" />
+                <div className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 border-2 border-black bg-white/30 sm:left-24" />
 
                 <div className="min-w-0 flex-1 space-y-3 pt-1 pl-4 sm:pl-8">
                   {Array.from({ length: yearIndex === 0 ? 2 : 1 }).map((_, itemIndex) => (
@@ -53,7 +53,7 @@ export default function PersonTimelineSkeleton() {
           </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

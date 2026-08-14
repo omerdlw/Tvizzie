@@ -17,10 +17,10 @@ import {
 } from './motion';
 
 export const CANCEL_BUTTON_CLASS =
-  'h-8 shrink-0  border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/5 hover:text-black active:scale-[0.97] disabled:active:scale-100';
+  'h-8 shrink-0  border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white/70 transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white active:scale-[0.97] disabled:active:scale-100';
 
 export const ACTION_BUTTON_CLASS = cn(
-  'h-8 shrink-0  px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50 disabled:active:scale-100',
+  'h-8 shrink-0  px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/10 disabled:text-white/50 disabled:active:scale-100',
   INFO_ACTION_TONE_CLASS,
 );
 
@@ -80,7 +80,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       transition={MODAL_MICRO_SPRING}
       onClick={close}
-      className="center inline-flex size-8 cursor-pointer border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+      className="center inline-flex size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
     </motion.button>
@@ -108,7 +108,7 @@ export default function Container({
     ? null
     : (headerConfig?.left ??
       (headerConfig?.title ? (
-        <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
+        <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-white">
           {headerConfig.title}
         </h2>
       ) : null));
@@ -151,7 +151,7 @@ export default function Container({
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
               : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
-            headerIsSticky && 'sticky top-0 z-10 bg-white',
+            headerIsSticky && 'sticky top-0 z-10 bg-black',
           )}
         >
           <div className="min-w-0">{headerLeft}</div>
@@ -183,7 +183,7 @@ export default function Container({
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
               : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
-            footerIsSticky && 'sticky bottom-0 bg-white',
+            footerIsSticky && 'sticky bottom-0 bg-black',
           )}
         >
           <div className="min-w-0">{footerLeft}</div>

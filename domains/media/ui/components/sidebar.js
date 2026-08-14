@@ -24,8 +24,8 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-start gap-2.5 py-1.5 text-xs text-black sm:text-sm">
-      <span className="inline-flex shrink-0 items-center justify-center pt-0.5 text-black/70">
+    <div className="flex items-start gap-2.5 py-1.5 text-xs text-white sm:text-sm">
+      <span className="inline-flex shrink-0 items-center justify-center pt-0.5 text-white/70">
         <Icon icon={icon} size={18} />
       </span>
       <div className="min-w-0 flex-1 leading-snug font-medium">{children}</div>
@@ -35,7 +35,7 @@ function SidebarRow({ icon, children }) {
 
 function PersonLink({ person }) {
   return (
-    <Link href={`/person/${person.id}`} className="text-black/70 hover:text-black">
+    <Link href={`/person/${person.id}`} className="text-white/70 hover:text-white">
       {person.name}
     </Link>
   );
@@ -54,13 +54,13 @@ function PersonsDisplay({ persons, label }) {
         {visible.map((person, index) => (
           <div key={person.id} className="flex items-start gap-1">
             <PersonLink person={person} />
-            {index < visible.length - 1 && <span className="text-black/50">,</span>}
+            {index < visible.length - 1 && <span className="text-white/50">,</span>}
           </div>
         ))}
 
         {hidden.length > 0 && (
           <Tooltip text={hidden.map((person) => person.name).join(', ')} position="top">
-            <span className="shrink-0 cursor-help text-xs font-bold text-black/70">
+            <span className="shrink-0 cursor-help text-xs font-bold text-white/70">
               +{hidden.length}
             </span>
           </Tooltip>
@@ -88,7 +88,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
     <MediaRouteReveal stage="sidebar.taxonomy">
       <div className="mt-2 flex flex-col gap-2">
         <div>
-          <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
+          <p className="text-[11px] leading-none font-semibold tracking-widest text-white/70 uppercase">
             GENRES / TAGS
           </p>
         </div>
@@ -103,7 +103,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
                 interactive
                 itemIndex={index}
               >
-                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-black/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase hover:border-black/15 hover:text-black">
+                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-white/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase hover:border-white/15 hover:text-white">
                   {genre}
                 </span>
               </MediaRouteReveal>
@@ -118,7 +118,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
               interactive
               itemIndex={normalizedGenres.length + index}
             >
-              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-black/5 px-2.5 py-1 text-[11px] text-black/70 uppercase hover:border-black/15 hover:text-black">
+              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-white/5 px-2.5 py-1 text-[11px] text-white/70 uppercase hover:border-white/15 hover:text-white">
                 {tag}
               </span>
             </MediaRouteReveal>
@@ -184,7 +184,7 @@ export default function Sidebar({
         'certification',
         'solar:shield-bold',
         <>
-          Rated <span className="text-black/70">{certification}</span>
+          Rated <span className="text-white/70">{certification}</span>
         </>,
       ),
     originalLanguageName &&
@@ -192,7 +192,7 @@ export default function Sidebar({
         'language',
         'solar:globus-bold',
         <>
-          Original Language: <span className="text-black/70">{originalLanguageName}</span>
+          Original Language: <span className="text-white/70">{originalLanguageName}</span>
         </>,
       ),
     item.status &&
@@ -200,7 +200,7 @@ export default function Sidebar({
         'status',
         'solar:info-circle-bold',
         <>
-          Status: <span className="text-black/70">{item.status}</span>
+          Status: <span className="text-white/70">{item.status}</span>
         </>,
       ),
     episodeRuntime &&
@@ -208,7 +208,7 @@ export default function Sidebar({
         'runtime',
         'solar:clock-circle-bold',
         <>
-          ~<span className="text-black/70">{episodeRuntime}</span> min / episode
+          ~<span className="text-white/70">{episodeRuntime}</span> min / episode
         </>,
       ),
     item.budget > 0 &&
@@ -216,7 +216,7 @@ export default function Sidebar({
         'budget',
         'solar:dollar-bold',
         <>
-          Budget: <span className="text-black/70">{formatCurrency(item.budget)}</span>
+          Budget: <span className="text-white/70">{formatCurrency(item.budget)}</span>
         </>,
       ),
     item.revenue > 0 &&
@@ -224,7 +224,7 @@ export default function Sidebar({
         'revenue',
         'solar:graph-up-bold',
         <>
-          Revenue: <span className="text-black/70">{formatCurrency(item.revenue)}</span>
+          Revenue: <span className="text-white/70">{formatCurrency(item.revenue)}</span>
         </>,
       ),
   ].filter(Boolean);
@@ -256,7 +256,7 @@ export default function Sidebar({
               wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
+            <div className="bg-primary center h-full w-full border border-white/5 text-white/50">
               <Icon icon="solar:clapperboard-play-bold" size={40} />
             </div>
           )}

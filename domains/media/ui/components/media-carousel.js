@@ -114,7 +114,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           onClick={() => scrollByDirection(-1)}
           {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-left-4',
+            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs sm:size-10 md:-left-4',
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
@@ -129,7 +129,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           onClick={() => scrollByDirection(1)}
           {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-white/10 bg-black/90 backdrop-blur-xs sm:size-10 md:-right-4',
+            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs sm:size-10 md:-right-4',
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />
