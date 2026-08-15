@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import FilmographyCard from '../components/person/filmography-card';
 import { getFilmographyCredits } from '@/domains/media/utils/person-data';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import Icon from '@/ui/primitives/icon';
 import { MediaRouteReveal } from '@/app/(media)/motion';
@@ -69,7 +70,9 @@ export default function PersonFilmographySection({ person }) {
             </div>
           </MediaRouteReveal>
         ) : null}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
 
       <MediaRouteReveal className="p-6" stage="person.sections.filmography" deferred>

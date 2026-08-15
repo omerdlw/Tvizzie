@@ -15,6 +15,7 @@ import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
 import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 
 function createReviewState() {
   return {
@@ -141,7 +142,10 @@ function View({
                     </div>
                   </MediaRouteReveal>
                 ) : null}
-                <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+                <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+                  <GridCrosshair side="left" />
+                  <GridCrosshair side="right" />
+                </div>
               </div>
 
               <MediaRouteReveal className="w-full" stage="sections.reviews">

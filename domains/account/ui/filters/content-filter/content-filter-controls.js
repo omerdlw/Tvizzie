@@ -7,26 +7,26 @@ import { cn } from '@/shared/utils';
 import RatingRangeSelector from '@/domains/reviews/ui/components/rating-range-selector';
 import Icon from '@/ui/primitives/icon';
 export const UI = {
-  bar: 'flex w-full flex-nowrap flex-auto items-center gap-2 overflow-x-auto scrollbar-none',
+  bar: 'flex w-full flex-nowrap items-center gap-4 sm:gap-6 overflow-x-auto scrollbar-none',
   trigger:
-    'inline-flex cursor-pointer h-9 w-auto flex-auto shrink-0 items-center gap-1.5 border border-white/5 px-3 text-xs uppercase text-white/70 hover:border-white/10 hover:bg-white/5',
-  triggerActive: 'border-info/20 bg-info/20 hover:bg-info/40 text-info',
+    'inline-flex cursor-pointer flex-1 min-w-max items-center justify-center gap-1.5 whitespace-nowrap border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/70 hover:text-white transition-colors focus-visible:outline-none',
+  triggerActive: 'text-info font-bold hover:text-info',
   iconButton:
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center border border-white/5 text-white/70 hover:border-white/10 hover:bg-white/5',
+    'inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-white/70 hover:text-white transition-colors focus-visible:outline-none',
   resetButton:
-    'ml-auto inline-flex h-9 shrink-0 items-center  border border-white/5 bg-black px-3 text-xs uppercase text-white/70 hover:border-white/10 hover:bg-white/5',
-  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/10 bg-black/50 backdrop-blur-md p-1',
+    'ml-auto inline-flex shrink-0 cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/50 hover:text-white transition-colors focus-visible:outline-none',
+  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/10 bg-black/80 backdrop-blur-md p-1',
   sectionLabel: 'px-2 py-1.5 text-[10px] uppercase text-white/50',
   menuItem:
     'flex w-full items-center justify-between cursor-pointer p-2 text-left text-sm text-white/80 hover:bg-white/5',
   menuItemActive: 'bg-white/5 font-medium text-white',
   divider: 'border-t border-white/10',
   inputWrap:
-    'flex h-9 min-w-0 flex-1 items-center gap-3 border border-white/5 px-3 focus-within:border-white/10',
-  input: 'min-w-0 flex-1 text-sm text-white outline-none placeholder:text-white/50',
+    'flex h-8 min-w-0 flex-1 items-center gap-2 bg-transparent px-1',
+  input: 'min-w-0 flex-1 text-xs text-white bg-transparent outline-none placeholder:text-white/40',
   helperText: 'px-1 text-[10px] text-white/50',
   visibilityItem:
-    'flex w-full cursor-pointer items-center justify-between  px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5',
+    'flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5',
   visibilityItemActive: 'bg-white/5 font-medium text-white',
   dot: 'size-2.5 border border-white/5',
   dotActive: 'bg-white',

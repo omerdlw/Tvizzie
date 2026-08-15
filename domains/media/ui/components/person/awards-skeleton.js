@@ -1,6 +1,7 @@
 'use client';
 
 import Icon from '@/ui/primitives/icon';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 const S = 'skeleton-block ';
 const SOFT = 'skeleton-block-soft ';
@@ -23,7 +24,9 @@ export default function PersonAwardsSkeleton() {
         </div>
 
         {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
 
       {/* Category / Filter Section Skeleton */}
@@ -35,7 +38,9 @@ export default function PersonAwardsSkeleton() {
         </div>
 
         {/* Full-width category bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </section>
 
       {/* Cards Skeleton */}
@@ -60,7 +65,9 @@ export default function PersonAwardsSkeleton() {
           ))}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+        <GridShellCrosshairs />
+      </div>
     </section>
   );
 }

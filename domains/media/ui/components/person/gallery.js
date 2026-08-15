@@ -1,5 +1,6 @@
 'use client';
 
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Carousel from '@/domains/media/ui/components/media-carousel';
@@ -57,7 +58,9 @@ export default function PersonGallery({ images }) {
             </h2>
           </div>
         </MediaRouteReveal>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
       <MediaRouteReveal className="p-6" stage="person.sections.gallery" deferred>
         <div ref={containerRef} className="w-full">
@@ -89,7 +92,9 @@ export default function PersonGallery({ images }) {
           </Carousel>
         </div>
       </MediaRouteReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
     </section>
   );
 }

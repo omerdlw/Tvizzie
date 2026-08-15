@@ -1,5 +1,6 @@
 'use client';
 
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import { createContext, useContext, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSelectedLayoutSegment } from 'next/navigation';
@@ -140,7 +141,9 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
   if (!username) return null;
   return (
     <div className={cn('relative w-full bg-transparent', className)}>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
         <div className="grid h-14 w-full auto-cols-[6.75rem] grid-flow-col divide-x divide-white/10 overflow-x-auto [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (

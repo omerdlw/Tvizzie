@@ -19,6 +19,7 @@ import {
   REVIEW_SORT_OPTIONS,
   sortReviewsByMode,
 } from '../../shared/review-data';
+import { GridCrosshair, GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 export default function MediaReviews({
   entityId,
@@ -210,7 +211,16 @@ export default function MediaReviews({
       {shouldShowTopDivider ? (
         <div
           className={`pointer-events-none absolute top-0 ${effectiveDividerPosition} h-px bg-white/10 backdrop-blur-sm`}
-        />
+        >
+          {isRecentListMode ? (
+            <GridShellCrosshairs />
+          ) : (
+            <>
+              <GridCrosshair side="left" />
+              <GridCrosshair side="right" />
+            </>
+          )}
+        </div>
       ) : null}
       <div className="relative flex w-full flex-col p-6">
         <ReviewHeader
@@ -224,7 +234,16 @@ export default function MediaReviews({
         />
         <div
           className={`pointer-events-none absolute bottom-0 ${effectiveDividerPosition} h-px bg-white/10 backdrop-blur-sm`}
-        />
+        >
+          {isRecentListMode ? (
+            <GridShellCrosshairs />
+          ) : (
+            <>
+              <GridCrosshair side="left" />
+              <GridCrosshair side="right" />
+            </>
+          )}
+        </div>
       </div>
 
       <div className="p-6">

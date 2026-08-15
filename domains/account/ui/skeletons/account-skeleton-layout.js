@@ -5,13 +5,16 @@ import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import AccountGridFrame from '../layouts/account-grid-frame';
 import SkeletonScene from '@/ui/motion/skeleton-scene';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 const SECTION_ITEMS = ['Overview', 'Activity', 'Likes', 'Watched', 'Watchlist', 'Reviews', 'Lists'];
 
 export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
   return (
     <div className="relative w-full bg-transparent">
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+        <GridShellCrosshairs />
+      </div>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
         <div className="grid h-14 w-full auto-cols-[6.75rem] grid-flow-col divide-x divide-white/10 overflow-x-auto [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((label) => {

@@ -8,6 +8,7 @@ import {
   HOME_SECTION_TITLE_CLASS,
 } from '@/domains/home/ui/layouts/home-section';
 import { PosterRail } from '../components/poster-rail';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 export function TrendingSection({ title, items = [] }) {
   const railItems = getUniqueDiscoverItems(items, 12);
@@ -24,14 +25,18 @@ export function TrendingSection({ title, items = [] }) {
             <h2 className={HOME_SECTION_TITLE_CLASS}>{title}</h2>
           </div>
         </HomeReveal>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
       <HomeReveal stage="section.rail">
         <div className={HOME_SECTION_CONTENT_CLASS}>
           <PosterRail items={railItems} />
         </div>
       </HomeReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+        <GridShellCrosshairs />
+      </div>
     </section>
   );
 }

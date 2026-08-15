@@ -11,6 +11,7 @@ import {
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
 import { MediaRouteReveal } from '@/app/(media)/motion';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
 }
@@ -76,7 +77,10 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
             />
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
       </div>
       <div
         key={`movie-videos-${activeType || 'empty'}`}
@@ -124,7 +128,10 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <GridCrosshair side="left" />
+        <GridCrosshair side="right" />
+      </div>
     </section>
   );
 }

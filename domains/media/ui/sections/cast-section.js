@@ -22,6 +22,7 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
@@ -272,7 +273,10 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           />
           {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
       </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -280,7 +284,10 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           {renderPanel(activeTabData.key, activeTabData.entries)}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <GridCrosshair side="left" />
+        <GridCrosshair side="right" />
+      </div>
     </section>
   );
 }

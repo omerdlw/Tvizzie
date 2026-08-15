@@ -1,5 +1,6 @@
 'use client';
 
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
@@ -286,7 +287,9 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
 
         {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
 
       {/* Category / Filter Section */}
@@ -318,7 +321,9 @@ export default function PersonAwards({ personId, awardsPromise }) {
             />
           ))}
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </section>
 
       {/* Award Items List Section */}

@@ -17,6 +17,7 @@ import {
   HOME_SECTION_CONTENT_CLASS,
   HOME_SECTION_HEADER_CLASS,
 } from '@/domains/home/ui/layouts/home-section';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 const MEDIA_TYPE_ITEMS = Object.freeze([
   { key: 'movie', label: 'Movies' },
@@ -215,7 +216,9 @@ export function DiscoverSection({
             />
           </div>
         </HomeReveal>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       </div>
 
       <HomeReveal stage="discover.grid">
@@ -276,7 +279,9 @@ export function DiscoverSection({
           </HomeReveal>
         </div>
       </HomeReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+        <GridShellCrosshairs />
+      </div>
     </section>
   );
 }

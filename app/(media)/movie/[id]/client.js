@@ -41,6 +41,7 @@ import {
 import Icon from '@/ui/primitives/icon';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import { cn } from '@/core/shared/utils';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 
 const TV_VIEW_TRANSITION = {
   duration: 0.38,
@@ -296,7 +297,10 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
               {title}
             </h2>
           </div>
-          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+            <GridCrosshair side="left" />
+            <GridCrosshair side="right" />
+          </div>
         </div>
 
         <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -318,7 +322,10 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
           </Carousel>
         </div>
         {hasBottomBorder ? (
-          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+            <GridCrosshair side="left" />
+            <GridCrosshair side="right" />
+          </div>
         ) : null}
       </div>
     </MediaRouteReveal>
@@ -640,7 +647,10 @@ function MovieView({
                           </div>
                         </MediaRouteReveal>
                       ) : null}
-                      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+                      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+                        <GridCrosshair side="left" />
+                        <GridCrosshair side="right" />
+                      </div>
                     </div>
 
                     <MovieSecondaryContent

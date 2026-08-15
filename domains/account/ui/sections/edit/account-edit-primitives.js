@@ -1,5 +1,6 @@
 'use client';
 
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import { AccountSectionHeading } from '@/domains/account/ui/sections/account-section';
 import { ACCOUNT_SECTION_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';
 import { cn } from '@/core/shared/utils';
@@ -55,7 +56,9 @@ export function SectionCard({
   return (
     <section className="relative bg-transparent">
       <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'relative flex flex-col', className)}>
-        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
         <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
         <AccountReveal className="p-6" deferred stage="section.content">
           {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}

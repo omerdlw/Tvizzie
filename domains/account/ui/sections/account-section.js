@@ -1,5 +1,6 @@
 'use client';
 
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import Link from 'next/link';
 import { normalizeFeedbackContent, cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
@@ -15,7 +16,7 @@ import { AccountReveal } from '@/app/(account)/motion';
 export const ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS = 'px-4';
 export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = `min-h-14 ${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS}`;
 export const ACCOUNT_SECTION_CONTENT_PADDING_CLASS = 'p-6';
-export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = `${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS} py-4`;
+export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = `${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS} min-h-14 flex items-center`;
 export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-6 flex justify-center';
 const ACCOUNT_SECTION_BORDER_CLASS = 'border-white/10';
 
@@ -95,7 +96,9 @@ export function AccountSectionHeading({
         </AccountReveal>
       </div>
       {showDivider && (
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       )}
     </div>
   );
@@ -109,7 +112,9 @@ export function AccountSectionBand({ children, className = '', isInitialSection 
         className,
       )}
     >
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
       {children}
     </div>
   );
@@ -124,7 +129,9 @@ export function AccountSectionState({ message, isInitialSection = true }) {
           'relative',
         )}
       >
-        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
         <div className={ACCOUNT_SECTION_CONTENT_PADDING_CLASS}>
           <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{normalizeFeedbackContent(message)}</div>
         </div>
@@ -163,7 +170,9 @@ export default function AccountSectionLayout({
         )}
       >
         {showTopRule && (
-          <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+          <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
         )}
         {showHeader ? (
           <AccountSectionHeading
@@ -185,7 +194,7 @@ export default function AccountSectionLayout({
             isInitialSection={isInitialSection}
             className={cn(toolbarPaddingClassName, toolbarClassName)}
           >
-            <AccountReveal deferred itemIndex={revealDelay} stage="control">
+            <AccountReveal className="w-full" deferred itemIndex={revealDelay} stage="control">
               {toolbar}
             </AccountReveal>
           </AccountSectionBand>

@@ -3,6 +3,7 @@
 import { Fragment, use } from 'react';
 
 import Icon from '@/ui/primitives/icon';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 
 const RATING_LEGEND = [
   { label: 'Absolute Cinema', className: 'bg-[#259be8] text-black' },
@@ -89,7 +90,10 @@ export default function TvSeasonRatings({ ratingsPromise }) {
     <section className="relative w-full">
       <div className="relative flex min-h-14 flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
         <RatingsLegend />
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
       </div>
 
       <div className="overflow-x-auto px-6 py-5">

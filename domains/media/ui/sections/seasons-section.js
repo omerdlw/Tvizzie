@@ -11,6 +11,7 @@ import {
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
 import { MediaRouteReveal } from '@/app/(media)/motion';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 function normalizeSeasonDetails(seasonDetails = []) {
   return new Map(
     (Array.isArray(seasonDetails) ? seasonDetails : [])
@@ -126,7 +127,10 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
             onChange={handleTabChange}
           />
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
       </div>
 
       <div key={`tv-season-${activeSeason.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -150,7 +154,10 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
           </p>
         )}
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <GridCrosshair side="left" />
+        <GridCrosshair side="right" />
+      </div>
     </section>
   );
 }

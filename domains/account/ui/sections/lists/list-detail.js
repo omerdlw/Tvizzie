@@ -173,21 +173,14 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             }
             toolbar={
               hasListItems && (
-                <>
-                  <AccountMediaFilterBar
-                    filters={mediaFilters}
-                    decadeOptions={decadeOptions}
-                    genreOptions={genreOptions}
-                    visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
-                    onChange={updateMediaFilters}
-                    onReset={hasMediaFilters ? resetMediaFilters : null}
-                  />
-                  {hasMediaFilters && (
-                    <p className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                      {filteredListItems.length} of {listItems.length} titles shown
-                    </p>
-                  )}
-                </>
+                <AccountMediaFilterBar
+                  filters={mediaFilters}
+                  decadeOptions={decadeOptions}
+                  genreOptions={genreOptions}
+                  visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
+                  onChange={updateMediaFilters}
+                  onReset={hasMediaFilters ? resetMediaFilters : null}
+                />
               )
             }
           />
@@ -212,7 +205,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                     />
                   )}
                   {reviews.length > 0 ? (
-                    <div className="p-4">
+                    <div className="min-h-14 px-4 flex items-center">
                       <AccountReviewFilterBar
                         filters={reviewFilters}
                         showRatingFilter={false}
@@ -222,11 +215,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                         onChange={updateReviewFilters}
                         onReset={hasReviewFilters ? resetReviewFilters : null}
                       />
-                      {hasReviewFilters && (
-                        <p className="mt-3 text-xs font-semibold tracking-widest text-white/50 uppercase">
-                          {filteredReviews.length} of {reviews.length} comments shown
-                        </p>
-                      )}
                     </div>
                   ) : null}
                 </>

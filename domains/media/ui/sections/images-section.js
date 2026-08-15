@@ -12,6 +12,7 @@ import {
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
 import { MediaRouteReveal } from '@/app/(media)/motion';
+import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 const TABS = Object.freeze([
   {
     key: 'backdrops',
@@ -117,7 +118,10 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
             />
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
       </div>
       <div key={`movie-images-${currentTab.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
         <Carousel gap="gap-3">
@@ -166,7 +170,10 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <GridCrosshair side="left" />
+        <GridCrosshair side="right" />
+      </div>
     </section>
   );
 }
