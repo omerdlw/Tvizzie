@@ -164,10 +164,10 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             renderOverlay={(item) =>
               isOwner ? (
                 <ProfileMediaActions
-                  media={item}
+                  item={item}
                   onRemoveItem={handleRemoveListItem}
                   removeLabel={`Remove ${item?.title || item?.name || 'item'} from this list`}
-                  userId={auth.user?.id}
+                  currentUserId={auth.user?.id}
                 />
               ) : null
             }
@@ -205,7 +205,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                     />
                   )}
                   {reviews.length > 0 ? (
-                    <div className="min-h-14 px-4 flex items-center">
+                    <div className="flex min-h-14 items-center px-4">
                       <AccountReviewFilterBar
                         filters={reviewFilters}
                         showRatingFilter={false}

@@ -193,6 +193,23 @@ export function useAccountPageActions({
     router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, { next: currentPath }));
   }, [currentPath, router]);
 
+  const promptUnfollow = useCallback(() => {
+    const handle = profile?.username ? `@${profile.username}` : 'this user';
+    const name = profile?.displayName || profile?.username || 'This user';
+    setUnfollowConfirmation({
+      title: `Unfollow ${handle}`,
+      description:
+        name === handle
+          ? `${handle} will be removed from your following list until you follow again`
+          : `${name} ${handle} will be removed from your following list until you follow again`,
+      icon: getUserAvatarUrl(profile),
+      confirmText: 'Unfollow',
+      isDestructive: true,
+      onCancel: () => setUnfollowConfirmation(null),
+      onConfirm: handleConfirmUnfollow,
+    });
+  }, [handleConfirmUnfollow, profile]);
+
   const handleFollow = useCallback(async () => {
     if (!auth.isAuthenticated) {
       handleSignInRequest();
@@ -201,20 +218,7 @@ export function useAccountPageActions({
     if (!auth.user?.id || !profile?.id) return;
 
     if (followRelationship.outboundStatus === FOLLOW_STATUSES.ACCEPTED) {
-      const handle = profile?.username ? `@${profile.username}` : 'this user';
-      const name = profile?.displayName || profile?.username || 'This user';
-      setUnfollowConfirmation({
-        title: `Unfollow ${handle}`,
-        description:
-          name === handle
-            ? `${handle} will be removed from your following list until you follow again`
-            : `${name} ${handle} will be removed from your following list until you follow again`,
-        icon: getUserAvatarUrl(profile),
-        confirmText: 'Unfollow',
-        isDestructive: true,
-        onCancel: () => setUnfollowConfirmation(null),
-        onConfirm: handleConfirmUnfollow,
-      });
+      promptUnfollow();
       return;
     }
 
@@ -278,6 +282,7 @@ export function useAccountPageActions({
     handleSignInRequest,
     isPrivateProfile,
     profile,
+    promptUnfollow,
     setFollowRelationship,
     setFollowerCount,
     toast,

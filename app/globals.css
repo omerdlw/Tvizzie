@@ -6,7 +6,7 @@
   --color-black: var(--black);
   --color-primary: var(--primary);
 
-  --color-error: #c70102;
+  --color-error: #ef4444;
   --color-warning: #f59331;
   --color-success: #00e054;
   --color-info: #3fb8ef;
@@ -16,9 +16,9 @@
 
 @layer base {
   :root {
-    --white: #f0efeb;
-    --black: #13181b;
-    --primary: #1a1a1a;
+    --white: #fbfbfa;
+    --black: #14181c;
+    --primary: #202830;
   }
 
   html,
@@ -71,5 +71,63 @@
 
   .skeleton-block-soft {
     background-color: rgb(252 252 251 / 0.05);
+  }
+
+  .tooltip-content {
+    animation-duration: 160ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+  }
+
+  .tooltip-content[data-state='delayed-open'],
+  .tooltip-content[data-state='instant-open'] {
+    animation-name: tooltip-enter;
+  }
+
+  .tooltip-content[data-state='closed'] {
+    animation-name: tooltip-exit;
+    animation-duration: 100ms;
+  }
+
+  .tooltip-content[data-side='top'] {
+    --tooltip-slide-y: 4px;
+    --tooltip-slide-x: 0px;
+  }
+
+  .tooltip-content[data-side='bottom'] {
+    --tooltip-slide-y: -4px;
+    --tooltip-slide-x: 0px;
+  }
+
+  .tooltip-content[data-side='left'] {
+    --tooltip-slide-y: 0px;
+    --tooltip-slide-x: 4px;
+  }
+
+  .tooltip-content[data-side='right'] {
+    --tooltip-slide-y: 0px;
+    --tooltip-slide-x: -4px;
+  }
+}
+
+@keyframes tooltip-enter {
+  from {
+    opacity: 0;
+    transform: translate(var(--tooltip-slide-x, 0px), var(--tooltip-slide-y, 0px)) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes tooltip-exit {
+  from {
+    opacity: 1;
+    transform: translate(0px, 0px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--tooltip-slide-x, 0px), var(--tooltip-slide-y, 0px)) scale(0.96);
   }
 }

@@ -13,7 +13,6 @@ import {
 import { getMediaBackgroundPreferenceFilePath } from '@/domains/media/utils/background-preferences';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
-import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 
@@ -21,7 +20,7 @@ function createReviewState() {
   return {
     isActive: false,
     isSubmitting: false,
-    ownReview: false,
+    ownReview: null,
     submitReview: null,
   };
 }
@@ -87,7 +86,7 @@ function View({
     movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
 
   return (
-    <MediaRouteMotionProvider routeKey={`${mediaType}-${movie.id}-reviews`}>
+    <>
       <Registry
         mediaType={mediaType}
         movie={movie}
@@ -119,36 +118,30 @@ function View({
 
             <div className="order-2 flex w-full min-w-0 flex-col lg:flex-1">
               <div className="relative flex w-full flex-col p-6">
-                <MediaRouteReveal stage="hero.title">
-                  <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-                    {mediaTitle}
-                  </h1>
-                </MediaRouteReveal>
+                <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+                  {mediaTitle}
+                </h1>
 
                 {movie.tagline ? (
-                  <MediaRouteReveal stage="hero.tagline">
-                    <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
-                      {movie.tagline}
-                    </p>
-                  </MediaRouteReveal>
+                  <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
+                    {movie.tagline}
+                  </p>
                 ) : null}
 
                 {movie.overview ? (
-                  <MediaRouteReveal stage="hero.overview">
-                    <div className="mt-3 flex w-full flex-col">
-                      <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
-                        {movie.overview}
-                      </p>
-                    </div>
-                  </MediaRouteReveal>
+                  <div className="mt-3 flex w-full flex-col">
+                    <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
+                      {movie.overview}
+                    </p>
+                  </div>
                 ) : null}
-                <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+                <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
                   <GridCrosshair side="left" />
                   <GridCrosshair side="right" />
                 </div>
               </div>
 
-              <MediaRouteReveal className="w-full" stage="sections.reviews">
+              <div className="w-full">
                 <MediaReviews
                   entityId={movie.id}
                   entityType={mediaType}
@@ -162,15 +155,13 @@ function View({
                   posterPath={movie.poster_path}
                   backdropPath={movie.backdrop_path}
                   onReviewStateChange={setReviewState}
-                  motionStage="items.reviews"
-                  motionDeferred
                 />
-              </MediaRouteReveal>
+              </div>
             </div>
           </div>
         </div>
         <NavHeightSpacer />
       </PageGradientShell>
-    </MediaRouteMotionProvider>
+    </>
   );
 }

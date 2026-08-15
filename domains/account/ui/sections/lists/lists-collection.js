@@ -125,7 +125,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
           e.stopPropagation();
           onEdit(list);
         }}
-        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5 hover:text-white"
+        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5 hover:text-white"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
@@ -137,7 +137,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
           e.stopPropagation();
           onDelete(list);
         }}
-        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5"
+        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </button>

@@ -97,7 +97,7 @@ export default function MediaSocialProof({ media, viewerId }) {
       <Icon
         icon="solar:users-group-two-rounded-bold"
         size={15}
-        className="shrink-0 text-white/60 group-hover:text-white"
+        className="shrink-0 text-white/50 group-hover:text-white"
       />
       <span>Social activity</span>
       {summaryParts.length > 0 && (

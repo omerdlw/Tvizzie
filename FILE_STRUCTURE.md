@@ -4,29 +4,29 @@ This file is generated from the working tree and lists every project file. Gener
 
 ```text
 .
+├── .editorconfig
+├── .env
+├── .gitattributes
+├── .gitignore
+├── .prettierignore
+├── .prettierrc.cjs
 ├── .vscode
 │   └── settings.json
+├── AGENTS.md
+├── ARCHITECTURE.md
+├── CLAUDE.md
+├── FILE_STRUCTURE.md
 ├── app
-│   ├── _shell
-│   │   ├── navigation
-│   │   │   ├── account-nav-links.js
-│   │   │   ├── account-nav-registry.js
-│   │   │   └── media-action.js
-│   │   ├── global-context-menu-registry.js
-│   │   ├── interactive-boundary.js
-│   │   ├── nav-runtime.js
-│   │   ├── navigation-config.js
-│   │   └── smooth-scroll.js
 │   ├── (account)
 │   │   ├── account
 │   │   │   ├── [username]
 │   │   │   │   ├── activity
 │   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
+│   │   │   │   ├── client.js
+│   │   │   │   ├── layout.js
 │   │   │   │   ├── likes
 │   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── lists
 │   │   │   │   │   ├── [slug]
@@ -34,108 +34,191 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   │   ├── loading.js
 │   │   │   │   │   │   └── page.js
 │   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
+│   │   │   │   ├── loading.js
+│   │   │   │   ├── not-found.js
+│   │   │   │   ├── page.js
 │   │   │   │   ├── reviews
 │   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── watched
 │   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
-│   │   │   │   ├── watchlist
-│   │   │   │   │   ├── client.js
-│   │   │   │   │   ├── loading.js
-│   │   │   │   │   └── page.js
-│   │   │   │   ├── client.js
-│   │   │   │   ├── loading.js
-│   │   │   │   ├── not-found.js
-│   │   │   │   └── page.js
+│   │   │   │   └── watchlist
+│   │   │   │       ├── client.js
+│   │   │   │       └── page.js
+│   │   │   ├── client.js
 │   │   │   ├── edit
 │   │   │   │   ├── client.js
 │   │   │   │   ├── loading.js
 │   │   │   │   ├── not-found.js
 │   │   │   │   └── page.js
-│   │   │   ├── client.js
 │   │   │   ├── error.js
 │   │   │   ├── loading.js
 │   │   │   ├── not-found.js
 │   │   │   └── page.js
+│   │   ├── layout.js
 │   │   ├── motion.js
 │   │   └── registry.js
 │   ├── (auth)
 │   │   ├── callback
 │   │   │   ├── client.js
 │   │   │   └── page.js
+│   │   ├── error.js
+│   │   ├── layout.js
+│   │   ├── loading.js
+│   │   ├── motion.js
+│   │   ├── registry.js
 │   │   ├── sign-in
 │   │   │   ├── client.js
 │   │   │   └── page.js
-│   │   ├── sign-up
-│   │   │   ├── client.js
-│   │   │   └── page.js
-│   │   ├── error.js
-│   │   ├── loading.js
-│   │   ├── motion.js
-│   │   └── registry.js
+│   │   └── sign-up
+│   │       ├── client.js
+│   │       └── page.js
 │   ├── (home)
 │   │   ├── client.js
 │   │   ├── error.js
 │   │   ├── loading.js
-│   │   ├── motion.js
 │   │   ├── page.js
 │   │   └── registry.js
 │   ├── (legal)
-│   │   ├── privacy
-│   │   │   ├── client.js
-│   │   │   └── page.js
-│   │   ├── terms
-│   │   │   ├── client.js
-│   │   │   └── page.js
 │   │   ├── error.js
 │   │   ├── loading.js
 │   │   ├── motion.js
-│   │   └── registry.js
+│   │   ├── privacy
+│   │   │   ├── client.js
+│   │   │   └── page.js
+│   │   ├── registry.js
+│   │   └── terms
+│   │       ├── client.js
+│   │       └── page.js
 │   ├── (media)
+│   │   ├── layout.js
+│   │   ├── motion.js
 │   │   ├── movie
 │   │   │   └── [id]
-│   │   │       ├── reviews
-│   │   │       │   ├── client.js
-│   │   │       │   └── page.js
 │   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
-│   │   │       └── page.js
+│   │   │       ├── page.js
+│   │   │       └── reviews
+│   │   │           ├── client.js
+│   │   │           └── page.js
 │   │   ├── person
 │   │   │   └── [id]
 │   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
 │   │   │       └── page.js
-│   │   ├── tv
+│   │   ├── registry.js
+│   │   └── tv
+│   │       └── [id]
+│   │           ├── client.js
+│   │           ├── loading.js
+│   │           ├── not-found.js
+│   │           ├── page.js
+│   │           └── reviews
+│   │               ├── client.js
+│   │               └── page.js
+│   ├── _shell
+│   │   ├── global-context-menu-registry.js
+│   │   ├── interactive-boundary.js
+│   │   ├── nav-runtime.js
+│   │   ├── navigation
+│   │   │   ├── account-nav-links.js
+│   │   │   └── account-nav-registry.js
+│   │   ├── navigation-config.js
+│   │   ├── route-transition-interceptor.js
+│   │   └── smooth-scroll.js
+│   ├── api
+│   │   ├── account
+│   │   │   ├── activity
+│   │   │   │   └── route.js
+│   │   │   ├── media
+│   │   │   │   └── route.js
+│   │   │   ├── profile
+│   │   │   │   └── route.js
+│   │   │   ├── resolve
+│   │   │   │   └── route.js
+│   │   │   ├── reviews
+│   │   │   │   └── route.js
+│   │   │   └── search
+│   │   │       └── route.js
+│   │   ├── activity
+│   │   │   └── events
+│   │   │       └── route.js
+│   │   ├── auth
+│   │   │   ├── account
+│   │   │   │   └── route.js
+│   │   │   ├── callback
+│   │   │   │   └── route.js
+│   │   │   ├── csrf
+│   │   │   │   └── route.js
+│   │   │   ├── password-reset
+│   │   │   │   └── complete
+│   │   │   │       └── route.js
+│   │   │   ├── session
+│   │   │   │   └── route.js
+│   │   │   ├── sign-in
+│   │   │   │   └── route.js
+│   │   │   ├── sign-up
+│   │   │   │   └── complete
+│   │   │   │       └── route.js
+│   │   │   └── verification
+│   │   │       └── route.js
+│   │   ├── collections
+│   │   │   └── route.js
+│   │   ├── feedback
+│   │   │   └── route.js
+│   │   ├── follows
+│   │   │   └── route.js
+│   │   ├── health
+│   │   │   └── route.js
+│   │   ├── internal
+│   │   │   └── jobs
+│   │   │       └── app-events
+│   │   │           └── route.js
+│   │   ├── jobs
+│   │   │   └── route.js
+│   │   ├── lists
+│   │   │   ├── like
+│   │   │   │   └── route.js
+│   │   │   └── reviews-count
+│   │   ├── live-updates
+│   │   │   ├── events
+│   │   │   │   └── route.js
+│   │   │   └── route.js
+│   │   ├── notifications
+│   │   │   ├── events
+│   │   │   │   └── route.js
+│   │   │   └── route.js
+│   │   ├── observability
+│   │   │   └── web-vitals
+│   │   ├── person
 │   │   │   └── [id]
-│   │   │       ├── reviews
-│   │   │       │   ├── client.js
-│   │   │       │   └── page.js
-│   │   │       ├── client.js
-│   │   │       ├── loading.js
-│   │   │       ├── not-found.js
-│   │   │       └── page.js
-│   │   ├── motion.js
-│   │   └── registry.js
+│   │   ├── reviews
+│   │   │   ├── route.js
+│   │   │   └── write
+│   │   │       └── route.js
+│   │   ├── search
+│   │   │   └── community
+│   │   │       └── route.js
+│   │   ├── social-proof
+│   │   │   └── route.js
+│   │   ├── system
+│   │   │   └── rollout
+│   │   │       └── route.js
+│   │   └── tmdb
+│   │       └── route.js
 │   ├── error.js
 │   ├── global-error.js
 │   ├── globals.css
 │   ├── layout.js
 │   ├── manifest.js
+│   ├── motion.js
 │   ├── not-found.js
 │   ├── providers.js
 │   └── template.js
-├── assets
-│   └── fonts
-│       ├── zuume
-│       │   └── Zuume-Bold.woff2
-│       └── index.js
 ├── core
 │   ├── modules
 │   │   ├── account
@@ -147,14 +230,15 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── cache.js
 │   │   │   └── index.js
 │   │   ├── auth
+│   │   │   ├── action-flows.js
 │   │   │   ├── adapters
 │   │   │   │   ├── api.js
 │   │   │   │   ├── create-adapter.js
 │   │   │   │   └── supabase-adapter.js
-│   │   │   ├── action-flows.js
 │   │   │   ├── config.js
 │   │   │   ├── context.js
 │   │   │   ├── guards.js
+│   │   │   ├── http.client.js
 │   │   │   ├── index.js
 │   │   │   ├── provider-utils.js
 │   │   │   ├── session-client.js
@@ -170,6 +254,7 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── menu-engine.js
 │   │   │   ├── motion.js
 │   │   │   └── renderer.js
+│   │   ├── countdown
 │   │   ├── error-boundary
 │   │   │   ├── core.js
 │   │   │   ├── index.js
@@ -189,6 +274,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── title.js
 │   │   │   └── utils.js
 │   │   ├── nav
+│   │   │   ├── actions.js
+│   │   │   ├── context.js
+│   │   │   ├── elements.js
+│   │   │   ├── events.js
+│   │   │   ├── guards.js
 │   │   │   ├── hooks
 │   │   │   │   ├── index.js
 │   │   │   │   ├── navigation-status-model.js
@@ -207,11 +297,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── use-navigation-status.js
 │   │   │   │   ├── use-navigation.js
 │   │   │   │   └── use-surface-stack.js
-│   │   │   ├── actions.js
-│   │   │   ├── context.js
-│   │   │   ├── elements.js
-│   │   │   ├── events.js
-│   │   │   ├── guards.js
 │   │   │   ├── index.js
 │   │   │   ├── item.js
 │   │   │   ├── layout.js
@@ -229,16 +314,17 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── motion.js
 │   │   │   └── overlay.js
 │   │   ├── registry
-│   │   │   ├── plugins
-│   │   │   │   └── index.js
 │   │   │   ├── bootstrap.js
 │   │   │   ├── constants.js
 │   │   │   ├── context.js
 │   │   │   ├── index.js
 │   │   │   ├── injector.js
+│   │   │   ├── plugins
+│   │   │   │   └── index.js
 │   │   │   ├── route-registry.js
 │   │   │   ├── store.js
 │   │   │   └── use-registry.js
+│   │   └── settings
 │   ├── shared
 │   │   ├── constants
 │   │   │   ├── events
@@ -248,7 +334,8 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── use-click-outside.js
 │   │   │   ├── use-debounce.js
 │   │   │   └── use-draggable-scroll.js
-│   │   ├── scripts
+│   │   ├── route-transition-coordinator.js
+│   │   ├── route-transitions.js
 │   │   └── utils.js
 │   └── ui
 │       ├── feedback
@@ -260,20 +347,15 @@ This file is generated from the working tree and lists every project file. Gener
 │       │   ├── not-found-template.js
 │       │   └── spinner.js
 │       ├── layout
+│       │   ├── grid-crosshair.js
 │       │   ├── nav-height-spacer.js
 │       │   └── page-gradient-shell.js
 │       ├── motion
-│       │   └── animations
-│       │       ├── blurry-text.js
-│       │       └── text-animate.js
+│       │   ├── animations
+│       │   │   ├── blurry-text.js
+│       │   │   └── text-animate.js
+│       │   └── skeleton-scene.js
 │       └── primitives
-│           ├── select
-│           │   ├── async-select.js
-│           │   ├── combobox.js
-│           │   ├── default-select.js
-│           │   ├── index.js
-│           │   ├── multi-select.js
-│           │   └── searchable-select.js
 │           ├── adaptive-image.js
 │           ├── button.js
 │           ├── checkbox.js
@@ -285,44 +367,61 @@ This file is generated from the working tree and lists every project file. Gener
 │           ├── popover.js
 │           ├── primitive-support.js
 │           ├── segmented-control.js
+│           ├── select
+│           │   ├── async-select.js
+│           │   ├── combobox.js
+│           │   ├── default-select.js
+│           │   ├── index.js
+│           │   ├── multi-select.js
+│           │   └── searchable-select.js
 │           ├── switch.js
 │           ├── textarea.js
 │           └── tooltip.js
 ├── domains
 │   ├── account
-│   │   ├── api
-│   │   │   ├── activity.server.js
-│   │   │   ├── collections.server.js
-│   │   │   ├── profile.server.js
-│   │   │   └── search.server.js
 │   │   ├── client
+│   │   │   ├── account-api.client.js
 │   │   │   ├── collections.client.js
 │   │   │   ├── index.js
 │   │   │   └── profile.client.js
 │   │   ├── hooks
+│   │   │   ├── account-edit-data.hooks.js
+│   │   │   ├── account-edit-page-state.js
+│   │   │   ├── account-overview-state.js
 │   │   │   ├── account-registry-state.js
 │   │   │   ├── account-section-state.js
 │   │   │   ├── collections.hooks.js
+│   │   │   ├── feed-state.hooks.js
 │   │   │   ├── index.js
+│   │   │   ├── list-items.hooks.js
+│   │   │   ├── media-feed-state.js
+│   │   │   ├── page-actions.hooks.js
+│   │   │   ├── page-data.hooks.js
 │   │   │   ├── page.hooks.js
+│   │   │   ├── relationship.hooks.js
+│   │   │   ├── section-page.hooks.js
 │   │   │   └── security.hooks.js
+│   │   ├── index.js
 │   │   ├── server
+│   │   │   ├── actions
+│   │   │   │   └── profile.server.js
 │   │   │   ├── api-handlers.server.js
 │   │   │   ├── collections.server.js
 │   │   │   ├── feed.server.js
 │   │   │   ├── index.js
-│   │   │   ├── media.server.js
+│   │   │   ├── media-upload.server.js
 │   │   │   ├── profile.server.js
+│   │   │   ├── request-target.server.js
 │   │   │   └── routes.server.js
 │   │   ├── ui
 │   │   │   ├── components
-│   │   │   │   ├── lists
-│   │   │   │   │   ├── list-card.js
-│   │   │   │   │   └── list-grid.js
-│   │   │   │   ├── account-action-bar.js
 │   │   │   │   ├── account-media-grid.js
-│   │   │   │   └── account-pagination.js
+│   │   │   │   ├── account-pagination.js
+│   │   │   │   └── lists
+│   │   │   │       ├── list-card.js
+│   │   │   │       └── list-grid.js
 │   │   │   ├── filters
+│   │   │   │   ├── activity.js
 │   │   │   │   ├── content-filter
 │   │   │   │   │   ├── activity-filter-bar.js
 │   │   │   │   │   ├── content-filter-controls.js
@@ -331,317 +430,371 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   ├── media-filter-bar.js
 │   │   │   │   │   ├── review-filter-bar.js
 │   │   │   │   │   └── search-movie-filter-bar.js
-│   │   │   │   ├── activity.js
 │   │   │   │   ├── content-filter-primitives.js
 │   │   │   │   ├── filtering.js
 │   │   │   │   ├── lists.js
 │   │   │   │   ├── media.js
 │   │   │   │   └── reviews.js
+│   │   │   ├── index.js
 │   │   │   ├── layouts
+│   │   │   │   ├── account-background-registry.js
+│   │   │   │   ├── account-grid-frame.js
 │   │   │   │   ├── account-layout.js
-│   │   │   │   └── account-page-factory.js
+│   │   │   │   └── account-profile-context.js
 │   │   │   ├── modals
-│   │   │   │   ├── list-editor-modal.js
-│   │   │   │   └── list-picker-modal.js
+│   │   │   │   └── list-editor-modal.js
+│   │   │   ├── nav-actions
+│   │   │   │   └── account-action.js
 │   │   │   ├── nav-surfaces
-│   │   │   │   └── create-list-surface.js
+│   │   │   │   ├── account-bio-surface.js
+│   │   │   │   ├── create-list-surface.js
+│   │   │   │   └── list-picker-surface.js
+│   │   │   ├── pages
+│   │   │   │   └── account-route-page.js
 │   │   │   ├── sections
-│   │   │   │   ├── feeds
-│   │   │   │   │   ├── list-detail
-│   │   │   │   │   │   ├── comments-section.js
-│   │   │   │   │   │   ├── list-detail-config.js
-│   │   │   │   │   │   └── list-detail-filter-state.js
-│   │   │   │   │   ├── activity.js
-│   │   │   │   │   ├── likes.js
-│   │   │   │   │   ├── list-detail.js
-│   │   │   │   │   ├── lists.js
-│   │   │   │   │   ├── overview.js
-│   │   │   │   │   ├── reviews.js
-│   │   │   │   │   ├── watched.js
-│   │   │   │   │   └── watchlist.js
-│   │   │   │   ├── overview
-│   │   │   │   │   ├── activity.js
-│   │   │   │   │   ├── favorites.js
-│   │   │   │   │   ├── lists.js
-│   │   │   │   │   ├── reviews.js
-│   │   │   │   │   ├── watched.js
-│   │   │   │   │   └── watchlist.js
 │   │   │   │   ├── account-hero.js
 │   │   │   │   ├── account-section-factory.js
-│   │   │   │   └── account-section.js
-│   │   │   ├── surfaces
-│   │   │   │   └── account-bio-surface.js
-│   │   │   └── index.js
-│   │   ├── utils
-│   │   │   ├── avatar.js
-│   │   │   ├── constants.js
-│   │   │   ├── feedback.js
-│   │   │   ├── filtering-query-utils.js
-│   │   │   ├── filtering-shared.js
-│   │   │   ├── formatting.js
-│   │   │   ├── index.js
-│   │   │   ├── security.js
-│   │   │   └── validation.js
-│   │   └── index.js
+│   │   │   │   ├── account-section.js
+│   │   │   │   ├── collections
+│   │   │   │   │   ├── likes-collection.js
+│   │   │   │   │   ├── media-collection-feed.js
+│   │   │   │   │   ├── watched-collection.js
+│   │   │   │   │   └── watchlist-collection.js
+│   │   │   │   ├── edit
+│   │   │   │   │   ├── account-edit-primitives.js
+│   │   │   │   │   ├── account-edit-view.js
+│   │   │   │   │   ├── account-general-settings-form.js
+│   │   │   │   │   └── account-security-settings.js
+│   │   │   │   ├── feeds
+│   │   │   │   │   ├── activity.js
+│   │   │   │   │   └── reviews.js
+│   │   │   │   ├── lists
+│   │   │   │   │   ├── list-detail-comments.js
+│   │   │   │   │   ├── list-detail-config.js
+│   │   │   │   │   ├── list-detail.js
+│   │   │   │   │   ├── lists-collection.js
+│   │   │   │   │   └── use-list-detail-filters.js
+│   │   │   │   └── overview
+│   │   │   │       ├── account-overview-client.js
+│   │   │   │       ├── activity.js
+│   │   │   │       ├── favorites.js
+│   │   │   │       ├── lists.js
+│   │   │   │       ├── media-overview-section.js
+│   │   │   │       ├── overview-feed.js
+│   │   │   │       ├── reviews.js
+│   │   │   │       ├── watched.js
+│   │   │   │       └── watchlist.js
+│   │   │   └── skeletons
+│   │   │       ├── account-section-skeletons.js
+│   │   │       └── account-skeleton-layout.js
+│   │   └── utils
+│   │       ├── avatar.js
+│   │       ├── constants.js
+│   │       ├── feedback.js
+│   │       ├── filtering-query-utils.js
+│   │       ├── filtering-shared.js
+│   │       ├── formatting.js
+│   │       ├── index.js
+│   │       ├── media-card.js
+│   │       ├── security.js
+│   │       ├── supabase.js
+│   │       ├── uuid.js
+│   │       └── validation.js
 │   ├── auth
 │   │   ├── actions
 │   │   │   └── forgot-password-action.js
 │   │   ├── api
-│   │   │   ├── account.server.js
-│   │   │   ├── audit.server.js
-│   │   │   ├── password-reset.server.js
-│   │   │   ├── sign-in.server.js
-│   │   │   ├── sign-up.server.js
-│   │   │   └── verification.server.js
+│   │   │   └── audit.server.js
 │   │   ├── client
+│   │   │   ├── http.client.js
 │   │   │   ├── index.js
-│   │   │   └── requests.js
+│   │   │   ├── requests.js
+│   │   │   ├── sign-in-workflow.client.js
+│   │   │   └── sign-up-workflow.client.js
+│   │   ├── index.js
 │   │   ├── server
 │   │   │   ├── account-routes.server.js
 │   │   │   ├── account.server.js
+│   │   │   ├── actions
+│   │   │   │   └── password-status.server.js
 │   │   │   ├── api-handlers.server.js
 │   │   │   ├── audit-log.server.js
 │   │   │   ├── google-provider.server.js
 │   │   │   ├── index.js
 │   │   │   ├── policies.server.js
 │   │   │   ├── proof-tokens.server.js
+│   │   │   ├── response.server.js
 │   │   │   ├── security.server.js
+│   │   │   ├── session
+│   │   │   │   ├── admin.server.js
+│   │   │   │   └── cookies.server.js
 │   │   │   ├── session.server.js
-│   │   │   ├── verification.server.js
-│   │   │   └── workflows.js
+│   │   │   ├── tokens.server.js
+│   │   │   └── verification.server.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── form-primitives.js
-│   │   │   │   └── oauth-provider-button.js
+│   │   │   │   ├── oauth-provider-button.js
+│   │   │   │   └── oauth-provider-list.js
+│   │   │   ├── index.js
 │   │   │   ├── layouts
 │   │   │   │   └── page-shell.js
-│   │   │   ├── surfaces
-│   │   │   │   └── verification-surface.js
-│   │   │   └── index.js
-│   │   ├── utils
-│   │   │   ├── constants.js
-│   │   │   ├── errors.js
-│   │   │   ├── index.js
-│   │   │   ├── oauth.js
-│   │   │   ├── password.js
-│   │   │   ├── providers.js
-│   │   │   └── routes.js
-│   │   └── index.js
+│   │   │   └── surfaces
+│   │   │       └── verification-surface.js
+│   │   └── utils
+│   │       ├── constants.js
+│   │       ├── errors.js
+│   │       ├── index.js
+│   │       ├── oauth.js
+│   │       ├── password.js
+│   │       ├── providers.js
+│   │       └── routes.js
 │   ├── home
+│   │   ├── client
+│   │   │   └── use-discover-feed.js
+│   │   ├── index.js
+│   │   ├── server
+│   │   │   └── imdb-top-100.server.js
+│   │   ├── shared
+│   │   │   ├── discover.js
+│   │   │   └── imdb-top-100-data.js
+│   │   └── ui
+│   │       ├── components
+│   │       │   └── poster-rail.js
+│   │       ├── layouts
+│   │       │   ├── home-grid-frame.js
+│   │       │   └── home-section.js
+│   │       └── sections
+│   │           ├── discover-section.js
+│   │           ├── home-rail-section.js
+│   │           ├── top-rated-section.js
+│   │           └── trending-section.js
+│   ├── legal
+│   │   ├── index.js
 │   │   ├── ui
 │   │   │   ├── components
-│   │   │   │   └── poster-rail.js
-│   │   │   ├── sections
-│   │   │   │   ├── discover-section.js
-│   │   │   │   └── trending-section.js
-│   │   │   └── index.js
-│   │   ├── utils
-│   │   │   └── index.js
-│   │   └── index.js
-│   ├── legal
-│   │   ├── utils
-│   │   │   └── index.js
-│   │   └── index.js
+│   │   │   │   └── legal-quick-links.js
+│   │   │   └── layouts
+│   │   │       └── legal-page-shell.js
+│   │   └── utils
+│   │       └── index.js
 │   ├── media
-│   │   ├── actions
-│   │   │   ├── collection-actions.js
-│   │   │   ├── context-menu-actions.js
-│   │   │   ├── movie-action.js
-│   │   │   └── person-action.js
 │   │   ├── api
 │   │   │   └── person-awards.server.js
+│   │   ├── client
+│   │   │   ├── collections
+│   │   │   │   ├── likes
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── like-queries.js
+│   │   │   │   │   ├── like-service.js
+│   │   │   │   │   ├── like-shared.js
+│   │   │   │   │   └── like-subscriptions.js
+│   │   │   │   ├── lists
+│   │   │   │   │   ├── derived-state.js
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── item-mutations.js
+│   │   │   │   │   ├── like-mutations.js
+│   │   │   │   │   ├── list-mutations.js
+│   │   │   │   │   ├── list-queries.js
+│   │   │   │   │   ├── list-service.js
+│   │   │   │   │   ├── list-shared.js
+│   │   │   │   │   ├── list-subscriptions.js
+│   │   │   │   │   └── mutations.js
+│   │   │   │   └── watched-watchlist
+│   │   │   │       ├── index.js
+│   │   │   │       ├── watched-queries.js
+│   │   │   │       ├── watched-service.js
+│   │   │   │       ├── watched-shared.js
+│   │   │   │       ├── watched-subscriptions.js
+│   │   │   │       ├── watchlist-queries.js
+│   │   │   │       ├── watchlist-service.js
+│   │   │   │       ├── watchlist-shared.js
+│   │   │   │       └── watchlist-subscriptions.js
+│   │   │   └── social-proof
+│   │   │       ├── index.js
+│   │   │       └── social-proof-service.js
+│   │   ├── index.js
 │   │   ├── server
-│   │   │   ├── likes
-│   │   │   │   ├── index.js
-│   │   │   │   ├── like-queries.js
-│   │   │   │   ├── like-service.js
-│   │   │   │   ├── like-shared.js
-│   │   │   │   └── like-subscriptions.js
-│   │   │   ├── lists
-│   │   │   │   ├── derived-state.js
-│   │   │   │   ├── index.js
-│   │   │   │   ├── item-mutations.js
-│   │   │   │   ├── like-mutations.js
-│   │   │   │   ├── list-mutations.js
-│   │   │   │   ├── list-queries.js
-│   │   │   │   ├── list-service.js
-│   │   │   │   ├── list-shared.js
-│   │   │   │   ├── list-subscriptions.js
-│   │   │   │   └── mutations.js
-│   │   │   ├── social-proof
-│   │   │   │   ├── index.js
-│   │   │   │   └── social-proof-service.js
-│   │   │   ├── watched-watchlist
-│   │   │   │   ├── index.js
-│   │   │   │   ├── watched-queries.js
-│   │   │   │   ├── watched-service.js
-│   │   │   │   ├── watched-shared.js
-│   │   │   │   ├── watched-subscriptions.js
-│   │   │   │   ├── watchlist-queries.js
-│   │   │   │   ├── watchlist-service.js
-│   │   │   │   ├── watchlist-shared.js
-│   │   │   │   └── watchlist-subscriptions.js
-│   │   │   ├── index.js
-│   │   │   ├── media-key-service.js
-│   │   │   ├── media.js
+│   │   │   ├── list-like-route.server.js
 │   │   │   ├── person-awards.js
-│   │   │   └── supabase-media-utils-service.js
+│   │   │   ├── title-route.server.js
+│   │   │   └── tv-season-ratings.js
 │   │   ├── services
 │   │   │   └── media-data.js
+│   │   ├── shared
+│   │   │   ├── media-key.js
+│   │   │   ├── media-payload.js
+│   │   │   └── media.js
 │   │   ├── ui
 │   │   │   ├── components
+│   │   │   │   ├── collection-actions.js
+│   │   │   │   ├── context-menu-actions.js
+│   │   │   │   ├── media-card.js
+│   │   │   │   ├── media-carousel.js
+│   │   │   │   ├── media-list-preview.js
+│   │   │   │   ├── media-poster-card.js
 │   │   │   │   ├── person
+│   │   │   │   │   ├── awards-skeleton.js
 │   │   │   │   │   ├── awards.js
 │   │   │   │   │   ├── bio.js
 │   │   │   │   │   ├── filmography-card.js
 │   │   │   │   │   ├── gallery.js
 │   │   │   │   │   ├── media-thumb.js
 │   │   │   │   │   ├── social-links.js
+│   │   │   │   │   ├── timeline-skeleton.js
 │   │   │   │   │   └── timeline.js
-│   │   │   │   ├── media-card.js
-│   │   │   │   ├── media-carousel.js
-│   │   │   │   ├── media-list-preview.js
-│   │   │   │   ├── media-poster-card.js
 │   │   │   │   ├── recommendation-card.js
 │   │   │   │   ├── sidebar.js
 │   │   │   │   ├── social-proof.js
-│   │   │   │   └── static-route-elements.js
+│   │   │   │   ├── static-route-elements.js
+│   │   │   │   ├── tv-season-ratings-skeleton.js
+│   │   │   │   └── tv-season-ratings.js
+│   │   │   ├── index.js
+│   │   │   ├── layouts
+│   │   │   │   ├── media-detail-section.js
+│   │   │   │   ├── media-grid-frame.js
+│   │   │   │   └── person-grid-frame.js
 │   │   │   ├── modals
 │   │   │   │   ├── cast-modal.js
 │   │   │   │   ├── image-preview-modal.js
 │   │   │   │   ├── media-social-proof-modal.js
 │   │   │   │   └── video-preview-modal.js
+│   │   │   ├── nav-actions
+│   │   │   │   ├── movie-action.js
+│   │   │   │   └── person-action.js
+│   │   │   ├── nav-surfaces
+│   │   │   │   ├── person-bio-surface.js
+│   │   │   │   └── watch-providers-surface.js
 │   │   │   ├── sections
-│   │   │   │   ├── person
-│   │   │   │   │   └── filmography-section.js
 │   │   │   │   ├── cast-section.js
+│   │   │   │   ├── filmography-section.js
 │   │   │   │   ├── gallery-section.js
 │   │   │   │   ├── images-section.js
 │   │   │   │   ├── seasons-section.js
 │   │   │   │   └── videos-section.js
-│   │   │   ├── surfaces
-│   │   │   │   ├── person-bio-surface.js
-│   │   │   │   └── watch-providers-surface.js
-│   │   │   └── index.js
-│   │   ├── utils
-│   │   │   ├── background-preferences.js
-│   │   │   ├── index.js
-│   │   │   ├── person-data.js
-│   │   │   ├── poster-overrides.js
-│   │   │   ├── poster-preference-events.js
-│   │   │   ├── poster-preferences.js
-│   │   │   ├── user-media-index.js
-│   │   │   ├── user-media-service.js
-│   │   │   └── user-media.js
-│   │   └── index.js
+│   │   │   └── skeletons
+│   │   └── utils
+│   │       ├── background-preferences.js
+│   │       ├── index.js
+│   │       ├── person-data.js
+│   │       ├── poster-overrides.js
+│   │       ├── poster-preference-events.js
+│   │       ├── poster-preferences.js
+│   │       ├── user-media-service.js
+│   │       └── user-media.js
 │   ├── reviews
-│   │   ├── actions
-│   │   │   └── review-action.js
 │   │   ├── api
-│   │   │   ├── reviews-query.server.js
-│   │   │   └── reviews-write.server.js
+│   │   │   └── reviews-query.server.js
+│   │   ├── client
+│   │   │   ├── index.js
+│   │   │   ├── list-review-mutations.js
+│   │   │   ├── media-review-mutations.js
+│   │   │   ├── profile-review-feed.js
+│   │   │   ├── review-like-mutations.js
+│   │   │   ├── review-mutations.js
+│   │   │   ├── review-subscriptions.js
+│   │   │   ├── review-write-client.js
+│   │   │   └── stored-review-mutations.js
 │   │   ├── hooks
 │   │   │   └── use-media-reviews.js
+│   │   ├── index.js
 │   │   ├── server
-│   │   │   ├── index.js
-│   │   │   ├── list-mutations.js
-│   │   │   ├── media-mutations.js
-│   │   │   ├── mutation-shared.js
-│   │   │   ├── mutations.js
-│   │   │   ├── review-context.js
-│   │   │   ├── review-list-feed.js
-│   │   │   ├── review-profile-feed.js
-│   │   │   ├── review-server-context.js
-│   │   │   ├── review-server-queries.js
-│   │   │   ├── review-server-shared.js
-│   │   │   ├── review-server.js
-│   │   │   ├── review-service.js
-│   │   │   ├── review-subscriptions.js
-│   │   │   ├── reviews-write-actions.js
-│   │   │   ├── reviews-write-shared.js
-│   │   │   ├── stored-mutations.js
-│   │   │   └── validation.js
-│   │   ├── services
-│   │   │   └── review-data.js
-│   │   ├── ui
-│   │   │   ├── components
-│   │   │   │   ├── rating-range-selector.js
-│   │   │   │   ├── rating-selector.js
-│   │   │   │   ├── rating-stars.js
-│   │   │   │   ├── review-auth-fallback.js
-│   │   │   │   ├── review-card.js
-│   │   │   │   ├── review-header.js
-│   │   │   │   └── review-list.js
-│   │   │   ├── sections
-│   │   │   │   └── media-reviews.js
-│   │   │   ├── surfaces
-│   │   │   │   └── review-editor-surface.js
-│   │   │   └── index.js
-│   │   ├── utils
-│   │   │   └── index.js
-│   │   └── index.js
+│   │   │   ├── feeds.server.js
+│   │   │   ├── list-feed.server.js
+│   │   │   ├── profile-feed.server.js
+│   │   │   ├── read-reviews.server.js
+│   │   │   ├── read-route.server.js
+│   │   │   ├── review-context.server.js
+│   │   │   ├── review-normalizer.server.js
+│   │   │   ├── write-actions.server.js
+│   │   │   ├── write-input.server.js
+│   │   │   └── write-route.server.js
+│   │   ├── shared
+│   │   │   ├── review-data.js
+│   │   │   ├── review-utils.js
+│   │   │   └── review-validation.js
+│   │   └── ui
+│   │       ├── components
+│   │       │   ├── rating-range-selector.js
+│   │       │   ├── rating-selector.js
+│   │       │   ├── rating-stars.js
+│   │       │   ├── review-auth-fallback.js
+│   │       │   ├── review-card.js
+│   │       │   ├── review-header.js
+│   │       │   └── review-list.js
+│   │       ├── index.js
+│   │       ├── nav-actions
+│   │       │   └── review-action.js
+│   │       ├── nav-surfaces
+│   │       │   └── review-editor-surface.js
+│   │       └── sections
+│   │           └── media-reviews.js
 │   ├── search
 │   │   ├── api
-│   │   │   └── community-search.server.js
 │   │   ├── client
 │   │   │   ├── search-api.js
 │   │   │   └── search-cache.js
+│   │   ├── index.js
 │   │   ├── server
-│   │   │   ├── search-community.js
-│   │   │   └── search-quality.js
+│   │   │   └── community-route.server.js
 │   │   ├── services
-│   │   │   ├── search-data.js
-│   │   │   ├── search-filters.js
-│   │   │   ├── search-ranking.js
-│   │   │   └── search-result.js
+│   │   ├── shared
+│   │   │   ├── ranking.js
+│   │   │   └── result.js
 │   │   ├── ui
-│   │   │   └── components
-│   │   │       ├── search-action
-│   │   │       │   ├── components
-│   │   │       │   │   ├── controls.js
-│   │   │       │   │   ├── item.js
-│   │   │       │   │   └── results-preview.js
-│   │   │       │   ├── index.js
-│   │   │       │   ├── search-action-helpers.js
-│   │   │       │   └── use-search-action-controller.js
-│   │   │       └── grid-item.js
-│   │   ├── utils
-│   │   │   └── index.js
-│   │   └── index.js
+│   │   │   └── nav-actions
+│   │   │       └── search-action
+│   │   │           ├── controls.js
+│   │   │           ├── index.js
+│   │   │           ├── item.js
+│   │   │           ├── results-preview.js
+│   │   │           ├── search-action-helpers.js
+│   │   │           └── use-search-action-controller.js
+│   │   └── utils
+│   │       └── index.js
 │   └── social
 │       ├── api
-│       │   ├── activity-events.server.js
-│       │   ├── follows.server.js
-│       │   ├── notifications.server.js
-│       │   └── social-proof.server.js
+│       ├── client
+│       │   ├── activity
+│       │   │   ├── activity-events.js
+│       │   │   └── activity-feed.js
+│       │   ├── follows
+│       │   │   ├── follow-cache.js
+│       │   │   ├── follow-mutations.js
+│       │   │   ├── follow-subscriptions.js
+│       │   │   └── index.js
+│       │   └── notifications
+│       │       ├── notification-events.js
+│       │       └── notification-service.js
+│       ├── index.js
 │       ├── server
 │       │   ├── activity
-│       │   │   ├── activity-events-service.js
-│       │   │   ├── activity-service.js
 │       │   │   ├── event-processor-queries.js
 │       │   │   ├── event-processor-shared.js
 │       │   │   ├── event-processor.server.js
-│       │   │   └── index.js
+│       │   │   └── route.server.js
+│       │   ├── api
+│       │   ├── follows
+│       │   │   ├── events.server.js
+│       │   │   ├── resources.server.js
+│       │   │   ├── route.server.js
+│       │   │   └── shared.server.js
 │       │   ├── notifications
 │       │   │   ├── event-processor.server.js
-│       │   │   ├── notification-events-service.js
+│       │   │   ├── event-route.server.js
 │       │   │   ├── notification-resources.server.js
-│       │   │   └── notifications-service.js
-│       │   └── social
-│       │       ├── follow-client-shared.js
-│       │       ├── follow-mutations.js
-│       │       ├── follow-resources.server.js
-│       │       ├── follow-service.js
-│       │       ├── follow-subscriptions.js
-│       │       └── index.js
+│       │   │   └── route.server.js
+│       │   ├── social
+│       │   └── social-proof
+│       │       └── route.server.js
 │       ├── ui
-│       │   ├── modals
-│       │   │   ├── account-social-modal.js
-│       │   │   └── notifications-modal.js
-│       │   └── index.js
-│       ├── utils
-│       │   └── index.js
-│       └── index.js
+│       │   ├── index.js
+│       │   └── modals
+│       │       ├── account-social-modal.js
+│       │       └── notifications-modal.js
+│       └── utils
+│           └── index.js
+├── eslint.config.mjs
 ├── infrastructure
 │   ├── http
 │   │   ├── api
@@ -673,7 +826,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── live-updates-events.server.js
 │   │   │   └── live-updates.server.js
 │   │   ├── live-updates-service.js
-│   │   ├── polling-subscription-constants.js
 │   │   ├── polling-subscription-service.js
 │   │   ├── polling-subscription-shared.js
 │   │   ├── realtime-broadcast.server.js
@@ -693,17 +845,17 @@ This file is generated from the working tree and lists every project file. Gener
 │       ├── api
 │       │   └── route.server.js
 │       ├── clients
-│       │   ├── search
-│       │   │   ├── fallback-queries.js
-│       │   │   ├── movie-ranking.js
-│       │   │   ├── person-ranking.js
-│       │   │   └── tmdb-search-shared.js
 │       │   ├── catalog.server.js
 │       │   ├── detail-id.server.js
 │       │   ├── details.server.js
 │       │   ├── request.js
 │       │   ├── runtime-sanitize.server.js
 │       │   ├── sanitize.js
+│       │   ├── search
+│       │   │   ├── fallback-queries.js
+│       │   │   ├── movie-ranking.js
+│       │   │   ├── person-ranking.js
+│       │   │   └── tmdb-search-shared.js
 │       │   ├── search-ranking.js
 │       │   ├── search.server.js
 │       │   ├── tmdb-client-config.js
@@ -713,29 +865,20 @@ This file is generated from the working tree and lists every project file. Gener
 │           ├── tmdb-movie-images.client.js
 │           ├── tmdb-service.js
 │           └── watch-region.js
-├── public
-│   ├── images
-│   │   ├── default-avatar.svg
-│   │   └── noise.webp
-│   ├── _headers
-│   └── tvizzie.png
-├── scratch
-│   └── generate_file_structure.cjs
-├── .editorconfig
-├── .env
-├── .gitattributes
-├── .gitignore
-├── .prettierignore
-├── .prettierrc.cjs
-├── ARCHITECTURE.md
-├── eslint.config.mjs
-├── FILE_STRUCTURE.md
 ├── jsconfig.json
 ├── middleware.js
 ├── next.config.mjs
 ├── open-next.config.ts
+├── package-lock.json
 ├── package.json
 ├── postcss.config.mjs
+├── public
+│   ├── _headers
+│   ├── images
+│   │   ├── default-avatar.svg
+│   │   └── noise.webp
+│   └── tvizzie.png
+├── skills-lock.json
 ├── tailwind.config.js
 └── wrangler.jsonc
 ```

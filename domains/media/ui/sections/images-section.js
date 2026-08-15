@@ -11,7 +11,6 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 const TABS = Object.freeze([
   {
@@ -118,7 +117,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
             />
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>
@@ -127,13 +126,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
         <Carousel gap="gap-3">
           {items.map((image, index) => {
             return (
-              <MediaRouteReveal
-                key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                stage="items.images"
-                deferred
-                interactive
-                itemIndex={index}
-              >
+              <div key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}>
                 <MediaCard
                   imageSrc={
                     image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null
@@ -165,12 +158,12 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
                         }
                       : {})}
                 />
-              </MediaRouteReveal>
+              </div>
             );
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
         <GridCrosshair side="left" />
         <GridCrosshair side="right" />
       </div>

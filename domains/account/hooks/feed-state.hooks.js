@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export function hasMatchingSeededFeed({
   expectedValue = null,
@@ -84,21 +84,38 @@ export function useSeededFeedState(initialFeed = null) {
     setIsFeedLoading(false);
   }, []);
 
-  return {
-    applyFeedResult,
-    cursor,
-    feedError,
-    hasMore,
-    isFeedLoading,
-    items,
-    resetFeed,
-    setFeedError,
-    setIsFeedLoading,
-    setItems,
-    setTotalCount,
-    syncFeed,
-    totalCount,
-  };
+  return useMemo(
+    () => ({
+      applyFeedResult,
+      cursor,
+      feedError,
+      hasMore,
+      isFeedLoading,
+      items,
+      resetFeed,
+      setFeedError,
+      setIsFeedLoading,
+      setItems,
+      setTotalCount,
+      syncFeed,
+      totalCount,
+    }),
+    [
+      applyFeedResult,
+      cursor,
+      feedError,
+      hasMore,
+      isFeedLoading,
+      items,
+      resetFeed,
+      setFeedError,
+      setIsFeedLoading,
+      setItems,
+      setTotalCount,
+      syncFeed,
+      totalCount,
+    ],
+  );
 }
 
 export function useDeferredPreviewFeed({
@@ -155,6 +172,7 @@ export function useDeferredPreviewFeed({
     applyFeedResult,
     canLoad,
     hasSeededFeed,
+    hasUsableSeededFeed,
     loadFeed,
     onLoadError,
     resetFeed,

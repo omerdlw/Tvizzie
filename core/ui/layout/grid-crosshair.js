@@ -70,10 +70,7 @@ export function GridShellCrosshairs({ className = '' }) {
       {/* Sol kenar dikey çizgi kesişimi */}
       <span
         aria-hidden="true"
-        className={cn(
-          'pointer-events-none absolute top-0 block size-0 select-none',
-          className,
-        )}
+        className={cn('pointer-events-none absolute top-0 block size-0 select-none', className)}
         style={leftStyle}
       >
         <CrosshairLines side="left" />
@@ -82,10 +79,7 @@ export function GridShellCrosshairs({ className = '' }) {
       {/* Sağ kenar dikey çizgi kesişimi */}
       <span
         aria-hidden="true"
-        className={cn(
-          'pointer-events-none absolute top-0 block size-0 select-none',
-          className,
-        )}
+        className={cn('pointer-events-none absolute top-0 block size-0 select-none', className)}
         style={rightStyle}
       >
         <CrosshairLines side="right" />

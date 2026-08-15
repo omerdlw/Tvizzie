@@ -15,7 +15,7 @@ import {
   FOLLOW_STATUS_ACCEPTED,
 } from '@/domains/account/utils';
 import { normalizeMediaType } from '@/domains/media/utils';
-import { normalizeTimestamp, normalizeValue } from '@/shared/utils';
+import { chunkArray, normalizeTimestamp, normalizeValue } from '@/shared/utils';
 
 const ACTIVITY_QUERY_MINIMUM_WINDOW = 50;
 const ACTIVITY_QUERY_WINDOW_MULTIPLIER = 3;
@@ -24,7 +24,7 @@ const ACTIVITY_QUERY_WINDOW_MULTIPLIER = 3;
 // Feed Normalizers
 // ============================================================
 
-export function normalizeActor(value = {}) {
+function normalizeActor(value = {}) {
   return {
     avatarUrl: value?.avatarUrl || null,
     displayName: value?.displayName || value?.name || 'Someone',
@@ -33,7 +33,7 @@ export function normalizeActor(value = {}) {
   };
 }
 
-export function normalizeSubject(value = {}) {
+function normalizeSubject(value = {}) {
   return {
     href: value?.href || null,
     id: value?.id || null,
@@ -46,7 +46,7 @@ export function normalizeSubject(value = {}) {
   };
 }
 
-export function normalizeReviewCard(value = {}) {
+function normalizeReviewCard(value = {}) {
   if (!value || typeof value !== 'object') return null;
   return {
     authorId: value.authorId || value.reviewUserId || null,
@@ -77,7 +77,7 @@ export function normalizeReviewCard(value = {}) {
   };
 }
 
-export function normalizeActivityRow(row = {}) {
+function normalizeActivityRow(row = {}) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
   if (Number(payload.version) !== 2) return null;
 
@@ -100,7 +100,7 @@ export function normalizeActivityRow(row = {}) {
   };
 }
 
-export function isVisibleActivityItem(item = {}) {
+function isVisibleActivityItem(item = {}) {
   if (!item || !ACTIVITY_EVENT_TYPE_SET.has(item.eventType)) return false;
   const subjectType = String(item.subject?.type || '').toLowerCase();
   return !subjectType || subjectType === 'movie' || subjectType === 'tv' || subjectType === 'list';
@@ -112,7 +112,7 @@ function getActivityTimestamp(item = {}) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function sortActivityItems(items = []) {
+function sortActivityItems(items = []) {
   return [...items].sort((left, right) => {
     const timestampDiff = getActivityTimestamp(right) - getActivityTimestamp(left);
     if (timestampDiff !== 0) return timestampDiff;
@@ -120,17 +120,17 @@ export function sortActivityItems(items = []) {
   });
 }
 
-export function normalizeActivitySubjectFilter(value) {
+function normalizeActivitySubjectFilter(value) {
   const normalized = normalizeValue(value).toLowerCase();
   return ACTIVITY_SUBJECT_FILTERS.has(normalized) ? normalized : 'all';
 }
 
-export function normalizeActivitySort(value) {
+function normalizeActivitySort(value) {
   const normalized = normalizeValue(value).toLowerCase();
   return ACTIVITY_SORT_MODES.has(normalized) ? normalized : 'newest';
 }
 
-export function filterActivityItemsBySubject(items = [], subject = 'all') {
+function filterActivityItemsBySubject(items = [], subject = 'all') {
   const normalizedSubject = normalizeActivitySubjectFilter(subject);
   if (normalizedSubject === 'all') return Array.isArray(items) ? items : [];
   return (Array.isArray(items) ? items : []).filter(
@@ -138,7 +138,7 @@ export function filterActivityItemsBySubject(items = [], subject = 'all') {
   );
 }
 
-export function sortActivityItemsForMode(items = [], sort = 'newest') {
+function sortActivityItemsForMode(items = [], sort = 'newest') {
   const normalizedItems = sortActivityItems(items);
   if (normalizeActivitySort(sort) === 'oldest') return [...normalizedItems].reverse();
   return normalizedItems;
@@ -161,7 +161,7 @@ function getActivityDeduplicationKey(item = {}) {
   return normalizeValue(item?.dedupeKey) || normalizeValue(item?.id);
 }
 
-export function dedupeActivityItems(items = []) {
+function dedupeActivityItems(items = []) {
   const seenKeys = new Set();
   return (Array.isArray(items) ? items : []).filter((item) => {
     const key = getActivityDeduplicationKey(item);
@@ -171,7 +171,7 @@ export function dedupeActivityItems(items = []) {
   });
 }
 
-export function paginateItems(items = [], cursor = null, pageSize = 20) {
+function paginateItems(items = [], cursor = null, pageSize = 20) {
   const offset = Number.isFinite(Number(cursor)) ? Math.max(0, Number(cursor)) : 0;
   const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Number(pageSize)) : 20;
   const nextItems = items.slice(offset, offset + normalizedPageSize);
@@ -182,14 +182,6 @@ export function paginateItems(items = [], cursor = null, pageSize = 20) {
     items: nextItems,
     nextCursor: nextOffset < items.length ? nextOffset : null,
   };
-}
-
-export function chunkArray(values = [], size = 100) {
-  const chunks = [];
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size));
-  }
-  return chunks;
 }
 
 // ============================================================
@@ -338,7 +330,7 @@ function projectActivityLine(item = {}, viewerId = null) {
   }
 }
 
-export function projectActivityItem(item = {}, viewerId = null) {
+function projectActivityItem(item = {}, viewerId = null) {
   const line = projectActivityLine(item, viewerId);
   return {
     ...item,

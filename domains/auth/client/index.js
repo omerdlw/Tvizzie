@@ -1,5 +1,7 @@
 'use client';
-import { normalizeLowerValue, normalizeValue } from '@/shared/utils';
+
+import { normalizeLowerValue } from '@/shared/utils';
+
 export {
   createAuthCsrfHeaders as createCsrfHeaders,
   getAuthCsrfToken as getCsrfToken,

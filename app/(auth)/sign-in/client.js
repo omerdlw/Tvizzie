@@ -37,7 +37,6 @@ import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import AuthRegistry from '@/app/(auth)/registry';
-import { AuthReveal, AuthScene } from '@/app/(auth)/motion';
 import Link from 'next/link';
 
 export default function Client() {
@@ -434,181 +433,158 @@ function View({
 
   return (
     <AuthPageShell>
-      <AuthScene sceneKey={isResetMode ? 'password-reset' : 'sign-in'}>
-        {isResetMode ? (
-          <form onSubmit={handleResetSubmit} className={AUTH_PAGE_FORM_CLASS}>
-            <AuthReveal className="text-center" stage="heading">
-              <h1 className="text-3xl font-semibold sm:text-4xl">Reset Password</h1>
-              <p className="mt-2 text-base text-white/50">{resetFlow.email}</p>
-            </AuthReveal>
+      {isResetMode ? (
+        <form onSubmit={handleResetSubmit} className={AUTH_PAGE_FORM_CLASS}>
+          <div className="text-center">
+            <h1 className="text-3xl font-semibold sm:text-4xl">Reset Password</h1>
+            <p className="mt-2 text-base text-white/50">{resetFlow.email}</p>
+          </div>
 
-            <AuthReveal itemIndex={0} stage="field">
-              <Input
-                id="reset-password"
-                type={showResetPassword ? 'text' : 'password'}
-                value={resetFlow.newPassword}
-                onChange={(event) =>
-                  setResetFlow((prev) => ({
-                    ...prev,
-                    newPassword: event.target.value,
-                  }))
-                }
-                placeholder="New password"
-                autoComplete="new-password"
-                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
-                rightIcon={
-                  <PasswordToggleButton
-                    visible={showResetPassword}
-                    onClick={() => setShowResetPassword((prev) => !prev)}
-                  />
-                }
+          <Input
+            id="reset-password"
+            type={showResetPassword ? 'text' : 'password'}
+            value={resetFlow.newPassword}
+            onChange={(event) =>
+              setResetFlow((prev) => ({
+                ...prev,
+                newPassword: event.target.value,
+              }))
+            }
+            placeholder="New password"
+            autoComplete="new-password"
+            classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
+            rightIcon={
+              <PasswordToggleButton
+                visible={showResetPassword}
+                onClick={() => setShowResetPassword((prev) => !prev)}
               />
-            </AuthReveal>
+            }
+          />
 
-            <AuthReveal itemIndex={1} stage="field">
-              <Input
-                id="reset-password-confirmation"
-                type={showResetConfirmPassword ? 'text' : 'password'}
-                value={resetFlow.confirmPassword}
-                onChange={(event) =>
-                  setResetFlow((prev) => ({
-                    ...prev,
-                    confirmPassword: event.target.value,
-                  }))
-                }
-                placeholder="Confirm password"
-                autoComplete="new-password"
-                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
-                rightIcon={
-                  <PasswordToggleButton
-                    visible={showResetConfirmPassword}
-                    onClick={() => setShowResetConfirmPassword((prev) => !prev)}
-                    showLabel="Show password confirmation"
-                    hideLabel="Hide password confirmation"
-                  />
-                }
+          <Input
+            id="reset-password-confirmation"
+            type={showResetConfirmPassword ? 'text' : 'password'}
+            value={resetFlow.confirmPassword}
+            onChange={(event) =>
+              setResetFlow((prev) => ({
+                ...prev,
+                confirmPassword: event.target.value,
+              }))
+            }
+            placeholder="Confirm password"
+            autoComplete="new-password"
+            classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
+            rightIcon={
+              <PasswordToggleButton
+                visible={showResetConfirmPassword}
+                onClick={() => setShowResetConfirmPassword((prev) => !prev)}
+                showLabel="Show password confirmation"
+                hideLabel="Hide password confirmation"
               />
-            </AuthReveal>
+            }
+          />
 
-            <AuthReveal className="grid gap-3 sm:grid-cols-2" stage="submit">
-              <Button
-                type="button"
-                onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
-                disabled={resetFlow.isSubmitting}
-                classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                disabled={resetFlow.isSubmitting || !resetFlow.passwordResetProof}
-                classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
-              >
-                {resetFlow.isSubmitting ? 'Resetting' : 'Reset'}
-              </Button>
-            </AuthReveal>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit} className={AUTH_PAGE_FORM_CLASS}>
-            <div className="flex flex-col items-center text-center">
-              <AuthReveal stage="brand">
-                <Link
-                  href="/"
-                  className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
-                >
-                  <Image
-                    src="/tvizzie.png"
-                    alt="Tvizzie"
-                    width={64}
-                    height={64}
-                    className="size-16"
-                  />
-                </Link>
-              </AuthReveal>
-              <AuthReveal stage="heading">
-                <h1 className="text-2xl font-semibold sm:text-3xl">Welcome back</h1>
-              </AuthReveal>
-            </div>
-
-            <AuthReveal itemIndex={0} stage="field">
-              <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
-                <Input
-                  id="sign-in-identifier"
-                  value={identifier}
-                  onChange={(event) => setIdentifier(event.target.value)}
-                  placeholder="Enter your username or email"
-                  autoComplete="username"
-                  classNames={AUTH_INPUT_CLASSNAMES}
-                />
-              </AuthField>
-            </AuthReveal>
-
-            <AuthReveal itemIndex={1} stage="field">
-              <AuthField htmlFor="sign-in-password" label="Password">
-                <Input
-                  id="sign-in-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Password"
-                  autoComplete="current-password"
-                  classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
-                  rightIcon={
-                    <PasswordToggleButton
-                      visible={showPassword}
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    />
-                  }
-                />
-              </AuthField>
-            </AuthReveal>
-
-            <AuthReveal stage="submit">
-              <Button
-                type="submit"
-                disabled={isSignInBusy}
-                classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
-              >
-                {isPasswordSubmitting ? 'Logging in' : 'Log In'}
-              </Button>
-            </AuthReveal>
-
-            <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
-              <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
-              <div className="h-px grow bg-white/10" />
-              <AuthReveal stage="divider">
-                <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
-              </AuthReveal>
-              <div className="h-px grow bg-white/10" />
-              <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
-            </div>
-
-            <AuthReveal stage="oauth">
-              <OAuthProviderList
-                activeProvider={activeOAuthProvider}
-                disabled={isSignInBusy}
-                mode="sign-in"
-                onSelect={handleOAuthSignIn}
-              />
-            </AuthReveal>
-
-            <AuthReveal
-              className="mt-2 text-center text-sm font-medium text-white/50"
-              stage="footer"
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
+              disabled={resetFlow.isSubmitting}
+              classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
             >
-              <p>
-                Don&apos;t have an account?{' '}
-                <Link
-                  href={signUpHref}
-                  className="inline-block px-1 text-white transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
-                >
-                  Sign Up
-                </Link>
-              </p>
-            </AuthReveal>
-          </form>
-        )}
-      </AuthScene>
+              Back
+            </Button>
+            <Button
+              type="submit"
+              disabled={resetFlow.isSubmitting || !resetFlow.passwordResetProof}
+              classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
+            >
+              {resetFlow.isSubmitting ? 'Resetting' : 'Reset'}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handleSubmit} className={AUTH_PAGE_FORM_CLASS}>
+          <div className="flex flex-col items-center text-center">
+            <Link
+              href="/"
+              className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
+            >
+              <Image
+                src="/tvizzie.png"
+                alt="Tvizzie"
+                width={64}
+                height={64}
+                className="size-16"
+              />
+            </Link>
+            <h1 className="text-2xl font-semibold sm:text-3xl">Welcome back</h1>
+          </div>
+
+          <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
+            <Input
+              id="sign-in-identifier"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              placeholder="Enter your username or email"
+              autoComplete="username"
+              classNames={AUTH_INPUT_CLASSNAMES}
+            />
+          </AuthField>
+
+          <AuthField htmlFor="sign-in-password" label="Password">
+            <Input
+              id="sign-in-password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              autoComplete="current-password"
+              classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
+              rightIcon={
+                <PasswordToggleButton
+                  visible={showPassword}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                />
+              }
+            />
+          </AuthField>
+
+          <Button
+            type="submit"
+            disabled={isSignInBusy}
+            classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
+          >
+            {isPasswordSubmitting ? 'Logging in' : 'Log In'}
+          </Button>
+
+          <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
+            <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
+            <div className="h-px grow bg-white/10" />
+            <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
+            <div className="h-px grow bg-white/10" />
+            <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
+          </div>
+
+          <OAuthProviderList
+            activeProvider={activeOAuthProvider}
+            disabled={isSignInBusy}
+            mode="sign-in"
+            onSelect={handleOAuthSignIn}
+          />
+
+          <div className="mt-2 text-center text-sm font-medium text-white/50">
+            <p>
+              Don&apos;t have an account?{' '}
+              <Link
+                href={signUpHref}
+                className="inline-block px-1 text-white transition-all duration-300 ease-in-out hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </div>
+        </form>
+      )}
     </AuthPageShell>
   );
 }

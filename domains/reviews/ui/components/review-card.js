@@ -120,7 +120,7 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       onClick={onClick}
       type="button"
       className={cn(
-        'inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-300 ease-in-out disabled:cursor-default disabled:opacity-50',
+        'inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-all duration-300 ease-in-out disabled:cursor-default disabled:opacity-50',
         hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
       )}
     >
@@ -148,7 +148,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
     >
       <Button
         disabled={disabled}
-        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5 hover:text-white"
+        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5 hover:text-white"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -156,7 +156,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
         <Icon icon="solar:pen-bold" size={16} />
       </Button>
       <Button
-        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5"
+        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5"
         disabled={disabled}
         onClick={onDeleteRequest}
         title="Delete Review"
@@ -299,7 +299,7 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-white/10 transition-[background-color,border-color] duration-[340ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-b-0',
+        'relative border-b border-white/10 transition-all duration-300 ease-in-out last:border-b-0',
         removeTopPadding ? 'pt-0 sm:pt-0' : 'pt-3.5 sm:pt-4',
         removeBottomPadding ? 'pb-0 sm:pb-0' : 'pb-3.5 sm:pb-4',
         isSpoilerHidden && 'cursor-pointer',
@@ -401,7 +401,7 @@ export default function ReviewCard({
                     <span>{formattedDate}</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-white/80">
-                    <span className="text-white/60">{activityLabel}</span>
+                    <span className="text-white/50">{activityLabel}</span>
                     <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
@@ -410,7 +410,7 @@ export default function ReviewCard({
 
                 <div className="hidden text-sm text-white/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
                   {hasRating && <RatingStars rating={resolvedRating} />}
-                  <span className="text-white/60">{activityLabel}</span>
+                  <span className="text-white/50">{activityLabel}</span>
                   <Link href={accountHref} className="font-semibold text-white hover:underline">
                     {displayName}
                   </Link>

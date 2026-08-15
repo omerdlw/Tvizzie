@@ -8,7 +8,6 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 
 const GAP_PX = 12;
 const CARDS_VISIBLE = 5;
@@ -50,28 +49,22 @@ export default function PersonGallery({ images }) {
   return (
     <section className="relative w-full">
       <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
-        <MediaRouteReveal stage="person.sections.gallery" deferred>
-          <div className="flex min-w-0 items-center gap-2">
-            <Icon icon="solar:gallery-wide-bold" size={20} className="text-white/70" />
-            <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
-              Gallery
-            </h2>
-          </div>
-        </MediaRouteReveal>
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:gallery-wide-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
+            Gallery
+          </h2>
+        </div>
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
           <GridShellCrosshairs />
         </div>
       </div>
-      <MediaRouteReveal className="p-6" stage="person.sections.gallery" deferred>
+      <div className="p-6">
         <div ref={containerRef} className="w-full">
           <Carousel gap="gap-3">
             {profiles.map((image, index) => (
-              <MediaRouteReveal
+              <div
                 key={image.file_path || index}
-                deferred
-                interactive
-                itemIndex={index}
-                stage="person.items.gallery"
                 style={{ width: cardWidth ?? 160, flexShrink: 0 }}
               >
                 <MediaCard
@@ -87,14 +80,14 @@ export default function PersonGallery({ images }) {
                   data-poster-file-path={image.file_path || ''}
                   data-context-menu-target="person-poster-card"
                 />
-              </MediaRouteReveal>
+              </div>
             ))}
           </Carousel>
         </div>
-      </MediaRouteReveal>
+      </div>
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+        <GridShellCrosshairs />
+      </div>
     </section>
   );
 }

@@ -33,7 +33,7 @@ function AccountOverviewContent({ overviewData, RegistryComponent }) {
       sectionState.profileHandle ?? sectionState.profile?.username ?? sectionState.username ?? null,
   };
 
-  return <AccountOverviewFeed model={model} RegistryComponent={RegistryComponent} />;
+  return <AccountOverviewFeed overviewData={model} RegistryComponent={RegistryComponent} />;
 }
 
 export default function AccountOverviewClient({ RegistryComponent = null, routeData = null }) {

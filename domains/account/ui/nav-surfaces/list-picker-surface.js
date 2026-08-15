@@ -141,7 +141,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
       animate="visible"
       whileTap={{ scale: NAV_TAP_SCALE }}
       className={cn(
-        'group flex w-full items-center gap-2 border p-3 text-left transition-[background-color,border-color,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'group flex w-full items-center gap-2 border p-3 text-left transition-all duration-300 ease-in-out',
         isSelected
           ? 'border-white/10 bg-white/5'
           : 'border-white/5 hover:border-white/10 hover:bg-white/5',

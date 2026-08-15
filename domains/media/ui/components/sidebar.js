@@ -7,7 +7,6 @@ import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from 
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 
 const MAX_VISIBLE_PERSONS = 2;
 
@@ -85,47 +84,41 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
     return { element: null, count: 0 };
   }
   const elements = (
-    <MediaRouteReveal stage="sidebar.taxonomy">
-      <div className="mt-2 flex flex-col gap-2">
-        <div>
-          <p className="text-[11px] leading-none font-semibold tracking-widest text-white/70 uppercase">
-            GENRES / TAGS
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {normalizedGenres.map((genre, index) => {
-            return (
-              <MediaRouteReveal
-                key={genre}
-                className="inline-flex"
-                stage="sidebar.taxonomy"
-                interaction="control"
-                interactive
-                itemIndex={index}
-              >
-                <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-white/5 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-white/80 uppercase hover:border-white/15 hover:text-white">
+    <div className="mt-2 flex flex-col gap-2">
+      <div>
+        <p className="text-[11px] leading-none font-semibold tracking-widest text-white/70 uppercase">
+          GENRES / TAGS
+        </p>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {normalizedGenres.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {normalizedGenres.map((genre) => {
+              return (
+                <span
+                  key={genre}
+                  className="inline-flex min-h-[28px] max-w-full cursor-default items-center border border-white/5 bg-white/5 px-2.5 py-1 text-xs font-semibold tracking-wider text-white/80 uppercase hover:border-white/10 hover:text-white"
+                >
                   {genre}
                 </span>
-              </MediaRouteReveal>
-            );
-          })}
-          {normalizedTags.map((tag, index) => (
-            <MediaRouteReveal
-              key={tag}
-              className="inline-flex"
-              stage="sidebar.taxonomy"
-              interaction="control"
-              interactive
-              itemIndex={normalizedGenres.length + index}
-            >
-              <span className="bg-primary/60 inline-flex min-h-[28px] max-w-full items-center border border-white/5 px-2.5 py-1 text-[11px] text-white/70 uppercase hover:border-white/15 hover:text-white">
+              );
+            })}
+          </div>
+        )}
+        {normalizedTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {normalizedTags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex min-h-[28px] max-w-full cursor-default items-center border border-white/5 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 uppercase hover:border-white/10 hover:text-white"
+              >
                 {tag}
               </span>
-            </MediaRouteReveal>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
-    </MediaRouteReveal>
+    </div>
   );
   return { element: elements, count: normalizedGenres.length + normalizedTags.length };
 }
@@ -236,44 +229,40 @@ export default function Sidebar({
 
   return (
     <div className="flex flex-col gap-4">
-      <MediaRouteReveal stage="sidebar.poster">
-        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden sm:max-w-[360px] lg:max-w-none">
-          {posterSrc ? (
-            <AdaptiveImage
-              fill
-              priority
-              src={posterSrc}
-              alt={item.title || item.name}
-              fetchPriority="high"
-              sizes="(max-width: 1024px) 100vw, 400px"
-              quality={resolveImageQuality('hero')}
-              decoding="async"
-              placeholder="blur"
-              blurDataURL={getImagePlaceholderDataUrl(
-                `${item.id || item.title || item.name}-${item.poster_path}`,
-              )}
-              className="object-cover"
-              wrapperClassName="h-full w-full"
-            />
-          ) : (
-            <div className="bg-primary center h-full w-full border border-white/5 text-white/50">
-              <Icon icon="solar:clapperboard-play-bold" size={40} />
-            </div>
-          )}
-        </div>
-      </MediaRouteReveal>
+      <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden sm:max-w-[360px] lg:max-w-none">
+        {posterSrc ? (
+          <AdaptiveImage
+            fill
+            priority
+            src={posterSrc}
+            alt={item.title || item.name}
+            fetchPriority="high"
+            sizes="(max-width: 1024px) 100vw, 400px"
+            quality={resolveImageQuality('hero')}
+            decoding="async"
+            placeholder="blur"
+            blurDataURL={getImagePlaceholderDataUrl(
+              `${item.id || item.title || item.name}-${item.poster_path}`,
+            )}
+            className="object-cover"
+            wrapperClassName="h-full w-full"
+          />
+        ) : (
+          <div className="bg-primary center h-full w-full border border-white/5 text-white/50">
+            <Icon icon="solar:clapperboard-play-bold" size={40} />
+          </div>
+        )}
+      </div>
 
-      {topContent ? (
-        <MediaRouteReveal stage="sidebar.actions">{topContent}</MediaRouteReveal>
-      ) : null}
+      {topContent ? topContent : null}
 
       {hasTaxonomy ? taxonomyData.element : null}
 
       <div className="flex flex-col gap-1">
-        {rows.map((row, index) => (
-          <MediaRouteReveal key={row.id} stage="sidebar.rows" itemIndex={index}>
-            <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </MediaRouteReveal>
+        {rows.map((row) => (
+          <SidebarRow key={row.id} icon={row.icon}>
+            {row.content}
+          </SidebarRow>
         ))}
       </div>
     </div>

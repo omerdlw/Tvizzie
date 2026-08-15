@@ -10,6 +10,7 @@ import {
   NAV_BADGE_TRANSITION,
   NAV_CARD_SPRING,
   NAV_FADE_TRANSITION,
+  NAV_PEEK_SPRING,
   textCrossfadeVariants,
 } from '@/modules/nav/motion';
 import { cn } from '@/shared/utils';
@@ -78,9 +79,9 @@ function Badge({ badge }) {
       {badge?.visible ? (
         <motion.div
           key={badge.value}
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.6 }}
+          initial={{ opacity: 0, scale: 0.5, y: -2 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.5, y: -2 }}
           transition={NAV_BADGE_TRANSITION}
           className="center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring"
         >
@@ -397,6 +398,18 @@ const Item = memo(
       visibleCount: globalCompact && !isStackHovered ? 1 : 3,
     });
 
+    const cardDelay = useMemo(() => {
+      // Expanding: top card moves first, others cascade behind
+      if (expanded && position > 0) {
+        return position * 0.055;
+      }
+      // Hover peek: slight stagger so depth feels physical
+      if (isStackHovered && position > 0) {
+        return (position - 1) * 0.04;
+      }
+      return 0;
+    }, [expanded, isStackHovered, position]);
+
     return (
       <motion.div
         ref={ref}
@@ -404,13 +417,13 @@ const Item = memo(
         style={cardStyle}
         initial={false}
         animate={{
-          y: isStackHovered && position > 0 ? motionValues.y - position * 2 : motionValues.y,
-          scale: motionValues.scale,
+          y: isStackHovered && position > 0 ? motionValues.y - position * 3 : motionValues.y,
+          scale: isStackHovered && position > 0 ? motionValues.scale * 1.005 : motionValues.scale,
           opacity: motionValues.opacity,
         }}
         transition={{
-          ...NAV_CARD_SPRING,
-          delay: isStackHovered && position > 0 ? (position - 1) * 0.055 : 0,
+          ...(isStackHovered && position > 0 ? NAV_PEEK_SPRING : NAV_CARD_SPRING),
+          delay: cardDelay,
         }}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
@@ -425,9 +438,9 @@ const Item = memo(
           {compact && (
             <motion.div
               key="compact-title-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 4, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.97 }}
               transition={NAV_FADE_TRANSITION}
               className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
             >
@@ -451,7 +464,7 @@ const Item = memo(
         <motion.div
           ref={cardContentRef}
           className="flow-root w-full"
-          animate={{ opacity: compact ? 0 : 1 }}
+          animate={{ opacity: compact ? 0 : 1, scale: compact ? 0.98 : 1 }}
           transition={NAV_FADE_TRANSITION}
           style={{
             pointerEvents: compact ? 'none' : 'auto',
@@ -463,9 +476,9 @@ const Item = memo(
             ) : (
               <motion.div
                 key={contentKey}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
                 transition={NAV_FADE_TRANSITION}
               >
                 {renderContent()}

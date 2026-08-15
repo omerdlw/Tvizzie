@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
 import { useBackgroundActions, useBackgroundState } from './context';
-import { NoiseTexture } from '@/ui/primitives/noise-texture';
 
 export { BackgroundProvider, useBackgroundState } from './context';
 
@@ -299,16 +298,18 @@ export function BackgroundOverlay() {
           <BackgroundGradients count={leftGradient} direction="left" />
           <BackgroundGradients count={rightGradient} direction="right" />
 
-          <NoiseTexture
-            className="fixed inset-0 h-screen w-screen transform-gpu"
-            opacity={typeof noiseOpacity === 'number' ? noiseOpacity : 0.04}
-            blend={
-              typeof noiseBlendMode === 'string' && noiseBlendMode.trim()
-                ? noiseBlendMode
-                : 'overlay'
-            }
-            grain="medium"
-            style={noiseInlineStyle}
+          <div
+            className="pointer-events-none fixed inset-0 h-screen w-screen transform-gpu"
+            style={{
+              opacity: typeof noiseOpacity === 'number' ? noiseOpacity : 0.04,
+              mixBlendMode:
+                typeof noiseBlendMode === 'string' && noiseBlendMode.trim()
+                  ? noiseBlendMode
+                  : 'overlay',
+              backgroundImage: 'url(/images/noise.png)',
+              backgroundRepeat: 'repeat',
+              ...noiseInlineStyle,
+            }}
           />
 
           {overlay && (

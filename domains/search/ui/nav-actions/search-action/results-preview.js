@@ -30,7 +30,7 @@ export default function SearchActionResultsPreview({
         <motion.div
           key={resultListKey}
           className="mt-2 flex flex-col gap-1 overflow-hidden"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6, transition: NAV_RESULTS_EXIT_TRANSITION }}
           transition={NAV_RESULTS_TRANSITION}
@@ -38,12 +38,12 @@ export default function SearchActionResultsPreview({
           {results.map((item, index) => (
             <motion.div
               key={`${item.media_type}-${item.id}`}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: NAV_RESULTS_EXIT_TRANSITION }}
+              exit={{ opacity: 0, y: -4, transition: NAV_RESULTS_EXIT_TRANSITION }}
               transition={{
                 ...NAV_RESULTS_TRANSITION,
-                delay: 0.12 + index * NAV_RESULTS_STAGGER_DELAY,
+                delay: 0.04 + index * NAV_RESULTS_STAGGER_DELAY,
               }}
             >
               <SearchResultItem

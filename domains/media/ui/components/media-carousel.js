@@ -1,11 +1,10 @@
 'use client';
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useDraggableScroll } from '@/shared/hooks/use-draggable-scroll';
 import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
-import { MEDIA_ROUTE_INTERACTIONS } from '@/app/(media)/motion';
+
 const SCROLL_STEP = 2;
 const SCROLL_THRESHOLD = 4;
 const FALLBACK_CARD_WIDTH = 288;
@@ -107,33 +106,31 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         ))}
       </div>
       {scrollState.canScrollLeft && (
-        <motion.button
+        <button
           key="carousel-btn-left"
           type="button"
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
-          {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs sm:size-10 md:-left-4',
+            'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 sm:size-10 md:-left-4',
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
-        </motion.button>
+        </button>
       )}
 
       {scrollState.canScrollRight && (
-        <motion.button
+        <button
           key="carousel-btn-right"
           type="button"
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
-          {...MEDIA_ROUTE_INTERACTIONS.control}
           className={cn(
-            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs sm:size-10 md:-right-4',
+            'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/90 backdrop-blur-xs transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 sm:size-10 md:-right-4',
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />
-        </motion.button>
+        </button>
       )}
     </div>
   );

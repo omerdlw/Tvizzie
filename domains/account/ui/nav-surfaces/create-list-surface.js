@@ -135,12 +135,12 @@ const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, on
                   <Icon
                     icon="solar:check-circle-bold"
                     size={14}
-                    className="transition-opacity duration-150 group-hover/result:opacity-0"
+                    className="transition-all duration-300 ease-in-out group-hover/result:opacity-0"
                   />
                   <Icon
                     icon="solar:trash-bin-trash-bold"
                     size={14}
-                    className="absolute opacity-0 transition-opacity duration-150 group-hover/result:opacity-100"
+                    className="absolute opacity-0 transition-all duration-300 ease-in-out group-hover/result:opacity-100"
                   />
                 </>
               ) : (
@@ -203,7 +203,7 @@ const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
               }}
               className={cn(
                 SEARCH_STYLES.metaBadge,
-                'hover:border-error/20 hover:bg-error/10 hover:text-error size-6 shrink-0 cursor-pointer justify-center text-white/70 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                'hover:border-error/20 hover:bg-error/10 hover:text-error size-6 shrink-0 cursor-pointer justify-center text-white/70 transition-all duration-300 ease-in-out',
               )}
               aria-label={`Remove ${title}`}
             >

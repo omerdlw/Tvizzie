@@ -2,18 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LegalReveal } from '@/app/(legal)/motion';
 
 const POLICY_LINKS = [
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms of Service' },
 ];
 
-function quickLinkClassName(isActive) {
-  return `flex-auto  border px-4 py-3 text-center text-sm font-medium transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] active:scale-[0.985] ${
+const LINK_BASE_CLASS =
+  'flex-auto border px-4 py-3 text-center text-sm font-medium transition-all duration-300 ease-in-out';
+
+function getQuickLinkClass(isActive) {
+  return `${LINK_BASE_CLASS} ${
     isActive
       ? 'border-white/10 bg-white/5 text-white'
-      : 'border-white/5 bg-black/40 text-white/60 hover:border-white/10 hover:bg-black hover:text-white'
+      : 'border-white/5 bg-black/40 text-white/50 hover:border-white/10 hover:bg-black hover:text-white'
   }`;
 }
 
@@ -23,21 +25,18 @@ export default function LegalQuickLinks() {
   return (
     <section aria-label="Legal page links" className="relative flex flex-col gap-2 py-6">
       <div className="flex flex-col gap-2 sm:flex-row">
-        {POLICY_LINKS.map((link, index) => (
-          <LegalReveal className="flex flex-1" key={link.href} itemIndex={index} stage="quickLink">
-            <Link href={link.href} className={quickLinkClassName(pathname === link.href)}>
+        {POLICY_LINKS.map((link) => (
+          <div className="flex flex-1" key={link.href}>
+            <Link href={link.href} className={getQuickLinkClass(pathname === link.href)}>
               {link.label}
             </Link>
-          </LegalReveal>
+          </div>
         ))}
-        <LegalReveal className="flex flex-1" itemIndex={2} stage="quickLink">
-          <a
-            className="flex-auto border border-white/5 bg-black/40 px-4 py-3 text-center text-sm font-medium text-white/60 transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.015] hover:border-white/10 hover:bg-black hover:text-white active:scale-[0.985]"
-            href="mailto:tvizzie.app@gmail.com"
-          >
+        <div className="flex flex-1">
+          <a className={getQuickLinkClass(false)} href="mailto:tvizzie.app@gmail.com">
             Contact
           </a>
-        </LegalReveal>
+        </div>
       </div>
       <div
         aria-hidden="true"

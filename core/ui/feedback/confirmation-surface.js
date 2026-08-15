@@ -18,7 +18,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2  px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:scale-[1.012] active:scale-[0.985]',
+    'center w-full cursor-pointer gap-2  px-4 py-2.5 text-xs font-semibold uppercase tracking-wider',
     resolveButtonTone(tone),
     className,
   );

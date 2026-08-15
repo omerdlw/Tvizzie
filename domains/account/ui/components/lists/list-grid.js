@@ -13,7 +13,6 @@ import {
   buildAccountCollectionPageHref,
   formatPaginationSummaryLabel,
 } from '@/domains/account/utils';
-import { AccountReveal } from '@/app/(account)/motion';
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
 export default function AccountPaginatedListGrid({
@@ -87,21 +86,14 @@ export default function AccountPaginatedListGrid({
       ) : (
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-            {visibleLists.map((list, index) => {
+            {visibleLists.map((list) => {
               return (
-                <AccountReveal
+                <AccountListCard
                   key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
-                  deferred
-                  interactive
-                  itemIndex={index}
-                  stage="item.list"
-                >
-                  <AccountListCard
-                    list={list}
-                    ownerUsername={ownerUsername}
-                    renderActions={renderActions}
-                  />
-                </AccountReveal>
+                  list={list}
+                  ownerUsername={ownerUsername}
+                  renderActions={renderActions}
+                />
               );
             })}
           </div>

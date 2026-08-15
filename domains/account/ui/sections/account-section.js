@@ -11,7 +11,6 @@ import {
   ActivityItemsSkeletonList,
   ReviewCardsSkeletonList,
 } from '@/domains/account/ui/skeletons/account-section-skeletons';
-import { AccountReveal } from '@/app/(account)/motion';
 
 export const ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS = 'px-4';
 export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = `min-h-14 ${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS}`;
@@ -66,19 +65,14 @@ export function AccountSectionHeading({
           ACCOUNT_SECTION_HEADER_PADDING_CLASS,
         )}
       >
-        <AccountReveal className="flex min-w-0 items-center gap-2" deferred stage="section.heading">
+        <div className="flex min-w-0 items-center gap-2">
           {icon && <Icon icon={icon} size={24} className="text-white/70" />}
           <TitleWrapper href={titleHref} className={titleClassName}>
             {title}
           </TitleWrapper>
-        </AccountReveal>
+        </div>
 
-        <AccountReveal
-          className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right"
-          deferred
-          itemIndex={1}
-          stage="section.heading"
-        >
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
           {summaryLabel &&
             (titleHref ? (
               <Link href={titleHref} className={summaryClassName}>
@@ -93,7 +87,7 @@ export function AccountSectionHeading({
               See more
             </Link>
           )}
-        </AccountReveal>
+        </div>
       </div>
       {showDivider && (
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
@@ -106,15 +100,10 @@ export function AccountSectionHeading({
 
 export function AccountSectionBand({ children, className = '', isInitialSection = true }) {
   return (
-    <div
-      className={cn(
-        'relative w-full',
-        className,
-      )}
-    >
+    <div className={cn('relative w-full', className)}>
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+        <GridShellCrosshairs />
+      </div>
       {children}
     </div>
   );
@@ -123,12 +112,7 @@ export function AccountSectionBand({ children, className = '', isInitialSection 
 export function AccountSectionState({ message, isInitialSection = true }) {
   return (
     <section className="relative bg-transparent">
-      <div
-        className={cn(
-          ACCOUNT_SECTION_SHELL_CLASS,
-          'relative',
-        )}
-      >
+      <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'relative')}>
         <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
           <GridShellCrosshairs />
         </div>
@@ -162,17 +146,11 @@ export default function AccountSectionLayout({
 }) {
   return (
     <section className="relative bg-transparent">
-      <div
-        className={cn(
-          ACCOUNT_SECTION_SHELL_CLASS,
-          'relative',
-          className,
-        )}
-      >
+      <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'relative', className)}>
         {showTopRule && (
           <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+            <GridShellCrosshairs />
+          </div>
         )}
         {showHeader ? (
           <AccountSectionHeading
@@ -194,20 +172,11 @@ export default function AccountSectionLayout({
             isInitialSection={isInitialSection}
             className={cn(toolbarPaddingClassName, toolbarClassName)}
           >
-            <AccountReveal className="w-full" deferred itemIndex={revealDelay} stage="control">
-              {toolbar}
-            </AccountReveal>
+            <div className="w-full">{toolbar}</div>
           </AccountSectionBand>
         ) : null}
 
-        <AccountReveal
-          className={cn(contentPaddingClassName, contentClassName)}
-          deferred
-          itemIndex={revealDelay}
-          stage="section.content"
-        >
-          {children}
-        </AccountReveal>
+        <div className={cn(contentPaddingClassName, contentClassName)}>{children}</div>
       </div>
     </section>
   );

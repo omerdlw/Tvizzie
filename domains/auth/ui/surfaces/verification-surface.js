@@ -183,8 +183,13 @@ export default function AuthVerificationSurface({ close, data, header }) {
         return;
       }
 
-      if (!isInitial && !canResendCode) {
-        setStatusMessage(`Please wait ${resendRemainingSeconds}s before resending`);
+      const currentResendMs = Math.max(
+        0,
+        resolveVerificationTimestamp(resendAvailableAt) - Date.now(),
+      );
+      if (!isInitial && currentResendMs > 0) {
+        const remainingSec = Math.max(0, Math.ceil(currentResendMs / 1000));
+        setStatusMessage(`Please wait ${remainingSec}s before resending`);
         setIsStatusError(true);
         setIsCooldownError(true);
         return;
@@ -231,15 +236,14 @@ export default function AuthVerificationSurface({ close, data, header }) {
       }
     },
     [
-      canResendCode,
       email,
+      forceNewCodeOnOpen,
       hasValidVerificationTarget,
       identifier,
       isSending,
       isSubmitting,
       purpose,
-      resendRemainingSeconds,
-      forceNewCodeOnOpen,
+      resendAvailableAt,
     ],
   );
 

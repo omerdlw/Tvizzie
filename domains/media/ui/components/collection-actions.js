@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
@@ -22,7 +21,6 @@ import { useNavigationActions } from '@/modules/nav';
 import { createListPickerSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-picker-surface';
 import WatchProvidersSurface from '@/domains/media/ui/nav-surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';
-import { MediaRouteReveal, MEDIA_ROUTE_INTERACTIONS } from '@/app/(media)/motion';
 
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
@@ -116,13 +114,12 @@ function ActionButton({
   palette,
 }) {
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      {...MEDIA_ROUTE_INTERACTIONS.control}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
+        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-300 ease-in-out disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >
@@ -136,16 +133,12 @@ function ActionButton({
           <span className="truncate">{label}</span>
         </>
       )}
-    </motion.button>
+    </button>
   );
 }
 
-function ActionItem({ children, index = 0 }) {
-  return (
-    <MediaRouteReveal stage="items.actions" deferred itemIndex={index}>
-      {children}
-    </MediaRouteReveal>
-  );
+function ActionItem({ children }) {
+  return children;
 }
 
 export default function CollectionActions({ additionalActions = [], media }) {

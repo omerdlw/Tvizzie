@@ -41,9 +41,9 @@ export function NavSurfaceHeader({
       {icon ? (
         <motion.div
           className="center relative shrink-0"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...NAV_MICRO_TRANSITION, delay: 0.08 }}
+          initial={{ opacity: 0, y: 6, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ ...NAV_MICRO_TRANSITION, delay: 0.06 }}
         >
           <BadgeIcon icon={icon} />
         </motion.div>
@@ -66,6 +66,7 @@ export function NavSurfaceHeader({
           }}
           className="center absolute top-0 right-9 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           aria-label={backLabel}
+          whileHover={{ scale: 1.08, y: -0.5 }}
           whileTap={{ scale: NAV_TAP_SCALE }}
           transition={NAV_MICRO_TRANSITION}
         >
@@ -82,6 +83,7 @@ export function NavSurfaceHeader({
           }}
           className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           aria-label={closeLabel}
+          whileHover={{ scale: 1.08, y: -0.5 }}
           whileTap={{ scale: NAV_TAP_SCALE }}
           transition={NAV_MICRO_TRANSITION}
         >

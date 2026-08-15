@@ -5,7 +5,8 @@ import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
-import SkeletonScene from '@/ui/motion/skeleton-scene';
+
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 const SKELETON = 'skeleton-block';
 const SOFT_SKELETON = 'skeleton-block-soft';
@@ -20,7 +21,9 @@ function FullBleedRule({ edge = 'bottom' }) {
       className={`pointer-events-none absolute left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm ${
         edge === 'top' ? 'top-0' : 'bottom-0'
       }`}
-    />
+    >
+      <GridShellCrosshairs />
+    </div>
   );
 }
 
@@ -107,16 +110,16 @@ export function PersonDeferredContentSkeleton() {
   );
 }
 
-function PersonDetailRouteSkeleton() {
+export function PersonDetailRouteSkeleton() {
   return (
     <PageGradientShell className="overflow-hidden">
       <PersonGridFrame />
-      <SkeletonScene
+      <div
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12`}
       >
         <PersonHeroSkeleton />
         <PersonDeferredContentSkeleton />
-      </SkeletonScene>
+      </div>
       <NavHeightSpacer />
     </PageGradientShell>
   );

@@ -35,9 +35,7 @@ export function getCsrfTokenFromCookie(request) {
 }
 
 export function getCsrfTokenFromHeader(request) {
-  return normalizeValue(
-    request?.headers?.get?.('x-csrf-token') || request?.headers?.get?.('X-CSRF-Token'),
-  );
+  return normalizeValue(request?.headers?.get?.('x-csrf-token'));
 }
 
 export function ensureCsrfCookie(response, csrfToken = '') {

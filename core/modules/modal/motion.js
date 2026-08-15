@@ -1,14 +1,15 @@
 const MODAL_EASINGS = Object.freeze({
+  // Aligned with nav CINEMATIC easing
+  CINEMATIC: [0.16, 1, 0.3, 1],
   EMPHASIZED: [0.22, 1, 0.36, 1],
-  SOFT: [0.32, 0.72, 0, 1],
-  EXIT: [0.4, 0, 0.2, 1],
+  EXIT: [0.35, 0, 0.2, 1],
 });
 
 const MODAL_TIERS = Object.freeze({
-  MICRO: { duration: 0.24, distance: 4, ease: MODAL_EASINGS.EMPHASIZED },
-  FAST: { duration: 0.42, distance: 8, ease: MODAL_EASINGS.EMPHASIZED },
-  STANDARD: { duration: 0.64, distance: 14, ease: MODAL_EASINGS.EMPHASIZED },
-  SURFACE: { duration: 0.82, distance: 18, ease: MODAL_EASINGS.EMPHASIZED },
+  MICRO: { duration: 0.22, distance: 4, ease: MODAL_EASINGS.CINEMATIC },
+  FAST: { duration: 0.38, distance: 8, ease: MODAL_EASINGS.CINEMATIC },
+  STANDARD: { duration: 0.58, distance: 12, ease: MODAL_EASINGS.CINEMATIC },
+  SURFACE: { duration: 0.72, distance: 16, ease: MODAL_EASINGS.CINEMATIC },
 });
 
 const POSITIONS = Object.freeze({
@@ -20,21 +21,28 @@ const POSITIONS = Object.freeze({
 });
 
 const MODAL_SPRINGS = Object.freeze({
-  MICRO: Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
+  // Button tap: crisp, instant
+  MICRO: Object.freeze({ type: 'spring', stiffness: 600, damping: 28, mass: 0.22 }),
+  // Panel enter: organic feel aligned with nav DECK spring
+  PANEL: Object.freeze({ type: 'spring', stiffness: 280, damping: 28, mass: 0.6 }),
+  // Badge / counter
+  BADGE: Object.freeze({ type: 'spring', stiffness: 460, damping: 18, mass: 0.32 }),
 });
 
 export const MODAL_MICRO_SPRING = MODAL_SPRINGS.MICRO;
+export const MODAL_PANEL_SPRING = MODAL_SPRINGS.PANEL;
 
 // Keep press feedback aligned with the Nav controls: noticeable, but never bouncy.
 export const MODAL_MICRO_TAP_SCALE = 0.97;
 
-export const MODAL_CONTENT_STAGGER = 0.045;
+export const MODAL_CONTENT_STAGGER = 0.04;
 
 export const MODAL_CONTENT_VARIANTS = Object.freeze({
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 4 },
   visible: {
     opacity: 1,
-    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.SOFT, delay: 0.1 },
+    y: 0,
+    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.CINEMATIC, delay: 0.08 },
   },
   exit: {
     opacity: 0,
@@ -46,7 +54,7 @@ export const MODAL_HEADER_VARIANTS = Object.freeze({
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.SOFT, delay: 0.04 },
+    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.CINEMATIC, delay: 0.03 },
   },
   exit: {
     opacity: 0,
@@ -58,7 +66,7 @@ export const MODAL_FOOTER_VARIANTS = Object.freeze({
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.SOFT, delay: 0.16 },
+    transition: { duration: MODAL_TIERS.FAST.duration, ease: MODAL_EASINGS.CINEMATIC, delay: 0.12 },
   },
   exit: {
     opacity: 0,
@@ -70,7 +78,7 @@ export const MODAL_LIST_VARIANTS = Object.freeze({
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.SOFT },
+    transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.CINEMATIC },
   },
   exit: {
     opacity: 0,
@@ -85,8 +93,8 @@ export const MODAL_LIST_ITEM_VARIANTS = Object.freeze({
     y: 0,
     transition: {
       duration: MODAL_TIERS.FAST.duration,
-      ease: MODAL_EASINGS.EMPHASIZED,
-      delay: 0.08 + Math.min(Math.max(index, 0) * MODAL_CONTENT_STAGGER, 0.32),
+      ease: MODAL_EASINGS.CINEMATIC,
+      delay: 0.06 + Math.min(Math.max(index, 0) * MODAL_CONTENT_STAGGER, 0.28),
     },
   }),
   exit: {
@@ -108,7 +116,7 @@ function buildVariants(tierName, { axis, fullSlide = false, direction = 1 } = {}
   };
   const exit = {
     opacity: 0,
-    transition: { duration: tier.duration * 0.65, ease: MODAL_EASINGS.EXIT },
+    transition: { duration: tier.duration * 0.6, ease: MODAL_EASINGS.EXIT },
   };
 
   if (axis) {
@@ -124,6 +132,8 @@ function buildVariants(tierName, { axis, fullSlide = false, direction = 1 } = {}
   return Object.freeze({ hidden, visible, exit });
 }
 
+// Backdrop: blur is driven via inline filter so framer-motion can interpolate it.
+// CSS class `backdrop-blur-sm` cannot be animated — it snaps on at frame 1.
 export const modalBackdropVariants = Object.freeze({
   hidden: {
     opacity: 0,
@@ -131,22 +141,32 @@ export const modalBackdropVariants = Object.freeze({
   visible: {
     opacity: 1,
     transition: {
-      duration: MODAL_TIERS.SURFACE.duration * 0.65,
-      ease: MODAL_EASINGS.EMPHASIZED,
+      duration: MODAL_TIERS.FAST.duration,
+      ease: MODAL_EASINGS.CINEMATIC,
     },
   },
   exit: {
     opacity: 0,
     transition: {
-      duration: MODAL_TIERS.SURFACE.duration * 0.45,
+      duration: MODAL_TIERS.MICRO.duration,
       ease: MODAL_EASINGS.EXIT,
     },
   },
 });
 
-const CENTER_VARIANTS = buildVariants('STANDARD', {
-  axis: 'y',
+// Center modal: scale up + small y lift so it feels like it "rises" into place.
+// The PANEL spring in index.js drives the actual physics.
+const CENTER_VARIANTS = Object.freeze({
+  hidden: { opacity: 0, scale: 0.94, y: 10 },
+  visible: { opacity: 1, scale: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    scale: 0.96,
+    y: 6,
+    transition: { duration: MODAL_TIERS.FAST.duration * 0.6, ease: MODAL_EASINGS.EXIT },
+  },
 });
+
 
 const BOTTOM_VARIANTS = buildVariants('SURFACE', {
   axis: 'y',

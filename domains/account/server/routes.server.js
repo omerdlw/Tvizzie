@@ -56,14 +56,14 @@ export async function getViewerSessionContext() {
   return readSessionFromRequest(request).catch(() => null);
 }
 
-export function createRouteState(base = null, extras = null) {
+function createRouteState(base = null, extras = null) {
   return {
     ...(base && typeof base === 'object' ? base : {}),
     ...(extras && typeof extras === 'object' ? extras : {}),
   };
 }
 
-export function createInitialCollections({
+function createInitialCollections({
   counts = null,
   likes = [],
   lists = [],
@@ -97,7 +97,7 @@ export function createInitialCollections({
   };
 }
 
-export function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
+function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
   if (!feed || !resolvedUserId) return null;
   const normalizedItems = Array.isArray(feed.items) ? feed.items : [];
   const normalizedTotalCount = Number.isFinite(Number(feed.totalCount))
@@ -115,7 +115,7 @@ export function createInitialFeed(feed = null, resolvedUserId = null, extras = n
   };
 }
 
-export function createInitialListFeed(items = [], resolvedUserId = null, extras = null) {
+function createInitialListFeed(items = [], resolvedUserId = null, extras = null) {
   if (!resolvedUserId) return null;
   return {
     items: Array.isArray(items) ? items : [],
@@ -124,15 +124,15 @@ export function createInitialListFeed(items = [], resolvedUserId = null, extras 
   };
 }
 
-export function resolveSnapshotUserId(snapshot = null) {
+function resolveSnapshotUserId(snapshot = null) {
   return snapshot?.initialResolvedUserId || snapshot?.resolvedUserId || null;
 }
 
-export function resolveSnapshotCounts(snapshot = null) {
+function resolveSnapshotCounts(snapshot = null) {
   return snapshot?.initialCounts || snapshot?.counts || null;
 }
 
-export function createSnapshotInitialCollections(snapshot = null, collections = {}) {
+function createSnapshotInitialCollections(snapshot = null, collections = {}) {
   return createInitialCollections({
     counts: resolveSnapshotCounts(snapshot),
     resolvedUserId: resolveSnapshotUserId(snapshot),
@@ -140,7 +140,7 @@ export function createSnapshotInitialCollections(snapshot = null, collections = 
   });
 }
 
-export function createCurrentOverviewFallback(snapshot = null) {
+function createCurrentOverviewFallback(snapshot = null) {
   const resolvedUserId = resolveSnapshotUserId(snapshot);
   return {
     initialActivityFeed: null,
@@ -154,7 +154,7 @@ export function createCurrentOverviewFallback(snapshot = null) {
   };
 }
 
-export function createCurrentAuthPendingRouteState() {
+function createCurrentAuthPendingRouteState() {
   return {
     initialActivityFeed: null,
     initialCollections: null,
@@ -167,7 +167,7 @@ export function createCurrentAuthPendingRouteState() {
   };
 }
 
-export function createMissingUsernameRouteState(snapshot, username, extras = {}) {
+function createMissingUsernameRouteState(snapshot, username, extras = {}) {
   return createRouteState(snapshot, { initialCollections: null, username, ...extras });
 }
 
@@ -253,7 +253,7 @@ async function safeLoad(
   }
 }
 
-export async function loadAccountResource(
+async function loadAccountResource(
   snapshot = null,
   { resource, fallback = [], limitCount = null, listId = null, media = null, slug = null } = {},
 ) {
@@ -281,7 +281,7 @@ export async function loadAccountResource(
   }
 }
 
-export async function loadOverviewCollections(snapshot = null) {
+async function loadOverviewCollections(snapshot = null) {
   const userId = resolveSnapshotUserId(snapshot);
   if (!userId) return { likes: [], lists: [], watched: [], watchlist: [] };
 
@@ -310,7 +310,7 @@ export async function loadOverviewCollections(snapshot = null) {
   return { likes, lists, watched, watchlist };
 }
 
-export async function loadAccountActivityRouteFeed({
+function loadAccountActivityRouteFeed({
   cursor = null,
   pageSize = 20,
   scope = 'user',
@@ -326,7 +326,7 @@ export async function loadAccountActivityRouteFeed({
   );
 }
 
-export async function loadProfileReviewRouteFeed({
+function loadProfileReviewRouteFeed({
   mode = 'authored',
   pageSize = null,
   userId,
@@ -344,7 +344,7 @@ export async function loadProfileReviewRouteFeed({
   );
 }
 
-export async function loadListReviewRouteFeed({ listId, ownerId, viewerId = null } = {}) {
+function loadListReviewRouteFeed({ listId, ownerId, viewerId = null } = {}) {
   return safeLoad(() => fetchListReviewFeedServer({ listId, ownerId, viewerId }), EMPTY_ARRAY);
 }
 

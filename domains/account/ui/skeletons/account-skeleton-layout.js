@@ -4,7 +4,6 @@ import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import AccountGridFrame from '../layouts/account-grid-frame';
-import SkeletonScene from '@/ui/motion/skeleton-scene';
 import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 const SECTION_ITEMS = ['Overview', 'Activity', 'Likes', 'Watched', 'Watchlist', 'Reviews', 'Lists'];
@@ -66,7 +65,7 @@ export function AccountSkeletonLayout({ activeTab = 'overview', children }) {
   return (
     <PageGradientShell className="overflow-hidden">
       <AccountGridFrame />
-      <SkeletonScene
+      <div
         className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 pb-12 sm:gap-8`}
       >
         <div className="absolute inset-x-0 top-0 z-20">
@@ -78,7 +77,7 @@ export function AccountSkeletonLayout({ activeTab = 'overview', children }) {
 
           <main className="w-full pt-4 pb-6 text-left sm:pt-6 sm:pb-8">{children}</main>
         </div>
-      </SkeletonScene>
+      </div>
       <NavHeightSpacer />
     </PageGradientShell>
   );

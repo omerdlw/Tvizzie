@@ -129,16 +129,6 @@ export async function buildListOwnerSnapshot(userId) {
   );
 }
 
-export function chunkArray(values = [], size = 50) {
-  const chunks = [];
-
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size));
-  }
-
-  return chunks;
-}
-
 export function normalizeListRow(row = {}, likesMap = new Map()) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
   const ownerSnapshot = normalizeListOwnerSnapshot(payload.ownerSnapshot || {}, row.user_id);

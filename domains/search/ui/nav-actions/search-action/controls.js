@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { NAV_BUTTON_TRANSITION, NAV_FADE_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav/motion';
@@ -8,8 +9,6 @@ import { Input } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/domains/search/utils';
 import { navActionClass } from './search-action-helpers';
-
-import { useState } from 'react';
 
 function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
@@ -121,7 +120,7 @@ export default function SearchActionControls({
           >
             <div className={SEARCH_STYLES.tabList}>
               {tabItems.map((item) => {
-                const isActive = searchType === item.key;
+                const isActiveTab = searchType === item.key;
                 return (
                   <motion.button
                     key={item.key}
@@ -129,7 +128,7 @@ export default function SearchActionControls({
                     className={navActionClass({
                       cn,
                       button: SEARCH_STYLES.tabButton,
-                      isActive,
+                      isActive: isActiveTab,
                     })}
                     onClick={() => onSearchTypeChange?.(item.key)}
                     whileTap={{ scale: NAV_TAP_SCALE }}

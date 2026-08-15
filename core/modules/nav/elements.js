@@ -64,9 +64,9 @@ export const Description = memo(function Description({ text, style, maxLines = 1
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.p
           key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: targetOpacity }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: 3 }}
+          animate={{ opacity: targetOpacity, y: 0 }}
+          exit={{ opacity: 0, y: -3 }}
           transition={NAV_FADE_TRANSITION}
           className={cn(
             isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
@@ -100,9 +100,9 @@ export const IconOverlay = memo(function IconOverlay({ overlay }) {
         }}
         title={title || undefined}
         aria-label={title || 'Open current account'}
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.7 }}
+        initial={{ opacity: 0, scale: 0.6, y: 2 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.6, y: 2 }}
         whileTap={onClick ? { scale: NAV_TAP_SCALE } : undefined}
         transition={NAV_BADGE_TRANSITION}
         className={cn(
@@ -138,14 +138,17 @@ export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovere
   return (
     <div className="relative">
       {isImageSource ? (
-        <div
+        <motion.div
           className={cn('size-12 shrink-0 bg-cover bg-center bg-no-repeat', className)}
           style={getImageIconStyle(iconStyle, icon)}
+          animate={{ scale: isStackHovered ? 1.04 : 1 }}
+          transition={NAV_FADE_TRANSITION}
         />
       ) : (
         <motion.div
           className={cn('center size-12', className)}
           animate={{
+            scale: isStackHovered ? 1.04 : 1,
             backgroundColor: hasCustomBackground
               ? undefined
               : isStackHovered
@@ -173,9 +176,9 @@ export const Title = memo(function Title({ text, style }) {
         <motion.h3
           key={typeof text === 'string' || typeof text === 'number' ? text : 'title'}
           className={cn('truncate font-bold', className)}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
           transition={NAV_FADE_TRANSITION}
           style={inlineStyle}
         >

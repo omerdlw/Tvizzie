@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   clearMediaBackgroundPreference,
   clearMediaPosterPreference,
@@ -32,7 +31,6 @@ import TvSeasonRatings from '@/domains/media/ui/components/tv-season-ratings';
 import TvSeasonRatingsSkeleton from '@/domains/media/ui/components/tv-season-ratings-skeleton';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
-import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
@@ -43,16 +41,11 @@ import Carousel from '@/domains/media/ui/components/media-carousel';
 import { cn } from '@/core/shared/utils';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 
-const TV_VIEW_TRANSITION = {
-  duration: 0.38,
-  ease: [0.16, 1, 0.3, 1],
-};
-
 function createReviewState() {
   return {
     isActive: false,
     isSubmitting: false,
-    ownReview: false,
+    ownReview: null,
     submitReview: null,
   };
 }
@@ -288,47 +281,37 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
   }
 
   return (
-    <MediaRouteReveal stage="sections.discovery" deferred={isDeferred}>
-      <div className="relative w-full">
-        <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
-          <div className="flex min-w-0 items-center gap-2">
-            <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-white/70" />
-            <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
-              {title}
-            </h2>
-          </div>
-          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
-            <GridCrosshair side="left" />
-            <GridCrosshair side="right" />
-          </div>
+    <div className="relative w-full">
+      <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-white/70" />
+          <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
+            {title}
+          </h2>
         </div>
-
-        <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
-          <Carousel
-            gap="gap-3"
-            itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]"
-          >
-            {items.map((item, index) => (
-              <MediaRouteReveal
-                key={`${item.id}-${index}`}
-                stage="items.discovery"
-                deferred={isDeferred}
-                interactive
-                itemIndex={index}
-              >
-                <RecommendationCard movie={item} index={index} />
-              </MediaRouteReveal>
-            ))}
-          </Carousel>
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
         </div>
-        {hasBottomBorder ? (
-          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
-            <GridCrosshair side="left" />
-            <GridCrosshair side="right" />
-          </div>
-        ) : null}
       </div>
-    </MediaRouteReveal>
+
+      <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
+        <Carousel
+          gap="gap-3"
+          itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]"
+        >
+          {items.map((item, index) => (
+            <RecommendationCard key={`${item.id}-${index}`} movie={item} index={index} />
+          ))}
+        </Carousel>
+      </div>
+      {hasBottomBorder ? (
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -355,28 +338,24 @@ function MovieVisualMediaDeferred({
   return (
     <div className="flex w-full flex-col">
       {hasGallery ? (
-        <MediaRouteReveal stage="sections.gallery" deferred>
-          <GallerySection
-            images={galleryImages}
-            onSetMovieBackground={onSetMovieBackground}
-            onResetMovieBackground={onResetMovieBackground}
-            canResetMovieBackground={canResetMovieBackground}
-          />
-        </MediaRouteReveal>
+        <GallerySection
+          images={galleryImages}
+          onSetMovieBackground={onSetMovieBackground}
+          onResetMovieBackground={onResetMovieBackground}
+          canResetMovieBackground={canResetMovieBackground}
+        />
       ) : null}
 
       {hasImages ? (
-        <MediaRouteReveal stage="sections.images" deferred>
-          <ImagesSection
-            images={secondaryMovie.images}
-            onSetMovieBackground={onSetMovieBackground}
-            onSetMoviePoster={onSetMoviePoster}
-            onResetMovieBackground={onResetMovieBackground}
-            onResetMoviePoster={onResetMoviePoster}
-            canResetMovieBackground={canResetMovieBackground}
-            canResetMoviePoster={canResetMoviePoster}
-          />
-        </MediaRouteReveal>
+        <ImagesSection
+          images={secondaryMovie.images}
+          onSetMovieBackground={onSetMovieBackground}
+          onSetMoviePoster={onSetMoviePoster}
+          onResetMovieBackground={onResetMovieBackground}
+          onResetMoviePoster={onResetMoviePoster}
+          canResetMovieBackground={canResetMovieBackground}
+          canResetMoviePoster={canResetMoviePoster}
+        />
       ) : null}
     </div>
   );
@@ -418,11 +397,7 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
     <div className="flex w-full flex-col">
       {sections.map((section, index) =>
         section.key === 'videos' ? (
-          <div key={section.key}>
-            <MediaRouteReveal stage="sections.discovery" deferred>
-              {section.content}
-            </MediaRouteReveal>
-          </div>
+          <div key={section.key}>{section.content}</div>
         ) : (
           <RelatedMoviesSection
             key={section.key}
@@ -440,11 +415,7 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
 function TvSeasonsDeferred({ secondaryDataPromise, seasons = [] }) {
   const secondaryMovie = use(secondaryDataPromise);
 
-  return (
-    <MediaRouteReveal stage="sections.seasons" deferred>
-      <TvSeasonsSection seasons={seasons} seasonDetails={secondaryMovie?.seasonDetails || []} />
-    </MediaRouteReveal>
-  );
+  return <TvSeasonsSection seasons={seasons} seasonDetails={secondaryMovie?.seasonDetails || []} />;
 }
 
 function MovieSecondaryContent({
@@ -462,9 +433,7 @@ function MovieSecondaryContent({
   return (
     <div className="flex w-full flex-col">
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
-        <MediaRouteReveal stage="sections.cast">
-          <CastSection cast={computed.cast} crew={computed.crew} />
-        </MediaRouteReveal>
+        <CastSection cast={computed.cast} crew={computed.crew} />
       ) : null}
 
       {mediaType === 'tv' ? (
@@ -535,7 +504,7 @@ function MovieView({
     : undefined;
 
   return (
-    <MediaRouteMotionProvider routeKey={`${mediaType}-${movie.id}`}>
+    <>
       <Registry
         onSetMoviePoster={onSetMoviePoster}
         onSetMovieBackground={onSetMovieBackground}
@@ -602,77 +571,57 @@ function MovieView({
                 isRatingsView ? 'lg:w-[var(--ratings-panel-width)] lg:flex-none' : 'lg:flex-1'
               }`}
             >
-              <AnimatePresence mode="wait">
-                {isRatingsView ? (
-                  <motion.div
-                    key="tv-ratings"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={TV_VIEW_TRANSITION}
-                  >
-                    <Suspense fallback={<TvSeasonRatingsSkeleton />}>
-                      <TvSeasonRatings ratingsPromise={ratingsPromise} />
-                    </Suspense>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="media-details"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={TV_VIEW_TRANSITION}
-                  >
-                    <div className="relative flex w-full flex-col p-6">
-                      <MediaRouteReveal stage="hero.title">
-                        <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-                          {mediaTitle}
-                        </h1>
-                      </MediaRouteReveal>
+              {isRatingsView ? (
+                <div>
+                  <Suspense fallback={<TvSeasonRatingsSkeleton />}>
+                    <TvSeasonRatings ratingsPromise={ratingsPromise} />
+                  </Suspense>
+                </div>
+              ) : (
+                <div>
+                  <div className="relative flex w-full flex-col p-6">
+                    <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+                      {mediaTitle}
+                    </h1>
 
-                      {movie.tagline ? (
-                        <MediaRouteReveal stage="hero.tagline">
-                          <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
-                            {movie.tagline}
-                          </p>
-                        </MediaRouteReveal>
-                      ) : null}
+                    {movie.tagline ? (
+                      <p className="mt-4 text-[11px] font-semibold tracking-widest text-white/80 uppercase sm:text-sm">
+                        {movie.tagline}
+                      </p>
+                    ) : null}
 
-                      {movie.overview ? (
-                        <MediaRouteReveal stage="hero.overview">
-                          <div className="mt-3 flex w-full flex-col">
-                            <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
-                              {movie.overview}
-                            </p>
-                          </div>
-                        </MediaRouteReveal>
-                      ) : null}
-                      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
-                        <GridCrosshair side="left" />
-                        <GridCrosshair side="right" />
+                    {movie.overview ? (
+                      <div className="mt-3 flex w-full flex-col">
+                        <p className="max-w-[70ch] text-left text-[15px] leading-6 text-white/70 sm:text-base sm:leading-7">
+                          {movie.overview}
+                        </p>
                       </div>
+                    ) : null}
+                    <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+                      <GridCrosshair side="left" />
+                      <GridCrosshair side="right" />
                     </div>
+                  </div>
 
-                    <MovieSecondaryContent
-                      computed={computed}
-                      mediaType={mediaType}
-                      movie={movie}
-                      onSetMovieBackground={onSetMovieBackground}
-                      onSetMoviePoster={onSetMoviePoster}
-                      onResetMovieBackground={onResetMovieBackground}
-                      onResetMoviePoster={onResetMoviePoster}
-                      canResetMovieBackground={canResetMovieBackground}
-                      canResetMoviePoster={canResetMoviePoster}
-                      secondaryDataPromise={secondaryDataPromise}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  <MovieSecondaryContent
+                    computed={computed}
+                    mediaType={mediaType}
+                    movie={movie}
+                    onSetMovieBackground={onSetMovieBackground}
+                    onSetMoviePoster={onSetMoviePoster}
+                    onResetMovieBackground={onResetMovieBackground}
+                    onResetMoviePoster={onResetMoviePoster}
+                    canResetMovieBackground={canResetMovieBackground}
+                    canResetMoviePoster={canResetMoviePoster}
+                    secondaryDataPromise={secondaryDataPromise}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
           {!isRatingsView ? (
-            <MediaRouteReveal className="w-full" stage="sections.reviews">
+            <div className="w-full">
               <MediaReviews
                 entityId={movie.id}
                 entityType={mediaType}
@@ -684,10 +633,8 @@ function MovieView({
                 posterPath={movie.poster_path}
                 backdropPath={movie.backdrop_path}
                 onReviewStateChange={setReviewState}
-                motionStage="items.reviews"
-                motionDeferred
               />
-            </MediaRouteReveal>
+            </div>
           ) : null}
 
           {isRatingsView ? (
@@ -698,6 +645,6 @@ function MovieView({
         </div>
         <NavHeightSpacer className={isRatingsView ? 'lg:hidden' : ''} />
       </PageGradientShell>
-    </MediaRouteMotionProvider>
+    </>
   );
 }

@@ -33,7 +33,7 @@ export default function ReviewHeader({
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-medium text-white/60">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-medium text-white/50">
           {Number.isFinite(Number(totalReviews)) && (
             <span>
               <strong className="font-semibold text-white/80">{totalReviews}</strong> {itemLabel}
@@ -62,7 +62,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex size-8 shrink-0 items-center justify-center border border-white/10 text-white/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:text-white active:scale-[0.97]"
+            className="center inline-flex size-8 cursor-pointer items-center gap-1 border border-white/5 bg-white/5 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-all duration-300 ease-in-out hover:bg-white/10 hover:text-white"
             aria-label="Edit your review"
             title="Edit your review"
           >
@@ -74,7 +74,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onDeleteOwnReview}
-            className="border-error/10 bg-error/10 text-error hover:border-error hover:bg-error inline-flex size-8 shrink-0 items-center justify-center border transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:text-black active:scale-[0.97]"
+            className="hover:text-error center inline-flex size-8 cursor-pointer items-center gap-1 border border-white/5 bg-white/5 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-all duration-300 ease-in-out hover:bg-white/10"
             aria-label="Delete your review"
             title="Delete your review"
           >
@@ -85,7 +85,7 @@ export default function ReviewHeader({
         {hasAllReviewsLink && (
           <Link
             href={allReviewsHref}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1 border border-white/10 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97]"
+            className="inline-flex h-8 items-center gap-1 border border-white/5 bg-white/5 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-all duration-300 ease-in-out hover:bg-white/10 hover:text-white"
           >
             <span>All reviews</span>
             <Icon icon="solar:alt-arrow-right-linear" size={14} />
@@ -96,7 +96,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onAddReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1.5 border border-white/10 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] active:scale-[0.97]"
+            className="inline-flex h-8 items-center gap-1 border border-white/5 bg-white/5 px-3 text-xs font-semibold tracking-wide text-white/80 uppercase transition-all duration-300 ease-in-out hover:bg-white/10 hover:text-white"
           >
             <Icon icon="solar:pen-bold" size={13} />
             <span>Add {itemLabel}</span>

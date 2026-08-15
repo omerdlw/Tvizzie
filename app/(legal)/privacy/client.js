@@ -1,36 +1,15 @@
 'use client';
 
-import { Children } from 'react';
 import Link from 'next/link';
 import LegalNavRegistry from '@/app/(legal)/registry';
 import LegalQuickLinks from '@/domains/legal/ui/components/legal-quick-links';
 import LegalPageShell, {
   LEGAL_PAGE_CONTENT_CLASS,
+  LegalDocument,
+  LegalSection,
 } from '@/domains/legal/ui/layouts/legal-page-shell';
-import { LegalReveal } from '@/app/(legal)/motion';
 
 const LAST_UPDATED = 'April 20, 2026';
-
-function AnimatedLegalSection({ children, title }) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">{title}</h2>
-      <div className="space-y-3 text-sm leading-7 text-white/72 sm:text-[15px]">{children}</div>
-    </section>
-  );
-}
-
-function LegalDocument({ children }) {
-  return (
-    <article className="bg-primary space-y-8 border border-white/5 p-6 sm:p-8">
-      {Children.toArray(children).map((section, index) => (
-        <LegalReveal key={section.key || index} inView itemIndex={index} stage="section">
-          {section}
-        </LegalReveal>
-      ))}
-    </article>
-  );
-}
 
 function PrivacyView() {
   return (
@@ -44,24 +23,18 @@ function PrivacyView() {
         <div className={LEGAL_PAGE_CONTENT_CLASS}>
           <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
-              <LegalReveal stage="title">
-                <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                  Privacy Policy
-                </h1>
-              </LegalReveal>
-              <LegalReveal stage="lead">
-                <p className="mx-auto max-w-2xl text-sm leading-7 text-white/68 sm:text-[15px]">
-                  This policy explains what information Tvizzie processes, why it is processed, and
-                  what choices you have. It is written to reflect the current product and
-                  infrastructure used by the app today.
-                </p>
-              </LegalReveal>
-            </div>
-            <LegalReveal stage="meta">
-              <p className="text-xs tracking-wide text-white/44 uppercase">
-                Last updated {LAST_UPDATED}
+              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Privacy Policy
+              </h1>
+              <p className="mx-auto max-w-2xl text-sm leading-7 text-white/68 sm:text-[15px]">
+                This policy explains what information Tvizzie processes, why it is processed, and
+                what choices you have. It is written to reflect the current product and
+                infrastructure used by the app today.
               </p>
-            </LegalReveal>
+            </div>
+            <p className="text-xs tracking-wide text-white/44 uppercase">
+              Last updated {LAST_UPDATED}
+            </p>
           </header>
 
           <div
@@ -73,7 +46,7 @@ function PrivacyView() {
 
           <div className="mt-6 w-full">
             <LegalDocument>
-              <AnimatedLegalSection title="Overview">
+              <LegalSection title="Overview">
                 <p>
                   Tvizzie is a movie and TV discovery app that lets people sign in, manage a
                   profile, track what they watch, build lists, publish reviews, and interact with
@@ -83,16 +56,16 @@ function PrivacyView() {
                 <p>
                   If you have privacy questions, you can contact{' '}
                   <a
-                    className="underline decoration-white/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-white"
+                    className="underline decoration-white/20 underline-offset-4 transition-all duration-300 ease-in-out hover:text-white"
                     href="mailto:omerdeliavci@outlook.com"
                   >
                     omerdeliavci@outlook.com
                   </a>
                   .
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Information we collect">
+              <LegalSection title="Information we collect">
                 <p>
                   Depending on how you use Tvizzie, we may process the following categories of
                   information:
@@ -130,9 +103,9 @@ function PrivacyView() {
                     storage, and short-lived auth helper state.
                   </li>
                 </ul>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Information we receive from third parties">
+              <LegalSection title="Information we receive from third parties">
                 <ul className="list-disc space-y-2 pl-5">
                   <li>
                     If you sign in with Google or GitHub, Tvizzie may receive basic account details
@@ -145,9 +118,9 @@ function PrivacyView() {
                     discovery and browsing features, not to identify you.
                   </li>
                 </ul>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="How we use information">
+              <LegalSection title="How we use information">
                 <ul className="list-disc space-y-2 pl-5">
                   <li>To create and maintain your account and sign you in securely.</li>
                   <li>To let you edit your profile and publish the content you choose to share.</li>
@@ -168,9 +141,9 @@ function PrivacyView() {
                     Terms of Service.
                   </li>
                 </ul>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="When information is visible to other people">
+              <LegalSection title="When information is visible to other people">
                 <p>
                   Tvizzie includes public-facing profile and content features. If your profile is
                   public, other users may be able to view information such as your username, display
@@ -182,9 +155,9 @@ function PrivacyView() {
                   sections for other users. Private mode is an app-level control, not an absolute
                   guarantee against every possible exposure or cached copy.
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="How information is shared">
+              <LegalSection title="How information is shared">
                 <p>
                   Tvizzie does not sell your personal information. We may share or process
                   information with service providers that help run the app:
@@ -211,9 +184,9 @@ function PrivacyView() {
                     posters, backdrops, and related media assets.
                   </li>
                 </ul>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Cookies and local storage">
+              <LegalSection title="Cookies and local storage">
                 <p>
                   Tvizzie uses cookies and similar browser storage to keep you signed in, maintain
                   security state, remember app preferences, and support parts of the UI. Some
@@ -221,9 +194,9 @@ function PrivacyView() {
                   CSRF protection. Some storage is used for convenience, such as visual preferences
                   and temporary cached media data.
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Retention">
+              <LegalSection title="Retention">
                 <p>
                   We keep account and content data for as long as it is needed to operate the
                   service, comply with legitimate security needs, and preserve the content you
@@ -233,9 +206,9 @@ function PrivacyView() {
                   operation of the product, subject to limited retention for security, abuse
                   prevention, and system integrity.
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Your choices">
+              <LegalSection title="Your choices">
                 <ul className="list-disc space-y-2 pl-5">
                   <li>You can edit your profile information inside the app.</li>
                   <li>You can change your profile privacy setting inside your account settings.</li>
@@ -252,36 +225,36 @@ function PrivacyView() {
                     supported by your account configuration.
                   </li>
                 </ul>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Children">
+              <LegalSection title="Children">
                 <p>
                   Tvizzie is not intended for children under the age required by the laws that apply
                   to them to create an account on their own. Do not use the service if you are not
                   legally allowed to do so.
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Changes to this policy">
+              <LegalSection title="Changes to this policy">
                 <p>
                   We may update this policy as the product changes. When we do, we will update the
                   date at the top of this page. Material changes should be reviewed before the
                   service is promoted broadly or submitted for formal platform verification.
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
 
-              <AnimatedLegalSection title="Related document">
+              <LegalSection title="Related document">
                 <p>
                   Please also review the{' '}
                   <Link
-                    className="underline decoration-white/20 underline-offset-4 transition-[color,text-decoration-color] duration-300 ease-out hover:text-white"
+                    className="underline decoration-white/20 underline-offset-4 transition-all duration-300 ease-in-out hover:text-white"
                     href="/terms"
                   >
                     Terms of Service
                   </Link>
                   .
                 </p>
-              </AnimatedLegalSection>
+              </LegalSection>
             </LegalDocument>
           </div>
         </div>

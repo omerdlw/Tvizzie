@@ -9,7 +9,6 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 export default function GallerySection({ images, baseDelay = 0 }) {
   const { openModal } = useModal();
@@ -26,7 +25,7 @@ export default function GallerySection({ images, baseDelay = 0 }) {
             Gallery
           </h2>
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>
@@ -36,13 +35,7 @@ export default function GallerySection({ images, baseDelay = 0 }) {
         <Carousel gap="gap-3">
           {images.map((image, index) => {
             return (
-              <MediaRouteReveal
-                key={image.file_path || index}
-                stage="items.gallery"
-                deferred
-                interactive
-                itemIndex={index}
-              >
+              <div key={image.file_path || index}>
                 <MediaCard
                   imageSrc={image.file_path ? `${TMDB_IMG}/original${image.file_path}` : null}
                   onClick={() =>
@@ -60,12 +53,12 @@ export default function GallerySection({ images, baseDelay = 0 }) {
                   data-backdrop-file-path={image.file_path || ''}
                   data-context-menu-target="movie-backdrop-card"
                 />
-              </MediaRouteReveal>
+              </div>
             );
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
         <GridCrosshair side="left" />
         <GridCrosshair side="right" />
       </div>

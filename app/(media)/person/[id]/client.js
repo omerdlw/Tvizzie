@@ -22,7 +22,7 @@ import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
-import { MediaRouteMotionProvider, MediaRouteReveal } from '@/app/(media)/motion';
+import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 
 function getMovieBackdropSrc(credit) {
   return credit?.backdrop_path ? `${TMDB_IMG}/original${credit.backdrop_path}` : null;
@@ -165,7 +165,7 @@ function PersonView({
   const deferredFallback = <PersonDeferredContentSkeleton />;
 
   return (
-    <MediaRouteMotionProvider routeKey={`person-${person.id}-${activeView}`}>
+    <>
       <Registry
         person={person}
         activeView={activeView}
@@ -187,34 +187,32 @@ function PersonView({
               <div className="relative flex w-full flex-col items-center gap-6 px-4 py-16 sm:gap-8 sm:py-24 lg:py-32">
                 <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
                   {person?.profile_path ? (
-                    <MediaRouteReveal stage="person.hero.portrait">
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-black/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
-                        <AdaptiveImage
-                          mode="img"
-                          className="h-full w-full object-cover"
-                          src={`${TMDB_IMG}/original${person.profile_path}`}
-                          alt={person.name}
-                          decoding="async"
-                          wrapperClassName="h-full w-full "
-                        />
-                      </div>
-                    </MediaRouteReveal>
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-black/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+                      <AdaptiveImage
+                        mode="img"
+                        className="h-full w-full object-cover"
+                        src={`${TMDB_IMG}/original${person.profile_path}`}
+                        alt={person.name}
+                        decoding="async"
+                        wrapperClassName="h-full w-full "
+                      />
+                    </div>
                   ) : null}
 
-                  <MediaRouteReveal stage="person.hero.title">
-                    <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-                      {person.name}
-                    </h1>
-                  </MediaRouteReveal>
+                  <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+                    {person.name}
+                  </h1>
                 </div>
 
                 {person?.biography ? (
-                  <MediaRouteReveal className="mx-auto w-full max-w-[72ch]" stage="person.hero.bio">
+                  <div className="mx-auto w-full max-w-[72ch]">
                     <PersonBio biography={person.biography} person={person} />
-                  </MediaRouteReveal>
+                  </div>
                 ) : null}
 
-                <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+                <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+                  <GridShellCrosshairs />
+                </div>
               </div>
             )}
 
@@ -225,7 +223,9 @@ function PersonView({
               key={`person-view-${activeView}`}
             >
               {activeView !== 'main' ? (
-                <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+                <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+                  <GridShellCrosshairs />
+                </div>
               ) : null}
               {activeView === 'awards' ? (
                 <Suspense fallback={<PersonAwardsSkeleton />}>
@@ -253,6 +253,6 @@ function PersonView({
         </div>
         <NavHeightSpacer />
       </PageGradientShell>
-    </MediaRouteMotionProvider>
+    </>
   );
 }

@@ -10,7 +10,6 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 function normalizeSeasonDetails(seasonDetails = []) {
   return new Map(
@@ -127,7 +126,7 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
             onChange={handleTabChange}
           />
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>
@@ -137,15 +136,9 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
         {episodes.length ? (
           <Carousel gap="gap-3">
             {episodes.map((episode, index) => (
-              <MediaRouteReveal
-                key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
-                stage="items.seasons"
-                deferred
-                interactive
-                itemIndex={index}
-              >
+              <div key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}>
                 <EpisodeCard episode={episode} index={index} />
-              </MediaRouteReveal>
+              </div>
             ))}
           </Carousel>
         ) : (
@@ -154,7 +147,7 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], bas
           </p>
         )}
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
         <GridCrosshair side="left" />
         <GridCrosshair side="right" />
       </div>

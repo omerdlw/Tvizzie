@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
 import MediaThumb from './media-thumb';
 import { getPersonAwardsServer } from '@/domains/media/api/person-awards.server';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 
 function buildTimeline(organizations = []) {
   return (organizations || [])
@@ -111,7 +110,7 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
   }[variant];
 
   return (
-    <MediaRouteReveal className="flex flex-1" deferred itemIndex={index} stage="person.awards.stat">
+    <div className="flex flex-1">
       <div
         className={`flex min-w-[110px] flex-1 flex-col items-center justify-center border ${variantStyles.border} ${variantStyles.bg} p-4 text-center backdrop-blur-sm sm:p-5`}
       >
@@ -125,7 +124,7 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
           {value}
         </span>
       </div>
-    </MediaRouteReveal>
+    </div>
   );
 }
 
@@ -138,24 +137,17 @@ function AwardFilterPill({
   index,
 }) {
   return (
-    <MediaRouteReveal
-      className="inline-flex min-w-0 flex-auto"
-      deferred
-      interaction="control"
-      interactive
-      itemIndex={index}
-      stage="person.awards.filters"
-    >
+    <div className="inline-flex min-w-0 flex-auto">
       <button
         type="button"
         onClick={onClick}
-        className={`w-full cursor-pointer truncate px-3.5 py-2 text-center text-xs font-semibold border border-white/5 backdrop-blur-sm transition-colors duration-300 ease-in-out ${
+        className={`w-full cursor-pointer truncate border border-white/5 px-3.5 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
           isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
         {label} {count !== undefined ? `(${count})` : ''}
       </button>
-    </MediaRouteReveal>
+    </div>
   );
 }
 
@@ -167,10 +159,8 @@ function AwardCard({ award, index }) {
   const cardContent = (
     <div
       className={`group relative flex items-center gap-2 border p-1 backdrop-blur-sm sm:gap-4 sm:p-2 ${
-        isWin
-          ? 'hover:bg-white/5 border-warning/50'
-          : 'hover:bg-white/5 border-white/5'
-      } transition-[background-color,border-color,box-shadow] duration-300 ease-out`}
+        isWin ? 'border-warning/50 hover:bg-white/5' : 'border-white/5 hover:bg-white/5'
+      } transition-all duration-300 ease-in-out`}
     >
       {award.poster || award.project ? (
         <MediaThumb
@@ -184,7 +174,7 @@ function AwardCard({ award, index }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-white/40 sm:text-sm">{award.year}</span>
           {isWin ? (
-            <span className="inline-flex items-center gap-1 bg-warning px-2 py-0.5 text-[11px] font-extrabold text-black uppercase">
+            <span className="bg-warning inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-extrabold text-black uppercase">
               <Icon icon="solar:cup-bold" size={12} />
               Win
             </span>
@@ -195,7 +185,7 @@ function AwardCard({ award, index }) {
           )}
         </div>
         <h3 className="truncate text-sm font-semibold text-white sm:text-base">{award.category}</h3>
-        <p className="truncate text-xs text-white/60 sm:text-sm">
+        <p className="truncate text-xs text-white/50 sm:text-sm">
           {[award.organization, award.project].filter(Boolean).join(' · ')}
         </p>
       </div>
@@ -215,11 +205,7 @@ function AwardCard({ award, index }) {
     cardContent
   );
 
-  return (
-    <MediaRouteReveal deferred interactive itemIndex={index} stage="person.awards.item">
-      {resolvedCard}
-    </MediaRouteReveal>
-  );
+  return resolvedCard;
 }
 
 function AwardsMessage({ children }) {
@@ -228,7 +214,7 @@ function AwardsMessage({ children }) {
       <div className="flex size-14 items-center justify-center bg-white/5 text-white/40">
         <Icon icon="solar:cup-star-linear" size={32} />
       </div>
-      <p className="mt-4 text-sm font-medium text-white/60">{children}</p>
+      <p className="mt-4 text-sm font-medium text-white/50">{children}</p>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, memo, useMemo } from 'react';
+import { useEffect, useState, useCallback, memo, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
@@ -42,7 +42,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 cursor-pointer border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-white/5';
+  'h-8 w-auto shrink-0 cursor-pointer border px-2.5 py-1 text-[11px] font-semibold transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:bg-white/5';
 
 const ACTION_CLASSES = Object.freeze({
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
@@ -207,7 +207,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
       custom={index}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-between gap-3 border-b border-white/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] last:border-none hover:bg-black lg:p-4"
+      className="flex items-center justify-between gap-3 border-b border-white/5 p-3 transition-all duration-300 ease-in-out last:border-none hover:bg-black lg:p-4"
     >
       <Link
         href={`/account/${user.username || user.id}`}
@@ -355,9 +355,12 @@ export default function AccountSocialModal({ close, data }) {
     };
   }, [authUserId, isAuthSessionReady]);
 
+  const pendingActionRef = useRef({});
+  pendingActionRef.current = pendingActionByUserId;
+
   const runUserAction = useCallback(
     async (targetUserId, actionKey, actionFn, errorMessage, optimisticFn, rollbackFn) => {
-      if (!authUserId || pendingActionByUserId[targetUserId]) return;
+      if (!authUserId || pendingActionRef.current[targetUserId]) return;
       setPendingActionByUserId((current) => ({ ...current, [targetUserId]: actionKey }));
       if (typeof optimisticFn === 'function') optimisticFn();
       try {
@@ -374,7 +377,7 @@ export default function AccountSocialModal({ close, data }) {
         });
       }
     },
-    [authUserId, pendingActionByUserId, toast],
+    [authUserId, toast],
   );
 
   const handleAccept = useCallback(

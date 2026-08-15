@@ -38,7 +38,7 @@ import Icon from '@/ui/primitives/icon';
 import AccountReviewsFeed from '../feeds/reviews';
 import { Reorder } from 'framer-motion';
 import MediaCard from '@/domains/media/ui/components/media-card';
-import { toAccountMediaCard } from '@/domains/account/utils/media-card';
+import { toAccountMediaCard, getCanonicalMediaKey } from '@/domains/account/utils/media-card';
 const LIKES_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({
     key: 'hide_unreleased',
@@ -195,10 +195,10 @@ export default function AccountLikesFeed({
                     onClick: handleToggleShowcase,
                   },
                 ]}
-                media={item}
+                item={item}
                 onRemoveItem={handleRequestRemoveLike}
                 removeLabel={`Remove ${item.title || item.name} from likes`}
-                userId={auth.user?.id}
+                currentUserId={auth.user?.id}
               />
             ) : null
           }
@@ -302,37 +302,6 @@ export default function AccountLikesFeed({
   );
 }
 
-function getCanonicalMediaKey(item = {}) {
-  if (!item) return '';
-  const rawType = item?.entityType || item?.media_type || item?.type || '';
-  const rawId = String(item?.entityId ?? item?.id ?? '').trim();
-
-  if (item?.mediaKey) {
-    const key = String(item.mediaKey).trim();
-    if (key.includes('-')) return key.replace('-', '_');
-    return key;
-  }
-
-  let entityId = rawId;
-  let resolvedType = rawType;
-
-  if (rawId.includes('-') || rawId.includes('_')) {
-    const parts = rawId.split(/[-_]/);
-    if (parts.length >= 2) {
-      if (!resolvedType) resolvedType = parts[0];
-      entityId = parts[parts.length - 1];
-    }
-  }
-
-  const normalizedType =
-    String(resolvedType).trim().toLowerCase() === 'tv' ||
-    String(resolvedType).trim().toLowerCase() === 'show'
-      ? 'tv'
-      : 'movie';
-
-  return `${normalizedType}_${entityId}`;
-}
-
 function ShowcaseCardItem({ isOwner, item, onRemoveItem, userId }) {
   const isDraggingRef = useRef(false);
   const canonicalKey = getCanonicalMediaKey(item);
@@ -376,10 +345,10 @@ function ShowcaseCardItem({ isOwner, item, onRemoveItem, userId }) {
         topOverlay={
           isOwner ? (
             <ProfileMediaActions
-              media={item}
+              item={item}
               onRemoveItem={onRemoveItem}
               removeLabel={`Remove ${item?.title || item?.name || 'item'} from favorites`}
-              userId={userId}
+              currentUserId={userId}
             />
           ) : null
         }

@@ -9,20 +9,19 @@ import Icon from '@/ui/primitives/icon';
 export const UI = {
   bar: 'flex w-full flex-nowrap items-center gap-4 sm:gap-6 overflow-x-auto scrollbar-none',
   trigger:
-    'inline-flex cursor-pointer flex-1 min-w-max items-center justify-center gap-1.5 whitespace-nowrap border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/70 hover:text-white transition-colors focus-visible:outline-none',
+    'inline-flex cursor-pointer flex-1 min-w-max items-center justify-center gap-1.5 whitespace-nowrap border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/70 hover:text-white transition-all duration-300 ease-in-out focus-visible:outline-none',
   triggerActive: 'text-info font-bold hover:text-info',
   iconButton:
-    'inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-white/70 hover:text-white transition-colors focus-visible:outline-none',
+    'inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-white/70 hover:text-white transition-all duration-300 ease-in-out focus-visible:outline-none',
   resetButton:
-    'ml-auto inline-flex shrink-0 cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/50 hover:text-white transition-colors focus-visible:outline-none',
+    'ml-auto inline-flex shrink-0 cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-semibold tracking-widest uppercase text-white/50 hover:text-white transition-all duration-300 ease-in-out focus-visible:outline-none',
   menu: 'z-50 overflow-y-auto overscroll-contain border border-white/10 bg-black/80 backdrop-blur-md p-1',
   sectionLabel: 'px-2 py-1.5 text-[10px] uppercase text-white/50',
   menuItem:
     'flex w-full items-center justify-between cursor-pointer p-2 text-left text-sm text-white/80 hover:bg-white/5',
   menuItemActive: 'bg-white/5 font-medium text-white',
   divider: 'border-t border-white/10',
-  inputWrap:
-    'flex h-8 min-w-0 flex-1 items-center gap-2 bg-transparent px-1',
+  inputWrap: 'flex h-8 min-w-0 flex-1 items-center gap-2 bg-transparent px-1',
   input: 'min-w-0 flex-1 text-xs text-white bg-transparent outline-none placeholder:text-white/40',
   helperText: 'px-1 text-[10px] text-white/50',
   visibilityItem:

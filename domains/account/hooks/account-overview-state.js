@@ -152,6 +152,7 @@ export function useAccountOverviewState(routeData = null) {
     ),
     logLabel: 'Review previews',
   });
+  const { setItems: setReviewItems } = reviewPreview;
 
   const handleEditReview = useCallback(
     (review) => {
@@ -160,7 +161,7 @@ export function useAccountOverviewState(routeData = null) {
       openSurface(
         createReviewEditorSurfaceEntry({
           onSuccess: (updatedReview) => {
-            reviewPreview.setItems((items) =>
+            setReviewItems((items) =>
               items.map((item) =>
                 (item.docPath || item.id) === (review.docPath || review.id)
                   ? { ...item, ...updatedReview }
@@ -173,7 +174,7 @@ export function useAccountOverviewState(routeData = null) {
         }),
       );
     },
-    [editableReviewUser, openSurface, reviewPreview],
+    [editableReviewUser, openSurface, setReviewItems],
   );
 
   const handleDeleteReview = useCallback(
@@ -191,7 +192,7 @@ export function useAccountOverviewState(routeData = null) {
         onConfirm: async () => {
           try {
             await deleteStoredReview({ review, userId: auth.user.id });
-            reviewPreview.setItems((items) =>
+            setReviewItems((items) =>
               items.filter((item) => (item.docPath || item.id) !== (review.docPath || review.id)),
             );
             setReviewDeleteConfirmation(null);
@@ -203,7 +204,7 @@ export function useAccountOverviewState(routeData = null) {
         title: 'Delete Review?',
       });
     },
-    [auth.user?.id, isOwner, reviewPreview, toast],
+    [auth.user?.id, isOwner, setReviewItems, toast],
   );
 
   const handleLikeReview = useCallback(
@@ -217,7 +218,7 @@ export function useAccountOverviewState(routeData = null) {
       const currentUserId = auth.user.id;
       let previousItems = [];
 
-      reviewPreview.setItems((items) => {
+      setReviewItems((items) => {
         previousItems = items;
         return items.map((item) => {
           if ((item.docPath || item.id) !== reviewId) {
@@ -232,11 +233,11 @@ export function useAccountOverviewState(routeData = null) {
       try {
         await toggleStoredReviewLike({ review, userId: currentUserId });
       } catch (error) {
-        reviewPreview.setItems(previousItems);
+        setReviewItems(previousItems);
         toast.error(error?.message || 'Review could not be updated');
       }
     },
-    [auth.isAuthenticated, auth.user?.id, handleSignInRequest, reviewPreview, toast],
+    [auth.isAuthenticated, auth.user?.id, handleSignInRequest, setReviewItems, toast],
   );
 
   const providerValue = useMemo(

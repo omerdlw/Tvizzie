@@ -93,6 +93,9 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
       : 0;
   const reviewsCount = Number.isFinite(Number(list?.reviewsCount)) ? Number(list.reviewsCount) : 0;
 
+  const actionsElement = typeof renderActions === 'function' ? renderActions(list) : null;
+  const hasActions = Boolean(actionsElement);
+
   return (
     <article
       className="relative w-full"
@@ -202,19 +205,23 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             style={{ transformOrigin: 'center bottom' }}
           >
             <div className="relative px-4 py-4">
-              <h3 className="line-clamp-1 text-[19px] leading-[1.22] font-semibold text-white transition-colors duration-200 group-hover:text-white">
+              <h3 className="line-clamp-1 text-[19px] leading-[1.22] font-semibold text-white transition-all duration-300 ease-in-out group-hover:text-white">
                 {listTitle}
               </h3>
               <p
                 className={`mt-1 line-clamp-2 text-xs leading-relaxed ${
-                  listDescription ? 'font-normal text-white/60' : 'font-normal text-white/40 italic'
+                  listDescription ? 'font-normal text-white/50' : 'font-normal text-white/40 italic'
                 }`}
               >
                 {listDescription || 'No description'}
               </p>
             </div>
             <div className="relative h-11 border-t border-white/5">
-              <div className="absolute inset-0 flex items-center justify-between pr-0 pl-3 text-[13px] text-white/70">
+              <div
+                className={`absolute inset-0 flex items-center justify-between pl-3 text-[13px] text-white/70 ${
+                  hasActions ? 'pr-1.5' : 'pr-3'
+                }`}
+              >
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <Icon icon="solar:calendar-mark-bold" size={14} />
                   <span>{updatedLabel}</span>
@@ -234,15 +241,15 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                       <span>{reviewsCount}</span>
                     </span>
                   </div>
-                  {typeof renderActions === 'function' ? (
+                  {actionsElement ? (
                     <div
-                      className="mr-1.5 shrink-0"
+                      className="shrink-0"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
                       }}
                     >
-                      {renderActions(list)}
+                      {actionsElement}
                     </div>
                   ) : null}
                 </div>

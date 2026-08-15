@@ -27,7 +27,7 @@ import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants/index';
 
 const TOOL_BUTTON_CLASS =
-  'size-7 cursor-pointer transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97]';
+  'size-7 cursor-pointer transition-all duration-300 ease-in-out active:scale-[0.97]';
 const SKELETON_COUNT = 16;
 
 function formatRelativeTime(dateValue) {
@@ -299,13 +299,15 @@ export default function NotificationsModal({ close, header, data }) {
     }
   };
 
+  const notificationsRef = useRef(notifications);
+  notificationsRef.current = notifications;
+
   const handleMarkRead = useCallback(
     async (notificationId, event) => {
       event?.preventDefault?.();
       event?.stopPropagation?.();
       if (!userId || !notificationId) return;
 
-      const previous = notifications;
       optimisticStateRef.current.forceReadIds.add(notificationId);
       setNotifications((curr) =>
         curr.map((item) => (item.id === notificationId ? { ...item, read: true } : item)),
@@ -315,11 +317,13 @@ export default function NotificationsModal({ close, header, data }) {
         await markAsRead(userId, notificationId);
       } catch (error) {
         optimisticStateRef.current.forceReadIds.delete(notificationId);
-        setNotifications(previous);
+        setNotifications((curr) =>
+          curr.map((item) => (item.id === notificationId ? { ...item, read: false } : item)),
+        );
         toast.error(error?.message || 'Notification could not be updated');
       }
     },
-    [notifications, toast, userId],
+    [toast, userId],
   );
 
   const handleDelete = useCallback(
@@ -328,7 +332,7 @@ export default function NotificationsModal({ close, header, data }) {
       event?.stopPropagation?.();
       if (!userId || !notificationId) return;
 
-      const previous = notifications;
+      const itemToDelete = notificationsRef.current.find((item) => item.id === notificationId);
       optimisticStateRef.current.deletedIds.add(notificationId);
       setNotifications((curr) => curr.filter((item) => item.id !== notificationId));
 
@@ -336,11 +340,16 @@ export default function NotificationsModal({ close, header, data }) {
         await deleteNotification(userId, notificationId);
       } catch (error) {
         optimisticStateRef.current.deletedIds.delete(notificationId);
-        setNotifications(previous);
+        if (itemToDelete) {
+          setNotifications((curr) => {
+            if (curr.some((item) => item.id === notificationId)) return curr;
+            return [...curr, itemToDelete];
+          });
+        }
         toast.error(error?.message || 'Notification could not be deleted');
       }
     },
-    [notifications, toast, userId],
+    [toast, userId],
   );
 
   const handleDeleteAll = async () => {

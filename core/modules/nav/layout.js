@@ -19,15 +19,15 @@ const NAV_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 18,
   collapsedY: -8,
   compactHeight: 38,
-  expandedY: getNavStackOffset(68),
-  actionGap: 10,
+  expandedY: getNavStackOffset(64),
+  actionGap: 8,
   height: 64,
 });
 
 export const NAV_CARD_LAYOUT = Object.freeze({
   collapsed: Object.freeze({
     offsetY: NAV_CARD_DIMENSIONS.collapsedY,
-    scale: 0.9,
+    scale: 0.88,
   }),
   expanded: Object.freeze({
     offsetY: NAV_CARD_DIMENSIONS.expandedY,
@@ -81,10 +81,10 @@ export function getNavItemCardProps({
 
   return {
     className: cn(
-      'absolute h-auto w-full border border-white/10 bg-black/70 p-2 transition-[background-color,border-color,color,box-shadow] duration-300 ease-out backdrop-blur-lg',
+      'absolute h-auto w-full border border-white/10 bg-black/60 p-2 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out backdrop-blur-xl',
       isAnchoredToBottom || isTop ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
-      showBorder && 'border-white/15',
+      showBorder && 'border-white/20 bg-black/50 shadow-[0_4px_24px_rgba(0,0,0,0.6)]',
       cardStyle?.className,
     ),
     style: {

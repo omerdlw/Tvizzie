@@ -54,12 +54,12 @@ function RatingsLegend() {
 function TvSeasonRatingsEmpty() {
   return (
     <section className="flex min-h-64 w-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <span className="center size-11 border border-white/10 bg-black/40 text-white/60">
+      <span className="center size-11 border border-white/10 bg-black/40 text-white/50">
         <Icon icon="solar:chart-2-bold" size={20} />
       </span>
       <div>
         <h2 className="text-sm font-semibold text-white">Ratings unavailable</h2>
-        <p className="mt-1 max-w-sm text-sm leading-6 text-white/60">
+        <p className="mt-1 max-w-sm text-sm leading-6 text-white/50">
           Episode ratings are not available for this series yet.
         </p>
       </div>
@@ -90,7 +90,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
     <section className="relative w-full">
       <div className="relative flex min-h-14 flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
         <RatingsLegend />
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>
@@ -105,7 +105,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
           {seasons.map((season) => (
             <div
               key={season.seasonNumber}
-              className="center size-14 text-xs font-semibold tracking-wide text-white/60 uppercase"
+              className="center size-14 text-xs font-semibold tracking-wide text-white/50 uppercase"
             >
               S{season.seasonNumber}
             </div>
@@ -113,7 +113,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
 
           {episodeNumbers.map((episodeNumber) => (
             <Fragment key={`episode-${episodeNumber}`}>
-              <div className="center size-8 self-center text-[10px] font-semibold tracking-wide text-white/60 uppercase">
+              <div className="center size-8 self-center text-[10px] font-semibold tracking-wide text-white/50 uppercase">
                 E{episodeNumber}
               </div>
               {seasons.map((season) => {

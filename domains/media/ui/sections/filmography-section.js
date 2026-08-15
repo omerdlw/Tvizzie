@@ -6,7 +6,7 @@ import { getFilmographyCredits } from '@/domains/media/utils/person-data';
 import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import Icon from '@/ui/primitives/icon';
-import { MediaRouteReveal } from '@/app/(media)/motion';
+
 export default function PersonFilmographySection({ person }) {
   const [activeTab, setActiveTab] = useState('movie');
 
@@ -45,51 +45,40 @@ export default function PersonFilmographySection({ person }) {
   return (
     <section className="relative w-full">
       <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
-        <MediaRouteReveal
-          className="flex min-w-0 items-center gap-2"
-          stage="person.sections.filmography"
-          deferred
-        >
+        <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:clapperboard-play-bold" size={20} className="text-white/70" />
           <h2 className="min-w-0 text-xs font-semibold tracking-wide text-white/70 uppercase">
             Filmography
           </h2>
-        </MediaRouteReveal>
+        </div>
 
         {mediaTypeItems.length > 1 ? (
-          <MediaRouteReveal stage="person.sections.filmography" deferred>
-            <div className="flex shrink-0 items-center">
-              <SegmentedControl
-                items={mediaTypeItems}
-                value={activeTab}
-                onChange={handleTabChange}
-                renderSuffix={(item) => (
-                  <span className="text-[10px] opacity-60">({item.count})</span>
-                )}
-              />
-            </div>
-          </MediaRouteReveal>
+          <div className="flex shrink-0 items-center">
+            <SegmentedControl
+              items={mediaTypeItems}
+              value={activeTab}
+              onChange={handleTabChange}
+              renderSuffix={(item) => (
+                <span className="text-[10px] opacity-60">({item.count})</span>
+              )}
+            />
+          </div>
         ) : null}
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
           <GridShellCrosshairs />
         </div>
       </div>
 
-      <MediaRouteReveal className="p-6" stage="person.sections.filmography" deferred>
+      <div className="p-6">
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {activeCredits.map((credit, index) => (
-            <MediaRouteReveal
+            <FilmographyCard
               key={`${credit.media_type}-${credit.id}-${credit.credit_id || index}`}
-              deferred
-              interactive
-              itemIndex={index}
-              stage="person.items.filmography"
-            >
-              <FilmographyCard credit={credit} />
-            </MediaRouteReveal>
+              credit={credit}
+            />
           ))}
         </div>
-      </MediaRouteReveal>
+      </div>
     </section>
   );
 }

@@ -214,7 +214,7 @@ export const NavAction = memo(function NavAction({ action }) {
         className="center relative cursor-pointer p-1 text-white/70 hover:bg-white/5 hover:text-white"
         onClick={action.onClick}
         type="button"
-        whileHover={{ y: -1, scale: 1.035 }}
+        whileHover={{ y: -1.5, scale: 1.06 }}
         whileTap={{ scale: NAV_TAP_SCALE }}
         transition={NAV_BUTTON_TRANSITION}
       >
@@ -223,9 +223,9 @@ export const NavAction = memo(function NavAction({ action }) {
           {action.badge && (
             <motion.span
               key={action.badge}
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
+              initial={{ opacity: 0, scale: 0.5, y: -2 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.5, y: -2 }}
               transition={NAV_BADGE_TRANSITION}
               className="center bg-info absolute -top-1 -right-1 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-black"
             >

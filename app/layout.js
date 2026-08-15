@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 
 import { cn } from '@/shared/utils';
 
-import { geistSans, zuume } from '@/assets/fonts';
+import { geistSans, zuume } from '@/public/fonts';
 import './globals.css';
 import { AppProviders } from './providers';
 

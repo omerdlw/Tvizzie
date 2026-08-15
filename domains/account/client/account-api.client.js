@@ -28,7 +28,7 @@ export function fetchAccountProfile(query) {
   return requestApiJson('/api/account/profile', { query });
 }
 
-export function fetchAccountIdByUsername(username) {
+export function resolveAccountByUsername(username) {
   return requestApiJson('/api/account/resolve', { query: { username } });
 }
 

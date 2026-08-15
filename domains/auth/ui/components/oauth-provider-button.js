@@ -6,7 +6,7 @@ import Icon from '@/ui/primitives/icon';
 
 export const PROVIDER_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex h-13 w-full items-center justify-center gap-3  border border-white/10 px-4 text-white transition-[background-color,border-color,color,transform] duration-300 ease-out hover:scale-[1.02] hover:bg-white hover:text-black active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex h-13 w-full items-center justify-center gap-3  border border-white/10 px-4 text-white transition-all duration-300 ease-in-out hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export default function OAuthProviderButton({

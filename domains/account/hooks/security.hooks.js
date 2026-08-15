@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AUTH_PURPOSE,
@@ -365,6 +365,13 @@ export function useAccountDeleteAction({
 }) {
   const router = useRouter();
   const deleteRequestLockRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const handleDeleteAccount = useCallback(async () => {
     if (deleteFlow.isSubmitting || deleteRequestLockRef.current) return;
@@ -387,11 +394,15 @@ export function useAccountDeleteAction({
       description: 'This action permanently deletes your account and signs you out',
       icon: 'solar:danger-triangle-bold',
       isDestructive: true,
-      onCancel: () => setDeleteConfirmation(null),
+      onCancel: () => {
+        if (isMountedRef.current) setDeleteConfirmation(null);
+      },
       onConfirm: async () => {
         if (deleteRequestLockRef.current) return;
         deleteRequestLockRef.current = true;
-        setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }));
+        if (isMountedRef.current) {
+          setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }));
+        }
 
         try {
           if (isPasswordLinked) {
@@ -408,8 +419,10 @@ export function useAccountDeleteAction({
             });
 
             if (!verification?.success) {
-              setDeleteConfirmation(null);
-              setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+              if (isMountedRef.current) {
+                setDeleteConfirmation(null);
+                setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+              }
               deleteRequestLockRef.current = false;
               return;
             }
@@ -419,7 +432,9 @@ export function useAccountDeleteAction({
           const result = await deleteAccountRequest({
             currentPassword: isPasswordLinked ? currentPassword : '',
           });
-          setDeleteConfirmation(null);
+          if (isMountedRef.current) {
+            setDeleteConfirmation(null);
+          }
 
           if (result?.deleted || result?.nextAction === 'signed_out') {
             await auth.signOut({ reason: 'delete-account', redirect: false }).catch(() => {});
@@ -430,8 +445,10 @@ export function useAccountDeleteAction({
           router.push('/');
         } catch (error) {
           deleteRequestLockRef.current = false;
-          setDeleteConfirmation(null);
-          setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+          if (isMountedRef.current) {
+            setDeleteConfirmation(null);
+            setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+          }
           const errorMessage = resolveSecurityErrorMessage(error, 'Account deletion failed');
           toast.error(errorMessage);
           await logCredentialAuditFailure('account_delete', error);

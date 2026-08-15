@@ -9,9 +9,11 @@ import {
   LIST_ITEM_SELECT,
   MEDIA_COLLECTION_SELECT,
   WATCHED_SELECT,
+  assertResult,
+  isValidUuid,
 } from '@/domains/account/utils';
 
-export const ACCOUNT_COLLECTION_RESOURCE_KEYS = new Set([
+const ACCOUNT_COLLECTION_RESOURCE_KEYS = new Set([
   'likes',
   'lists',
   'liked-lists',
@@ -19,21 +21,21 @@ export const ACCOUNT_COLLECTION_RESOURCE_KEYS = new Set([
   'watchlist',
 ]);
 
-export const ACCOUNT_LIST_RESOURCE_KEYS = new Set(['list-by-id', 'list-by-slug', 'list-items']);
+const ACCOUNT_LIST_RESOURCE_KEYS = new Set(['list-by-id', 'list-by-slug', 'list-items']);
 
-export const ACCOUNT_MEDIA_STATUS_RESOURCE_KEYS = new Set([
+const ACCOUNT_MEDIA_STATUS_RESOURCE_KEYS = new Set([
   'like-status',
   'watchlist-status',
   'watched-status',
 ]);
 
-export const ACCOUNT_RESOURCE_KEYS = new Set([
+const ACCOUNT_RESOURCE_KEYS = new Set([
   ...ACCOUNT_COLLECTION_RESOURCE_KEYS,
   ...ACCOUNT_LIST_RESOURCE_KEYS,
   ...ACCOUNT_MEDIA_STATUS_RESOURCE_KEYS,
 ]);
 
-export const PROTECTED_ACCOUNT_RESOURCE_KEYS = new Set(ACCOUNT_RESOURCE_KEYS);
+const PROTECTED_ACCOUNT_RESOURCE_KEYS = new Set(ACCOUNT_RESOURCE_KEYS);
 
 export function isAccountResource(resource) {
   return ACCOUNT_RESOURCE_KEYS.has(resource);
@@ -43,23 +45,6 @@ export function resolveLimitCount(value, fallback = 0, max = 100) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   return Math.min(Math.max(1, Math.floor(parsed)), max);
-}
-
-export function assertResult(result, fallbackMessage) {
-  if (result?.error) {
-    const error = result.error;
-    const message = String(error?.message || '').toLowerCase();
-    if (
-      message.includes('fetch failed') ||
-      message.includes('socket') ||
-      message.includes('connection')
-    ) {
-      console.error(`[Supabase Connection Error] ${fallbackMessage}:`, error);
-      return { data: null, error };
-    }
-    throw new Error(error.message || fallbackMessage);
-  }
-  return result;
 }
 
 export async function executeCollectionQuery(
@@ -247,8 +232,6 @@ function resolveMediaKey(media = null) {
   );
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const STANDARD_COLLECTION_CONFIG = Object.freeze({
   likes: Object.freeze({
     filter: (item) => isTitleMediaType(item?.entityType),
@@ -327,21 +310,17 @@ function applyQueryOrder(query, order = []) {
   );
 }
 
-function isUuid(value) {
-  return UUID_PATTERN.test(value);
-}
-
 function createListQuery(admin, { reference, select, userId, usesSlugFallback = false }) {
   let query = admin.from('lists').select(select);
   if (userId) query = query.eq('user_id', userId);
 
   if (usesSlugFallback) {
-    return isUuid(reference)
+    return isValidUuid(reference)
       ? query.or(`id.eq.${reference},slug.eq.${reference}`)
       : query.eq('slug', reference);
   }
 
-  return isUuid(reference) ? query.eq('id', reference) : query.eq('slug', reference);
+  return isValidUuid(reference) ? query.eq('id', reference) : query.eq('slug', reference);
 }
 
 async function findListRow({

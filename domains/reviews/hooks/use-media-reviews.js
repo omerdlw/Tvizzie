@@ -21,15 +21,25 @@ function getReviewIdentity(review) {
   return review?.docPath || review?.id || null;
 }
 
-function createReviewNavState(ownReview = null) {
+function createReviewNavState({
+  canSubmit = true,
+  isActive = false,
+  isSubmitting = false,
+  loadingLabel = null,
+  ownReview = null,
+  submitLabel = null,
+  submitReview = null,
+  applyOptimisticReviewUpdate = null,
+} = {}) {
   return {
-    canSubmit: true,
-    isActive: false,
-    isSubmitting: false,
-    loadingLabel: null,
-    ownReview: Boolean(ownReview),
-    submitLabel: null,
-    submitReview: null,
+    canSubmit,
+    isActive,
+    isSubmitting,
+    loadingLabel,
+    ownReview: ownReview || null,
+    submitLabel,
+    submitReview,
+    applyOptimisticReviewUpdate,
   };
 }
 
@@ -131,10 +141,31 @@ export function useMediaReviews({
     };
   }, [currentUserId, limitCount, media]);
 
-  const ownReview = useMemo(
+  const matchedOwnReview = useMemo(
     () => reviews.find((review) => review.user?.id === currentUserId) || null,
     [currentUserId, reviews],
   );
+  const ownReviewRef = useRef(matchedOwnReview);
+
+  const ownReview = useMemo(() => {
+    const prev = ownReviewRef.current;
+    if (!matchedOwnReview && !prev) return null;
+    if (!matchedOwnReview || !prev) {
+      ownReviewRef.current = matchedOwnReview;
+      return matchedOwnReview;
+    }
+    const isSame =
+      prev.id === matchedOwnReview.id &&
+      prev.content === matchedOwnReview.content &&
+      prev.rating === matchedOwnReview.rating &&
+      prev.updatedAt === matchedOwnReview.updatedAt &&
+      prev.isSpoiler === matchedOwnReview.isSpoiler;
+    if (!isSame) {
+      ownReviewRef.current = matchedOwnReview;
+      return matchedOwnReview;
+    }
+    return prev;
+  }, [matchedOwnReview]);
   const ratingStats = useMemo(() => getRatingStats(reviews), [reviews]);
   const sortedReviews = useMemo(
     () => sortReviews(reviews, currentUserId),
@@ -235,8 +266,13 @@ export function useMediaReviews({
   }, []);
 
   useEffect(() => {
-    onReviewStateChange?.(createReviewNavState(ownReview));
-  }, [onReviewStateChange, ownReview]);
+    onReviewStateChange?.(
+      createReviewNavState({
+        ownReview,
+        applyOptimisticReviewUpdate,
+      }),
+    );
+  }, [applyOptimisticReviewUpdate, onReviewStateChange, ownReview]);
 
   return {
     applyOptimisticReviewUpdate,

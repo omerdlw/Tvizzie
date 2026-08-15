@@ -4,8 +4,6 @@ import { normalizeFeedbackText } from '@/shared/utils';
 import { mergeReviewUser } from '../../shared/review-data';
 import ReviewCard from './review-card';
 import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';
-import { MediaRouteReveal } from '@/app/(media)/motion';
-import { AccountReveal } from '@/app/(account)/motion';
 
 export default function ReviewList({
   baseDelay = 0,
@@ -57,7 +55,7 @@ export default function ReviewList({
         const isFirst = index === 0;
         const isLast = index === sortedReviews.length - 1;
 
-        const card = (
+        return (
           <div key={key}>
             <ReviewCard
               review={mergedReview}
@@ -75,29 +73,6 @@ export default function ReviewList({
               watchedMediaKeys={watchedMediaKeys}
             />
           </div>
-        );
-
-        if (accountMotion) {
-          return (
-            <AccountReveal key={key} deferred itemIndex={index} stage="item.feed">
-              {card}
-            </AccountReveal>
-          );
-        }
-
-        if (!motionStage) {
-          return card;
-        }
-
-        return (
-          <MediaRouteReveal
-            key={key}
-            stage={motionStage}
-            deferred={motionDeferred}
-            itemIndex={index}
-          >
-            {card}
-          </MediaRouteReveal>
         );
       })}
     </div>

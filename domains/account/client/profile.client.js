@@ -18,60 +18,13 @@ import {
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { validateUsername } from '@/domains/account/utils';
-import { cleanString, isValidUrl, normalizeTimestamp, normalizeValue } from '@/shared/utils';
+import { cleanString, isValidUrl, normalizeValue } from '@/shared/utils';
 import {
-  fetchAccountIdByUsername,
+  resolveAccountByUsername,
   fetchAccountProfile,
   saveAccountProfile,
   searchAccountProfiles,
 } from './account-api.client';
-import { normalizeFavoriteShowcaseItems } from './profile-normalizer.client';
-
-function normalizeAccountDisplayNameSearchValue(value) {
-  return normalizeValue(value).toLocaleLowerCase();
-}
-
-function normalizeAccountCount(value) {
-  return Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0;
-}
-
-function normalizeAccountData(data = {}, id = null) {
-  const displayName = data.display_name || data.displayName || 'Anonymous User';
-
-  return {
-    avatarUrl: data.avatar_url || data.avatarUrl || null,
-    bannerUrl: data.banner_url || data.bannerUrl || null,
-    createdAt: normalizeTimestamp(data.created_at || data.createdAt),
-    description: data.description || '',
-    displayName,
-    displayNameLower:
-      data.display_name_lower ||
-      data.displayNameLower ||
-      normalizeAccountDisplayNameSearchValue(displayName),
-    email: data.email || null,
-    followerCount: normalizeAccountCount(data.follower_count ?? data.followerCount),
-    favoriteShowcase: normalizeFavoriteShowcaseItems(data.favorite_showcase),
-    id: id || data.id || null,
-    isPrivate: data.is_private === true || data.isPrivate === true,
-    lastActivityAt: normalizeTimestamp(data.last_activity_at || data.lastActivityAt),
-    followingCount: normalizeAccountCount(data.following_count ?? data.followingCount),
-    likesCount: normalizeAccountCount(data.likes_count ?? data.likesCount),
-    listsCount: normalizeAccountCount(data.lists_count ?? data.listsCount),
-    updatedAt: normalizeTimestamp(data.updated_at || data.updatedAt),
-    watchedCount: normalizeAccountCount(data.watched_count ?? data.watchedCount),
-    watchlistCount: normalizeAccountCount(data.watchlist_count ?? data.watchlistCount),
-    username: data.username || null,
-    usernameLower:
-      data.username_lower ||
-      data.usernameLower ||
-      (data.username ? String(data.username).toLowerCase() : null),
-  };
-}
-
-export function normalizeAccountSnapshot(snapshot) {
-  if (!snapshot) return null;
-  return normalizeAccountData(snapshot, snapshot.id || null);
-}
 
 export function normalizeOptionalUrl(value) {
   const normalized = cleanString(value);
@@ -142,7 +95,7 @@ export async function getUserIdByUsername(username) {
     return cachedEntry.inFlightPromise;
   }
 
-  const inFlightPromise = fetchAccountIdByUsername(normalizedUsername)
+  const inFlightPromise = resolveAccountByUsername(normalizedUsername)
     .then((payload) => {
       const userId = payload?.userId || null;
       cacheAccountResolution(normalizedUsername, {
@@ -280,11 +233,8 @@ export async function ensureUserAccount(user = {}, options = {}) {
 
   const existingProfile = await getUserAccount(identity.id).catch(() => null);
   if (existingProfile?.id) {
-    const normalizedExistingProfile = normalizeAccountSnapshot(existingProfile);
-    if (normalizedExistingProfile) {
-      primeUserAccount(identity.id, normalizedExistingProfile);
-      return normalizedExistingProfile;
-    }
+    primeUserAccount(identity.id, existingProfile);
+    return existingProfile;
   }
 
   const payload = await requestEnsureUserAccount({
@@ -292,7 +242,7 @@ export async function ensureUserAccount(user = {}, options = {}) {
     email: identity.email || null,
     username: preferredUsername,
   });
-  const profile = normalizeAccountSnapshot(payload?.profile);
+  const profile = payload?.profile;
   if (!profile) throw new Error('Could not generate an available username for this account');
 
   primeUserAccount(identity.id, profile);
@@ -315,7 +265,7 @@ export async function updateUserAccount({ userId, updates = {} }) {
     isPrivate: updates.isPrivate !== undefined ? Boolean(updates.isPrivate) : undefined,
     username: updates.username !== undefined ? validateUsername(updates.username) : undefined,
   });
-  const profile = normalizeAccountSnapshot(payload?.profile);
+  const profile = payload?.profile;
   if (!profile) throw new Error('Account update failed');
 
   primeUserAccount(userId, profile);
@@ -368,7 +318,7 @@ export async function syncUserAccountEmail({ userId, email }) {
   }
 
   const payload = await requestSyncUserAccountEmail({ email: normalizedEmail });
-  const profile = normalizeAccountSnapshot(payload?.profile);
+  const profile = payload?.profile;
   if (!profile) throw new Error('Email could not be synced');
 
   primeUserAccount(userId, profile);

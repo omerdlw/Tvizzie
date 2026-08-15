@@ -6,15 +6,14 @@ import { ACCOUNT_SECTION_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/sh
 import { cn } from '@/core/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { AccountReveal } from '@/app/(account)/motion';
 
 export const INPUT_BASE_CLASSES =
-  'h-11 w-full border border-white/5 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/50 transition-[background-color,border-color,box-shadow] duration-300 ease-out focus:bg-white/10';
+  'h-11 w-full border border-white/5 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/50 transition-all duration-300 ease-in-out focus:bg-white/10';
 
 export const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 
 const BUTTON_BASE_CLASSES =
-  ' border border-white/5 bg-primary px-3 py-2 text-white transition-[background-color,border-color,transform] duration-300 ease-out cursor-pointer hover:bg-white/10 disabled:opacity-50';
+  ' border border-white/5 bg-primary px-3 py-2 text-white transition-all duration-300 ease-in-out cursor-pointer hover:bg-white/10 disabled:opacity-50';
 
 const BUTTON_FRAME_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed ';
@@ -60,10 +59,10 @@ export function SectionCard({
           <GridShellCrosshairs />
         </div>
         <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
-        <AccountReveal className="p-6" deferred stage="section.content">
+        <div className="p-6">
           {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}
           <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
-        </AccountReveal>
+        </div>
       </div>
     </section>
   );

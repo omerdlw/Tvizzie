@@ -10,6 +10,8 @@ import {
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { buildMediaKeySet } from '@/domains/account/ui/filters/filtering';
+const noop = () => {};
+
 export default function AccountReviewsOverview({
   currentUserId = null,
   emptyMessage = 'No reviews yet',
@@ -64,8 +66,8 @@ export default function AccountReviewsOverview({
           isInitialSection={isInitialSection}
           isLoading={false}
           loadError={null}
-          onDeleteRequest={onDeleteRequest || (() => {})}
-          onEdit={onEdit || (() => {})}
+          onDeleteRequest={onDeleteRequest || noop}
+          onEdit={onEdit || noop}
           onLike={onLike}
           likedMediaKeys={likedMediaKeys}
           rewatchMediaKeys={rewatchMediaKeys}

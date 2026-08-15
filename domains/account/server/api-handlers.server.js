@@ -74,10 +74,8 @@ export async function handleAccountCollectionsGet(request) {
     return NextResponse.json({ data, items: Array.isArray(data) ? data : [] });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json(
-      { error: String(error?.message || 'Collections could not be loaded') },
-      { status },
-    );
+    console.error('Collections could not be loaded:', error);
+    return NextResponse.json({ error: 'Collections could not be loaded' }, { status });
   }
 }
 
@@ -114,10 +112,8 @@ export async function handleAccountActivityGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json(
-      { error: String(error?.message || 'Activity feed could not be loaded') },
-      { status },
-    );
+    console.error('Activity feed could not be loaded:', error);
+    return NextResponse.json({ error: 'Activity feed could not be loaded' }, { status });
   }
 }
 
@@ -161,10 +157,8 @@ export async function handleAccountProfileGet(request) {
     return NextResponse.json({ profile: profile || null });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json(
-      { error: String(error?.message || 'Profile could not be loaded') },
-      { status },
-    );
+    console.error('Profile could not be loaded:', error);
+    return NextResponse.json({ error: 'Profile could not be loaded' }, { status });
   }
 }
 
@@ -237,7 +231,10 @@ export async function handleAccountProfilePost(request) {
         .eq('id', userId)
         .select('id')
         .single();
-      if (error) throw new Error(error.message || 'Account update failed');
+      if (error) {
+        console.error('Account update failed:', error);
+        throw new Error('Account update failed');
+      }
 
       if (newUsername) {
         try {
@@ -264,10 +261,8 @@ export async function handleAccountProfilePost(request) {
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json(
-      { error: String(error?.message || 'Account action failed') },
-      { status },
-    );
+    console.error('Account action failed:', error);
+    return NextResponse.json({ error: 'Account action failed' }, { status });
   }
 }
 
@@ -291,10 +286,8 @@ export async function handleAccountResolveGet(request) {
 
     return NextResponse.json({ userId: userId || null });
   } catch (error) {
-    return NextResponse.json(
-      { error: String(error?.message || 'Username could not be resolved') },
-      { status: 500 },
-    );
+    console.error('Username could not be resolved:', error);
+    return NextResponse.json({ error: 'Username could not be resolved' }, { status: 500 });
   }
 }
 
@@ -325,10 +318,8 @@ export async function handleAccountReviewsGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json(
-      { error: String(error?.message || 'Reviews could not be loaded') },
-      { status },
-    );
+    console.error('Reviews could not be loaded:', error);
+    return NextResponse.json({ error: 'Reviews could not be loaded' }, { status });
   }
 }
 
@@ -349,7 +340,10 @@ export async function handleAccountSearchGet(request) {
       )
       .limit(limitCount);
 
-    if (error) throw new Error(error.message || 'Search failed');
+    if (error) {
+      console.error('Search failed:', error);
+      throw new Error('Search failed');
+    }
 
     const items = (data || []).map((row) => ({
       avatarUrl: row.avatar_url || null,
@@ -361,9 +355,7 @@ export async function handleAccountSearchGet(request) {
 
     return NextResponse.json({ items });
   } catch (error) {
-    return NextResponse.json(
-      { error: String(error?.message || 'Account search failed') },
-      { status: 500 },
-    );
+    console.error('Account search failed:', error);
+    return NextResponse.json({ error: 'Account search failed' }, { status: 500 });
   }
 }

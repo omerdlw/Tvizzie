@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import AccountActivityOverview from '@/domains/account/ui/sections/overview/activity';
 import AccountFavoritesOverview from '@/domains/account/ui/sections/overview/favorites';
 import AccountListsOverview from '@/domains/account/ui/sections/overview/lists';
@@ -12,7 +13,7 @@ import { AccountSectionState } from '@/domains/account/ui/sections/account-secti
 
 const LIMITS = { activity: 6, media: 6, favorites: 5, lists: 6 };
 
-export default function AccountOverviewFeed({ model = {}, RegistryComponent = null }) {
+export default function AccountOverviewFeed({ overviewData = {}, RegistryComponent = null }) {
   const {
     auth = { isAuthenticated: false, isReady: false, user: null },
     authoredReviews = [],
@@ -57,7 +58,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
     watchedCount = 0,
     watchlist = [],
     watchlistCount = 0,
-  } = model;
+  } = overviewData;
 
   const currentUserId = auth.user?.id || null;
   const buildHref = (suffix) => (profileHandle ? `/account/${profileHandle}${suffix}` : null);
@@ -91,6 +92,67 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
 
   let sectionCounter = 0;
 
+  const getSectionProps = () => {
+    const index = sectionCounter++;
+    return {
+      isInitialSection: index === 0,
+      baseDelay: index === 0 ? 0.06 : undefined,
+      revealDelay: index,
+    };
+  };
+
+  const renderFavoriteOverlay = useCallback(
+    (item) =>
+      isOwner ? (
+        <ProfileMediaActions
+          item={item}
+          onRemoveItem={handleRequestRemoveLike}
+          removeLabel={`Remove ${item.title || item.name} from favorites`}
+          currentUserId={currentUserId}
+        />
+      ) : null,
+    [isOwner, handleRequestRemoveLike, currentUserId],
+  );
+
+  const renderWatchlistOverlay = useCallback(
+    (item) =>
+      isOwner ? (
+        <ProfileMediaActions
+          item={item}
+          onRemoveItem={handleRequestRemoveWatchlistItem}
+          removeLabel={`Remove ${item.title || item.name} from watchlist`}
+          currentUserId={currentUserId}
+        />
+      ) : null,
+    [isOwner, handleRequestRemoveWatchlistItem, currentUserId],
+  );
+
+  const renderWatchedOverlay = useCallback(
+    (item) =>
+      isOwner ? (
+        <ProfileMediaActions
+          item={item}
+          onRemoveItem={handleRequestRemoveWatchedItem}
+          removeLabel={`Remove ${item.title || item.name} from watched`}
+          currentUserId={currentUserId}
+        />
+      ) : null,
+    [isOwner, handleRequestRemoveWatchedItem, currentUserId],
+  );
+
+  const renderLikesOverlay = useCallback(
+    (item) =>
+      isOwner ? (
+        <ProfileMediaActions
+          item={item}
+          onRemoveItem={handleRequestRemoveLike}
+          removeLabel={`Remove ${item.title || item.name} from likes`}
+          currentUserId={currentUserId}
+        />
+      ) : null,
+    [isOwner, handleRequestRemoveLike, currentUserId],
+  );
+
   return (
     <AccountPageShell
       activeSection="overview"
@@ -119,209 +181,123 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
           <AccountSectionState message="This account has no activity or content yet." />
         ) : (
           <>
-            {hasFavorites &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                const baseDelay = isInitial ? 0.06 : undefined;
-                return (
-                  <AccountFavoritesOverview
-                    key="section-favorites"
-                    baseDelay={baseDelay}
-                    icon="solar:star-bold"
-                    isInitialSection={isInitial}
-                    isOwner={isOwner}
-                    items={favoriteShowcase.slice(0, LIMITS.favorites)}
-                    revealDelay={index}
-                    title="Favorites"
-                    titleHref={buildHref('/likes')}
-                    renderOverlay={(item) =>
-                      isOwner ? (
-                        <ProfileMediaActions
-                          media={item}
-                          onRemoveItem={handleRequestRemoveLike}
-                          removeLabel={`Remove ${item.title || item.name} from favorites`}
-                          userId={currentUserId}
-                        />
-                      ) : null
-                    }
-                  />
-                );
-              })()}
+            {hasFavorites && (
+              <AccountFavoritesOverview
+                key="section-favorites"
+                {...getSectionProps()}
+                icon="solar:star-bold"
+                isOwner={isOwner}
+                items={favoriteShowcase.slice(0, LIMITS.favorites)}
+                title="Favorites"
+                titleHref={buildHref('/likes')}
+                renderOverlay={renderFavoriteOverlay}
+              />
+            )}
 
-            {(hasWatchlist || isWatchlistLoading) &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                const baseDelay = isInitial ? 0.06 : undefined;
-                return (
-                  <AccountWatchlistOverview
-                    key="section-watchlist"
-                    baseDelay={baseDelay}
-                    icon="solar:bookmark-bold"
-                    isInitialSection={isInitial}
-                    isLoading={isWatchlistLoading}
-                    isOwner={isOwner}
-                    items={watchlist.slice(0, LIMITS.media)}
-                    onRemoveItem={handleRequestRemoveWatchlistItem}
-                    revealDelay={index}
-                    showSeeMore={watchlistCount > LIMITS.media}
-                    title="Watchlist"
-                    titleHref={buildHref('/watchlist')}
-                    renderOverlay={(item) =>
-                      isOwner ? (
-                        <ProfileMediaActions
-                          media={item}
-                          onRemoveItem={handleRequestRemoveWatchlistItem}
-                          removeLabel={`Remove ${item.title || item.name} from watchlist`}
-                          userId={currentUserId}
-                        />
-                      ) : null
-                    }
-                  />
-                );
-              })()}
+            {(hasWatchlist || isWatchlistLoading) && (
+              <AccountWatchlistOverview
+                key="section-watchlist"
+                {...getSectionProps()}
+                icon="solar:bookmark-bold"
+                isLoading={isWatchlistLoading}
+                isOwner={isOwner}
+                items={watchlist.slice(0, LIMITS.media)}
+                onRemoveItem={handleRequestRemoveWatchlistItem}
+                showSeeMore={watchlistCount > LIMITS.media}
+                title="Watchlist"
+                titleHref={buildHref('/watchlist')}
+                renderOverlay={renderWatchlistOverlay}
+              />
+            )}
 
-            {(hasWatched || isWatchedLoading) &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                const baseDelay = isInitial ? 0.06 : undefined;
-                return (
-                  <AccountWatchedOverview
-                    key="section-watched"
-                    baseDelay={baseDelay}
-                    emptyMessage="No watched titles yet"
-                    icon="solar:eye-bold"
-                    isInitialSection={isInitial}
-                    isLoading={isWatchedLoading}
-                    items={watched.slice(0, LIMITS.media)}
-                    revealDelay={index}
-                    showSeeMore={watchedCount > LIMITS.media}
-                    title="Watched"
-                    titleHref={buildHref('/watched')}
-                    renderOverlay={(item) =>
-                      isOwner ? (
-                        <ProfileMediaActions
-                          media={item}
-                          onRemoveItem={handleRequestRemoveWatchedItem}
-                          removeLabel={`Remove ${item.title || item.name} from watched`}
-                          userId={currentUserId}
-                        />
-                      ) : null
-                    }
-                  />
-                );
-              })()}
+            {(hasWatched || isWatchedLoading) && (
+              <AccountWatchedOverview
+                key="section-watched"
+                {...getSectionProps()}
+                emptyMessage="No watched titles yet"
+                icon="solar:eye-bold"
+                isLoading={isWatchedLoading}
+                items={watched.slice(0, LIMITS.media)}
+                showSeeMore={watchedCount > LIMITS.media}
+                title="Watched"
+                titleHref={buildHref('/watched')}
+                renderOverlay={renderWatchedOverlay}
+              />
+            )}
 
-            {(hasLikes || isLikesLoading) &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                const baseDelay = isInitial ? 0.06 : undefined;
-                return (
-                  <AccountFavoritesOverview
-                    key="section-likes"
-                    baseDelay={baseDelay}
-                    cardLimit={LIMITS.media}
-                    emptyMessage="No liked titles yet"
-                    icon="solar:heart-bold"
-                    isInitialSection={isInitial}
-                    isLoading={isLikesLoading}
-                    isOwner={isOwner}
-                    items={likes.slice(0, LIMITS.media)}
-                    revealDelay={index}
-                    showSeeMore={likeCount > LIMITS.media}
-                    title="Likes"
-                    titleHref={buildHref('/likes')}
-                    wideGrid
-                    renderOverlay={(item) =>
-                      isOwner ? (
-                        <ProfileMediaActions
-                          media={item}
-                          onRemoveItem={handleRequestRemoveLike}
-                          removeLabel={`Remove ${item.title || item.name} from likes`}
-                          userId={currentUserId}
-                        />
-                      ) : null
-                    }
-                  />
-                );
-              })()}
+            {(hasLikes || isLikesLoading) && (
+              <AccountFavoritesOverview
+                key="section-likes"
+                {...getSectionProps()}
+                cardLimit={LIMITS.media}
+                emptyMessage="No liked titles yet"
+                icon="solar:heart-bold"
+                isLoading={isLikesLoading}
+                isOwner={isOwner}
+                items={likes.slice(0, LIMITS.media)}
+                showSeeMore={likeCount > LIMITS.media}
+                title="Likes"
+                titleHref={buildHref('/likes')}
+                wideGrid
+                renderOverlay={renderLikesOverlay}
+              />
+            )}
 
-            {(hasLists || isListsLoading) &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                return (
-                  <AccountListsOverview
-                    key="section-lists"
-                    icon="solar:list-broken"
-                    isInitialSection={isInitial}
-                    isLoading={isListsLoading}
-                    items={lists.slice(0, LIMITS.lists)}
-                    isOwner={isOwner}
-                    onDeleteList={handleDeleteList}
-                    onEditList={handleEditList}
-                    ownerUsername={profileHandle}
-                    revealDelay={index}
-                    showSeeMore={listCount > LIMITS.lists}
-                    title="Lists"
-                    titleHref={buildHref('/lists')}
-                  />
-                );
-              })()}
+            {(hasLists || isListsLoading) && (
+              <AccountListsOverview
+                key="section-lists"
+                {...getSectionProps()}
+                icon="solar:list-broken"
+                isLoading={isListsLoading}
+                items={lists.slice(0, LIMITS.lists)}
+                isOwner={isOwner}
+                onDeleteList={handleDeleteList}
+                onEditList={handleEditList}
+                ownerUsername={profileHandle}
+                showSeeMore={listCount > LIMITS.lists}
+                title="Lists"
+                titleHref={buildHref('/lists')}
+              />
+            )}
 
-            {shouldRenderActivity &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                return (
-                  <AccountActivityOverview
-                    key="section-activity"
-                    canViewPrivateContent={canViewPrivateContent}
-                    icon="solar:bolt-bold"
-                    initialFeed={initialActivityFeed}
-                    isInitialSection={isInitial}
-                    isOwner={isOwner}
-                    isPrivateProfile={isPrivateProfile}
-                    isViewerReady={isViewerReady}
-                    limit={LIMITS.activity}
-                    revealDelay={index}
-                    resolvedUserId={resolvedUserId}
-                    summaryLabel=""
-                    title="Recent Activity"
-                    titleHref={buildHref('/activity')}
-                  />
-                );
-              })()}
+            {shouldRenderActivity && (
+              <AccountActivityOverview
+                key="section-activity"
+                {...getSectionProps()}
+                canViewPrivateContent={canViewPrivateContent}
+                icon="solar:bolt-bold"
+                initialFeed={initialActivityFeed}
+                isOwner={isOwner}
+                isPrivateProfile={isPrivateProfile}
+                isViewerReady={isViewerReady}
+                limit={LIMITS.activity}
+                resolvedUserId={resolvedUserId}
+                summaryLabel=""
+                title="Recent Activity"
+                titleHref={buildHref('/activity')}
+              />
+            )}
 
-            {(hasReviews || authoredReviewsLoading) &&
-              (() => {
-                const index = sectionCounter++;
-                const isInitial = index === 0;
-                return (
-                  <AccountReviewsOverview
-                    key="section-reviews"
-                    currentUserId={currentUserId}
-                    icon="solar:chat-round-bold"
-                    isInitialSection={isInitial}
-                    isLoading={authoredReviewsLoading}
-                    items={authoredReviews}
-                    likes={likes}
-                    loadError={authoredReviewsError}
-                    onDeleteRequest={handleDeleteReview}
-                    onEdit={handleEditReview}
-                    onLike={handleLikeReview}
-                    revealDelay={index}
-                    showOwnActions={isOwner}
-                    showSeeMore={hasMoreAuthoredReviews}
-                    summaryLabel=""
-                    title="Recent Reviews"
-                    titleHref={buildHref('/reviews')}
-                  />
-                );
-              })()}
+            {(hasReviews || authoredReviewsLoading) && (
+              <AccountReviewsOverview
+                key="section-reviews"
+                {...getSectionProps()}
+                currentUserId={currentUserId}
+                icon="solar:chat-round-bold"
+                isLoading={authoredReviewsLoading}
+                items={authoredReviews}
+                likes={likes}
+                loadError={authoredReviewsError}
+                onDeleteRequest={handleDeleteReview}
+                onEdit={handleEditReview}
+                onLike={handleLikeReview}
+                showOwnActions={isOwner}
+                showSeeMore={hasMoreAuthoredReviews}
+                summaryLabel=""
+                title="Recent Reviews"
+                titleHref={buildHref('/reviews')}
+              />
+            )}
           </>
         )}
       </div>

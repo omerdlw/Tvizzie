@@ -50,7 +50,6 @@ import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import AuthRegistry from '@/app/(auth)/registry';
-import { AuthReveal, AuthScene } from '@/app/(auth)/motion';
 import Link from 'next/link';
 
 export default function Client() {
@@ -392,207 +391,183 @@ function SignUpView({
 
   return (
     <AuthPageShell>
-      <AuthScene sceneKey={`sign-up-step-${currentStep}`}>
-        <form onSubmit={handleStepSubmit} className={AUTH_PAGE_FORM_CLASS}>
-          <div className="flex flex-col items-center text-center">
-            <AuthReveal stage="brand">
-              <Link
-                href="/"
-                className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
-              >
-                <Image
-                  src="/tvizzie.png"
-                  alt="Tvizzie"
-                  width={64}
-                  height={64}
-                  className="size-16"
-                />
-              </Link>
-            </AuthReveal>
-            <AuthReveal stage="heading">
-              <h1 className="text-2xl font-semibold sm:text-3xl">{stepTitle}</h1>
-            </AuthReveal>
-          </div>
+      <form onSubmit={handleStepSubmit} className={AUTH_PAGE_FORM_CLASS}>
+        <div className="flex flex-col items-center text-center">
+          <Link
+            href="/"
+            className="mb-6 block p-1 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none"
+          >
+            <Image
+              src="/tvizzie.png"
+              alt="Tvizzie"
+              width={64}
+              height={64}
+              className="size-16"
+            />
+          </Link>
+          <h1 className="text-2xl font-semibold sm:text-3xl">{stepTitle}</h1>
+        </div>
 
-          {currentStep === 0 ? (
-            <>
-              <AuthReveal itemIndex={0} stage="field">
-                <AuthField className="pt-1" htmlFor="sign-up-email" label="Email">
-                  <Input
-                    id="sign-up-email"
-                    type="email"
-                    value={form.email}
-                    onChange={(event) => handleChange('email', event.target.value)}
-                    placeholder="Enter your email"
-                    autoComplete="email"
-                    classNames={AUTH_INPUT_CLASSNAMES}
+        {currentStep === 0 ? (
+          <>
+            <AuthField className="pt-1" htmlFor="sign-up-email" label="Email">
+              <Input
+                id="sign-up-email"
+                type="email"
+                value={form.email}
+                onChange={(event) => handleChange('email', event.target.value)}
+                placeholder="Enter your email"
+                autoComplete="email"
+                classNames={AUTH_INPUT_CLASSNAMES}
+              />
+            </AuthField>
+
+            <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
+              {submitLabel}
+            </Button>
+
+            <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
+              <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
+              <div className="h-px grow bg-white/10" />
+              <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
+              <div className="h-px grow bg-white/10" />
+              <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
+            </div>
+
+            <OAuthProviderList
+              activeProvider={activeOAuthProvider}
+              disabled={isBusy}
+              mode="sign-up"
+              onSelect={handleOAuthSignUp}
+            />
+          </>
+        ) : null}
+
+        {currentStep === 1 ? (
+          <>
+            <AuthField className="pt-1" htmlFor="sign-up-username" label="Username">
+              <Input
+                id="sign-up-username"
+                value={form.username}
+                onChange={(event) => handleChange('username', event.target.value)}
+                placeholder="Choose a username"
+                autoComplete="username"
+                classNames={AUTH_INPUT_CLASSNAMES}
+              />
+            </AuthField>
+
+            <AuthField htmlFor="sign-up-display-name" label="Display name">
+              <Input
+                id="sign-up-display-name"
+                value={form.displayName}
+                onChange={(event) => handleChange('displayName', event.target.value)}
+                placeholder="Display name"
+                autoComplete="name"
+                classNames={AUTH_INPUT_CLASSNAMES}
+              />
+            </AuthField>
+          </>
+        ) : null}
+
+        {currentStep === 2 ? (
+          <>
+            <AuthField className="pt-1" htmlFor="sign-up-password" label="Password">
+              <Input
+                id="sign-up-password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={(event) => handleChange('password', event.target.value)}
+                placeholder="Create password"
+                autoComplete="new-password"
+                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
+                rightIcon={
+                  <PasswordToggleButton
+                    visible={showPassword}
+                    onClick={() => setShowPassword((prev) => !prev)}
                   />
-                </AuthField>
-              </AuthReveal>
-
-              <AuthReveal stage="submit">
-                <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
-                  {submitLabel}
-                </Button>
-              </AuthReveal>
-
-              <div className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]">
-                <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-white/10" />
-                <div className="h-px grow bg-white/10" />
-                <AuthReveal stage="divider">
-                  <span className="px-4 text-sm font-medium text-white/50 select-none">Or</span>
-                </AuthReveal>
-                <div className="h-px grow bg-white/10" />
-                <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-white/10" />
-              </div>
-
-              <AuthReveal stage="oauth">
-                <OAuthProviderList
-                  activeProvider={activeOAuthProvider}
-                  disabled={isBusy}
-                  mode="sign-up"
-                  onSelect={handleOAuthSignUp}
-                />
-              </AuthReveal>
-            </>
-          ) : null}
-
-          {currentStep === 1 ? (
-            <>
-              <AuthReveal itemIndex={0} stage="field">
-                <AuthField className="pt-1" htmlFor="sign-up-username" label="Username">
-                  <Input
-                    id="sign-up-username"
-                    value={form.username}
-                    onChange={(event) => handleChange('username', event.target.value)}
-                    placeholder="Choose a username"
-                    autoComplete="username"
-                    classNames={AUTH_INPUT_CLASSNAMES}
-                  />
-                </AuthField>
-              </AuthReveal>
-
-              <AuthReveal itemIndex={1} stage="field">
-                <AuthField htmlFor="sign-up-display-name" label="Display name">
-                  <Input
-                    id="sign-up-display-name"
-                    value={form.displayName}
-                    onChange={(event) => handleChange('displayName', event.target.value)}
-                    placeholder="Display name"
-                    autoComplete="name"
-                    classNames={AUTH_INPUT_CLASSNAMES}
-                  />
-                </AuthField>
-              </AuthReveal>
-            </>
-          ) : null}
-
-          {currentStep === 2 ? (
-            <>
-              <AuthReveal itemIndex={0} stage="field">
-                <AuthField className="pt-1" htmlFor="sign-up-password" label="Password">
-                  <Input
-                    id="sign-up-password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={(event) => handleChange('password', event.target.value)}
-                    placeholder="Create password"
-                    autoComplete="new-password"
-                    classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
-                    rightIcon={
-                      <PasswordToggleButton
-                        visible={showPassword}
-                        onClick={() => setShowPassword((prev) => !prev)}
-                      />
-                    }
-                  />
-                </AuthField>
-              </AuthReveal>
-
-              <AuthReveal className="space-y-1.5 overflow-hidden" stage="requirement">
-                {passwordRequirements.map((requirement, index) => (
-                  <AuthReveal
-                    key={requirement.id}
-                    itemIndex={index}
-                    stage="requirement"
-                    className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
-                  >
-                    <Icon
-                      icon={
-                        requirement.satisfied
-                          ? 'material-symbols:check-rounded'
-                          : 'material-symbols:close-rounded'
-                      }
-                      size={16}
-                      className="shrink-0-transform"
-                    />
-                    <span>{requirement.label}</span>
-                  </AuthReveal>
-                ))}
-              </AuthReveal>
-
-              <AuthReveal itemIndex={1} stage="field">
-                <AuthField htmlFor="sign-up-confirm-password" label="Confirm password">
-                  <Input
-                    id="sign-up-confirm-password"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={form.confirmPassword}
-                    onChange={(event) => handleChange('confirmPassword', event.target.value)}
-                    placeholder="Confirm password"
-                    autoComplete="new-password"
-                    classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
-                    rightIcon={
-                      <PasswordToggleButton
-                        visible={showConfirmPassword}
-                        onClick={() => setShowConfirmPassword((prev) => !prev)}
-                        showLabel="Show password confirmation"
-                        hideLabel="Hide password confirmation"
-                      />
-                    }
-                  />
-                </AuthField>
-              </AuthReveal>
-            </>
-          ) : null}
-
-          {currentStep > 0 ? (
-            <AuthReveal className="grid gap-3 sm:grid-cols-2" stage="submit">
-              <Button
-                type="button"
-                onClick={handlePreviousStep}
-                disabled={isBusy}
-                classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
-              >
-                Back
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={
-                  isBusy ||
-                  (currentStep === 2 &&
-                    (!isPasswordReady || !passwordRequirementsSatisfied || !passwordsMatch))
                 }
-                classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
-              >
-                {submitLabel}
-              </Button>
-            </AuthReveal>
-          ) : null}
+              />
+            </AuthField>
 
-          <AuthReveal className="mt-2 text-center text-sm font-medium text-white/50" stage="footer">
-            <p>
-              Already have an account?{' '}
-              <Link
-                href={signInHref}
-                className="inline-block px-1 text-white transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
-              >
-                Sign In
-              </Link>
-            </p>
-          </AuthReveal>
-        </form>
-      </AuthScene>
+            <div className="space-y-1.5 overflow-hidden">
+              {passwordRequirements.map((requirement) => (
+                <div
+                  key={requirement.id}
+                  className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
+                >
+                  <Icon
+                    icon={
+                      requirement.satisfied
+                        ? 'material-symbols:check-rounded'
+                        : 'material-symbols:close-rounded'
+                    }
+                    size={16}
+                    className="shrink-0-transform"
+                  />
+                  <span>{requirement.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <AuthField htmlFor="sign-up-confirm-password" label="Confirm password">
+              <Input
+                id="sign-up-confirm-password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={form.confirmPassword}
+                onChange={(event) => handleChange('confirmPassword', event.target.value)}
+                placeholder="Confirm password"
+                autoComplete="new-password"
+                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
+                rightIcon={
+                  <PasswordToggleButton
+                    visible={showConfirmPassword}
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    showLabel="Show password confirmation"
+                    hideLabel="Hide password confirmation"
+                  />
+                }
+              />
+            </AuthField>
+          </>
+        ) : null}
+
+        {currentStep > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              onClick={handlePreviousStep}
+              disabled={isBusy}
+              classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
+            >
+              Back
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={
+                isBusy ||
+                (currentStep === 2 &&
+                  (!isPasswordReady || !passwordRequirementsSatisfied || !passwordsMatch))
+              }
+              classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
+            >
+              {submitLabel}
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="mt-2 text-center text-sm font-medium text-white/50">
+          <p>
+            Already have an account?{' '}
+            <Link
+              href={signInHref}
+              className="inline-block px-1 text-white transition-all duration-300 ease-in-out hover:underline focus-visible:ring-1 focus-visible:ring-white focus-visible:outline-none"
+            >
+              Sign In
+            </Link>
+          </p>
+        </div>
+      </form>
     </AuthPageShell>
   );
 }

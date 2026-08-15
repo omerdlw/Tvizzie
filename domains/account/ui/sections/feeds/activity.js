@@ -18,7 +18,6 @@ import {
   ActivityItemsSkeletonList,
   FilterBarSkeleton,
 } from '@/domains/account/ui/skeletons/account-section-skeletons';
-import { AccountReveal } from '@/app/(account)/motion';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 
 function formatActivityTime(value) {
@@ -151,7 +150,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
   const hasReview = item?.renderKind === 'text_with_review' && item?.reviewCard;
 
   return (
-    <AccountReveal className={ACTIVITY_ROW_CLASS} deferred itemIndex={index} stage="item.feed">
+    <div className={ACTIVITY_ROW_CLASS}>
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className={ACTIVITY_LINE_CLASS}>
           {(item?.line?.parts || []).map((part, partIndex) => (
@@ -172,7 +171,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
           review={item.reviewCard}
         />
       ) : null}
-    </AccountReveal>
+    </div>
   );
 }
 

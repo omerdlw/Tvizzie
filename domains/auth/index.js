@@ -1,7 +1,4 @@
-export * as clients from './clients/index.js';
-export * as servers from './servers/index.js';
-export * as ui from './ui/index.js';
-export * from './oauth.js';
-export * from './requests.js';
-export * from './workflows.js';
+export * from './client/index.js';
+export * from './ui/index.js';
 export * from './utils/index.js';
+export * as server from './server/index.js';

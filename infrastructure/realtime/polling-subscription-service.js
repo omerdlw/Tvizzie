@@ -1,9 +1,4 @@
 import {
-  SHARED_ENTRY_RETRY_BASE_MS,
-  SHARED_ENTRY_RETRY_MAX_ATTEMPTS,
-  SUBSCRIPTION_CACHE_TTL_MS,
-} from './polling-subscription-constants';
-import {
   clearEntryCleanup,
   clearEntryPayload,
   clearEntryPoll,
@@ -18,6 +13,10 @@ import {
 } from './polling-subscription-shared';
 
 const sharedSubscriptionRegistry = new Map();
+
+const SUBSCRIPTION_CACHE_TTL_MS = 10000;
+const SHARED_ENTRY_RETRY_BASE_MS = 700;
+const SHARED_ENTRY_RETRY_MAX_ATTEMPTS = 2;
 
 function scheduleEntryCleanup(entry) {
   clearEntryCleanup(entry);

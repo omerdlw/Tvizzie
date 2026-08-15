@@ -21,9 +21,9 @@ export default function PersonBio({ biography, person = null }) {
   };
 
   return (
-    <div className="flex w-full flex-col items-center gap-2 text-center">
+    <div className="flex w-full max-w-full min-w-0 flex-col items-center gap-2 text-center">
       <p
-        className="text-sm leading-relaxed text-pretty text-white/70 sm:text-base sm:leading-7"
+        className="w-full max-w-full min-w-0 text-sm leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-line text-white/70 sm:text-base sm:leading-7"
         style={
           isLong
             ? {
@@ -42,7 +42,7 @@ export default function PersonBio({ biography, person = null }) {
         <button
           type="button"
           onClick={handleReadMore}
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-white/70 uppercase transition-[color,transform] duration-300 ease-out hover:scale-[1.02] hover:text-white active:scale-[0.97]"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-white/70 uppercase transition-all duration-300 ease-in-out hover:text-white"
         >
           Read More
         </button>

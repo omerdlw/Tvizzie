@@ -39,6 +39,18 @@ export function isObject(value) {
 }
 
 // ============================================================
+// Array Utilities
+// ============================================================
+
+export function chunkArray(values = [], size = 100) {
+  const chunks = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
+// ============================================================
 // Number Utilities
 // ============================================================
 

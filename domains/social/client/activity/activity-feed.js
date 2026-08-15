@@ -32,23 +32,6 @@ export function subscribeToUserActivity(userId, callback, options = {}) {
   });
 }
 
-export async function fetchUserActivityPage({ cursor = null, pageSize = 20, userId }) {
-  if (!userId) {
-    return {
-      hasMore: false,
-      items: [],
-      nextCursor: null,
-    };
-  }
-
-  return fetchAccountActivityFeed({
-    cursor,
-    pageSize,
-    scope: 'user',
-    userId,
-  });
-}
-
 export async function fetchAccountActivityFeed({
   cursor = null,
   pageSize = 20,

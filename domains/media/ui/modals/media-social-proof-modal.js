@@ -76,7 +76,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-[background-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-all duration-300 ease-in-out hover:bg-black lg:p-4"
       >
         <div className="center size-10 shrink-0 overflow-hidden border border-white/5">
           <AdaptiveImage
@@ -147,7 +147,7 @@ export default function MediaSocialProofModal({ close, data }) {
       ) : (
         <div className="center flex-col gap-2 p-8 text-center">
           <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-white/30" />
-          <p className="text-sm font-medium text-white/60">No social activity found yet</p>
+          <p className="text-sm font-medium text-white/50">No social activity found yet</p>
           <p className="text-xs text-white/40">
             When people you follow like, review, or watch this title, their activity will appear
             here.

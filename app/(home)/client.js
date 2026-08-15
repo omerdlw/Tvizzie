@@ -8,7 +8,6 @@ import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
 import { TrendingSection } from '@/domains/home/ui/sections/trending-section';
 import { TopRatedSection } from '@/domains/home/ui/sections/top-rated-section';
-import { HomeMotionProvider } from '@/app/motion';
 import HomeGridFrame from '@/domains/home/ui/layouts/home-grid-frame';
 
 export default function Client({ data = {} }) {
@@ -43,37 +42,35 @@ function View({ homeData = {} }) {
     : [];
 
   return (
-    <HomeMotionProvider>
-      <PageGradientShell className="overflow-hidden">
-        <HomeGridFrame />
-        <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]" />
-        <div
-          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 pt-20 pb-20`}
-        >
-          <DiscoverSection
-            initialDiscoverItems={initialDiscoverItems}
-            initialDiscoverPage={initialDiscoverPage}
-            initialHasMore={initialHasMore}
-          />
+    <PageGradientShell className="overflow-hidden">
+      <HomeGridFrame />
+      <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]" />
+      <div
+        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 pt-20 pb-20`}
+      >
+        <DiscoverSection
+          initialDiscoverItems={initialDiscoverItems}
+          initialDiscoverPage={initialDiscoverPage}
+          initialHasMore={initialHasMore}
+        />
 
-          <TrendingSection title="Trending today" items={dailyItems} />
+        <TrendingSection title="Trending today" items={dailyItems} />
 
-          <TrendingSection title="Trending this week" items={weeklyItems} />
+        <TrendingSection title="Trending this week" items={weeklyItems} />
 
-          <TopRatedSection
-            fallbackMediaType="movie"
-            items={topRatedMovies}
-            title="IMDb Top 100 movies"
-          />
+        <TopRatedSection
+          fallbackMediaType="movie"
+          items={topRatedMovies}
+          title="IMDb Top 100 movies"
+        />
 
-          <TopRatedSection
-            fallbackMediaType="tv"
-            items={topRatedTvSeries}
-            title="IMDb Top 100 TV series"
-          />
-        </div>
-        <NavHeightSpacer className="w-full bg-black" />
-      </PageGradientShell>
-    </HomeMotionProvider>
+        <TopRatedSection
+          fallbackMediaType="tv"
+          items={topRatedTvSeries}
+          title="IMDb Top 100 TV series"
+        />
+      </div>
+      <NavHeightSpacer className="w-full bg-black" />
+    </PageGradientShell>
   );
 }

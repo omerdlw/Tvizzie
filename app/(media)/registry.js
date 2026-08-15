@@ -265,6 +265,10 @@ export default function Registry({
       if (isReviewEditorVisible) {
         closeSurface();
       } else {
+        const targetReview =
+          typeof reviewState?.ownReview === 'object' && reviewState.ownReview !== null
+            ? reviewState.ownReview
+            : null;
         openSurface(
           createReviewEditorSurfaceEntry({
             media: {
@@ -273,8 +277,15 @@ export default function Registry({
               posterPath: movie?.poster_path,
               title: getMediaTitle(movie),
             },
-            review: reviewState?.ownReview || null,
-            user: user ? { ...user, id: user.id } : null,
+            onSuccess: reviewState?.applyOptimisticReviewUpdate,
+            review: targetReview,
+            user: user
+              ? {
+                  ...(targetReview?.user || {}),
+                  ...user,
+                  id: user.id,
+                }
+              : targetReview?.user || null,
           }),
         );
       }

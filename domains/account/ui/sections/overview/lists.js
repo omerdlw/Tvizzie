@@ -7,7 +7,6 @@ import {
   AccountInlineSectionLoading,
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
-import { AccountReveal } from '@/app/(account)/motion';
 const OVERVIEW_LIST_LIMIT = 6;
 export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
@@ -40,55 +39,48 @@ export default function AccountListsOverview({
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {visibleLists.map((list, index) => {
             return (
-              <AccountReveal
+              <AccountListCard
                 key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
-                deferred
-                interactive
-                itemIndex={index}
-                stage="item.list"
-              >
-                <AccountListCard
-                  list={list}
-                  ownerUsername={resolvedOwnerUsername}
-                  renderActions={
-                    isOwner &&
-                    (typeof onDeleteList === 'function' || typeof onEditList === 'function')
-                      ? (targetList) => (
-                          <div className="flex items-center gap-1.5">
-                            {typeof onEditList === 'function' ? (
-                              <button
-                                type="button"
-                                aria-label={`Edit ${targetList.title}`}
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  onEditList(targetList);
-                                }}
-                                className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5 hover:text-white"
-                              >
-                                <Icon icon="solar:pen-bold" size={13} />
-                              </button>
-                            ) : null}
-                            {typeof onDeleteList === 'function' ? (
-                              <button
-                                type="button"
-                                aria-label={`Delete ${targetList.title}`}
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  onDeleteList(targetList);
-                                }}
-                                className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5"
-                              >
-                                <Icon icon="solar:trash-bin-trash-bold" size={13} />
-                              </button>
-                            ) : null}
-                          </div>
-                        )
-                      : null
-                  }
-                />
-              </AccountReveal>
+                list={list}
+                ownerUsername={resolvedOwnerUsername}
+                renderActions={
+                  isOwner &&
+                  (typeof onDeleteList === 'function' || typeof onEditList === 'function')
+                    ? (targetList) => (
+                        <div className="flex items-center gap-1.5">
+                          {typeof onEditList === 'function' ? (
+                            <button
+                              type="button"
+                              aria-label={`Edit ${targetList.title}`}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onEditList(targetList);
+                              }}
+                              className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5 hover:text-white"
+                            >
+                              <Icon icon="solar:pen-bold" size={13} />
+                            </button>
+                          ) : null}
+                          {typeof onDeleteList === 'function' ? (
+                            <button
+                              type="button"
+                              aria-label={`Delete ${targetList.title}`}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onDeleteList(targetList);
+                              }}
+                              className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5"
+                            >
+                              <Icon icon="solar:trash-bin-trash-bold" size={13} />
+                            </button>
+                          ) : null}
+                        </div>
+                      )
+                    : null
+                }
+              />
             );
           })}
         </div>

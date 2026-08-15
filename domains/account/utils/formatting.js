@@ -4,38 +4,6 @@ export function getMediaTitle(item = {}) {
   return item?.title || item?.name || item?.original_title || item?.original_name || 'Untitled';
 }
 
-export function sortAccountItems(items, sortMethod) {
-  if (!items || items.length === 0) return [];
-
-  const sorted = [...items];
-  const getPositionValue = (item) => {
-    if (Number.isFinite(Number(item?.position))) {
-      return Number(item.position);
-    }
-    const addedAt = new Date(item?.addedAt || '').getTime();
-    return Number.isFinite(addedAt) ? addedAt : 0;
-  };
-
-  switch (sortMethod) {
-    case 'default':
-      return sorted.sort((first, second) => getPositionValue(second) - getPositionValue(first));
-    case 'newest':
-      return sorted.sort((first, second) => new Date(second.addedAt) - new Date(first.addedAt));
-    case 'oldest':
-      return sorted.sort((first, second) => new Date(first.addedAt) - new Date(second.addedAt));
-    case 'rating_high':
-      return sorted.sort((first, second) => (second.vote_average || 0) - (first.vote_average || 0));
-    case 'rating_low':
-      return sorted.sort((first, second) => (first.vote_average || 0) - (second.vote_average || 0));
-    case 'title_az':
-      return sorted.sort((first, second) =>
-        getMediaTitle(first).localeCompare(getMediaTitle(second)),
-      );
-    default:
-      return sorted;
-  }
-}
-
 export function removeAccountCollectionItem(items = [], itemToRemove) {
   const removedId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
   const removedType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
@@ -92,51 +60,4 @@ export function getFollowState(followRelationship) {
   if (followRelationship.outboundStatus === FOLLOW_STATUSES.PENDING) return 'requested';
   if (followRelationship.showFollowBack) return 'follow_back';
   return 'follow';
-}
-
-export function getNavDescription({ activeTab, auth, selectedList, username }) {
-  if (!username && auth.isReady && !auth.isAuthenticated) {
-    return 'Sign in to see your account';
-  }
-
-  if (activeTab === 'likes') return 'Likes';
-  if (activeTab === 'activity') return 'Recent Activity';
-  if (activeTab === 'watched') return 'Watched';
-  if (activeTab === 'watchlist') return 'Watchlist';
-  if (activeTab === 'reviews') return 'Reviews';
-  if (activeTab === 'liked_reviews') return 'Liked Reviews';
-  if (activeTab === 'liked_lists') return 'Liked Lists';
-
-  if (activeTab === 'lists') {
-    if (selectedList) return `Lists / ${selectedList.title}`;
-    return 'Custom Lists';
-  }
-
-  return '';
-}
-
-export function getIsFullScreenEmpty({
-  activeTab,
-  canViewPrivateContent,
-  likes,
-  isLoadingCollections,
-  isLoadingListItems,
-  isOwner,
-  isPrivateProfile,
-  listItems,
-  lists,
-  selectedList,
-  watchlist,
-}) {
-  if (!isOwner && isPrivateProfile && !canViewPrivateContent) return true;
-
-  if (activeTab === 'likes') return isLoadingCollections || likes.length === 0;
-  if (activeTab === 'watchlist') return isLoadingCollections || watchlist.length === 0;
-  if (activeTab === 'lists') {
-    if (isLoadingCollections) return true;
-    if (!selectedList) return lists.length === 0;
-    return isLoadingListItems || listItems.length === 0;
-  }
-
-  return false;
 }

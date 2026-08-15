@@ -201,16 +201,3 @@ export function createMediaRow(media, userId, options = {}) {
     user_id: userId,
   };
 }
-
-export function paginateByCursor(items = [], cursor = null, pageSize = 20) {
-  const offset = Number.isFinite(Number(cursor)) ? Number(cursor) : 0;
-  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Number(pageSize)) : 20;
-  const nextItems = items.slice(offset, offset + normalizedPageSize);
-  const nextOffset = offset + nextItems.length;
-
-  return {
-    hasMore: nextOffset < items.length,
-    items: nextItems,
-    nextCursor: nextOffset < items.length ? nextOffset : null,
-  };
-}

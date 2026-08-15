@@ -15,7 +15,8 @@ import {
   ensureUserId,
 } from '@/domains/media/shared/media';
 import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
-import { chunkArray, resolveRpcRow } from './list-shared.js';
+import { chunkArray } from '@/shared/utils';
+import { resolveRpcRow } from './list-shared.js';
 
 export async function getUserListMemberships({ userId, listIds = [], media }) {
   if (!userId || !media || listIds.length === 0) {

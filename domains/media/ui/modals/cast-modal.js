@@ -41,7 +41,7 @@ const PersonCard = memo(function PersonCard({ close, person }) {
     <Link
       href={`/person/${person.id}`}
       onClick={close}
-      className="flex h-full w-full items-center gap-3 p-2 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 focus:outline-none"
+      className="flex h-full w-full items-center gap-3 p-2 transition-all duration-300 ease-in-out hover:bg-white/5 focus:outline-none"
       aria-label={`View details for ${person.name || 'Cast member'}`}
     >
       <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-white/5">

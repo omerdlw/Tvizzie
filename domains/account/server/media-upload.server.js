@@ -31,30 +31,30 @@ import {
 // Media Shared Helpers
 // ============================================================
 
-export function normalizeValue(value) {
+function normalizeValue(value) {
   return String(value || '').trim();
 }
 
-export function createHttpError(message, status = 400) {
+function createHttpError(message, status = 400) {
   const error = new Error(message);
   error.status = status;
   return error;
 }
 
-export function normalizeTarget(value) {
+function normalizeTarget(value) {
   const normalized = normalizeValue(value).toLowerCase();
   if (normalized === 'avatar') return 'avatar';
   if (normalized === 'banner' || normalized === 'logo') return 'banner';
   throw createHttpError('Media target must be avatar or logo');
 }
 
-export function resolveExtension(mimeType) {
+function resolveExtension(mimeType) {
   const extension = MIME_EXTENSION_MAP[mimeType];
   if (!extension) throw createHttpError('Only JPG, PNG, WEBP, GIF and AVIF images are allowed');
   return extension;
 }
 
-export function assertMimeSignature(fileBuffer, mimeType) {
+function assertMimeSignature(fileBuffer, mimeType) {
   if (!fileBuffer || !(fileBuffer instanceof Uint8Array) || fileBuffer.length < 12) {
     throw createHttpError('Selected image file is empty or corrupted');
   }

@@ -12,7 +12,6 @@
       "@/modules/*": ["./core/modules/*"],
       "@/ui/*": ["./core/ui/*"],
       "@/shared/*": ["./core/shared/*"],
-      "@/ui/elements/noise-texture": ["./core/ui/primitives/noise-texture.js"],
       "@/ui/elements": ["./core/ui/primitives/index.js"],
       "@/ui/elements/*": ["./core/ui/primitives/*"],
       "@/ui/animations/*": ["./core/ui/motion/animations/*"],

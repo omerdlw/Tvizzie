@@ -122,6 +122,7 @@ export function LoadingProvider({ children }) {
   const stateValue = useMemo(
     () => ({
       isLoading,
+      isPageLoading: isLoading,
       skeleton,
       minDuration,
       showOverlay,

@@ -47,7 +47,7 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="group bg-primary flex min-h-10 items-center gap-3 border border-white/5 px-3 py-1.5 transition-[background-color,border-color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/10"
+      className="group bg-primary flex min-h-10 items-center gap-3 border border-white/5 px-3 py-1.5 transition-all duration-300 ease-in-out hover:border-white/10"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-white">{title}</p>
@@ -57,7 +57,7 @@ const ListItemRow = memo(function ListItemRow({ item, onRemove, index }) {
         type="button"
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer border border-transparent text-white/35 opacity-100 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer border border-transparent text-white/35 opacity-100 transition-all duration-300 ease-in-out sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />

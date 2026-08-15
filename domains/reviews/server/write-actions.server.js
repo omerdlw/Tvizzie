@@ -52,6 +52,21 @@ async function loadReviewAuthor(admin, userId) {
   };
 }
 
+const ALLOWED_PAYLOAD_KEYS = new Set([
+  'backdropPath',
+  'backdrop_path',
+  'posterPath',
+  'poster_path',
+  'subjectBackdrop',
+  'subjectHref',
+  'subjectId',
+  'subjectPoster',
+  'subjectPreviewItems',
+  'subjectTitle',
+  'subjectType',
+  'title',
+]);
+
 function createReviewPayload({
   author,
   content,
@@ -62,7 +77,7 @@ function createReviewPayload({
   userId,
 }) {
   const safePatch = Object.fromEntries(
-    Object.entries(payloadPatch).filter(([key]) => key !== 'authorId' && key !== 'user'),
+    Object.entries(payloadPatch).filter(([key]) => ALLOWED_PAYLOAD_KEYS.has(key)),
   );
 
   return {

@@ -22,6 +22,7 @@ import {
   modalBackdropVariants,
   MODAL_MICRO_SPRING,
   MODAL_MICRO_TAP_SCALE,
+  MODAL_PANEL_SPRING,
 } from './motion';
 
 export {
@@ -210,6 +211,13 @@ function ModalLayer({
         initial="hidden"
         animate="visible"
         exit="exit"
+        transition={
+          // Full-slide positions use tween (100% slide looks wrong with spring overshoot);
+          // center modal uses spring so it lifts into place organically.
+          activePosition === MODAL_POSITIONS.CENTER
+            ? MODAL_PANEL_SPRING
+            : undefined
+        }
         className={cn(
           'relative flex max-w-full flex-col',
           isTopModal ? 'pointer-events-auto' : 'pointer-events-none select-none',
@@ -226,8 +234,8 @@ function ModalLayer({
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden border border-white/10 bg-black/50 backdrop-blur-lg'
-              : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
+              ? 'overflow-hidden border border-white/10 bg-black/60 shadow-2xl'
+              : 'overflow-visible border border-transparent bg-transparent',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
                 ? ''
@@ -263,6 +271,8 @@ function ModalLayer({
               ],
           )}
         >
+
+
           <ModuleError name={entry.modalType}>
             <SpecificModalComponent
               header={{
@@ -399,7 +409,7 @@ export default function Modal() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-0 cursor-pointer bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 cursor-pointer bg-black/60 backdrop-blur-md"
             style={{ zIndex: Z_INDEX.MODAL }}
             onClick={() => {
               if (!isTopExitSettling) {

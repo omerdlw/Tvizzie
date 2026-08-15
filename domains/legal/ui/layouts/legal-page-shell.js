@@ -1,10 +1,28 @@
 'use client';
 
+import { Children } from 'react';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 
 export const LEGAL_PAGE_CONTENT_CLASS = `relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-20 sm:px-6`;
+
+export function LegalSection({ children, title }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">{title}</h2>
+      <div className="space-y-3 text-sm leading-7 text-white/72 sm:text-[15px]">{children}</div>
+    </section>
+  );
+}
+
+export function LegalDocument({ children }) {
+  return (
+    <article className="bg-primary space-y-8 border border-white/5 p-6 sm:p-8">
+      {children}
+    </article>
+  );
+}
 
 export default function LegalPageShell({ children }) {
   return (

@@ -12,6 +12,8 @@ import {
   FOLLOW_COUNTS_TIMEOUT_MS,
   FOLLOW_STATUS_ACCEPTED,
   PROFILE_COUNTERS_TIMEOUT_MS,
+  assertResult,
+  isValidUuid,
 } from '@/domains/account/utils';
 
 // ============================================================
@@ -22,13 +24,13 @@ export function normalizeValue(value) {
   return String(value || '').trim();
 }
 
-export function normalizeCount(value, fallback = 0) {
+function normalizeCount(value, fallback = 0) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.max(0, Math.floor(parsed));
 }
 
-export function normalizeAccountData(
+function normalizeAccountData(
   data = {},
   id = null,
   { includeEmail = false, includePrivateDetails = false } = {},
@@ -370,29 +372,6 @@ export async function getEditableAccountSnapshotByUserId(userId) {
 // Public Access Controls & Username Resolvers
 // ============================================================
 
-function isUuidLike(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    normalizeValue(value),
-  );
-}
-
-function assertResult(result, fallbackMessage) {
-  if (result?.error) {
-    const error = result.error;
-    const message = String(error?.message || '').toLowerCase();
-    if (
-      message.includes('fetch failed') ||
-      message.includes('socket') ||
-      message.includes('connection')
-    ) {
-      console.error(`[Supabase Connection Error] ${fallbackMessage}:`, error);
-      return { data: null, error };
-    }
-    throw new Error(error.message || fallbackMessage);
-  }
-  return result;
-}
-
 export const canViewerAccessUserContent = cache(
   async ({ client = null, ownerId, viewerId = null }) => {
     const normalizedOwnerId = normalizeValue(ownerId);
@@ -455,7 +434,7 @@ async function resolveAccountIdByUsernameLegacy(username) {
   assertResult(profileByUsernameLookup, 'Username could not be resolved');
   if (profileByUsernameLookup.data?.id) return profileByUsernameLookup.data.id;
 
-  if (!isUuidLike(normalizedUsername)) return null;
+  if (!isValidUuid(normalizedUsername)) return null;
 
   const profileByIdLookup = await admin
     .from('profiles')

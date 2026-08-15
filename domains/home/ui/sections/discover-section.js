@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { HomeReveal } from '@/app/motion';
 import { useDiscoverFeed } from '@/domains/home/client/use-discover-feed';
 import {
   MOBILE_DISCOVER_MEDIA_QUERY,
@@ -197,88 +195,72 @@ export function DiscoverSection({
   return (
     <section className="relative w-full">
       <div className="relative">
-        <HomeReveal stage="discover.controls">
-          <div className={HOME_SECTION_HEADER_CLASS}>
-            <div className="flex min-w-0 flex-col justify-center">
-              <p className="text-xs leading-4 font-semibold tracking-wide text-white/45 uppercase">
-                Discover
-              </p>
-              <h1 className="text-base leading-5 font-semibold tracking-tight text-white">
-                {title}
-              </h1>
-            </div>
-            <SegmentedControl
-              ariaLabel="Choose media type"
-              items={MEDIA_TYPE_ITEMS}
-              value={mediaType}
-              onChange={handleMediaTypeChange}
-              className="shrink-0 self-start backdrop-blur-sm sm:self-auto"
-            />
+        <div className={HOME_SECTION_HEADER_CLASS}>
+          <div className="flex min-w-0 flex-col justify-center">
+            <p className="text-xs leading-4 font-semibold tracking-wide text-white/45 uppercase">
+              Discover
+            </p>
+            <h1 className="text-base leading-5 font-semibold tracking-tight text-white">{title}</h1>
           </div>
-        </HomeReveal>
+          <SegmentedControl
+            ariaLabel="Choose media type"
+            items={MEDIA_TYPE_ITEMS}
+            value={mediaType}
+            onChange={handleMediaTypeChange}
+            className="shrink-0 self-start backdrop-blur-sm sm:self-auto"
+          />
+        </div>
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
           <GridShellCrosshairs />
         </div>
       </div>
 
-      <HomeReveal stage="discover.grid">
-        <div className={HOME_SECTION_CONTENT_CLASS}>
-          <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
-            {gridItems.map((item, index) => (
-              <HomeReveal
-                key={`${item.media_type || mediaType}-${item.id}`}
-                itemIndex={index}
-                stage="discover.item"
-              >
-                <MediaPosterCard
-                  item={item}
-                  className="w-full"
-                  imageLoading={index === 0 ? 'eager' : undefined}
-                  imageFetchPriority={index === 0 ? 'high' : undefined}
-                  fallbackMediaType={mediaType}
-                />
-              </HomeReveal>
-            ))}
+      <div className={HOME_SECTION_CONTENT_CLASS}>
+        <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
+          {gridItems.map((item, index) => (
+            <MediaPosterCard
+              key={`${item.media_type || mediaType}-${item.id}`}
+              item={item}
+              className="w-full"
+              imageLoading={index === 0 ? 'eager' : undefined}
+              imageFetchPriority={index === 0 ? 'high' : undefined}
+              fallbackMediaType={mediaType}
+            />
+          ))}
 
-            {isFiltering || isLoadingMore
-              ? Array.from({ length: batchSize }, (_, index) => (
-                  <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
-                ))
-              : null}
-          </div>
-
-          {gridError ? (
-            <div className="mt-6 border border-white/10 bg-black/70 p-3 text-sm text-white/50">
-              {gridError}
-            </div>
-          ) : null}
-
-          {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
-            <div className="mt-6 border border-white/10 bg-black/70 p-4 text-sm text-white/50">
-              No {title.toLowerCase()} are available right now.
-            </div>
-          ) : null}
-
-          <HomeReveal stage="control">
-            <div className="flex justify-center pt-6">
-              {hasMore ? (
-                <button
-                  type="button"
-                  onClick={handleLoadMore}
-                  disabled={isLoadingMore || isFiltering}
-                  className="bg-primary inline-flex h-10 items-center gap-2 border border-white/5 px-5 text-xs font-semibold text-white/70 uppercase hover:border-white/10 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Icon
-                    icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
-                    size={16}
-                  />
-                  {isLoadingMore ? 'Loading' : `Load more ${title.toLowerCase()}`}
-                </button>
-              ) : null}
-            </div>
-          </HomeReveal>
+          {isFiltering || isLoadingMore
+            ? Array.from({ length: batchSize }, (_, index) => (
+                <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
+              ))
+            : null}
         </div>
-      </HomeReveal>
+
+        {gridError ? (
+          <div className="mt-6 border border-white/10 bg-black/70 p-3 text-sm text-white/50">
+            {gridError}
+          </div>
+        ) : null}
+
+        {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
+          <div className="mt-6 border border-white/10 bg-black/70 p-4 text-sm text-white/50">
+            No {title.toLowerCase()} are available right now.
+          </div>
+        ) : null}
+
+        <div className="flex justify-center pt-6">
+          {hasMore ? (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore || isFiltering}
+              className="bg-primary inline-flex h-10 items-center gap-2 border border-white/5 px-5 text-xs font-semibold text-white/70 uppercase hover:border-white/10 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Icon icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'} size={16} />
+              {isLoadingMore ? 'Loading' : `Load more ${title.toLowerCase()}`}
+            </button>
+          ) : null}
+        </div>
+      </div>
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
         <GridShellCrosshairs />
       </div>

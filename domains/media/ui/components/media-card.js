@@ -19,16 +19,16 @@ const CardWrapper = forwardRef(function CardWrapper(
 ) {
   const isClickable = typeof onClick === 'function';
   const handleClick = (event) => {
-    if (event.target.closest('button, a, input, select, textarea, [role="button"]')) {
-      event.stopPropagation();
-      event.preventDefault();
+    const interactive = event.target.closest('button, a, input, select, textarea, [role="button"]');
+    if (interactive && interactive !== event.currentTarget) {
       return;
     }
     onClick?.(event);
   };
   const handleKeyDown = (event) => {
     onKeyDown?.(event);
-    if (event.target.closest('button, a, input, select, textarea, [role="button"]')) {
+    const interactive = event.target.closest('button, a, input, select, textarea, [role="button"]');
+    if (interactive && interactive !== event.currentTarget) {
       return;
     }
     if (!isClickable) {
@@ -161,7 +161,7 @@ export default function MediaCard({
     </div>
   );
   const cardWithTooltip = resolvedTooltipText ? (
-    <Tooltip text={resolvedTooltipText} position="top" delayMs={40}>
+    <Tooltip text={resolvedTooltipText} position="top">
       {cardNode}
     </Tooltip>
   ) : (

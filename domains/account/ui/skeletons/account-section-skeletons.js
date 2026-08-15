@@ -23,18 +23,14 @@ function SectionSkeleton({
 }) {
   return (
     <section className="relative bg-transparent">
-      <div
-        className={`${ACCOUNT_SECTION_SHELL_CLASS} relative`}
-      >
+      <div className={`${ACCOUNT_SECTION_SHELL_CLASS} relative`}>
         {showTopRule ? (
           <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+            <GridShellCrosshairs />
+          </div>
         ) : null}
         {showHeader ? (
-          <div
-            className={`relative flex w-full flex-col`}
-          >
+          <div className={`relative flex w-full flex-col`}>
             <div
               className={`flex w-full items-center justify-between gap-4 ${HEADER_PADDING_CLASS}`}
             >
@@ -45,17 +41,15 @@ function SectionSkeleton({
               {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
             </div>
             <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+              <GridShellCrosshairs />
+            </div>
           </div>
         ) : null}
         {toolbar ? (
-          <div
-            className={`relative ${TOOLBAR_PADDING_CLASS}`}
-          >
+          <div className={`relative ${TOOLBAR_PADDING_CLASS}`}>
             <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+              <GridShellCrosshairs />
+            </div>
             {toolbar}
           </div>
         ) : null}
@@ -76,8 +70,8 @@ export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
         <div className={`h-3 w-16 ${SOFT}`} />
       </div>
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+        <GridShellCrosshairs />
+      </div>
     </div>
   );
 }
@@ -301,8 +295,8 @@ function AccountEditSectionSkeleton({ children, titleWidth = 'w-20' }) {
         <div className="relative flex min-h-14 w-full items-center px-4">
           <div className={`h-3 ${titleWidth} ${S}`} />
           <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
-        </div>
+            <GridShellCrosshairs />
+          </div>
         </div>
         <div className="flex flex-col gap-4 p-6">{children}</div>
       </div>
@@ -374,8 +368,14 @@ export function FilterBarSkeleton({ count = 4 }) {
     <div className="flex w-full items-center justify-between gap-4 sm:gap-6">
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="flex flex-1 items-center justify-center gap-1.5">
-          <div className={`h-2.5 ${widths[index % widths.length]} ${SOFT}`} style={{ animationDelay: `${index * 60}ms` }} />
-          <div className={`h-2 w-2.5 shrink-0 ${SOFT}`} style={{ animationDelay: `${index * 60 + 30}ms` }} />
+          <div
+            className={`h-2.5 ${widths[index % widths.length]} ${SOFT}`}
+            style={{ animationDelay: `${index * 60}ms` }}
+          />
+          <div
+            className={`h-2 w-2.5 shrink-0 ${SOFT}`}
+            style={{ animationDelay: `${index * 60 + 30}ms` }}
+          />
         </div>
       ))}
     </div>

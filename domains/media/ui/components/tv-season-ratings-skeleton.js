@@ -6,7 +6,7 @@ export default function TvSeasonRatingsSkeleton() {
       <div className="relative flex min-h-14 items-center justify-between gap-4 px-6">
         <div className="skeleton-block h-3 w-28" />
         <div className="skeleton-block-soft h-3 w-64" />
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>

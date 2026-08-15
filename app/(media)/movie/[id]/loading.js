@@ -5,7 +5,6 @@ import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
-import SkeletonScene from '@/ui/motion/skeleton-scene';
 
 const SKELETON = 'skeleton-block';
 const SOFT_SKELETON = 'skeleton-block-soft';
@@ -63,12 +62,19 @@ function MediaSidebarSkeleton() {
 
       <div className="mt-4">
         <Line className="mb-2 h-2.5 w-24" soft />
-        <div className="flex flex-wrap gap-1.5">
-          {['w-14', 'w-12', 'w-16', 'w-20', 'w-14', 'w-16', 'w-14', 'w-20', 'w-16', 'w-24'].map(
-            (width, index) => (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            {['w-14', 'w-16'].map((width, index) => (
               <div key={index} className={`h-6 ${width} ${SOFT_SKELETON}`} />
-            ),
-          )}
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {['w-16', 'w-20', 'w-14', 'w-16', 'w-14', 'w-20', 'w-16', 'w-24'].map(
+              (width, index) => (
+                <div key={index} className={`h-6 ${width} ${SOFT_SKELETON}`} />
+              ),
+            )}
+          </div>
         </div>
       </div>
 
@@ -236,7 +242,7 @@ export function MediaDetailRouteSkeleton({ mediaType = 'movie' }) {
   return (
     <PageGradientShell className="overflow-hidden">
       <MediaGridFrame />
-      <SkeletonScene
+      <div
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col pb-12`}
       >
         <div className="relative flex w-full flex-col items-start lg:flex-row lg:items-start">
@@ -260,7 +266,7 @@ export function MediaDetailRouteSkeleton({ mediaType = 'movie' }) {
           </main>
         </div>
         <ReviewsSkeleton />
-      </SkeletonScene>
+      </div>
       <NavHeightSpacer />
     </PageGradientShell>
   );

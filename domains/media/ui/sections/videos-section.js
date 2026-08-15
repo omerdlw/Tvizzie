@@ -10,7 +10,6 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 import { GridCrosshair } from '@/ui/layout/grid-crosshair';
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
@@ -89,13 +88,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
         <Carousel gap="gap-3">
           {filteredVideos.map((video, index) => {
             return (
-              <MediaRouteReveal
-                key={`${activeType || 'video'}-${video.id || video.key}-${index}`}
-                stage="items.videos"
-                deferred
-                interactive
-                itemIndex={index}
-              >
+              <div key={`${activeType || 'video'}-${video.id || video.key}-${index}`}>
                 <MediaCard
                   aspectClass="aspect-video"
                   className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
@@ -109,7 +102,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                   }
                   topOverlay={
                     <>
-                      <div className="center absolute inset-0 text-white transition-transform duration-300 ease-out group-hover:scale-110">
+                      <div className="center absolute inset-0 text-white transition-all duration-300 ease-in-out group-hover:scale-110">
                         <Icon icon="solar:play-circle-bold" size={48} />
                       </div>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white">
@@ -123,12 +116,12 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                     })
                   }
                 />
-              </MediaRouteReveal>
+              </div>
             );
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
         <GridCrosshair side="left" />
         <GridCrosshair side="right" />
       </div>

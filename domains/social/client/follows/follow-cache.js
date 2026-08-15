@@ -7,7 +7,7 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { scheduleAccountSummaryRefresh } from '@/domains/account/client';
 
-import { FOLLOW_STATUSES } from '@/domains/social/utils';
+import { FOLLOW_STATUSES, normalizeLiveFollowPayload } from '@/domains/social/utils';
 
 export const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 2500;
 export const PENDING_RELATIONSHIP_MAX_POLLS = 60;
@@ -35,20 +35,7 @@ export function getRelationshipSubscriptionKey(viewerId, targetId) {
   });
 }
 
-export function normalizeLiveFollowPayload(payload = {}) {
-  return {
-    followerId: String(payload?.followerId || '').trim() || null,
-    followingId: String(payload?.followingId || '').trim() || null,
-    reason:
-      String(payload?.reason || '')
-        .trim()
-        .toLowerCase() || null,
-    status:
-      String(payload?.status || '')
-        .trim()
-        .toLowerCase() || null,
-  };
-}
+export { normalizeLiveFollowPayload };
 
 export function refreshFollowUserSubscriptions(userId) {
   if (!userId) {

@@ -103,13 +103,12 @@ export const SEARCH_STYLES = Object.freeze({
     muted: 'border border-white/5 bg-white/5 text-white/70 hover:bg-white/10',
     active: 'border border-white/10 bg-white/10 hover:bg-white/15 text-white',
   }),
-  input:
-    'flex w-full items-center  p-2 pl-4 text-sm transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+  input: 'flex w-full items-center p-2 pl-4 text-sm transition-all duration-300 ease-in-out',
   tabButton:
-    'relative w-full shrink-0 flex-auto whitespace-nowrap  px-3 py-1.5 text-xs transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+    'relative w-full shrink-0 flex-auto whitespace-nowrap px-3 py-1.5 text-xs transition-all duration-300 ease-in-out',
   tabList: 'hide-scrollbar flex items-center gap-2 overflow-x-auto',
   resultItem:
-    'group flex cursor-pointer items-center justify-between  p-0.5 transition-colors duration-300 ease-out hover:bg-white/5',
-  thumbnail: 'relative  h-20 w-16 shrink-0 overflow-hidden ',
-  metaBadge: 'flex  w-fit items-center  gap-1 border border-white/5',
+    'group flex cursor-pointer items-center justify-between p-0.5 transition-all duration-300 ease-in-out hover:bg-white/5',
+  thumbnail: 'relative h-20 w-16 shrink-0 overflow-hidden',
+  metaBadge: 'flex w-fit items-center gap-1 border border-white/5',
 });

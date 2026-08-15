@@ -17,7 +17,6 @@ import SegmentedControl from '@/ui/primitives/segmented-control';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import { cn } from '@/shared/utils';
-import { MediaRouteReveal } from '@/app/(media)/motion';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
@@ -204,16 +203,12 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {featured.map((person, index) => {
             return (
-              <MediaRouteReveal
+              <div
                 key={buildPersonEntryKey(tabKey, person, index, 'featured')}
-                stage="items.cast"
-                interactive
-                itemIndex={index}
+                className="h-full w-full"
               >
-                <div className="h-full w-full">
-                  <PersonCard person={person} />
-                </div>
-              </MediaRouteReveal>
+                <PersonCard person={person} />
+              </div>
             );
           })}
         </div>
@@ -223,17 +218,14 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
             {compact.map((person, index) => {
               const responsiveClass = index > 1 ? 'hidden sm:block' : '';
               return (
-                <MediaRouteReveal
+                <div
                   key={buildPersonEntryKey(tabKey, person, index, 'compact')}
                   className={`min-w-0 flex-1 ${responsiveClass}`}
-                  stage="items.cast"
-                  interactive
-                  itemIndex={FEATURED_COUNT + index}
                 >
                   <div className="h-full w-full">
                     <PersonCard person={person} compact />
                   </div>
-                </MediaRouteReveal>
+                </div>
               );
             })}
 
@@ -273,7 +265,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           />
           {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
           <GridCrosshair side="left" />
           <GridCrosshair side="right" />
         </div>
@@ -284,7 +276,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           {renderPanel(activeTabData.key, activeTabData.entries)}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm">
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
         <GridCrosshair side="left" />
         <GridCrosshair side="right" />
       </div>
