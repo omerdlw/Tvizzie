@@ -241,6 +241,7 @@ const Item = memo(
       stackWidth,
       cardWidth: cardWidthProp,
       containerHeight,
+      statusStyle = null,
     },
     ref,
   ) {
@@ -259,9 +260,34 @@ const Item = memo(
       cardWidthProp ||
       (compact ? estimateCompactCardWidth(link.title || link.name, stackWidth) : stackWidth);
 
+    const effectiveStyle = useMemo(() => {
+      if (!statusStyle) return link.style;
+      if (!link.style) return statusStyle;
+      return {
+        ...statusStyle,
+        ...link.style,
+        card: {
+          ...statusStyle.card,
+          ...link.style.card,
+        },
+        icon: {
+          ...statusStyle.icon,
+          ...link.style.icon,
+        },
+        title: {
+          ...statusStyle.title,
+          ...link.style.title,
+        },
+        description: {
+          ...statusStyle.description,
+          ...link.style.description,
+        },
+      };
+    }, [link.style, statusStyle]);
+
     const itemStyle = useMemo(
-      () => resolveNavVisualStyle(link.style, { isActive, isHovered: showBorder }),
-      [link.style, isActive, showBorder],
+      () => resolveNavVisualStyle(effectiveStyle, { isActive, isHovered: showBorder }),
+      [effectiveStyle, isActive, showBorder],
     );
 
     const renderedActionNode = link.isSurface ? null : ActionComponent;
@@ -368,7 +394,7 @@ const Item = memo(
       pathname,
       isHovered,
       isStackHovered,
-      visibleCount: (globalCompact && !isStackHovered) || link.isStatus ? 1 : 3,
+      visibleCount: globalCompact && !isStackHovered ? 1 : 3,
     });
 
     return (

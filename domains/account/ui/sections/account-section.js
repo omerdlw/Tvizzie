@@ -63,7 +63,6 @@ export function AccountSectionHeading({
         className={cn(
           'flex w-full items-center justify-between gap-4',
           ACCOUNT_SECTION_HEADER_PADDING_CLASS,
-          showDivider && !isInitialSection && `border-b ${ACCOUNT_SECTION_BORDER_CLASS}`,
         )}
       >
         <AccountReveal className="flex min-w-0 items-center gap-2" deferred stage="section.heading">
@@ -95,8 +94,8 @@ export function AccountSectionHeading({
           )}
         </AccountReveal>
       </div>
-      {showDivider && isInitialSection && (
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      {showDivider && (
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       )}
     </div>
   );
@@ -107,13 +106,10 @@ export function AccountSectionBand({ children, className = '', isInitialSection 
     <div
       className={cn(
         'relative w-full',
-        !isInitialSection && `border-b ${ACCOUNT_SECTION_BORDER_CLASS}`,
         className,
       )}
     >
-      {isInitialSection && (
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
-      )}
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       {children}
     </div>
   );
@@ -126,12 +122,9 @@ export function AccountSectionState({ message, isInitialSection = true }) {
         className={cn(
           ACCOUNT_SECTION_SHELL_CLASS,
           'relative',
-          !isInitialSection && `border-t ${ACCOUNT_SECTION_BORDER_CLASS}`,
         )}
       >
-        {isInitialSection && (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
-        )}
+        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
         <div className={ACCOUNT_SECTION_CONTENT_PADDING_CLASS}>
           <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{normalizeFeedbackContent(message)}</div>
         </div>
@@ -166,12 +159,11 @@ export default function AccountSectionLayout({
         className={cn(
           ACCOUNT_SECTION_SHELL_CLASS,
           'relative',
-          showTopRule && !isInitialSection && `border-t ${ACCOUNT_SECTION_BORDER_CLASS}`,
           className,
         )}
       >
-        {showTopRule && isInitialSection && (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+        {showTopRule && (
+          <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
         )}
         {showHeader ? (
           <AccountSectionHeading

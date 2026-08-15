@@ -123,6 +123,12 @@ export default function Nav() {
     clearHoverState();
   }, [clearHoverState, isFullscreenStateActive, setExpanded]);
 
+  const isNotFound = Boolean(
+    activeItem?.isNotFound || activeItem?.path === 'not-found' || activeItem?.type === 'NOT_FOUND',
+  );
+  const isStatusActive = Boolean(activeItem?.isStatus || isNotFound);
+  const statusStyle = isStatusActive && !isNotFound ? activeItem?.style || null : null;
+
   const renderedNavItems = navigationItems.map((link, index) => {
     const position = getItemPosition(index);
     const isTop = position === 0;
@@ -182,6 +188,7 @@ export default function Nav() {
         stackWidth={stackWidth}
         cardWidth={isTop ? cardWidth : undefined}
         totalItems={navigationItems.length}
+        statusStyle={statusStyle}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}

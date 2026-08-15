@@ -5,7 +5,8 @@ import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[96px] items-center justify-center  border border-white/10 bg-black px-3 text-[11px] font-semibold tracking-widest text-white/70 uppercase hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+  'inline-flex h-10 min-w-[96px] items-center justify-center border border-white/5 px-3 text-xs font-semibold tracking-widest text-white/70 uppercase hover:border-white/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {
     return Array.from(
@@ -167,9 +168,9 @@ function PaginationPageItem({
   const isActive = pageNumber === safeCurrentPage;
   const toneClass = isActive
     ? (activePageClassName ?? 'text-white')
-    : (inactivePageClassName ?? 'text-white/55');
+    : (inactivePageClassName ?? 'text-white/50');
   const resolvedClass = cn(
-    pageClassName ?? 'px-1 text-sm font-semibold leading-none select-none',
+    pageClassName ?? 'px-1 text-sm font-semibold leading-none select-none cursor-pointer',
     toneClass,
   );
   if (isActive) {

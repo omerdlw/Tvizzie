@@ -39,7 +39,8 @@ export default function MediaReviews({
   onReviewStateChange,
   motionStage = null,
   motionDeferred = false,
-  dividerPositionClassName = 'left-1/2 w-screen -translate-x-1/2',
+  dividerPositionClassName = null,
+  showTopDivider = null,
 }) {
   const [sortMode, setSortMode] = useState(defaultSortMode);
   const searchParams = useSearchParams();
@@ -50,6 +51,10 @@ export default function MediaReviews({
   const isRecentListMode = listMode === 'recent';
   const isSortControlEnabled = enableSortControl && !isRecentListMode;
   const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
+  const effectiveDividerPosition =
+    dividerPositionClassName ||
+    (isRecentListMode ? 'left-1/2 w-screen -translate-x-1/2' : 'left-px right-px');
+  const shouldShowTopDivider = showTopDivider ?? isRecentListMode;
 
   const {
     currentUserId,
@@ -202,9 +207,11 @@ export default function MediaReviews({
 
   return (
     <section data-community-reviews="true" className="relative w-full">
-      <div
-        className={`pointer-events-none absolute top-0 ${dividerPositionClassName} border-t border-white/10`}
-      />
+      {shouldShowTopDivider ? (
+        <div
+          className={`pointer-events-none absolute top-0 ${effectiveDividerPosition} h-px bg-white/10 backdrop-blur-sm`}
+        />
+      ) : null}
       <div className="relative flex w-full flex-col p-6">
         <ReviewHeader
           ratingStats={effectiveRatingStats}
@@ -216,7 +223,7 @@ export default function MediaReviews({
           onAddReview={!currentUserId ? handleSignInRequest : null}
         />
         <div
-          className={`pointer-events-none absolute bottom-0 ${dividerPositionClassName} border-b border-white/10`}
+          className={`pointer-events-none absolute bottom-0 ${effectiveDividerPosition} h-px bg-white/10 backdrop-blur-sm`}
         />
       </div>
 

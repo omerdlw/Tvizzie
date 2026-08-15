@@ -12,8 +12,8 @@ export default function HomeGridFrame({ className = '' }) {
         className,
       )}
     >
-      <div className="absolute inset-y-0 left-0 w-px bg-white/10" />
-      <div className="absolute inset-y-0 right-0 w-px bg-white/10" />
+      <div className="absolute inset-y-0 left-0 w-px bg-white/10 backdrop-blur-sm" />
+      <div className="absolute inset-y-0 right-0 w-px bg-white/10 backdrop-blur-sm" />
     </div>
   );
 }

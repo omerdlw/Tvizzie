@@ -44,13 +44,19 @@ export async function readFavoriteShowcase(userId) {
     return [];
   }
 
-  const payload = await getAccountProfileServer({ userId });
+  const client = getSupabaseClient();
+  const result = await client
+    .from('profiles')
+    .select('favorite_showcase')
+    .eq('id', userId)
+    .maybeSingle();
 
-  const showcase = Array.isArray(payload?.profile?.favoriteShowcase)
-    ? payload.profile.favoriteShowcase.map(buildFavoriteShowcaseItem).filter(Boolean)
+  assertSupabaseResult(result, 'Favorite showcase could not be read');
+
+  const rawShowcase = result.data?.favorite_showcase;
+  return Array.isArray(rawShowcase)
+    ? rawShowcase.map(buildFavoriteShowcaseItem).filter(Boolean)
     : [];
-
-  return showcase;
 }
 
 export async function writeFavoriteShowcase(userId, items = []) {
@@ -69,14 +75,59 @@ export async function writeFavoriteShowcase(userId, items = []) {
   return showcaseItems;
 }
 
-export async function removeLikeFromShowcase(userId, mediaKey) {
-  const showcase = await readFavoriteShowcase(userId);
-  const nextShowcase = showcase.filter((item) => item.mediaKey !== mediaKey);
-
-  if (nextShowcase.length === showcase.length) {
-    return false;
+export async function removeLikeFromShowcase(userId, mediaKeyOrMedia) {
+  if (!userId || !mediaKeyOrMedia) {
+    return null;
   }
 
-  await writeFavoriteShowcase(userId, nextShowcase);
-  return true;
+  const showcase = await readFavoriteShowcase(userId);
+  if (!Array.isArray(showcase) || showcase.length === 0) {
+    return null;
+  }
+
+  const resolveTargetKey = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') {
+      const cleaned = val.trim();
+      return cleaned.includes('-') ? cleaned.replace('-', '_') : cleaned;
+    }
+    const rawType = val?.entityType || val?.media_type || val?.type || '';
+    const rawId = String(val?.entityId ?? val?.id ?? '').trim();
+    if (val?.mediaKey) {
+      const key = String(val.mediaKey).trim();
+      return key.includes('-') ? key.replace('-', '_') : key;
+    }
+    let entityId = rawId;
+    let resolvedType = rawType;
+    if (rawId.includes('-') || rawId.includes('_')) {
+      const parts = rawId.split(/[-_]/);
+      if (parts.length >= 2) {
+        if (!resolvedType) resolvedType = parts[0];
+        entityId = parts[parts.length - 1];
+      }
+    }
+    const normalizedType =
+      String(resolvedType).trim().toLowerCase() === 'tv' ||
+      String(resolvedType).trim().toLowerCase() === 'show'
+        ? 'tv'
+        : 'movie';
+    return `${normalizedType}_${entityId}`;
+  };
+
+  const targetKey = resolveTargetKey(mediaKeyOrMedia);
+  if (!targetKey) {
+    return null;
+  }
+
+  const nextShowcase = showcase.filter((item) => {
+    const itemKey = resolveTargetKey(item);
+    return itemKey !== targetKey;
+  });
+
+  if (nextShowcase.length === showcase.length) {
+    return null;
+  }
+
+  const updatedShowcase = await writeFavoriteShowcase(userId, nextShowcase);
+  return updatedShowcase;
 }

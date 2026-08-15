@@ -163,21 +163,122 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     syncLikedListsFeed(initialLikedLists);
   }, [hasSeededLikedLists, initialLikedLists, syncLikedListsFeed]);
 
-  const showcaseMap = useMemo(() => {
-    return new Map(
-      favoriteShowcase.map((item) => [
-        item.mediaKey || `${item.entityType}_${item.entityId}`,
-        item,
-      ]),
-    );
-  }, [favoriteShowcase]);
+  const [localShowcase, setLocalShowcase] = useState(favoriteShowcase || []);
+  const [savedShowcase, setSavedShowcase] = useState(favoriteShowcase || []);
+  const lastPersistTimeRef = useRef(0);
+  const isSavingRef = useRef(false);
 
-  const persistShowcase = useCallback(
-    async (nextItems) => {
+  const getCanonicalMediaKey = useCallback((item = {}) => {
+    if (!item) return '';
+    const rawType = item?.entityType || item?.media_type || item?.type || '';
+    const rawId = String(item?.entityId ?? item?.id ?? '').trim();
+
+    if (item?.mediaKey) {
+      const key = String(item.mediaKey).trim();
+      if (key.includes('-')) return key.replace('-', '_');
+      return key;
+    }
+
+    let entityId = rawId;
+    let resolvedType = rawType;
+
+    if (rawId.includes('-') || rawId.includes('_')) {
+      const parts = rawId.split(/[-_]/);
+      if (parts.length >= 2) {
+        if (!resolvedType) resolvedType = parts[0];
+        entityId = parts[parts.length - 1];
+      }
+    }
+
+    const normalizedType =
+      String(resolvedType).trim().toLowerCase() === 'tv' ||
+      String(resolvedType).trim().toLowerCase() === 'show'
+        ? 'tv'
+        : 'movie';
+
+    return `${normalizedType}_${entityId}`;
+  }, []);
+
+  const isShowcaseDirty = useMemo(() => {
+    if (localShowcase.length !== savedShowcase.length) return false;
+    return localShowcase.some((item, index) => {
+      const currentKey = getCanonicalMediaKey(item);
+      const savedKey = getCanonicalMediaKey(savedShowcase[index]);
+      return currentKey !== savedKey;
+    });
+  }, [getCanonicalMediaKey, localShowcase, savedShowcase]);
+
+  useEffect(() => {
+    if (isSavingRef.current || isShowcaseDirty || Date.now() - lastPersistTimeRef.current < 3000) {
+      return;
+    }
+    setLocalShowcase(favoriteShowcase || []);
+    setSavedShowcase(favoriteShowcase || []);
+  }, [favoriteShowcase, isShowcaseDirty]);
+
+  const showcaseMap = useMemo(() => {
+    return new Map((localShowcase || []).map((item) => [getCanonicalMediaKey(item), item]));
+  }, [getCanonicalMediaKey, localShowcase]);
+
+  const handleReorderShowcase = useCallback((nextItems) => {
+    setLocalShowcase(nextItems);
+  }, []);
+
+  const handleSaveShowcaseReorder = useCallback(async () => {
+    if (!auth.user?.id || !isShowcaseDirty) {
+      return;
+    }
+
+    lastPersistTimeRef.current = Date.now();
+    isSavingRef.current = true;
+    setIsShowcaseSaving(true);
+
+    try {
+      await updateFavoriteShowcase({
+        items: localShowcase,
+        userId: auth.user.id,
+      });
+      setSavedShowcase(localShowcase);
+      toast.success('Favorites order saved successfully.');
+    } catch (error) {
+      toast.error(error?.message || 'Favorites showcase could not be updated');
+    } finally {
+      isSavingRef.current = false;
+      setIsShowcaseSaving(false);
+    }
+  }, [auth.user?.id, isShowcaseDirty, localShowcase, toast]);
+
+  const handleCancelShowcaseReorder = useCallback(() => {
+    setLocalShowcase(savedShowcase);
+  }, [savedShowcase]);
+
+  const handleToggleShowcase = useCallback(
+    async (item) => {
       if (!auth.user?.id) {
         return;
       }
 
+      const canonicalKey = getCanonicalMediaKey(item);
+      const isExisting = showcaseMap.has(canonicalKey);
+      let nextItems;
+
+      if (isExisting) {
+        nextItems = localShowcase.filter(
+          (currentItem) => getCanonicalMediaKey(currentItem) !== canonicalKey,
+        );
+      } else {
+        if (localShowcase.length >= 5) {
+          toast.error('Favorites showcase can contain up to 5 titles');
+          return;
+        }
+        nextItems = [...localShowcase, item];
+      }
+
+      lastPersistTimeRef.current = Date.now();
+      isSavingRef.current = true;
+      const previousShowcase = localShowcase;
+      setLocalShowcase(nextItems);
+      setSavedShowcase(nextItems);
       setIsShowcaseSaving(true);
 
       try {
@@ -185,35 +286,19 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
           items: nextItems,
           userId: auth.user.id,
         });
+        toast.success(
+          isExisting ? 'Removed from favorites showcase' : 'Added to favorites showcase',
+        );
       } catch (error) {
+        setLocalShowcase(previousShowcase);
+        setSavedShowcase(previousShowcase);
         toast.error(error?.message || 'Favorites showcase could not be updated');
       } finally {
+        isSavingRef.current = false;
         setIsShowcaseSaving(false);
       }
     },
-    [auth.user?.id, toast],
-  );
-
-  const handleToggleShowcase = useCallback(
-    async (item) => {
-      const mediaKey =
-        item?.mediaKey || `${item?.entityType || item?.media_type}_${item?.entityId || item?.id}`;
-
-      if (showcaseMap.has(mediaKey)) {
-        await persistShowcase(
-          favoriteShowcase.filter((currentItem) => currentItem.mediaKey !== mediaKey),
-        );
-        return;
-      }
-
-      if (favoriteShowcase.length >= 5) {
-        toast.error('Favorites showcase can contain up to 5 titles');
-        return;
-      }
-
-      await persistShowcase([...favoriteShowcase, item]);
-    },
-    [favoriteShowcase, persistShowcase, showcaseMap, toast],
+    [auth.user?.id, getCanonicalMediaKey, localShowcase, showcaseMap, toast],
   );
 
   const updateLikesQuery = useCallback(
@@ -476,9 +561,12 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
 
   return {
     activeSegment,
-    favoriteShowcase,
+    favoriteShowcase: localShowcase,
+    handleCancelShowcaseReorder,
     handleLike,
+    handleReorderShowcase,
     handleRequestRemoveLike,
+    handleSaveShowcaseReorder,
     handleSegmentChange,
     handleToggleShowcase,
     isLikedListsLoading,
@@ -486,11 +574,11 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     hasMoreReviews,
     isReviewsLoading,
     isReviewsLoadingMore,
+    isShowcaseDirty,
     isShowcaseSaving,
     likedLists,
     likedListsError,
     likes,
-    persistShowcase,
     providerValue: sectionProviderValue,
     loadReviews,
     reviews,
@@ -507,7 +595,15 @@ export const Registry = createAccountSectionRegistry({
   navRegistrySource: 'account-likes',
   resolveOverrides: (
     sectionState,
-    { activeSegment = 'titles', canShowLikesGrid = false, handleSegmentChange = () => {} },
+    {
+      activeSegment = 'titles',
+      canShowLikesGrid = false,
+      handleCancelShowcaseReorder,
+      handleSaveShowcaseReorder,
+      handleSegmentChange = () => {},
+      isShowcaseDirty = false,
+      isShowcaseSaving = false,
+    },
   ) => ({
     navActionOverride: canShowLikesGrid ? (
       <AccountAction
@@ -524,6 +620,14 @@ export const Registry = createAccountSectionRegistry({
         isOwner={sectionState.isOwner}
         onFollow={sectionState.handleFollow}
         showProfileFollowAction
+        showSaveAction={sectionState.isOwner && activeSegment === 'titles' && isShowcaseDirty}
+        showCancelAction={sectionState.isOwner && activeSegment === 'titles' && isShowcaseDirty}
+        onSave={handleSaveShowcaseReorder}
+        onCancel={handleCancelShowcaseReorder}
+        isSaveLoading={isShowcaseSaving}
+        isCancelDisabled={isShowcaseSaving}
+        saveLabel="Save"
+        cancelLabel="Cancel"
       />
     ) : null,
   }),
@@ -533,10 +637,24 @@ const LikesView = createAccountSectionView({
   activeSection: 'likes',
   displayName: 'AccountLikesView',
   Registry,
-  resolveRegistryProps: (sectionState, { activeSegment, handleSegmentChange }) => ({
+  resolveRegistryProps: (
+    sectionState,
+    {
+      activeSegment,
+      handleCancelShowcaseReorder,
+      handleSaveShowcaseReorder,
+      handleSegmentChange,
+      isShowcaseDirty,
+      isShowcaseSaving,
+    },
+  ) => ({
     activeSegment,
     canShowLikesGrid: sectionState.canViewProfileCollections,
+    handleCancelShowcaseReorder,
+    handleSaveShowcaseReorder,
     handleSegmentChange,
+    isShowcaseDirty,
+    isShowcaseSaving,
   }),
   skeletonVariant: 'collection',
   renderContent: (
@@ -545,6 +663,7 @@ const LikesView = createAccountSectionView({
       activeSegment,
       favoriteShowcase,
       handleLike,
+      handleReorderShowcase,
       handleRequestRemoveLike,
       handleToggleShowcase,
       isLikedListsLoading,
@@ -556,7 +675,6 @@ const LikesView = createAccountSectionView({
       likedLists,
       likedListsError,
       likes,
-      persistShowcase,
       loadReviews,
       reviews,
       reviewsError,
@@ -583,7 +701,8 @@ const LikesView = createAccountSectionView({
       likedLists={likedLists}
       likedListsError={likedListsError}
       likes={likes}
-      persistShowcase={persistShowcase}
+      onReorderShowcase={handleReorderShowcase}
+      onRemoveShowcaseItem={handleToggleShowcase}
       loadReviews={loadReviews}
       reviews={reviews}
       reviewsError={reviewsError}

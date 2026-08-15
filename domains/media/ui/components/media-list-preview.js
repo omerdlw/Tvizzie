@@ -63,7 +63,7 @@ export default function ListPreviewComposition({
               />
             ) : (
               <div className="center h-full w-full">
-                <Icon icon="solar:videocamera-record-bold" size={16} />
+                <Icon icon="solar:gallery-wide-bold" size={16} />
               </div>
             )}
           </div>

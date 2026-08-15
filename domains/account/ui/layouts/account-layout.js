@@ -140,7 +140,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
   if (!username) return null;
   return (
     <div className={cn('relative w-full bg-transparent', className)}>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
         <div className="grid h-14 w-full auto-cols-[6.75rem] grid-flow-col divide-x divide-white/10 overflow-x-auto [scrollbar-width:none] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-7 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
@@ -201,7 +201,7 @@ function NavViewItem({ item, isActive, href, index }) {
           'center relative h-full w-full shrink-0 px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-[background-color,color,transform] duration-300 ease-out last:border-none hover:scale-[1.015] active:scale-[0.985] sm:text-xs',
           isActive
             ? 'font-bold text-black'
-            : 'hover:bg-primary font-semibold text-white/70 hover:text-white',
+            : 'font-semibold text-white/70 hover:bg-white/10 hover:text-white hover:backdrop-blur-md',
         )}
       >
         {isActive ? <span className="absolute inset-0 bg-white" /> : null}

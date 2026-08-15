@@ -16,27 +16,27 @@ export const Z_INDEX = {
 
 export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
-    icon: 'text-error bg-error/20 border-error/20',
-    surface: 'border border-error',
+    icon: 'border border-error/10 bg-error/10 text-error',
+    surface: 'bg-error/10 border border-error/50',
     description: 'text-error',
     title: 'text-error',
   }),
   info: Object.freeze({
-    icon: 'text-info bg-info/20 border-info/20',
-    surface: 'border border-info',
+    icon: 'border border-info/10 bg-info/10 text-info',
+    surface: 'bg-info/10 border border-info/50',
     description: 'text-info',
     title: 'text-info',
   }),
   success: Object.freeze({
-    icon: 'text-success bg-success/20 border-success/20',
+    icon: 'border border-success/10 bg-success/10 text-success',
     description: 'text-success',
-    surface: 'bg-success/10 border border-success',
+    surface: 'bg-success/10 border border-success/50',
     title: 'text-success',
   }),
   warning: Object.freeze({
-    icon: 'text-warning bg-warning/20 border-success/20',
+    icon: 'border border-warning/10 bg-warning/10 text-warning',
     description: 'text-warning',
-    surface: 'bg-warning/20 border border-warning',
+    surface: 'bg-warning/20 border border-warning/50',
     title: 'text-warning',
   }),
 });

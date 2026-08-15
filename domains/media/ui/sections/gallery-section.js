@@ -17,7 +17,7 @@ export default function GallerySection({ images, baseDelay = 0 }) {
   }
 
   return (
-    <section className="relative w-full border-b border-white/10">
+    <section className="relative w-full">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:gallery-wide-bold" size={20} className="text-white/70" />
@@ -25,6 +25,7 @@ export default function GallerySection({ images, baseDelay = 0 }) {
             Gallery
           </h2>
         </div>
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
       </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -60,6 +61,7 @@ export default function GallerySection({ images, baseDelay = 0 }) {
           })}
         </Carousel>
       </div>
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

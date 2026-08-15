@@ -24,14 +24,14 @@ export function TopRatedSection({ fallbackMediaType, items = [], title }) {
             <h2 className={HOME_SECTION_TITLE_CLASS}>{title}</h2>
           </div>
         </HomeReveal>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       </div>
       <HomeReveal stage="section.rail">
         <div className={HOME_SECTION_CONTENT_CLASS}>
           <PosterRail fallbackMediaType={fallbackMediaType} items={railItems} showRank />
         </div>
       </HomeReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

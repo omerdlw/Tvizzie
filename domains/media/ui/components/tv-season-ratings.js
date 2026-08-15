@@ -87,8 +87,9 @@ export default function TvSeasonRatings({ ratingsPromise }) {
 
   return (
     <section className="relative w-full">
-      <div className="flex min-h-14 flex-col gap-3 border-b border-white/10 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+      <div className="relative flex min-h-14 flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0">
         <RatingsLegend />
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
       </div>
 
       <div className="overflow-x-auto px-6 py-5">

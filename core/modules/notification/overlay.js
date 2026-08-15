@@ -2,16 +2,12 @@
 
 import { motion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/shared/utils';
-import { cn } from '@/shared/utils';
+import { SEMANTIC_SURFACE_CLASSES } from '@/shared/constants';
+import { cn, normalizeFeedbackText } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
+import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
 
 import { NOTIFICATION_CONFIG } from './config';
-import {
-  NOTIFICATION_ACTION_TAP_Y,
-  notificationContentVariants,
-  NOTIFICATION_MICRO_SPRING,
-} from './motion';
 
 export function NotificationOverlay({ notification, onDismiss }) {
   const config = {
@@ -19,14 +15,44 @@ export function NotificationOverlay({ notification, onDismiss }) {
     ...notification,
   };
 
-  const dismissible = config.dismissible !== false;
-  const message = normalizeFeedbackText(config.message);
-  const description = normalizeFeedbackText(config.description);
-  const primaryText = message || description;
-  const secondaryText = message && description ? description : '';
-  const actions = Array.isArray(config.actions) ? config.actions.filter(Boolean) : [];
+  const theme =
+    config.theme ||
+    SEMANTIC_SURFACE_CLASSES[config.tone] ||
+    (typeof config.colorClass === 'object' ? config.colorClass : null) ||
+    SEMANTIC_SURFACE_CLASSES.info;
 
-  if (!primaryText) {
+  const dismissible = config.dismissible !== false;
+  const explicitTitle = notification.title ? normalizeFeedbackText(notification.title) : '';
+  const message = normalizeFeedbackText(notification.message);
+  const description = normalizeFeedbackText(notification.description);
+  const actions = Array.isArray(config.actions) ? config.actions.filter(Boolean) : [];
+  const resolvedIcon = notification.icon || config.icon || null;
+
+  let resolvedTitle = '';
+  let resolvedDescription = '';
+
+  if (explicitTitle) {
+    resolvedTitle = explicitTitle;
+    resolvedDescription = description || message || '';
+  } else if (message && description) {
+    resolvedTitle = message;
+    resolvedDescription = description;
+  } else if (message) {
+    resolvedTitle = config.title || message;
+    resolvedDescription = config.title ? message : '';
+  } else if (description) {
+    resolvedTitle = config.title || description;
+    resolvedDescription = config.title ? description : '';
+  } else {
+    resolvedTitle = config.title || '';
+    resolvedDescription = config.description || '';
+  }
+
+  if (resolvedTitle === resolvedDescription) {
+    resolvedDescription = '';
+  }
+
+  if (!resolvedTitle && !resolvedDescription) {
     return null;
   }
 
@@ -35,63 +61,86 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden border shadow-[0_18px_56px_rgba(0,0,0,0.40)]',
+        'pointer-events-auto relative w-full overflow-hidden border border-white/10 bg-black/70 p-2 shadow-[0_18px_56px_rgba(0,0,0,0.40)] backdrop-blur-lg transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
         dismissible && 'touch-pan-y',
-        config.colorClass,
+        theme.surface,
       )}
     >
-      <motion.div
-        variants={notificationContentVariants}
-        initial="hidden"
-        animate="visible"
-        className="flex flex-col gap-3 p-4"
-      >
+      <div className="relative flex h-auto w-full flex-col gap-0">
+        <div className={cn('relative flex w-full items-center space-x-3', dismissible && 'pr-9')}>
+          {resolvedIcon ? (
+            <div className="center relative shrink-0">
+              <div className={cn('center size-12 shrink-0 border border-transparent', theme.icon)}>
+                {typeof resolvedIcon === 'string' ? (
+                  <Icon icon={resolvedIcon} size={24} />
+                ) : (
+                  resolvedIcon
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="size-12 shrink-0" />
+          )}
+
+          <div className="relative flex min-w-0 flex-1 flex-col justify-center -space-y-0.5 overflow-hidden">
+            {resolvedTitle ? (
+              <div className="relative overflow-hidden">
+                <h3 className={cn('truncate text-[16px] font-bold', theme.title)}>
+                  {resolvedTitle}
+                </h3>
+              </div>
+            ) : null}
+
+            {resolvedDescription ? (
+              <div className="relative min-h-[1.25rem] w-full overflow-hidden text-sm">
+                <p className={cn('text-sm wrap-break-word whitespace-normal', theme.description)}>
+                  {resolvedDescription}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
         {dismissible ? (
           <motion.button
             type="button"
             aria-label="Bildirimi kapat"
-            whileHover={{ y: -1 }}
-            whileTap={{ y: 1 }}
-            transition={NOTIFICATION_MICRO_SPRING}
+            whileTap={{ scale: 0.92 }}
             onClick={(e) => {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer border border-white/5 transition-[background-color,border-color,color] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+            className="center absolute top-2 right-2 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           >
-            <Icon icon="material-symbols:close-rounded" size={14} />
+            <Icon icon="material-symbols:close-rounded" size={16} />
           </motion.button>
         ) : null}
 
-        <div className={cn('space-y-1', dismissible && 'pr-7')}>
-          <p className="text-sm leading-5 font-semibold">{primaryText}</p>
-          {secondaryText ? (
-            <p className="text-sm leading-5 text-white/70">{secondaryText}</p>
-          ) : null}
-        </div>
-
         {actions.length > 0 ? (
-          <div className="flex flex-wrap gap-2 overflow-visible p-0.5">
+          <div className="mt-2.5 flex w-full flex-wrap items-center gap-2">
             {actions.map((action, index) => (
               <motion.button
                 key={action.label || index}
+                type="button"
                 onPointerDown={(e) => e.stopPropagation()}
-                whileTap={{ y: NOTIFICATION_ACTION_TAP_Y }}
+                whileTap={{ y: 1 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => {
                   e.stopPropagation();
                   action.onClick?.();
-                  if (action.dismiss) onDismiss();
+                  if (action.dismiss !== false) onDismiss();
                 }}
-                type="button"
-                className="min-h-10 flex-1 border border-white/5 bg-white/5 px-3 text-sm font-semibold text-white transition-[background-color,border-color,color,box-shadow] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/10 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+                className={getNavActionClass({
+                  isActive: false,
+                  className: action.className || config.actionToneClass,
+                })}
               >
                 {action.label}
               </motion.button>
             ))}
           </div>
         ) : null}
-      </motion.div>
+      </div>
     </section>
   );
 }

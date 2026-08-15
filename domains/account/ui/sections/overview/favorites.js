@@ -1,11 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { usePosterPreferenceVersion } from '@/domains/media/utils/poster-overrides';
 import { toAccountMediaCard } from '@/domains/account/utils/media-card';
-import { Button } from '@/ui/primitives';
-import Icon from '@/ui/primitives/icon';
 import {
   AccountInlineSectionState,
   AccountInlineSectionLoading,
@@ -32,7 +30,6 @@ export default function AccountFavoritesOverview({
   wideGrid = false,
 }) {
   const posterPreferenceVersion = usePosterPreferenceVersion();
-  const [pendingItemId, setPendingItemId] = useState(null);
   const cards = useMemo(
     () => items.map(toAccountMediaCard).filter(Boolean),
     [items, posterPreferenceVersion],
@@ -71,44 +68,8 @@ export default function AccountFavoritesOverview({
                   imageAlt={card.imageAlt}
                   imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
                   imageSrc={card.imageSrc}
-                  topOverlay={
-                    typeof renderOverlay === 'function' ? (
-                      renderOverlay(card.item)
-                    ) : isOwner && typeof onRemoveItem === 'function' ? (
-                      <div className="absolute inset-x-0 top-0 flex justify-end p-2">
-                        <Button
-                          aria-label={`Remove ${card.imageAlt} from favorites showcase`}
-                          variant="destructive-icon"
-                          className={
-                            'text-error hover:border-error hover:bg-error border border-white/15 bg-black hover:text-black'
-                          }
-                          disabled={pendingItemId === card.id}
-                          onClick={async (event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (pendingItemId === card.id) {
-                              return;
-                            }
-                            setPendingItemId(card.id);
-                            try {
-                              await onRemoveItem(card.item);
-                            } finally {
-                              setPendingItemId((currentId) =>
-                                currentId === card.id ? null : currentId,
-                              );
-                            }
-                          }}
-                        >
-                          <Icon
-                            className={pendingItemId === card.id ? '' : ''}
-                            icon="solar:trash-bin-trash-bold"
-                            size={16}
-                          />
-                        </Button>
-                      </div>
-                    ) : null
-                  }
                   tooltipText={card.tooltipText}
+                  topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
                 />
               </AccountReveal>
             );

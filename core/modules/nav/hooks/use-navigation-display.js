@@ -14,7 +14,7 @@ import { useNavigationItems } from './use-navigation-items';
 import { useNavigationStatus } from './use-navigation-status';
 
 function isNotFoundItem(item) {
-  return item?.isNotFound || item?.path === 'not-found';
+  return item?.isNotFound || item?.path === 'not-found' || item?.type === 'NOT_FOUND';
 }
 
 function flattenNavigationItems(items) {

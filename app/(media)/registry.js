@@ -160,6 +160,9 @@ export default function Registry({
             background: backgroundImage
               ? {
                   image: backgroundImage,
+                  noiseStyle: {
+                    opacity: 0.1,
+                  },
                 }
               : {
                   image: null,
@@ -253,9 +256,9 @@ export default function Registry({
   const contextMenuDescription = renderMetaDescription(detailMetaParts, { compact: true });
 
   const resolvedBackgroundImage =
-    backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
-  const shouldResetBackgroundForLoading =
-    isLoading && !resolvedBackgroundImage;
+    backgroundImage ||
+    (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
+  const shouldResetBackgroundForLoading = isLoading && !resolvedBackgroundImage;
 
   const handleToggleAction = () => {
     if (isAuthenticated) {
@@ -365,7 +368,9 @@ export default function Registry({
           background: resolvedBackgroundImage
             ? {
                 image: resolvedBackgroundImage,
-                overlay: true,
+                noiseStyle: {
+                  opacity: 0.1,
+                },
               }
             : {
                 image: null,

@@ -288,7 +288,7 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
 
   return (
     <MediaRouteReveal stage="sections.discovery" deferred={isDeferred}>
-      <div className={cn('relative w-full', hasBottomBorder && 'border-b border-white/10')}>
+      <div className="relative w-full">
         <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
           <div className="flex min-w-0 items-center gap-2">
             <Icon icon="solar:stars-minimalistic-bold" size={20} className="text-white/70" />
@@ -296,6 +296,7 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
               {title}
             </h2>
           </div>
+          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
         </div>
 
         <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -316,6 +317,9 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
             ))}
           </Carousel>
         </div>
+        {hasBottomBorder ? (
+          <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
+        ) : null}
       </div>
     </MediaRouteReveal>
   );
@@ -555,6 +559,7 @@ function MovieView({
           }`}
         >
           <div className="relative flex w-full flex-col items-start lg:flex-row lg:items-stretch">
+            <div className="pointer-events-none absolute inset-y-0 left-96 hidden w-px bg-white/10 backdrop-blur-sm lg:block" />
             <div className="order-1 w-full shrink-0 p-6 lg:w-96">
               <Sidebar
                 item={movie}
@@ -586,7 +591,7 @@ function MovieView({
             </div>
 
             <div
-              className={`order-2 flex w-full min-w-0 flex-col lg:border-l lg:border-white/10 ${
+              className={`order-2 flex w-full min-w-0 flex-col ${
                 isRatingsView ? 'lg:w-[var(--ratings-panel-width)] lg:flex-none' : 'lg:flex-1'
               }`}
             >
@@ -611,7 +616,7 @@ function MovieView({
                     exit={{ opacity: 0, y: -8 }}
                     transition={TV_VIEW_TRANSITION}
                   >
-                    <div className="flex w-full flex-col border-b border-white/10 p-6">
+                    <div className="relative flex w-full flex-col p-6">
                       <MediaRouteReveal stage="hero.title">
                         <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
                           {mediaTitle}
@@ -635,6 +640,7 @@ function MovieView({
                           </div>
                         </MediaRouteReveal>
                       ) : null}
+                      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
                     </div>
 
                     <MovieSecondaryContent

@@ -14,7 +14,7 @@ import {
   createMediaRow,
   ensureUserId,
 } from '@/domains/media/shared/media';
-
+import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
 import { chunkArray, resolveRpcRow } from './list-shared.js';
 
 export async function getUserListMemberships({ userId, listIds = [], media }) {
@@ -75,7 +75,13 @@ export async function toggleUserListItem({ userId, listId, media }) {
     }),
     'List item could not be updated',
   );
-  const isInList = rpcRow?.is_in_list === true;
+  const resolvedRpcRow = resolveRpcRow(rpcRow);
+  const isInList = resolvedRpcRow?.is_in_list === true || resolvedRpcRow?.isInList === true;
+
+  invalidatePollingSubscription('lists:items', { refetch: true });
+  invalidatePollingSubscription('lists:item', { refetch: true });
+  invalidatePollingSubscription('lists:slug', { refetch: true });
+  invalidatePollingSubscription('lists:user', { refetch: true });
 
   if (!isInList) {
     return {

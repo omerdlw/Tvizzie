@@ -136,7 +136,8 @@ export async function handleAccountProfileGet(request) {
       return NextResponse.json({ profile: null });
     }
 
-    let profile = await getAccountProfileByUserId(targetUserId, { viewerId });
+    const bypassCache = searchParams.get('fresh') === '1' || searchParams.get('noCache') === '1';
+    let profile = await getAccountProfileByUserId(targetUserId, { viewerId, bypassCache });
 
     if (!profile && viewerId && targetUserId === viewerId) {
       const userEmail = sessionContext?.email || sessionContext?.user?.email || null;

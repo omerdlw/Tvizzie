@@ -539,7 +539,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
       <div className="flex flex-col gap-2.5">
         <button
-          className="center hover:bg-info h-11 w-full flex-auto border border-white/5 bg-white/5 px-3 text-xs font-bold tracking-wide text-white/70 uppercase hover:text-black disabled:cursor-not-allowed"
+          className="center hover:bg-info h-11 w-full flex-auto cursor-pointer border border-white/5 bg-white/5 px-3 text-xs font-bold tracking-wide text-white/70 uppercase hover:text-black disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"
@@ -558,7 +558,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'uppercase-colors flex h-11 w-full items-center gap-2.5 border px-3.5 text-left text-xs',
+              'uppercase-colors flex h-11 w-full cursor-pointer items-center gap-2.5 border px-3.5 text-left text-xs',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
@@ -567,7 +567,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center border size-4 shrink-0',
+                'center size-4 shrink-0 border',
                 rememberDevice
                   ? 'border-success/40 bg-success text-black'
                   : 'border-white/5 bg-transparent text-transparent',

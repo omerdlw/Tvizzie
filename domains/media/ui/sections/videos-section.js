@@ -57,7 +57,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
   }
 
   return (
-    <section className="relative w-full border-b border-white/10">
+    <section className="relative w-full">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:video-library-bold" size={20} className="text-white/70" />
@@ -76,36 +76,37 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
             />
           </div>
         )}
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
       </div>
       <div
-        key={`movie-videos-${activeType || 'all'}`}
+        key={`movie-videos-${activeType || 'empty'}`}
         className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}
       >
         <Carousel gap="gap-3">
           {filteredVideos.map((video, index) => {
             return (
               <MediaRouteReveal
-                key={video.id}
+                key={`${activeType || 'video'}-${video.id || video.key}-${index}`}
                 stage="items.videos"
                 deferred
                 interactive
                 itemIndex={index}
               >
                 <MediaCard
-                  className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
                   aspectClass="aspect-video"
-                  imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
-                  imageAlt={video.name}
-                  imageSizes="288px"
-                  imagePreset="grid"
-                  fallbackIcon="solar:video-library-bold"
+                  className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
+                  fallbackIcon="solar:video-frame-play-horizontal-bold"
                   fallbackIconSize={24}
-                  overlay={
+                  imageAlt={video.name}
+                  imagePreset="feature"
+                  imageSizes="288px"
+                  imageSrc={
+                    video.key ? `https://img.youtube.com/vi/${video.key}/hqdefault.jpg` : null
+                  }
+                  topOverlay={
                     <>
-                      <div className="center absolute inset-0 transition-opacity duration-200 group-hover:opacity-0">
-                        <div className="center size-8 border border-white/20 bg-black/40 text-white backdrop-blur-sm">
-                          <Icon icon="solar:play-bold" size={16} />
-                        </div>
+                      <div className="center absolute inset-0 text-white transition-transform duration-300 ease-out group-hover:scale-110">
+                        <Icon icon="solar:play-circle-bold" size={48} />
                       </div>
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white">
                         <h3 className="truncate text-sm font-semibold text-white">{video.name}</h3>
@@ -123,6 +124,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
           })}
         </Carousel>
       </div>
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

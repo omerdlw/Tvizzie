@@ -76,7 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group hover:bg-white/5 isolation-isolate flex items-center gap-3 border border-white/5 backdrop-blur-sm hover:border-white/10',
+        'group isolation-isolate flex items-center gap-3 border border-white/5 backdrop-blur-sm hover:border-white/10 hover:bg-white/5',
         compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
@@ -240,7 +240,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center hover:bg-white/5 isolation-isolate size-10 shrink-0 cursor-pointer border border-white/5 text-white/70 backdrop-blur-sm hover:border-white/10 hover:text-white"
+              className="center isolation-isolate size-10 shrink-0 cursor-pointer border border-white/5 text-white/70 backdrop-blur-sm hover:border-white/10 hover:bg-white/5 hover:text-white"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -251,7 +251,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
   };
 
   return (
-    <section className="relative w-full border-b border-white/5">
+    <section className="relative w-full">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:users-group-two-rounded-bold" size={20} className="text-white/70" />
@@ -272,6 +272,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           />
           {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
         </div>
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
       </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
@@ -279,6 +280,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           {renderPanel(activeTabData.key, activeTabData.entries)}
         </div>
       </div>
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

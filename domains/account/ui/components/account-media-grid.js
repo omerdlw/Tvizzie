@@ -22,6 +22,9 @@ import AccountSectionLayout, {
 } from '../sections/account-section';
 import { MediaCardsSkeletonGrid } from '../skeletons/account-section-skeletons';
 import { AccountReveal } from '@/app/(account)/motion';
+import { useNavigationActions } from '@/modules/nav';
+import { useAuth } from '@/modules/auth';
+import { createListPickerSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-picker-surface';
 const ITEMS_PER_PAGE = 36;
 
 function createPosterSource(item, mediaType) {
@@ -61,29 +64,134 @@ function extractMediaDetails(item) {
 }
 
 export function ProfileMediaActions({
+  media,
   extraActions = [],
   isRemoving = false,
   onRemoveItem = null,
   removeLabel = 'Remove item',
+  userId = null,
 }) {
+  const { openSurface } = useNavigationActions();
+  const auth = useAuth();
+  const resolvedUserId = userId || auth.user?.id || null;
+
   const handleRemove = (event) => {
     event.stopPropagation();
     event.preventDefault();
     if (typeof onRemoveItem === 'function') {
-      onRemoveItem();
+      onRemoveItem(media);
+    }
+  };
+
+  const handleAddToList = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (resolvedUserId && media) {
+      let entityId = Number(media.entityId);
+      let rawType = media.entityType || media.media_type || media.type || '';
+
+      if (!Number.isFinite(entityId) || entityId <= 0) {
+        const rawId = String(media.id || media.mediaKey || media.media_key || '').trim();
+        if (rawId.includes('-') || rawId.includes('_')) {
+          const parts = rawId.split(/[-_]/);
+          if (parts.length >= 2) {
+            if (!rawType) rawType = parts[0];
+            const parsed = Number(parts[parts.length - 1]);
+            if (Number.isFinite(parsed) && parsed > 0) {
+              entityId = parsed;
+            }
+          }
+        } else {
+          const parsed = Number(rawId);
+          if (Number.isFinite(parsed) && parsed > 0) {
+            entityId = parsed;
+          }
+        }
+      }
+
+      const entityType =
+        String(rawType).trim().toLowerCase() === 'tv' ||
+        String(rawType).trim().toLowerCase() === 'show'
+          ? 'tv'
+          : 'movie';
+
+      const resolvedMedia = {
+        entityId: Number.isFinite(entityId) && entityId > 0 ? entityId : Number(media.id || 0),
+        entityType,
+        title: media.title || media.name || '',
+        posterPath: media.poster_path || media.posterPath || null,
+        backdropPath: media.backdrop_path || media.backdropPath || null,
+        release_date: media.release_date || null,
+        first_air_date: media.first_air_date || null,
+        genreNames: media.genreNames || media.genre_names || [],
+        genre_ids: media.genre_ids || media.genreIds || [],
+        genres: media.genres || [],
+        name: media.name || media.title || '',
+        popularity: media.popularity || null,
+        providerIds: [],
+        providerNames: [],
+        providers: [],
+        runtime: media.runtime || null,
+        vote_average: media.vote_average || null,
+        vote_count: media.vote_count || null,
+      };
+
+      openSurface(createListPickerSurfaceEntry({ userId: resolvedUserId, media: resolvedMedia }));
     }
   };
 
   return (
-    <div className="flex items-center gap-1.5">
-      {extraActions.map((action, index) => (
-        <div key={action.key || `extra-action-${index}`}>{action.node}</div>
-      ))}
+    <div
+      onClick={(event) => {
+        event.stopPropagation();
+        event.preventDefault();
+      }}
+      onMouseDown={(event) => {
+        event.stopPropagation();
+      }}
+      onMouseUp={(event) => {
+        event.stopPropagation();
+      }}
+      className="pointer-events-auto absolute top-2 right-2 z-10 flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+    >
+      {extraActions.map((action, index) => {
+        if (action.node) {
+          return <div key={action.key || `extra-action-${index}`}>{action.node}</div>;
+        }
+        return (
+          <button
+            key={action.key || `extra-action-${index}`}
+            type="button"
+            aria-label={action.label}
+            title={action.label}
+            disabled={action.disabled}
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              action.onClick?.(media);
+            }}
+            className="center size-8 cursor-pointer bg-black/50 text-white/70 backdrop-blur-md transition-colors duration-300 ease-in-out hover:bg-black/70 hover:text-white"
+          >
+            <Icon icon={action.icon} size={16} />
+          </button>
+        );
+      })}
+
+      {resolvedUserId && media && (
+        <Button
+          className="center size-8 cursor-pointer bg-black/50 text-white/70 backdrop-blur-md transition-colors duration-300 ease-in-out hover:bg-black/70 hover:text-white"
+          aria-label="Add to list"
+          title="Add to list"
+          onClick={handleAddToList}
+        >
+          <Icon icon="solar:list-broken" size={16} />
+        </Button>
+      )}
       {typeof onRemoveItem === 'function' && (
         <Button
-          variant="destructive-icon"
-          className="center text-error hover:border-error hover:bg-error size-8 border border-white/15 bg-black hover:text-black disabled:cursor-default"
+          className="hover:text-error center size-8 cursor-pointer bg-black/50 text-white/70 backdrop-blur-md transition-colors duration-300 ease-in-out hover:bg-black/70"
           aria-label={removeLabel}
+          title={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}
         >

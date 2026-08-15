@@ -682,7 +682,9 @@ export function createSignUpEmailAlreadyRegisteredError(account) {
       : 'This email is already registered',
   );
 
-  error.code = oauthProvider ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED' : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
+  error.code = oauthProvider
+    ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED'
+    : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
   error.data = {
     email,
     needsPasswordSetup: Boolean(oauthProvider),

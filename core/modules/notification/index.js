@@ -38,13 +38,14 @@ export function NotificationContainer() {
     <div
       aria-atomic="true"
       aria-live="polite"
-      className="pointer-events-none fixed top-4 right-0 left-0 mx-auto flex w-full max-w-[380px] flex-col gap-2 overflow-visible p-1 px-4 sm:right-4 sm:left-auto sm:mx-0 sm:px-0"
+      className="pointer-events-none fixed top-4 right-0 left-0 mx-auto flex w-full max-w-[380px] flex-col gap-2 overflow-visible p-1 px-4 sm:right-4 sm:left-auto sm:mx-0 sm:max-w-[420px] sm:px-0"
       style={{ zIndex: Z_INDEX.NOTIFICATION }}
     >
       <AnimatePresence initial={false}>
         {sortedNotifications.map(([id, notification]) => (
           <motion.div
             key={id}
+            layout
             variants={toastVariants}
             initial="hidden"
             animate="visible"

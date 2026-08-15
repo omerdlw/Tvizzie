@@ -57,7 +57,7 @@ export default function PersonGallery({ images }) {
             </h2>
           </div>
         </MediaRouteReveal>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       </div>
       <MediaRouteReveal className="p-6" stage="person.sections.gallery" deferred>
         <div ref={containerRef} className="w-full">
@@ -89,7 +89,7 @@ export default function PersonGallery({ images }) {
           </Carousel>
         </div>
       </MediaRouteReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

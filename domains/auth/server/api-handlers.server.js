@@ -481,7 +481,8 @@ export async function handleSessionGet(request) {
             user_id: provider.uid,
           }))
         : user.identities || [];
-      const appMetadata = currentUser?.app_metadata || tokenClaims.app_metadata || user.app_metadata || {};
+      const appMetadata =
+        currentUser?.app_metadata || tokenClaims.app_metadata || user.app_metadata || {};
       const providerIds = resolveProviderIds({
         appMetadata: providerData.length ? {} : appMetadata,
         identities,
@@ -494,7 +495,8 @@ export async function handleSessionGet(request) {
         user: {
           id: sessionContext.userId,
           email: currentUser?.email || sessionContext.email || null,
-          metadata: currentUser?.user_metadata || tokenClaims.user_metadata || user.user_metadata || {},
+          metadata:
+            currentUser?.user_metadata || tokenClaims.user_metadata || user.user_metadata || {},
           app_metadata: appMetadata,
           identities,
         },

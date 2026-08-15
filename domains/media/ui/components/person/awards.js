@@ -97,13 +97,13 @@ function AwardStatCard({ icon, index, label, value, variant = 'base' }) {
   const variantStyles = {
     win: {
       border: 'border-warning/50',
-      bg: 'bg-yellow-600/50',
+      bg: 'bg-warning/10',
       iconText: 'text-warning',
       valueText: 'text-warning',
     },
     base: {
-      border: 'border-white/10',
-      bg: 'bg-black/50',
+      border: 'border-white/5',
+      bg: 'bg-transparent',
       iconText: 'text-white/70',
       valueText: 'text-white',
     },
@@ -138,7 +138,7 @@ function AwardFilterPill({
 }) {
   return (
     <MediaRouteReveal
-      className="inline-flex"
+      className="inline-flex min-w-0 flex-auto"
       deferred
       interaction="control"
       interactive
@@ -148,7 +148,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`max-w-[200px] truncate px-3.5 py-1.5 text-xs font-semibold ${
+        className={`w-full cursor-pointer truncate px-3.5 py-2 text-center text-xs font-semibold border border-white/5 backdrop-blur-sm transition-colors duration-300 ease-in-out ${
           isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
@@ -165,10 +165,10 @@ function AwardCard({ award, index }) {
 
   const cardContent = (
     <div
-      className={`group relative flex items-center gap-2 border p-1 sm:gap-4 sm:p-2 ${
+      className={`group relative flex items-center gap-2 border p-1 backdrop-blur-sm sm:gap-4 sm:p-2 ${
         isWin
-          ? 'hover:bg-primary border border-yellow-500 bg-black/50'
-          : 'hover:bg-primary border-white/10 bg-black/50'
+          ? 'hover:bg-white/5 border-warning/50'
+          : 'hover:bg-white/5 border-white/5'
       } transition-[background-color,border-color,box-shadow] duration-300 ease-out`}
     >
       {award.poster || award.project ? (
@@ -183,7 +183,7 @@ function AwardCard({ award, index }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-white/40 sm:text-sm">{award.year}</span>
           {isWin ? (
-            <span className="inline-flex items-center gap-1 bg-yellow-500 px-2 py-0.5 text-[11px] font-extrabold text-black uppercase">
+            <span className="inline-flex items-center gap-1 bg-warning px-2 py-0.5 text-[11px] font-extrabold text-black uppercase">
               <Icon icon="solar:cup-bold" size={12} />
               Win
             </span>
@@ -207,7 +207,7 @@ function AwardCard({ award, index }) {
   );
 
   const resolvedCard = hasProjectLink ? (
-    <Link href={`/${mediaType}/${award.projectId}`} className="block">
+    <Link href={`/${mediaType}/${award.projectId}`} className="block cursor-pointer">
       {cardContent}
     </Link>
   ) : (
@@ -255,8 +255,9 @@ export default function PersonAwards({ personId, awardsPromise }) {
 
   return (
     <section className="relative w-full">
-      <div className="relative w-full pt-2 pb-6 sm:pt-3 sm:pb-8">
-        <div className="mx-auto flex max-w-[72ch] items-center justify-center gap-3 px-6 sm:gap-4">
+      {/* Stats Hero Section */}
+      <div className="relative w-full p-6">
+        <div className="flex w-full items-center justify-center gap-3 sm:gap-4">
           <AwardStatCard icon="solar:cup-bold" index={0} label="Wins" value={wins} variant="win" />
           <AwardStatCard
             icon="solar:medal-ribbons-star-bold"
@@ -285,12 +286,12 @@ export default function PersonAwards({ personId, awardsPromise }) {
         </div>
 
         {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       </div>
 
-      <MediaRouteReveal className="p-6" stage="person.sections.awards" deferred>
-        {/* Filter Pills */}
-        <div className="mx-auto flex max-w-[72ch] flex-wrap items-center justify-center gap-2 pt-2 sm:pt-4">
+      {/* Category / Filter Section */}
+      <section className="relative w-full">
+        <div className="flex w-full flex-wrap items-center gap-2 p-4">
           <AwardFilterPill
             label="All"
             index={0}
@@ -304,7 +305,7 @@ export default function PersonAwards({ personId, awardsPromise }) {
             count={wins}
             isActive={activeFilter === 'wins'}
             onClick={() => setActiveFilter('wins')}
-            activeColorClass="bg-yellow-500 text-black"
+            activeColorClass="bg-warning text-black"
           />
 
           {organizations.map((org, index) => (
@@ -317,16 +318,17 @@ export default function PersonAwards({ personId, awardsPromise }) {
             />
           ))}
         </div>
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
+      </section>
 
-        {/* Award Items List */}
-        <div key={activeFilter} className="mx-auto mt-6 flex max-w-[72ch] flex-col gap-3 sm:mt-8">
+      {/* Award Items List Section */}
+      <div className="w-full p-6">
+        <div key={activeFilter} className="flex w-full flex-col gap-3">
           {filteredItems.map((award, index) => (
             <AwardCard key={`${activeFilter}-${award.key}`} award={award} index={index} />
           ))}
         </div>
-      </MediaRouteReveal>
-
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      </div>
     </section>
   );
 }

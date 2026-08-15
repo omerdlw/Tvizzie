@@ -214,18 +214,18 @@ function PersonView({
                   </MediaRouteReveal>
                 ) : null}
 
-                <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+                <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
               </div>
             )}
 
             <div
               className={`relative w-full text-left ${
-                activeView === 'main' ? '' : 'pt-6 sm:pt-8 lg:pt-12'
+                activeView === 'main' || activeView === 'awards' ? '' : 'pt-6 sm:pt-8 lg:pt-12'
               }`}
               key={`person-view-${activeView}`}
             >
               {activeView !== 'main' ? (
-                <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+                <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
               ) : null}
               {activeView === 'awards' ? (
                 <Suspense fallback={<PersonAwardsSkeleton />}>

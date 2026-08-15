@@ -6,19 +6,19 @@
   --color-black: var(--black);
   --color-primary: var(--primary);
 
-  --color-error: #E63946;
-  --color-warning: #F59E0B;
-  --color-success: #10B981;
-  --color-info: #3B82F6;
+  --color-error: #c70102;
+  --color-warning: #f59331;
+  --color-success: #00e054;
+  --color-info: #3fb8ef;
 
   --font-zuume: var(--font-zuume);
 }
 
 @layer base {
   :root {
-    --white: #F0EFEB;
-    --black: #0A0A0A;
-    --primary: #1A1A1A;
+    --white: #f0efeb;
+    --black: #13181b;
+    --primary: #1a1a1a;
   }
 
   html,

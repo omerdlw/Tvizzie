@@ -204,14 +204,14 @@ function DiscoverySectionSkeleton({ hasBottomBorder = true, titleWidth = 'w-28' 
 function ReviewsSkeleton() {
   return (
     <section className="relative w-full">
-      <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+      <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       <div className="relative flex min-h-14 w-full items-center justify-between gap-4 p-6">
         <div className="flex min-w-0 items-center gap-2">
           <div className={`size-5 shrink-0 ${SKELETON}`} />
           <Line className="h-3 w-28" />
         </div>
         <Line className="h-7 w-24" soft />
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       </div>
       <div className="space-y-0 p-6">
         {[0, 1].map((index) => (

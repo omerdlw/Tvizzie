@@ -113,6 +113,7 @@ export default function AccountListsFeed({
     />
   );
 }
+
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -124,7 +125,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
           e.stopPropagation();
           onEdit(list);
         }}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/10 text-white/70 hover:border-white/20"
+        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5 hover:text-white"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
@@ -136,7 +137,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
           e.stopPropagation();
           onDelete(list);
         }}
-        className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center border border-white/10 text-white/70 hover:text-black"
+        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </button>

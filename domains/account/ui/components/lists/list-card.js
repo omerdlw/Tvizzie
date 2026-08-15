@@ -105,7 +105,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
           <motion.div
-            className="relative z-0 border border-white/10 bg-black/40"
+            className="relative z-0 border border-white/5"
             animate={{ rotateX: isHovered ? 15 : 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
             style={{
@@ -167,7 +167,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                     }}
                     style={{ zIndex }}
                   >
-                    <div className="h-[156px] w-[98px] overflow-hidden border border-white/10 bg-black/70">
+                    <div className="h-[156px] w-[98px] overflow-hidden border border-white/5 bg-black/70">
                       {imageUrl ? (
                         <motion.img
                           src={imageUrl}
@@ -179,8 +179,8 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         />
                       ) : (
-                        <div className="center h-full w-full bg-black/60 text-white/40">
-                          <Icon icon="solar:videocamera-record-bold" size={20} />
+                        <div className="center h-full w-full bg-black/50 text-white/40">
+                          <Icon icon="solar:gallery-wide-bold" size={20} />
                         </div>
                       )}
                     </div>
@@ -191,10 +191,9 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/10"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/5 bg-black/70 backdrop-blur-md"
             animate={{
               rotateX: isHovered ? -25 : 0,
-              backgroundColor: 'rgba(11, 11, 11, 1)',
             }}
             transition={{
               rotateX: { type: 'spring', stiffness: 180, damping: 22, mass: 0.8 },
@@ -214,8 +213,8 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                 {listDescription || 'No description'}
               </p>
             </div>
-            <div className="relative h-11 border-t border-white/10">
-              <div className="absolute inset-0 flex items-center justify-between pl-3 pr-0 text-[13px] text-white/70">
+            <div className="relative h-11 border-t border-white/5">
+              <div className="absolute inset-0 flex items-center justify-between pr-0 pl-3 text-[13px] text-white/70">
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <Icon icon="solar:calendar-mark-bold" size={14} />
                   <span>{updatedLabel}</span>
@@ -237,7 +236,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                   </div>
                   {typeof renderActions === 'function' ? (
                     <div
-                      className="shrink-0"
+                      className="mr-1.5 shrink-0"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();

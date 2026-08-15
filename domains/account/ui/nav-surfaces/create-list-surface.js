@@ -507,52 +507,52 @@ export default function CreateListSurface({ close, data }) {
         >
           <AnimatePresence mode="wait" initial={false}>
             {showSearchResults ? (
-            <motion.div
-              key="search-results"
-              variants={SURFACE_LIST_VARIANTS}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex flex-col gap-2"
-            >
-              <div className="flex flex-col gap-2">
-                {pageResults.map((item) => (
-                  <SearchResultRow
-                    key={getDraftMediaKey(item)}
-                    item={item}
-                    isAdded={selectedKeys.has(getDraftMediaKey(item))}
-                    onAdd={handleAdd}
-                    onRemove={handleRemove}
-                  />
-                ))}
-                {isSearching && searchResults.length === 0 && (
-                  <div className="flex h-24 items-center justify-center text-sm font-medium text-white/50">
-                    Searching titles...
-                  </div>
-                )}
-              </div>
-            </motion.div>
-            ) : (
-            <motion.div
-              key="draft-items"
-              variants={SURFACE_LIST_VARIANTS}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex flex-col gap-2"
-            >
-              {draftItems.length > 0 ? (
-                <AnimatePresence initial={false}>
-                  {draftItems.map((item) => (
-                    <DraftItemRow
+              <motion.div
+                key="search-results"
+                variants={SURFACE_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-2"
+              >
+                <div className="flex flex-col gap-2">
+                  {pageResults.map((item) => (
+                    <SearchResultRow
                       key={getDraftMediaKey(item)}
                       item={item}
+                      isAdded={selectedKeys.has(getDraftMediaKey(item))}
+                      onAdd={handleAdd}
                       onRemove={handleRemove}
                     />
                   ))}
-                </AnimatePresence>
-              ) : null}
-            </motion.div>
+                  {isSearching && searchResults.length === 0 && (
+                    <div className="flex h-24 items-center justify-center text-sm font-medium text-white/50">
+                      Searching titles...
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="draft-items"
+                variants={SURFACE_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-2"
+              >
+                {draftItems.length > 0 ? (
+                  <AnimatePresence initial={false}>
+                    {draftItems.map((item) => (
+                      <DraftItemRow
+                        key={getDraftMediaKey(item)}
+                        item={item}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                ) : null}
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

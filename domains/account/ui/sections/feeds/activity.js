@@ -126,7 +126,7 @@ export default function AccountActivityFeed({
   );
 }
 
-const ACTIVITY_ROW_CLASS = 'border-b border-white/10 py-5 first:pt-0 last:border-b-0 last:pb-0';
+const ACTIVITY_ROW_CLASS = 'border-b border-white/5 py-5 first:pt-0 last:border-b-0 last:pb-0';
 const ACTIVITY_LINE_CLASS = 'min-w-0 text-[1.02rem] leading-[1.1]';
 
 function ActivityList({ baseDelay, isInitialSection = false, items }) {

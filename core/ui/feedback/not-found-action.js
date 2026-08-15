@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
@@ -24,7 +26,7 @@ export default function NotFoundAction({
         type="button"
         onClick={() => router.push('/')}
         className={getNavActionClass({
-          className: 'min-w-0 flex-1 whitespace-nowrap',
+          className: cn('min-w-0 flex-1 whitespace-nowrap', DESTRUCTIVE_ACTION_TONE_CLASS),
         })}
       >
         <Icon icon="solar:home-2-bold" size={NAV_ACTION_STYLES.icon} />
@@ -38,7 +40,7 @@ export default function NotFoundAction({
             router.back();
           }}
           className={getNavActionClass({
-            className: 'min-w-0 flex-1 whitespace-nowrap',
+            className: cn('min-w-0 flex-1 whitespace-nowrap', DESTRUCTIVE_ACTION_TONE_CLASS),
           })}
         >
           <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_STYLES.icon} />

@@ -42,7 +42,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0  border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-white/5';
+  'h-8 w-auto shrink-0 cursor-pointer border px-2.5 py-1 text-[11px] font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:bg-white/5';
 
 const ACTION_CLASSES = Object.freeze({
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,

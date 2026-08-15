@@ -17,8 +17,8 @@ function Line({ className = '', soft = false }) {
 function FullBleedRule({ edge = 'bottom' }) {
   return (
     <div
-      className={`pointer-events-none absolute left-1/2 w-screen -translate-x-1/2 border-white/10 ${
-        edge === 'top' ? 'top-0 border-t' : 'bottom-0 border-b'
+      className={`pointer-events-none absolute left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm ${
+        edge === 'top' ? 'top-0' : 'bottom-0'
       }`}
     />
   );
@@ -94,7 +94,6 @@ function PersonFilmographySkeleton() {
           <div key={index} className={`aspect-2/3 ${SKELETON}`} />
         ))}
       </div>
-      <FullBleedRule />
     </section>
   );
 }

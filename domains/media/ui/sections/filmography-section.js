@@ -69,7 +69,7 @@ export default function PersonFilmographySection({ person }) {
             </div>
           </MediaRouteReveal>
         ) : null}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
       </div>
 
       <MediaRouteReveal className="p-6" stage="person.sections.filmography" deferred>
@@ -87,7 +87,6 @@ export default function PersonFilmographySection({ person }) {
           ))}
         </div>
       </MediaRouteReveal>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

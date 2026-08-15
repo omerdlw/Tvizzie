@@ -120,7 +120,7 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       onClick={onClick}
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-300 ease-in-out cursor-pointer disabled:cursor-default disabled:opacity-50',
+        'inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-[color,transform] duration-300 ease-in-out disabled:cursor-default disabled:opacity-50',
         hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
       )}
     >
@@ -146,19 +146,18 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
             : 'hidden sm:flex',
       )}
     >
-      <button
+      <Button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 transition-[background-color,border-color,color,transform] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.025] hover:border-white/10 hover:text-white active:scale-[0.97]"
+        className="center size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5 hover:text-white"
         title="Edit Review"
         onClick={onEdit}
         type="button"
       >
         <Icon icon="solar:pen-bold" size={16} />
-      </button>
+      </Button>
       <Button
-        variant="destructive"
+        className="center hover:text-error size-8 cursor-pointer border border-white/5 text-white/70 transition-colors duration-300 ease-in-out hover:bg-white/5"
         disabled={disabled}
-        className="size-8"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -171,8 +170,8 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]  border border-white/10'
-    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden  border border-white/10 bg-primary/30';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
+    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden';
 
   return (
     <div className={wrapperClass}>
@@ -208,7 +207,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-white/10 p-3 text-left hover:border-white/15 hover:bg-white/5',
+        'group inline-flex w-full items-center justify-between gap-3 border border-white/5 bg-white/5 p-3 text-left hover:bg-white/10',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"
@@ -222,7 +221,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase group-hover:text-white">
+      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase">
         Show
       </span>
     </button>

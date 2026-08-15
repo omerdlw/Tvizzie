@@ -8,18 +8,8 @@ const SOFT = 'skeleton-block-soft ';
 export default function PersonTimelineSkeleton() {
   return (
     <section className="relative w-full">
-      <div className="relative flex min-h-14 w-full items-center justify-between gap-4 px-6">
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon icon="solar:sort-by-time-bold" size={24} className="text-white/70" />
-          <h2 className="min-w-0 text-xs font-semibold tracking-widest text-white/70 uppercase">
-            Timeline
-          </h2>
-        </div>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
-      </div>
-
       <div className="p-6">
-        <div className="relative">
+        <div className="relative mx-auto max-w-2xl">
           {/* Vertical Timeline Line */}
           <div className="absolute top-[18px] bottom-0 left-16 w-px bg-white/10 sm:left-24" />
 
@@ -53,7 +43,6 @@ export default function PersonTimelineSkeleton() {
           </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
     </section>
   );
 }

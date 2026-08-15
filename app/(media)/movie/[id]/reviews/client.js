@@ -117,7 +117,7 @@ function View({
             </div>
 
             <div className="order-2 flex w-full min-w-0 flex-col lg:flex-1">
-              <div className="flex w-full flex-col p-6">
+              <div className="relative flex w-full flex-col p-6">
                 <MediaRouteReveal stage="hero.title">
                   <h1 className="font-zuume line-clamp-2 max-w-full overflow-hidden text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
                     {mediaTitle}
@@ -141,6 +141,7 @@ function View({
                     </div>
                   </MediaRouteReveal>
                 ) : null}
+                <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
               </div>
 
               <MediaRouteReveal className="w-full" stage="sections.reviews">
@@ -150,7 +151,7 @@ function View({
                   title={mediaTitle}
                   headerTitle="All Reviews"
                   sectionClassName="mt-1 md:mt-2"
-                  dividerPositionClassName="left-0 w-full translate-x-0"
+                  dividerPositionClassName="left-px right-px"
                   showBackdropGradient={false}
                   useQuerySortMode={true}
                   useQueryUserFilter={true}

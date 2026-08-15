@@ -23,18 +23,14 @@ function SectionSkeleton({
   return (
     <section className="relative bg-transparent">
       <div
-        className={`${ACCOUNT_SECTION_SHELL_CLASS} relative ${
-          showTopRule && !isInitialSection ? 'border-t border-white/10' : ''
-        }`}
+        className={`${ACCOUNT_SECTION_SHELL_CLASS} relative`}
       >
-        {showTopRule && isInitialSection ? (
-          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+        {showTopRule ? (
+          <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
         ) : null}
         {showHeader ? (
           <div
-            className={`relative flex w-full flex-col ${
-              !isInitialSection ? 'border-b border-white/10' : ''
-            }`}
+            className={`relative flex w-full flex-col`}
           >
             <div
               className={`flex w-full items-center justify-between gap-4 ${HEADER_PADDING_CLASS}`}
@@ -45,20 +41,14 @@ function SectionSkeleton({
               </div>
               {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
             </div>
-            {isInitialSection ? (
-              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
-            ) : null}
+            <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
           </div>
         ) : null}
         {toolbar ? (
           <div
-            className={`relative ${TOOLBAR_PADDING_CLASS} ${
-              !isInitialSection ? 'border-b border-white/10' : ''
-            }`}
+            className={`relative ${TOOLBAR_PADDING_CLASS}`}
           >
-            {isInitialSection ? (
-              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
-            ) : null}
+            <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
             {toolbar}
           </div>
         ) : null}
@@ -78,7 +68,7 @@ export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
         </div>
         <div className={`h-3 w-16 ${SOFT}`} />
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
     </div>
   );
 }
@@ -304,10 +294,10 @@ function AccountEditSectionSkeleton({ children, titleWidth = 'w-20' }) {
   return (
     <section className="relative bg-transparent">
       <div className={`${ACCOUNT_SECTION_SHELL_CLASS} relative flex flex-col`}>
-        <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-white/10" />
+        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
         <div className="relative flex min-h-14 w-full items-center px-4">
           <div className={`h-3 ${titleWidth} ${S}`} />
-          <div className="pointer-events-none absolute right-1/2 bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+          <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm" />
         </div>
         <div className="flex flex-col gap-4 p-6">{children}</div>
       </div>
@@ -319,7 +309,9 @@ function AccountEditFieldSkeleton({ className = '', multiline = false, labelWidt
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className={`h-2.5 ${labelWidth} ${SOFT}`} />
-      <div className={`${multiline ? 'h-[150px]' : 'h-11'} w-full border border-white/5 bg-white/5 ${S}`} />
+      <div
+        className={`${multiline ? 'h-[150px]' : 'h-11'} w-full border border-white/5 bg-white/5 ${S}`}
+      />
     </div>
   );
 }
@@ -334,7 +326,9 @@ function AccountEditMediaFieldSkeleton({ previewClassName }) {
           <div className={`h-10 w-16 ${SOFT}`} />
         </div>
       </div>
-      <div className={`${previewClassName} w-full overflow-hidden border border-white/10 bg-white/5 ${S}`} />
+      <div
+        className={`${previewClassName} w-full overflow-hidden border border-white/10 bg-white/5 ${S}`}
+      />
     </div>
   );
 }

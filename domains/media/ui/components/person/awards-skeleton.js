@@ -9,8 +9,8 @@ export default function PersonAwardsSkeleton() {
   return (
     <section className="relative w-full">
       {/* Hero Stat Dashboard Skeleton Header */}
-      <div className="relative w-full pt-2 pb-6 sm:pt-3 sm:pb-8">
-        <div className="mx-auto flex max-w-[72ch] items-center justify-center gap-3 px-6 sm:gap-4">
+      <div className="relative w-full p-6">
+        <div className="flex w-full items-center justify-center gap-3 sm:gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
@@ -26,16 +26,21 @@ export default function PersonAwardsSkeleton() {
         <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
       </div>
 
-      <div className="p-6">
-        {/* Filter Pills Skeleton */}
-        <div className="mx-auto mt-6 flex max-w-[72ch] flex-wrap items-center justify-center gap-2">
+      {/* Category / Filter Section Skeleton */}
+      <section className="relative w-full">
+        <div className="flex w-full flex-wrap items-center gap-2 p-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`h-8 w-20 ${SOFT} `} />
+            <div key={i} className={`h-8 min-w-0 flex-auto ${SOFT}`} />
           ))}
         </div>
 
-        {/* Cards Skeleton */}
-        <div className="mx-auto mt-8 flex max-w-[72ch] flex-col gap-3 sm:mt-10">
+        {/* Full-width category bottom border line */}
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-white/10" />
+      </section>
+
+      {/* Cards Skeleton */}
+      <div className="w-full p-6">
+        <div className="flex w-full flex-col gap-3">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}

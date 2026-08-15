@@ -120,7 +120,7 @@ const ListPreviewStack = memo(function ListPreviewStack({ list }) {
               />
             ) : (
               <div className="center h-full w-full bg-white/5 text-white/50">
-                <Icon icon="solar:videocamera-record-bold" size={16} />
+                <Icon icon="solar:gallery-wide-bold" size={16} />
               </div>
             )}
           </div>
@@ -346,6 +346,7 @@ export default function ListPickerSurface({ close, data }) {
       return;
     }
 
+    toast.success('Lists updated successfully.');
     close({
       memberships: nextMemberships,
       selectedListIds: Object.keys(nextMemberships).filter((id) => Boolean(nextMemberships[id])),

@@ -116,7 +116,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
         transition={MODAL_MICRO_SPRING}
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white/5 hover:text-white"
+        className="flex cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white/5 hover:text-white"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -322,7 +322,9 @@ export default function Modal() {
   useLayoutEffect(() => {
     const currentTopModalId = topModalEntry?.id || null;
     const previousTopModalId = previousTopModalIdRef.current;
-    const previousTopStillMounted = visibleModalStack.some((entry) => entry.id === previousTopModalId);
+    const previousTopStillMounted = visibleModalStack.some(
+      (entry) => entry.id === previousTopModalId,
+    );
 
     if (
       previousTopModalId &&
@@ -397,7 +399,7 @@ export default function Modal() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 cursor-pointer bg-black/50 backdrop-blur-sm"
             style={{ zIndex: Z_INDEX.MODAL }}
             onClick={() => {
               if (!isTopExitSettling) {

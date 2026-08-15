@@ -120,7 +120,7 @@ export default function AccountAction(props) {
   const guestIcon = guestMode === 'sign-up' ? 'solar:user-plus-bold' : 'solar:user-circle-bold';
 
   useEffect(() => {
-    const shouldLockCompact = mode === 'profile-edit' && showSaveAction;
+    const shouldLockCompact = (mode === 'profile-edit' || mode === 'tab-switch') && showSaveAction;
     setCompactLock('account-action', shouldLockCompact);
 
     return () => {
@@ -136,34 +136,76 @@ export default function AccountAction(props) {
     const canShowFollowAction =
       !isOwner && showProfileFollowAction && typeof onFollow === 'function';
     const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
+    const canShowCancelAction = showCancelAction && typeof onCancel === 'function';
 
     return (
       <div className="mt-2.5 flex w-full flex-col gap-2">
-        <div
-          className="grid w-full gap-2"
-          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
-        >
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-
-            return (
+        {showSaveAction || canShowCancelAction ? (
+          <div className="flex w-full gap-2">
+            {canShowCancelAction ? (
               <button
-                key={tab.key}
                 type="button"
-                onClick={() => onTabChange?.(tab.key)}
-                aria-pressed={isActive}
+                onClick={onCancel}
+                disabled={isCancelDisabled}
                 className={actionClass({
-                  tone: isActive ? 'active' : 'muted',
-                  className: 'relative justify-center overflow-hidden',
+                  tone: 'muted',
+                  className: 'flex-1 justify-center',
                 })}
               >
-                {tab.label}
+                {cancelLabel}
               </button>
-            );
-          })}
-        </div>
+            ) : null}
 
-        {canShowFollowAction ? (
+            {showSaveAction ? (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={isSaveLoading || isSaveDisabled}
+                className={actionClass({
+                  tone: isSaveDisabled ? 'muted' : 'success',
+                  className: canShowCancelAction
+                    ? 'flex-1 justify-center'
+                    : 'w-full justify-center',
+                })}
+              >
+                {isSaveLoading ? (
+                  <span key="saving">Saving</span>
+                ) : (
+                  <span key="save" className="flex items-center gap-2">
+                    <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+                    {saveLabel}
+                  </span>
+                )}
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <div
+            className="grid w-full gap-2"
+            style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+          >
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => onTabChange?.(tab.key)}
+                  aria-pressed={isActive}
+                  className={actionClass({
+                    tone: isActive ? 'active' : 'muted',
+                    className: 'relative justify-center overflow-hidden',
+                  })}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {canShowFollowAction && !showSaveAction ? (
           <div className="flex w-full gap-2">
             <button
               type="button"

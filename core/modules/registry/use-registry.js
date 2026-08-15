@@ -6,6 +6,7 @@ import {
   isValidElement,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -17,8 +18,6 @@ import { useRegistryActions } from './context';
 import { PLUGINS, createPluginRunner } from './plugins/index';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-let registryInstanceIdCounter = 0;
 
 function useStableDiff(value, compareFn) {
   const ref = useRef(value);
@@ -47,11 +46,6 @@ function isDirectRegistryComponentPath(path) {
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function createRegistryInstanceId() {
-  registryInstanceIdCounter += 1;
-  return `registry-instance-${registryInstanceIdCounter}`;
 }
 
 function withInstanceId(instanceId, sourceOrOptions, optionsArg) {
@@ -225,11 +219,8 @@ const deepCompare = (prev, next) => {
 export function useRegistry(config, { plugins = PLUGINS } = {}) {
   const { batch, register, unregister } = useRegistryActions();
   const pathname = usePathname();
-  const instanceIdRef = useRef(null);
-
-  if (!instanceIdRef.current) {
-    instanceIdRef.current = createRegistryInstanceId();
-  }
+  const defaultId = useId();
+  const instanceIdRef = useRef(`registry-instance-${defaultId}`);
 
   const registerWithInstance = useCallback(
     (type, key, item, sourceOrOptions, optionsArg) => {

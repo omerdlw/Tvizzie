@@ -137,7 +137,7 @@ export default function CastModal({ close, data, header }) {
                 custom={index}
                 initial="hidden"
                 animate="visible"
-                className="border-b border-white/10 border-r-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 border-white/10"
+                className="border-r-0 border-b border-white/10 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0"
               >
                 <PersonCard close={close} person={person} />
               </motion.div>

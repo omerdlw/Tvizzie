@@ -1,19 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
 import { useRegistryActions } from './context';
 
-let bootstrapInstanceCounter = 0;
-
 export function RegistryBootstrap({ entries = [] }) {
   const { batch, register, unregister } = useRegistryActions();
-  const instanceIdRef = useRef(null);
-
-  if (!instanceIdRef.current) {
-    bootstrapInstanceCounter += 1;
-    instanceIdRef.current = `registry-bootstrap-${bootstrapInstanceCounter}`;
-  }
+  const defaultId = useId();
+  const instanceIdRef = useRef(`registry-bootstrap-${defaultId}`);
 
   useEffect(() => {
     const normalizedEntries = entries.filter(

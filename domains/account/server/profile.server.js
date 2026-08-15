@@ -510,7 +510,10 @@ export function invalidateCachedAccountProfiles(userId) {
   }
 }
 
-export async function getAccountProfileByUserId(userId, { viewerId = null } = {}) {
+export async function getAccountProfileByUserId(
+  userId,
+  { viewerId = null, bypassCache = false } = {},
+) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) return null;
 
@@ -518,11 +521,15 @@ export async function getAccountProfileByUserId(userId, { viewerId = null } = {}
   const now = Date.now();
   const cached = SERVER_PROFILE_CACHE.get(cacheKey);
 
-  if (cached && cached.expiresAt > now) {
+  if (!bypassCache && cached && cached.expiresAt > now) {
     return cached.profile;
   }
 
-  if (SERVER_PROFILE_INFLIGHT.has(cacheKey)) {
+  if (bypassCache) {
+    SERVER_PROFILE_CACHE.delete(cacheKey);
+  }
+
+  if (!bypassCache && SERVER_PROFILE_INFLIGHT.has(cacheKey)) {
     return SERVER_PROFILE_INFLIGHT.get(cacheKey);
   }
 

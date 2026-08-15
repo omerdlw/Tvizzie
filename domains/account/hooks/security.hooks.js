@@ -17,7 +17,12 @@ import {
   resolveSecurityErrorMessage,
 } from '@/domains/account/utils';
 import { AuthVerificationSurface } from '@/domains/auth/ui';
-import { AUTH_ROUTES, buildAuthHref, getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getOAuthProviderLabel,
+  normalizeOAuthProvider,
+} from '@/domains/auth/utils';
 
 export function resetLinkedProviderOverrides({
   setLinkedProviderDescriptorsOverride,
@@ -39,7 +44,11 @@ function resolveLinkedProviderIds(session) {
   return Array.from(
     new Set(
       (Array.isArray(providerIds) ? providerIds : [])
-        .map((provider) => String(provider || '').trim().toLowerCase())
+        .map((provider) =>
+          String(provider || '')
+            .trim()
+            .toLowerCase(),
+        )
         .filter(Boolean),
     ),
   );
@@ -526,7 +535,9 @@ export function useAccountSecurityActions({
               userId: auth?.user?.id,
             });
           } catch (error) {
-            toast.error(resolveSecurityErrorMessage(error, `${providerLabel} could not be disconnected`));
+            toast.error(
+              resolveSecurityErrorMessage(error, `${providerLabel} could not be disconnected`),
+            );
             await logCredentialAuditFailure('unlink-provider', error);
             throw error;
           } finally {

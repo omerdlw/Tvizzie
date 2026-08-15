@@ -1,19 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
 import { useRegistryContext } from './context';
 
-let injectorInstanceCounter = 0;
-
 export const RegistryInjector = ({ items, type }) => {
   const { batch, register, unregister } = useRegistryContext();
-  const instanceIdRef = useRef(null);
-
-  if (!instanceIdRef.current) {
-    injectorInstanceCounter += 1;
-    instanceIdRef.current = `injector-${injectorInstanceCounter}`;
-  }
+  const defaultId = useId();
+  const instanceIdRef = useRef(`injector-${defaultId}`);
 
   useEffect(() => {
     if (!items || !type) return;

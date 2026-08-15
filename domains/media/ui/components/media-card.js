@@ -18,9 +18,19 @@ const CardWrapper = forwardRef(function CardWrapper(
   ref,
 ) {
   const isClickable = typeof onClick === 'function';
-  const handleClick = (event) => onClick?.(event);
+  const handleClick = (event) => {
+    if (event.target.closest('button, a, input, select, textarea, [role="button"]')) {
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
+    onClick?.(event);
+  };
   const handleKeyDown = (event) => {
     onKeyDown?.(event);
+    if (event.target.closest('button, a, input, select, textarea, [role="button"]')) {
+      return;
+    }
     if (!isClickable) {
       return;
     }
@@ -103,50 +113,52 @@ export default function MediaCard({
   const resolvedImageQuality = resolveImageQuality(imagePreset, imageQuality);
 
   const cardNode = (
-    <CardWrapper
-      href={href}
-      onClick={onClick}
-      onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden', className)}
-      {...props}
-    >
-      <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
-        <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>
-          {hasImage ? (
-            <AdaptiveImage
-              src={imageSrc}
-              alt={imageAlt || title || 'Media'}
-              fill
-              sizes={imageSizes}
-              loading={resolvedImageLoading}
-              fetchPriority={resolvedImageFetchPriority}
-              quality={resolvedImageQuality}
-              decoding="async"
-              placeholder="blur"
-              blurDataURL={getImagePlaceholderDataUrl(imageSrc || imageAlt || title)}
-              onError={() => {
-                setHasError(true);
-                onImageError?.();
-              }}
-              className={cn(imageBaseClassName, imageClassName)}
-              wrapperClassName="h-full w-full"
-              draggable="false"
-            />
-          ) : (
-            fallbackContent || (
-              <div className="center h-full w-full border border-white/5 bg-white/5">
-                <Icon
-                  icon={fallbackIcon}
-                  size={fallbackIconSize}
-                  className={fallbackIconClassName}
-                />
-              </div>
-            )
-          )}
-          {overlay || topOverlay}
+    <div className="group relative h-full w-full">
+      <CardWrapper
+        href={href}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+        className={cn('flex h-full w-full shrink-0 flex-col overflow-hidden', className)}
+        {...props}
+      >
+        <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
+          <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>
+            {hasImage ? (
+              <AdaptiveImage
+                src={imageSrc}
+                alt={imageAlt || title || 'Media'}
+                fill
+                sizes={imageSizes}
+                loading={resolvedImageLoading}
+                fetchPriority={resolvedImageFetchPriority}
+                quality={resolvedImageQuality}
+                decoding="async"
+                placeholder="blur"
+                blurDataURL={getImagePlaceholderDataUrl(imageSrc || imageAlt || title)}
+                onError={() => {
+                  setHasError(true);
+                  onImageError?.();
+                }}
+                className={cn(imageBaseClassName, imageClassName)}
+                wrapperClassName="h-full w-full"
+                draggable="false"
+              />
+            ) : (
+              fallbackContent || (
+                <div className="center h-full w-full border border-white/5 bg-white/5">
+                  <Icon
+                    icon={fallbackIcon}
+                    size={fallbackIconSize}
+                    className={fallbackIconClassName}
+                  />
+                </div>
+              )
+            )}
+          </div>
         </div>
-      </div>
-    </CardWrapper>
+      </CardWrapper>
+      {overlay || topOverlay}
+    </div>
   );
   const cardWithTooltip = resolvedTooltipText ? (
     <Tooltip text={resolvedTooltipText} position="top" delayMs={40}>

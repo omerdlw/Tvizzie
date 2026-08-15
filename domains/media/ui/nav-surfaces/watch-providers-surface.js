@@ -86,7 +86,7 @@ export default function WatchProvidersSurface({ close, providers }) {
           {providerList.map((provider) => (
             <div
               key={`${provider.provider_id}-${provider.type}`}
-              className="grid grid-cols-[minmax(0,1fr)_3rem] cursor-pointer items-center gap-2 border-b border-white/5 px-2.5 py-2 first:pt-0 last:border-b-0 last:pb-0"
+              className="grid cursor-pointer grid-cols-[minmax(0,1fr)_3rem] items-center gap-2 border-b border-white/5 py-2 first:pt-0 last:border-b-0 last:pb-0"
             >
               <div className="flex min-w-0 items-center gap-2">
                 <AdaptiveImage
@@ -102,14 +102,14 @@ export default function WatchProvidersSurface({ close, providers }) {
                   {provider.provider_name}
                 </span>
               </div>
-              <span className="bg-primary flex h-6 w-12 items-center justify-center border border-white/5 px-2 text-[10px] font-semibold tracking-wide text-white/50 uppercase">
+              <span className="flex h-6 w-12 items-center justify-center border border-white/5 bg-white/5 px-2 text-[10px] font-semibold tracking-wide text-white/50 uppercase">
                 {provider.type}
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <div key={`empty-${resolvedRegion}`} className="center bg-primary p-4 text-sm">
+        <div key={`empty-${resolvedRegion}`} className="center bg-white/5 p-4 text-sm">
           Watch providers are not available for this region
         </div>
       )}

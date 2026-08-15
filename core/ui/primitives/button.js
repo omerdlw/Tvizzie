@@ -100,7 +100,7 @@ const Button = forwardRef(
         type={type}
         onClick={onClick}
         disabled={disabled}
-        className={cn(classes.root, classes.default)}
+        className={cn(baseClasses, classes.root, classes.default)}
         {...props}
       >
         {children}

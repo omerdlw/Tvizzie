@@ -1,8 +1,5 @@
 import { createTitleReviewsRoute } from '@/domains/media/server/title-route.server';
-import {
-  getMovieBase,
-  getMovieSecondary,
-} from '@/infrastructure/tmdb/clients/tmdb-server-client';
+import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
 
 import Client from '@/app/(media)/movie/[id]/reviews/client';

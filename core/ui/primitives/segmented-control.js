@@ -161,7 +161,7 @@ export default function SegmentedControl({
                 className={cn(
                   'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] whitespace-nowrap',
                   isActive
-                    ? classNames.active || 'text-white font-bold'
+                    ? classNames.active || 'font-bold text-white'
                     : classNames.inactive || 'text-white/70',
                   classNames.button,
                 )}

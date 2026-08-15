@@ -58,6 +58,8 @@ export function useDraggableScroll() {
     let startX = 0;
     let scrollLeft = 0;
     let isDragging = false;
+    let hasMovedSignificantly = false;
+    let lastDragEndTime = 0;
     let wheelIdleTimeout = 0;
     let lastPointerX = 0;
     let lastPointerTime = 0;
@@ -97,6 +99,7 @@ export function useDraggableScroll() {
       if (e.button !== 0) return;
       isDown = true;
       isDragging = false;
+      hasMovedSignificantly = false;
       el.classList.add('cursor-grabbing');
       el.classList.remove('cursor-pointer');
       startX = e.pageX - el.offsetLeft;
@@ -108,6 +111,9 @@ export function useDraggableScroll() {
     };
 
     const handleMouseLeave = () => {
+      if (isDragging || hasMovedSignificantly) {
+        lastDragEndTime = performance.now();
+      }
       isDown = false;
       el.classList.remove('cursor-grabbing');
       restoreScrollBehavior();
@@ -115,6 +121,9 @@ export function useDraggableScroll() {
     };
 
     const handleMouseUp = () => {
+      if (isDragging || hasMovedSignificantly) {
+        lastDragEndTime = performance.now();
+      }
       isDown = false;
       el.classList.remove('cursor-grabbing');
 
@@ -129,7 +138,8 @@ export function useDraggableScroll() {
 
       setTimeout(() => {
         isDragging = false;
-      }, 0);
+        hasMovedSignificantly = false;
+      }, 200);
     };
 
     const handleMouseMove = (e) => {
@@ -146,6 +156,7 @@ export function useDraggableScroll() {
 
       if (Math.abs(walk) > DRAG_THRESHOLD) {
         isDragging = true;
+        hasMovedSignificantly = true;
         setSmoothScrollLocked(true);
       }
 
@@ -185,10 +196,11 @@ export function useDraggableScroll() {
       }, WHEEL_IDLE_DELAY);
     };
 
-    const handleBlur = (e) => {
-      if (isDragging) {
+    const handleClick = (e) => {
+      if (isDragging || hasMovedSignificantly || performance.now() - lastDragEndTime < 250) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation?.();
       }
     };
 
@@ -197,7 +209,7 @@ export function useDraggableScroll() {
     el.addEventListener('mouseup', handleMouseUp);
     el.addEventListener('mousemove', handleMouseMove);
     el.addEventListener('wheel', handleWheel, { capture: true, passive: false });
-    el.addEventListener('click', handleBlur, true);
+    el.addEventListener('click', handleClick, { capture: true });
 
     return () => {
       window.clearTimeout(wheelIdleTimeout);
@@ -207,7 +219,7 @@ export function useDraggableScroll() {
       el.removeEventListener('mouseup', handleMouseUp);
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('wheel', handleWheel, true);
-      el.removeEventListener('click', handleBlur, true);
+      el.removeEventListener('click', handleClick, true);
     };
   }, [lockSource]);
 

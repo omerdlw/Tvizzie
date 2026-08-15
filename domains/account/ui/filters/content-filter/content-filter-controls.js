@@ -9,28 +9,28 @@ import Icon from '@/ui/primitives/icon';
 export const UI = {
   bar: 'flex w-full flex-nowrap flex-auto items-center gap-2 overflow-x-auto scrollbar-none',
   trigger:
-    'inline-flex h-9 w-auto flex-auto shrink-0 items-center gap-1.5  border border-white/10 bg-black px-3 text-[11px] font-semibold uppercase tracking-wide text-white/70 hover:border-white/20 hover:bg-white/5',
-  triggerActive: 'border-info/70 bg-info/20 text-info',
+    'inline-flex cursor-pointer h-9 w-auto flex-auto shrink-0 items-center gap-1.5 border border-white/5 px-3 text-xs uppercase text-white/70 hover:border-white/10 hover:bg-white/5',
+  triggerActive: 'border-info/20 bg-info/20 hover:bg-info/40 text-info',
   iconButton:
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center  border border-white/10 bg-black text-white/70 hover:border-white/20 hover:bg-white/5',
+    'inline-flex h-9 w-9 shrink-0 items-center justify-center border border-white/5 text-white/70 hover:border-white/10 hover:bg-white/5',
   resetButton:
-    'ml-auto inline-flex h-9 shrink-0 items-center  border border-white/10 bg-black px-3 text-[11px] font-semibold uppercase tracking-wide text-white/70 hover:border-white/20 hover:bg-white/5',
-  menu: 'z-50 overflow-y-auto overscroll-contain  border border-white/10 bg-black p-1',
-  sectionLabel: 'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50',
+    'ml-auto inline-flex h-9 shrink-0 items-center  border border-white/5 bg-black px-3 text-xs uppercase text-white/70 hover:border-white/10 hover:bg-white/5',
+  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/10 bg-black/50 backdrop-blur-md p-1',
+  sectionLabel: 'px-2 py-1.5 text-[10px] uppercase text-white/50',
   menuItem:
-    'flex w-full items-center justify-between  px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5',
+    'flex w-full items-center justify-between cursor-pointer p-2 text-left text-sm text-white/80 hover:bg-white/5',
   menuItemActive: 'bg-white/5 font-medium text-white',
   divider: 'border-t border-white/10',
   inputWrap:
-    'flex h-9 min-w-0 flex-1 items-center gap-3  border border-white/10 bg-black px-3 focus-within:border-white/20',
-  input: 'min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/50',
+    'flex h-9 min-w-0 flex-1 items-center gap-3 border border-white/5 px-3 focus-within:border-white/10',
+  input: 'min-w-0 flex-1 text-sm text-white outline-none placeholder:text-white/50',
   helperText: 'px-1 text-[10px] text-white/50',
   visibilityItem:
-    'flex w-full items-center justify-between  px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5',
+    'flex w-full cursor-pointer items-center justify-between  px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5',
   visibilityItemActive: 'bg-white/5 font-medium text-white',
-  dot: 'h-2.5 w-2.5  border border-white/20',
+  dot: 'size-2.5 border border-white/5',
   dotActive: 'bg-white',
-  dotInactive: 'bg-white/20',
+  dotInactive: 'bg-white/5',
 };
 export function resolveOptionLabel(options = [], value, fallback = 'Any') {
   return options.find((option) => option.value === value)?.label || fallback;

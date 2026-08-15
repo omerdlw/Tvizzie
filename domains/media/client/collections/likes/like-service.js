@@ -49,6 +49,10 @@ export async function updateFavoriteShowcase({ items = [], userId }) {
   const showcase = await writeFavoriteShowcase(userId, items);
 
   primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), showcase);
+  invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+    refetch: true,
+  });
+  scheduleAccountSummaryRefresh(userId);
 
   return showcase;
 }
@@ -81,7 +85,14 @@ export async function toggleUserLike({ media, userId }) {
     // The collection row is the primary mutation. Showcase cleanup is a
     // secondary profile update and must not turn a successful unlike into a
     // misleading "Action Failed" state.
-    await removeLikeFromShowcase(userId, likeRef.id).catch(() => {});
+    const updatedShowcase = await removeLikeFromShowcase(userId, likeRef.id).catch(() => null);
+    if (updatedShowcase) {
+      primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), updatedShowcase);
+      invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+        refetch: true,
+      });
+      scheduleAccountSummaryRefresh(userId);
+    }
   } else {
     const subjectId = String(media?.entityId ?? media?.id ?? '').trim();
     const subjectType = media?.entityType || media?.media_type || 'movie';
@@ -132,7 +143,12 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
   const wasRemoved = rpcRow?.removed === true;
 
   if (wasRemoved) {
-    await removeLikeFromShowcase(userId, resolvedMediaKey);
+    const updatedShowcase = await removeLikeFromShowcase(userId, resolvedMediaKey).catch(
+      () => null,
+    );
+    if (updatedShowcase) {
+      primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), updatedShowcase);
+    }
   }
 
   if (media) {

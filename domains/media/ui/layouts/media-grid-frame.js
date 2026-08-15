@@ -13,11 +13,11 @@ export default function MediaGridFrame({ className = '', style, showSidebarBorde
         className,
       )}
     >
-      <div className="absolute inset-y-0 left-0 w-px bg-white/10" />
+      <div className="absolute inset-y-0 left-0 w-px bg-white/10 backdrop-blur-sm" />
       {showSidebarBorder ? (
-        <div className="absolute inset-y-0 left-96 hidden w-px bg-white/10 lg:block" />
+        <div className="absolute inset-y-0 left-96 hidden w-px bg-white/10 backdrop-blur-sm lg:block" />
       ) : null}
-      <div className="absolute inset-y-0 right-0 w-px bg-white/10" />
+      <div className="absolute inset-y-0 right-0 w-px bg-white/10 backdrop-blur-sm" />
     </div>
   );
 }

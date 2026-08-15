@@ -128,8 +128,12 @@ export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovere
   const { size = 24, ...iconStyle } = inlineStyle;
   const isImageSource = isImageIconSource(icon);
 
-  const hasCustomBackground = 'background' in iconStyle || 'backgroundColor' in iconStyle;
-  const hasCustomColor = 'color' in iconStyle;
+  const hasCustomBackground =
+    'background' in iconStyle ||
+    'backgroundColor' in iconStyle ||
+    Boolean(className && /(?:^|\s)bg-/.test(className));
+  const hasCustomColor =
+    'color' in iconStyle || Boolean(className && /(?:^|\s)text-/.test(className));
 
   return (
     <div className="relative">
@@ -142,11 +146,12 @@ export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovere
         <motion.div
           className={cn('center size-12', className)}
           animate={{
-            backgroundColor:
-              isStackHovered && !hasCustomBackground
+            backgroundColor: hasCustomBackground
+              ? undefined
+              : isStackHovered
                 ? 'rgba(252,252,251,0.10)'
                 : 'rgba(252,252,251,0.05)',
-            color: isStackHovered && !hasCustomColor ? 'rgba(252,252,251,1)' : undefined,
+            color: hasCustomColor ? undefined : isStackHovered ? 'rgba(252,252,251,1)' : undefined,
           }}
           transition={NAV_FADE_TRANSITION}
           style={iconStyle}

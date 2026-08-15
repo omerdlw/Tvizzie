@@ -98,7 +98,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
   }
 
   return (
-    <section className="relative w-full border-b border-white/10">
+    <section className="relative w-full">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:gallery-minimalistic-bold" size={20} className="text-white/70" />
@@ -117,6 +117,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
             />
           </div>
         )}
+        <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
       </div>
       <div key={`movie-images-${currentTab.key}`} className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
         <Carousel gap="gap-3">
@@ -165,6 +166,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
           })}
         </Carousel>
       </div>
+      <div className="pointer-events-none absolute bottom-0 left-px right-px h-px bg-white/10 backdrop-blur-sm" />
     </section>
   );
 }

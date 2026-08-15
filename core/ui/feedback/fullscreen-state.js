@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/shared/utils';
@@ -10,7 +10,6 @@ const activeFullscreenStateIds = new Set();
 const FULLSCREEN_ROOT_SELECTOR =
   '[data-fullscreen-state-root="true"][data-affect-global-state="true"]';
 
-let fullscreenStateIdCounter = 0;
 let domObserver = null;
 let lastSnapshot = false;
 
@@ -97,19 +96,16 @@ export function useIsFullscreenStateActive() {
 }
 
 export function FullscreenState({
+  id,
   children,
   className,
   contentClassName,
   lockScroll = true,
   affectGlobalState = true,
 }) {
-  const stateIdRef = useRef(null);
+  const generatedId = useId();
+  const stateId = id || `fullscreen-state-${generatedId}`;
   const [portalTarget, setPortalTarget] = useState(null);
-
-  if (stateIdRef.current === null) {
-    fullscreenStateIdCounter += 1;
-    stateIdRef.current = `fullscreen-state-${fullscreenStateIdCounter}`;
-  }
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -117,8 +113,6 @@ export function FullscreenState({
   }, []);
 
   useEffect(() => {
-    const stateId = stateIdRef.current;
-
     if (affectGlobalState) {
       registerFullscreenState(stateId);
     }
@@ -160,13 +154,13 @@ export function FullscreenState({
         unregisterFullscreenState(stateId);
       }
     };
-  }, [affectGlobalState, lockScroll]);
+  }, [affectGlobalState, lockScroll, stateId]);
 
   const content = (
     <div
       data-affect-global-state={affectGlobalState ? 'true' : 'false'}
       data-fullscreen-state-root="true"
-      data-fullscreen-state-id={stateIdRef.current}
+      data-fullscreen-state-id={stateId}
       className={cn('fixed inset-0 h-screen w-screen overflow-hidden', className)}
     >
       <div className={cn('center h-screen w-screen p-6', contentClassName)}>{children}</div>

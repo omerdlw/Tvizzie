@@ -149,10 +149,7 @@ export function AccountSecuritySettings({
       </SectionCard>
 
       {linkedOAuthProviders.length ? (
-        <SectionCard
-          title="Connected providers"
-          contentClassName="gap-3"
-        >
+        <SectionCard title="Connected providers" contentClassName="gap-3">
           <div className="flex flex-col gap-3">
             {linkedOAuthProviders.map((provider) => {
               const label = getOAuthProviderLabel(provider);
@@ -160,12 +157,9 @@ export function AccountSecuritySettings({
               const isDisconnecting = unlinkingProvider === provider;
 
               return (
-                <div
-                  key={provider}
-                  className="flex flex-wrap items-center gap-3 bg-white/5 p-2"
-                >
+                <div key={provider} className="flex flex-wrap items-center gap-3 bg-white/5 p-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="size-10 center shrink-0 text-white/80">
+                    <span className="center size-10 shrink-0 text-white/80">
                       {icon ? <Icon icon={icon} size={20} aria-hidden="true" /> : null}
                     </span>
                     <span className="min-w-0 text-sm font-medium text-white">{label}</span>

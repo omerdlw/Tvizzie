@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import {
   LIST_FILTER_QUERY_KEYS,
@@ -36,6 +36,9 @@ import AccountMediaGridPage, {
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountReviewsFeed from '../feeds/reviews';
+import { Reorder } from 'framer-motion';
+import MediaCard from '@/domains/media/ui/components/media-card';
+import { toAccountMediaCard } from '@/domains/account/utils/media-card';
 const LIKES_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({
     key: 'hide_unreleased',
@@ -74,6 +77,8 @@ export default function AccountLikesFeed({
   likedListsError,
   loadReviews = null,
   likes,
+  onReorderShowcase,
+  onRemoveShowcaseItem,
   persistShowcase,
   reviews,
   reviewsTotalCount,
@@ -153,9 +158,10 @@ export default function AccountLikesFeed({
       {isOwner && activeSegment === 'titles' && (hasLikes || isLikesLoading) && (
         <FavoriteShowcaseManager
           items={favoriteShowcase}
-          isSaving={isShowcaseSaving}
-          onRemoveItem={handleToggleShowcase}
-          onReorder={persistShowcase}
+          isOwner={isOwner}
+          onRemoveItem={onRemoveShowcaseItem || handleToggleShowcase}
+          onReorder={onReorderShowcase || persistShowcase}
+          userId={auth?.user?.id}
         />
       )}
 
@@ -178,9 +184,12 @@ export default function AccountLikesFeed({
               <ProfileMediaActions
                 extraActions={[
                   {
-                    disabled: !showcaseMap.has(item.mediaKey) && favoriteShowcase.length >= 5,
-                    icon: showcaseMap.has(item.mediaKey) ? 'solar:star-bold' : 'solar:star-linear',
-                    label: showcaseMap.has(item.mediaKey)
+                    disabled:
+                      !showcaseMap.has(getCanonicalMediaKey(item)) && favoriteShowcase.length >= 5,
+                    icon: showcaseMap.has(getCanonicalMediaKey(item))
+                      ? 'solar:star-bold'
+                      : 'solar:star-linear',
+                    label: showcaseMap.has(getCanonicalMediaKey(item))
                       ? 'Remove from favorites showcase'
                       : 'Add to favorites showcase',
                     onClick: handleToggleShowcase,
@@ -293,57 +302,100 @@ export default function AccountLikesFeed({
   );
 }
 
-function ReorderableListItem({
-  index,
-  isFirst = false,
-  isLast = false,
-  item,
-  onMoveItem,
-  renderEditAction,
-}) {
+function getCanonicalMediaKey(item = {}) {
+  if (!item) return '';
+  const rawType = item?.entityType || item?.media_type || item?.type || '';
+  const rawId = String(item?.entityId ?? item?.id ?? '').trim();
+
+  if (item?.mediaKey) {
+    const key = String(item.mediaKey).trim();
+    if (key.includes('-')) return key.replace('-', '_');
+    return key;
+  }
+
+  let entityId = rawId;
+  let resolvedType = rawType;
+
+  if (rawId.includes('-') || rawId.includes('_')) {
+    const parts = rawId.split(/[-_]/);
+    if (parts.length >= 2) {
+      if (!resolvedType) resolvedType = parts[0];
+      entityId = parts[parts.length - 1];
+    }
+  }
+
+  const normalizedType =
+    String(resolvedType).trim().toLowerCase() === 'tv' ||
+    String(resolvedType).trim().toLowerCase() === 'show'
+      ? 'tv'
+      : 'movie';
+
+  return `${normalizedType}_${entityId}`;
+}
+
+function ShowcaseCardItem({ isOwner, item, onRemoveItem, userId }) {
+  const isDraggingRef = useRef(false);
+  const canonicalKey = getCanonicalMediaKey(item);
+  const card = toAccountMediaCard(item);
+  if (!card) return null;
+
   return (
-    <div className="relative w-full">
-      <div className="flex w-full items-center gap-2 border border-white/15 bg-black/40 px-4 py-3">
-        <div className="center size-8 shrink-0 text-[#475569]">
-          <Icon icon="solar:reorder-bold" size={18} />
-        </div>
-        <p className="min-w-0 flex-1 truncate text-sm font-semibold">
-          {getAccountMediaTitle(item)}
-        </p>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            className="center size-8 border border-white/10 bg-black text-white/70 disabled:opacity-50"
-            aria-label={`Move ${getAccountMediaTitle(item)} up`}
-            disabled={isFirst}
-            onClick={() => onMoveItem(index, index - 1)}
-          >
-            <Icon icon="solar:alt-arrow-up-bold" size={14} />
-          </Button>
-          <Button
-            className="center size-8 border border-white/10 bg-black text-white/70 disabled:opacity-50"
-            aria-label={`Move ${getAccountMediaTitle(item)} down`}
-            disabled={isLast}
-            onClick={() => onMoveItem(index, index + 1)}
-          >
-            <Icon icon="solar:alt-arrow-down-bold" size={14} />
-          </Button>
-        </div>
-        {renderEditAction?.(item)}
-      </div>
-    </div>
+    <Reorder.Item
+      as="div"
+      key={canonicalKey}
+      value={item}
+      className="relative flex h-full min-w-0 cursor-grab flex-col select-none active:cursor-grabbing"
+      whileDrag={{
+        scale: 1.05,
+        zIndex: 40,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)',
+      }}
+      transition={{ duration: 0.2 }}
+      onDragStart={() => {
+        isDraggingRef.current = true;
+      }}
+      onDragEnd={() => {
+        setTimeout(() => {
+          isDraggingRef.current = false;
+        }, 150);
+      }}
+      onClickCapture={(event) => {
+        if (isDraggingRef.current) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
+    >
+      <MediaCard
+        className="pointer-events-auto w-full"
+        href={card.href}
+        imageAlt={card.imageAlt}
+        imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
+        imageSrc={card.imageSrc}
+        tooltipText={card.tooltipText}
+        topOverlay={
+          isOwner ? (
+            <ProfileMediaActions
+              media={item}
+              onRemoveItem={onRemoveItem}
+              removeLabel={`Remove ${item?.title || item?.name || 'item'} from favorites`}
+              userId={userId}
+            />
+          ) : null
+        }
+      />
+    </Reorder.Item>
   );
 }
-function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, onReorder }) {
-  const handleMoveItem = (fromIndex, toIndex) => {
-    if (typeof onReorder !== 'function' || toIndex < 0 || toIndex >= items.length) {
-      return;
-    }
 
-    const nextItems = [...items];
-    const [movedItem] = nextItems.splice(fromIndex, 1);
-    nextItems.splice(toIndex, 0, movedItem);
-    onReorder(nextItems);
-  };
+function FavoriteShowcaseManager({
+  items = [],
+  isOwner = false,
+  onRemoveItem,
+  onReorder,
+  userId = null,
+}) {
+  const showcaseItems = items.slice(0, 5);
 
   return (
     <AccountSectionLayout
@@ -351,31 +403,29 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, o
       summaryLabel={`${items.length}/5 selected`}
       title="Favorites Showcase"
     >
-      {items.length === 0 ? (
+      {showcaseItems.length === 0 ? (
         <AccountInlineSectionState>No showcase titles selected yet</AccountInlineSectionState>
       ) : (
-        <div className="list-none space-y-2">
-          {items.map((item, index) => (
-            <ReorderableListItem
-              key={item.id || item.mediaKey || item.entityId}
-              index={index}
-              isFirst={index === 0}
-              isLast={index === items.length - 1}
-              item={item}
-              onMoveItem={handleMoveItem}
-              renderEditAction={(entry) => (
-                <Button
-                  variant="destructive-icon"
-                  aria-label={`Remove ${entry?.title || entry?.name} from favorites`}
-                  disabled={isSaving}
-                  onClick={() => onRemoveItem(entry)}
-                >
-                  <Icon icon="solar:trash-bin-trash-bold" size={16} />
-                </Button>
-              )}
-            />
-          ))}
-        </div>
+        <Reorder.Group
+          as="div"
+          axis="x"
+          values={items}
+          onReorder={onReorder}
+          className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5"
+        >
+          {showcaseItems.map((item) => {
+            const canonicalKey = getCanonicalMediaKey(item);
+            return (
+              <ShowcaseCardItem
+                key={canonicalKey}
+                isOwner={isOwner}
+                item={item}
+                onRemoveItem={onRemoveItem}
+                userId={userId}
+              />
+            );
+          })}
+        </Reorder.Group>
       )}
     </AccountSectionLayout>
   );
