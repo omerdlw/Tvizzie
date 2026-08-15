@@ -178,16 +178,15 @@ const UserAction = memo(function UserAction({
 
   if (canShowFollowAction) {
     const isFollowPending = followStatus === FOLLOW_STATUSES.PENDING;
-    const followLabel =
-      pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow';
+    const isFollowAccepted = followStatus === FOLLOW_STATUSES.ACCEPTED;
+    const followLabel = isFollowAccepted ? 'Following' : isFollowPending ? 'Requested' : 'Follow';
     return (
       <motion.button
         type="button"
         onClick={() => onFollow(user.id)}
-        disabled={isFollowPending || isPending}
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
-        className={ACTION_CLASSES.INFO}
-        aria-label={`Follow ${user.displayName}`}
+        className={isFollowAccepted ? ACTION_CLASSES.MUTED : isFollowPending ? ACTION_CLASSES.DEFAULT : ACTION_CLASSES.INFO}
+        aria-label={`${followLabel} ${user.displayName}`}
       >
         {followLabel}
       </motion.button>

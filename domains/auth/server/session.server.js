@@ -195,18 +195,63 @@ export function buildAuthContextFromAccessToken(token, source = 'session', rawUs
   };
 }
 
+const VERIFIED_TOKEN_CACHE = new Map();
+const VERIFIED_TOKEN_CACHE_TTL_MS = 60 * 1000;
+
+function getCachedVerifiedSession(token) {
+  const entry = VERIFIED_TOKEN_CACHE.get(token);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    VERIFIED_TOKEN_CACHE.delete(token);
+    return null;
+  }
+  return entry.context;
+}
+
+function setCachedVerifiedSession(token, context) {
+  const expMs = Number(context.decodedToken?.exp) * 1000;
+  const maxTtlMs =
+    Number.isFinite(expMs) && expMs > Date.now()
+      ? Math.min(Date.now() + VERIFIED_TOKEN_CACHE_TTL_MS, expMs)
+      : Date.now() + VERIFIED_TOKEN_CACHE_TTL_MS;
+
+  VERIFIED_TOKEN_CACHE.set(token, {
+    context,
+    expiresAt: maxTtlMs,
+  });
+
+  if (VERIFIED_TOKEN_CACHE.size > 500) {
+    const firstKey = VERIFIED_TOKEN_CACHE.keys().next().value;
+    VERIFIED_TOKEN_CACHE.delete(firstKey);
+  }
+}
+
+let sharedAuthClient = null;
+
+function getSharedAuthClient() {
+  if (!sharedAuthClient) {
+    assertSupabaseBrowserEnv();
+    sharedAuthClient = createSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        persistSession: false,
+      },
+    });
+  }
+  return sharedAuthClient;
+}
+
 async function verifyAccessTokenWithSupabase(token, source) {
   const normalizedToken = normalizeValue(token);
   if (!normalizedToken) return null;
 
-  assertSupabaseBrowserEnv();
-  const client = createSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: {
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      persistSession: false,
-    },
-  });
+  const cached = getCachedVerifiedSession(normalizedToken);
+  if (cached) {
+    return cached;
+  }
+
+  const client = getSharedAuthClient();
   const result = await withTimeout(
     client.auth.getUser(normalizedToken),
     SUPABASE_FALLBACK_TIMEOUT_MS,
@@ -221,12 +266,16 @@ async function verifyAccessTokenWithSupabase(token, source) {
     throw new Error('Invalid or expired authentication token');
   }
 
-  return {
+  const finalContext = {
     ...context,
     email: normalizeEmailValue(result.data.user.email) || context.email,
     user: result.data.user,
     userId: result.data.user.id,
   };
+
+  setCachedVerifiedSession(normalizedToken, finalContext);
+
+  return finalContext;
 }
 
 export function createSessionFromIdToken(idToken) {

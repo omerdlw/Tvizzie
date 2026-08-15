@@ -149,7 +149,7 @@ function SingleListCardSkeleton({ delay = 0 }) {
           {previewPosters.map((poster, index) => (
             <div
               key={index}
-              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden border border-white/10 bg-white/[0.08]"
+              className="absolute top-0 left-1/2 h-[156px] w-[98px] overflow-hidden border border-white/10 bg-white/5"
               style={{
                 opacity: poster.opacity,
                 transform: `translateX(calc(-50% + ${poster.x}px)) translateY(${poster.y}px) rotate(${poster.rotate}deg) scale(${poster.scale})`,

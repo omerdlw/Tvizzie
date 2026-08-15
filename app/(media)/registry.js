@@ -1,12 +1,14 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import CastModal from '@/domains/media/ui/modals/cast-modal';
-import ImagePreviewModal from '@/domains/media/ui/modals/image-preview-modal';
-import VideoPreviewModal from '@/domains/media/ui/modals/video-preview-modal';
-import MediaSocialProofModal from '@/domains/media/ui/modals/media-social-proof-modal';
+const CastModal = dynamic(() => import('@/domains/media/ui/modals/cast-modal'), { ssr: false });
+const ImagePreviewModal = dynamic(() => import('@/domains/media/ui/modals/image-preview-modal'), { ssr: false });
+const VideoPreviewModal = dynamic(() => import('@/domains/media/ui/modals/video-preview-modal'), { ssr: false });
+const MediaSocialProofModal = dynamic(() => import('@/domains/media/ui/modals/media-social-proof-modal'), { ssr: false });
+
 import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
 import SearchAction from '@/domains/search/ui/nav-actions/search-action';
 import MovieAction from '@/domains/media/ui/nav-actions/movie-action';

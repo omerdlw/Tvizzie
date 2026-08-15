@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { createClient as createServerClient } from '@/infrastructure/supabase/supabase-server';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { normalizeTimestamp } from '@/shared/utils';
 import {
   isSupportedContentSubjectType,
@@ -69,7 +69,7 @@ function hasSupportedNotificationPayload(notification = {}) {
 }
 
 export async function getNotificationList(userId, validTypes, limitCount = NOTIFICATION_LIMIT) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const resolvedLimitCount = Number.isFinite(Number(limitCount))
     ? Math.max(1, Math.min(Number(limitCount), 100))
     : NOTIFICATION_LIMIT;
@@ -95,7 +95,7 @@ export async function getNotificationList(userId, validTypes, limitCount = NOTIF
 }
 
 export async function getUnreadNotificationCount(userId, validTypes) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const validTypeList = Array.isArray(validTypes)
     ? validTypes
     : validTypes instanceof Set
@@ -123,7 +123,7 @@ export async function getUnreadNotificationCount(userId, validTypes) {
 }
 
 export async function markNotificationAsRead(userId, notificationId) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const timestamp = new Date().toISOString();
   const result = await client
     .from('notifications')
@@ -139,7 +139,7 @@ export async function markNotificationAsRead(userId, notificationId) {
 }
 
 export async function markAllUserNotificationsAsRead(userId) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const timestamp = new Date().toISOString();
   const result = await client
     .from('notifications')
@@ -155,7 +155,7 @@ export async function markAllUserNotificationsAsRead(userId) {
 }
 
 export async function deleteUserNotification(userId, notificationId) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const result = await client
     .from('notifications')
     .delete()
@@ -166,7 +166,7 @@ export async function deleteUserNotification(userId, notificationId) {
 }
 
 export async function deleteAllUserNotifications(userId) {
-  const client = await createServerClient();
+  const client = createAdminClient();
   const result = await client.from('notifications').delete().eq('user_id', userId);
 
   assertResult(result, 'Notifications could not be deleted');

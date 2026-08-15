@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "@/*": "./*"
+  },
   "scripts": {
     "dev": "next dev",
     "analyze": "ANALYZE=true next build --webpack",
@@ -20,6 +23,7 @@
     "verify": "npm run check:architecture && npm run lint && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "node --env-file=.env --import ./scripts/register-alias.mjs scripts/test-supabase-runtime.mjs",
     "seed:dev:large": "ALLOW_DEV_DATABASE_RESET=1 node --env-file=.env scripts/dev-seed-dataset.mjs --yes --reset-all-dev-data"
   },
   "dependencies": {

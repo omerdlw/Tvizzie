@@ -1,3 +1,4 @@
+import { createElement, Fragment } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -168,12 +169,9 @@ export function normalizeFeedbackContent(value) {
 export function pipe(...providers) {
   return providers.reduce(
     (AccumulatedProviders, [Provider, props = {}]) =>
-      ({ children }) => (
-        <AccumulatedProviders>
-          <Provider {...props}>{children}</Provider>
-        </AccumulatedProviders>
-      ),
-    ({ children }) => <>{children}</>,
+      ({ children }) =>
+        createElement(AccumulatedProviders, null, createElement(Provider, props, children)),
+    ({ children }) => createElement(Fragment, null, children),
   );
 }
 

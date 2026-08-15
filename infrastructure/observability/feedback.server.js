@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { readSessionFromRequest } from '@/domains/auth/server/session.server.js';
-import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
+import { assertRateLimit, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 export const runtime = 'nodejs';
 
@@ -46,6 +46,13 @@ function resolveStatusCode(error) {
 
 export async function POST(request) {
   try {
+    const session = await readSessionFromRequest(request, { requireSession: false });
+    assertRateLimit(request, {
+      key: 'feedback-post',
+      limit: 10,
+      userId: session?.userId || null,
+      windowSeconds: 60,
+    });
     const body = await request.json().catch(() => ({}));
     const message = normalizeValue(body?.message);
 

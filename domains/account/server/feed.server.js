@@ -595,17 +595,20 @@ export async function fetchAccountActivityFeedServer({
     chunkArray(sourceIds, 100).map(async (idChunk) => {
       const res = await admin
         .from('activity')
-        .select(ACTIVITY_SELECT, { count: 'exact' })
+        .select(ACTIVITY_SELECT)
         .in('event_type', [...ACTIVITY_EVENT_TYPE_SET])
         .in('user_id', idChunk)
         .order('updated_at', { ascending: normalizedSort === 'oldest' })
-        .range(0, queryWindowSize - 1);
+        .range(0, queryWindowSize);
       if (res.error) throw new Error(res.error.message || 'Activity feed could not be loaded');
-      const items = (res.data || []).map(normalizeActivityRow).filter(isVisibleActivityItem);
+      const rows = res.data || [];
+      const hasMore = rows.length > queryWindowSize;
+      const windowRows = hasMore ? rows.slice(0, queryWindowSize) : rows;
+      const items = windowRows.map(normalizeActivityRow).filter(isVisibleActivityItem);
       return {
-        hasMore: Number(res.count || 0) > (res.data || []).length,
+        hasMore,
         items,
-        totalCount: Number(res.count || 0),
+        totalCount: items.length,
       };
     }),
   );

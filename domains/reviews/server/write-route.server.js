@@ -7,6 +7,7 @@ import {
   requireSessionRequest,
 } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
+import { assertRateLimit } from '@/infrastructure/http/http-server';
 import { executeReviewWriteAction } from './write-actions.server.js';
 import { normalizeValue, resolveWriteStatusCode } from './write-input.server.js';
 
@@ -14,6 +15,12 @@ export async function handleReviewsWritePost(request) {
   try {
     assertCsrfRequestForCookieSession(request);
     const session = await requireSessionRequest(request);
+    assertRateLimit(request, {
+      key: 'reviews-write',
+      limit: 30,
+      userId: session.userId,
+      windowSeconds: 60,
+    });
     const body = await request.json().catch(() => ({}));
     const action = normalizeValue(body?.action);
 

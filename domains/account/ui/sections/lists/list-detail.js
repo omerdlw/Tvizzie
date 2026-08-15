@@ -174,6 +174,8 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             toolbar={
               hasListItems && (
                 <AccountMediaFilterBar
+                  defaultSort="list_order"
+                  defaultSortLabel="Default sort: List order"
                   filters={mediaFilters}
                   decadeOptions={decadeOptions}
                   genreOptions={genreOptions}

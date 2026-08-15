@@ -172,6 +172,16 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
       const field = normalizedTarget === 'avatar' ? 'avatarUrl' : 'bannerUrl';
       const label = normalizedTarget === 'avatar' ? 'Avatar' : 'Logo';
 
+      // 0ms Instant Client-Side Image Preview
+      let localBlobUrl = null;
+      try {
+        localBlobUrl = URL.createObjectURL(file);
+        setForm((prev) => ({
+          ...prev,
+          [field]: localBlobUrl,
+        }));
+      } catch {}
+
       setMediaUploadState((prev) => ({
         ...prev,
         [normalizedTarget]: {

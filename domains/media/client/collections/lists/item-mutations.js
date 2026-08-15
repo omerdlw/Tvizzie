@@ -102,3 +102,60 @@ export async function toggleUserListItem({ userId, listId, media }) {
     mediaKey: row.media_key || buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
   };
 }
+
+export async function reorderUserListItems({ userId, listId, items = [] }) {
+  ensureUserId(userId, 'Authenticated user and listId are required to reorder list items');
+
+  if (!listId) {
+    throw new Error('Authenticated user and listId are required to reorder list items');
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return { success: true };
+  }
+
+  const client = getSupabaseClient();
+  const nowIso = new Date().toISOString();
+
+  const updates = items.map((item, index) => {
+    const entityType =
+      String(
+        item?.entityType || item?.entity_type || item?.media_type || item?.mediaType || 'movie',
+      )
+        .trim()
+        .toLowerCase() === 'tv'
+        ? 'tv'
+        : 'movie';
+    const rawId = String(
+      item?.entityId || item?.entity_id || item?.id || item?.mediaKey || '',
+    ).trim();
+    const cleanId = rawId.replace(/^(movie|tv)-/, '');
+    const mediaKey =
+      item?.mediaKey && typeof item.mediaKey === 'string' && item.mediaKey.includes('-')
+        ? item.mediaKey
+        : `${entityType}-${cleanId}`;
+    const position = index + 1;
+
+    return client
+      .from('list_items')
+      .update({
+        position,
+        updated_at: nowIso,
+      })
+      .eq('user_id', userId)
+      .eq('list_id', listId)
+      .eq('media_key', mediaKey);
+  });
+
+  const results = await Promise.all(updates);
+  for (const res of results) {
+    assertSupabaseResult(res, 'List item order could not be updated');
+  }
+
+  invalidatePollingSubscription('lists:items', { refetch: true });
+  invalidatePollingSubscription('lists:item', { refetch: true });
+  invalidatePollingSubscription('lists:slug', { refetch: true });
+  invalidatePollingSubscription('lists:user', { refetch: true });
+
+  return { success: true };
+}

@@ -3,32 +3,26 @@ import 'server-only';
 import {
   deleteAllUserNotifications,
   deleteUserNotification,
+  getNotificationList,
+  getUnreadNotificationCount,
   markAllUserNotificationsAsRead,
   markNotificationAsRead,
 } from '@/domains/social/server/notifications/notification-resources.server';
 import { NOTIFICATION_TYPE_SET } from '@/domains/social/utils';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import {
-  executeWriteRollout,
   getOrLoadCachedValue,
   invalidateCachedValuesWhere,
-  invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
 import { normalizeValue } from '@/shared/utils';
 import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import {
-  createRouteAuthMeta,
   createRouteErrorResponse,
   createRouteRequestMeta,
   createRouteSuccessResponse,
   createRouteValidationErrorResponse,
 } from '@/infrastructure/http/route-context.server';
-
-function resolveNotificationRolloutEndpoint(action) {
-  const normalizedAction = normalizeValue(action).toLowerCase();
-  return normalizedAction ? `notifications-control:${normalizedAction}` : 'notifications-control';
-}
 
 function createValidationErrorResponse({ authContext, message, requestMeta }) {
   return createRouteValidationErrorResponse({
@@ -96,8 +90,6 @@ function invalidateNotificationCaches(userId) {
 
 async function executeNotificationWrite({
   authContext,
-  request,
-  requestMeta,
   action,
   notificationId = null,
 }) {
@@ -108,80 +100,39 @@ async function executeNotificationWrite({
     throw new Error('Notification action is required');
   }
 
-  const edgeBody = {
-    action: normalizedAction,
-    userId: authContext.userId,
-    ...(normalizedNotificationId ? { notificationId: normalizedNotificationId } : {}),
-  };
-
-  return executeWriteRollout({
-    domain: 'notifications',
-    endpoint: resolveNotificationRolloutEndpoint(normalizedAction),
-    userId: authContext.userId,
-    requestId: requestMeta?.requestId || null,
-    edgeWrite: async () =>
-      invokeInternalEdgeFunction('notifications-control', {
-        body: edgeBody,
-        request,
-        requestMeta: createRouteAuthMeta(requestMeta, authContext),
-        source: 'notifications-control',
-      }),
-    legacyWrite: () =>
-      executeLegacyNotificationWrite(
-        normalizedAction,
-        authContext.userId,
-        normalizedNotificationId,
-      ),
-  });
+  return executeLegacyNotificationWrite(
+    normalizedAction,
+    authContext.userId,
+    normalizedNotificationId,
+  );
 }
 
 async function fetchNotificationsResource({
   authContext,
   limitCount,
-  request,
-  requestMeta,
   resource,
 }) {
   const validTypes = [...NOTIFICATION_TYPE_SET];
 
   if (resource === 'unread-count') {
-    const payload = await getOrLoadCachedValue({
+    const count = await getOrLoadCachedValue({
       cacheKey: `notifications|resource=unread-count|user=${authContext.userId}`,
       enabled: true,
       ttlMs: 3000,
-      loader: () =>
-        invokeInternalEdgeFunction('notifications-control', {
-          body: {
-            action: 'unread-count',
-            userId: authContext.userId,
-            validTypes,
-          },
-          request,
-          requestMeta: createRouteAuthMeta(requestMeta, authContext),
-        }),
+      loader: () => getUnreadNotificationCount(authContext.userId, validTypes),
     });
 
-    return Number(payload?.data || 0);
+    return Number(count || 0);
   }
 
-  const payload = await getOrLoadCachedValue({
+  const list = await getOrLoadCachedValue({
     cacheKey: `notifications|resource=list|limit=${normalizeValue(limitCount)}|user=${authContext.userId}`,
     enabled: true,
     ttlMs: 3000,
-    loader: () =>
-      invokeInternalEdgeFunction('notifications-control', {
-        body: {
-          action: 'list',
-          limitCount,
-          userId: authContext.userId,
-          validTypes,
-        },
-        request,
-        requestMeta: createRouteAuthMeta(requestMeta, authContext),
-      }),
+    loader: () => getNotificationList(authContext.userId, validTypes, limitCount),
   });
 
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return Array.isArray(list) ? list : [];
 }
 
 function publishNotificationChange({ authContext, notificationId = null, reason, writeResult }) {

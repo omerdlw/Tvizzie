@@ -28,6 +28,8 @@ import {
   validateUsername,
 } from '@/domains/account/utils';
 import {
+  CACHE_CONTROL,
+  cacheControlHeaders,
   getOrLoadCachedValue,
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
@@ -74,6 +76,12 @@ export async function handleAccountCollectionsGet(request) {
     return NextResponse.json({ data, items: Array.isArray(data) ? data : [] });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
+
+    // Private profile access denied — return empty data silently, not an error toast
+    if (status === 403) {
+      return NextResponse.json({ data: null, items: [], private: true });
+    }
+
     console.error('Collections could not be loaded:', error);
     return NextResponse.json({ error: 'Collections could not be loaded' }, { status });
   }
@@ -112,6 +120,11 @@ export async function handleAccountActivityGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
+
+    if (status === 403) {
+      return NextResponse.json({ items: [], private: true });
+    }
+
     console.error('Activity feed could not be loaded:', error);
     return NextResponse.json({ error: 'Activity feed could not be loaded' }, { status });
   }
@@ -157,6 +170,11 @@ export async function handleAccountProfileGet(request) {
     return NextResponse.json({ profile: profile || null });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
+
+    if (status === 403) {
+      return NextResponse.json({ profile: null, private: true });
+    }
+
     console.error('Profile could not be loaded:', error);
     return NextResponse.json({ error: 'Profile could not be loaded' }, { status });
   }
@@ -275,19 +293,20 @@ export async function handleAccountResolveGet(request) {
     const userId = await getOrLoadCachedValue({
       cacheKey: `account-resolve|username=${username}`,
       enabled: true,
-      ttlMs: 1500,
-      loader: async () => {
-        const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-          body: { resource: 'resolve', username },
-        });
-        return payload?.userId || null;
-      },
+      ttlMs: 3000,
+      loader: () => getAccountIdByUsername(username),
     });
 
-    return NextResponse.json({ userId: userId || null });
+    return NextResponse.json(
+      { userId: userId || null },
+      { headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_ACCOUNT_RESOLVE) },
+    );
   } catch (error) {
     console.error('Username could not be resolved:', error);
-    return NextResponse.json({ error: 'Username could not be resolved' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Username could not be resolved' },
+      { status: 500, headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE) },
+    );
   }
 }
 
@@ -318,6 +337,11 @@ export async function handleAccountReviewsGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
+
+    if (status === 403) {
+      return NextResponse.json({ items: [], private: true });
+    }
+
     console.error('Reviews could not be loaded:', error);
     return NextResponse.json({ error: 'Reviews could not be loaded' }, { status });
   }

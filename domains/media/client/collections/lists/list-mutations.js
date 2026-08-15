@@ -75,35 +75,27 @@ export async function createUserList({ userId, title, description = '', coverUrl
     title: validatedTitle,
   });
   const client = getSupabaseClient();
-  const insertResult = await client
-    .from('lists')
-    .insert({
-      user_id: userId,
-      slug,
-      title: validatedTitle,
-      description: validatedDescription,
-      poster_path: normalizedCoverUrl,
-      likes_count: 0,
-      reviews_count: 0,
-      payload,
-      created_at: nowIso,
-      updated_at: nowIso,
-    })
-    .select(LIST_ROW_SELECT)
-    .single();
+  const insertResult = await client.rpc('list_create_atomic', {
+    p_description: validatedDescription,
+    p_payload: payload,
+    p_poster_path: normalizedCoverUrl,
+    p_slug: slug,
+    p_title: validatedTitle,
+    p_user_id: userId,
+  });
 
   assertSupabaseResult(insertResult, 'List could not be created');
-  await applyProfileListCounterDelta(client, userId, 1);
+  const createdRow = Array.isArray(insertResult.data) ? insertResult.data[0] : insertResult.data;
 
   fireListCreatedActivity({
-    listId: insertResult.data.id,
+    listId: createdRow.id,
     ownerSnapshot,
     slug,
     title: validatedTitle,
     userId,
   });
 
-  return normalizeListRow(insertResult.data, new Map());
+  return normalizeListRow(createdRow, new Map());
 }
 
 export async function createUserListWithItems({
@@ -272,16 +264,11 @@ export async function deleteUserList({ userId, listId }) {
     action: 'delete-list-activity',
     listId,
   });
-  const result = await client
-    .from('lists')
-    .delete()
-    .eq('id', listId)
-    .eq('user_id', userId)
-    .select('id')
-    .single();
+  const result = await client.rpc('list_delete_cascade', {
+    p_list_id: listId,
+    p_user_id: userId,
+  });
 
   assertSupabaseResult(result, 'List could not be deleted');
-  await applyProfileListCounterDelta(client, userId, -1);
-
   return true;
 }

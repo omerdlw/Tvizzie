@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/shared/utils';
-import { Spinner } from '@/ui/feedback/spinner';
+
 function getSafeSrc(src) {
   const value = String(src || '').trim();
   return value || null;
 }
+
 export default function AdaptiveImage({
   mode = 'next',
   src,
@@ -22,55 +23,59 @@ export default function AdaptiveImage({
   fetchPriority,
   onLoad,
   onError,
+  decoding = 'async',
   ...props
 }) {
   const imageRef = useRef(null);
   const resolvedSrc = getSafeSrc(src);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hasFailed, setHasFailed] = useState(false);
+
   useEffect(() => {
-    setHasLoaded(false);
-    setHasFailed(false);
-  }, [resolvedSrc]);
-  useEffect(() => {
+    // Check if the image is already cached by the browser
     const imageElement = imageRef.current;
-    if (!imageElement) {
-      return;
+    if (imageElement && imageElement.complete && imageElement.naturalWidth > 0) {
+      setHasLoaded(true);
+      setHasFailed(false);
+    } else {
+      setHasLoaded(false);
+      setHasFailed(false);
     }
-    const syncLoadedState = () => {
-      if (imageElement.complete && imageElement.naturalWidth > 0) {
-        setHasLoaded(true);
-        setHasFailed(false);
-      }
-    };
-    syncLoadedState();
-    const frameId = window.requestAnimationFrame(syncLoadedState);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [mode, resolvedSrc]);
+  }, [resolvedSrc]);
+
   if (!resolvedSrc) {
     return null;
   }
+
   const imageClassName = cn(
     fill ? 'absolute inset-0 h-full w-full' : 'h-full w-full',
-    '',
+    'transition-opacity duration-200 ease-out',
     hasLoaded ? 'opacity-100' : 'opacity-0',
     className,
   );
+
   const resolvedLoading = loading || (priority ? 'eager' : 'lazy');
   const resolvedFetchPriority = fetchPriority || (priority ? 'high' : undefined);
+
   const handleLoad = (event) => {
     setHasLoaded(true);
     setHasFailed(false);
     onLoad?.(event);
   };
+
   const handleError = (event) => {
     setHasFailed(true);
     onError?.(event);
   };
-  return (
-    <div className={cn('center relative h-full w-full overflow-hidden', wrapperClassName)}>
-      {!hasLoaded && !hasFailed ? <Spinner className="opacity-50" size={16} /> : null}
 
+  return (
+    <div
+      className={cn(
+        'relative h-full w-full overflow-hidden bg-white/5',
+        skeletonClassName,
+        wrapperClassName,
+      )}
+    >
       {mode === 'img' ? (
         <img
           ref={imageRef}
@@ -81,6 +86,7 @@ export default function AdaptiveImage({
           onError={handleError}
           loading={resolvedLoading}
           fetchPriority={resolvedFetchPriority}
+          decoding={decoding}
           {...props}
         />
       ) : (
@@ -92,6 +98,7 @@ export default function AdaptiveImage({
           preload={preload}
           loading={resolvedLoading}
           fetchPriority={resolvedFetchPriority}
+          decoding={decoding}
           className={imageClassName}
           onLoad={handleLoad}
           onError={handleError}

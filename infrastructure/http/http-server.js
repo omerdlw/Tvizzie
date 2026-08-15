@@ -8,5 +8,6 @@ export * from './memory-cache.server.js';
 export * from '../realtime/polling-subscription-shared.js';
 export * from './request-meta.server.js';
 export * from './runtime-policy-constants.js';
+export * from './rate-limiter.server.js';
 export * from './supabase-edge-internal.server.js';
 export * from './write-rollout.server.js';

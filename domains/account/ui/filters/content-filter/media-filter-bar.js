@@ -19,6 +19,8 @@ import {
 export function AccountMediaFilterBar({
   className = '',
   decadeOptions = [],
+  defaultSort = 'release_desc',
+  defaultSortLabel = 'Default sort: Release date, newest first',
   filters,
   genreOptions = [],
   onChange,
@@ -33,13 +35,16 @@ export function AccountMediaFilterBar({
   const decadeLabel = resolveOptionLabel(decadeOptions, filters?.decade, 'Any decade');
   const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
 
+  const isDefaultSort = filters?.sort === defaultSort;
   const sortLabel = useMemo(() => {
     const selectedOption = resolveMediaSortOption(filters?.sort);
-    return selectedOption
-      ? `${selectedOption.groupLabel}: ${selectedOption.label}`
+    if (selectedOption) {
+      return `${selectedOption.groupLabel}: ${selectedOption.label}`;
+    }
+    return defaultSort === 'list_order'
+      ? 'Sort: List order'
       : 'Release Date: Newest release first';
-  }, [filters?.sort]);
-  const isDefaultSort = filters?.sort === 'release_desc';
+  }, [filters?.sort, defaultSort]);
 
   useEffect(() => {
     if (searchQuery) setIsSearchOpen(true);
@@ -77,11 +82,11 @@ export function AccountMediaFilterBar({
             />
           </FilterPopover>
 
-          <FilterPopover label={`${sortLabel}`} active={filters?.sort !== 'release_desc'}>
+          <FilterPopover label={`${sortLabel}`} active={!isDefaultSort}>
             <DefaultMenuItem
               active={isDefaultSort}
-              label="Default sort: Release date, newest first"
-              onClick={() => onChange({ sort: 'release_desc' })}
+              label={defaultSortLabel}
+              onClick={() => onChange({ sort: defaultSort })}
             />
 
             {MEDIA_SORT_GROUPS.map((group) => (

@@ -169,8 +169,8 @@ export async function requestSyncUserAccountEmail({ email }) {
   return saveAccountProfile({ action: 'update', email });
 }
 
-const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 20000;
-const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
+const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 60000;
+const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 180000;
 const ACCOUNT_REFRESH_TIMERS = new Map();
 const DEFAULT_REFRESH_DELAY_MS = 250;
 

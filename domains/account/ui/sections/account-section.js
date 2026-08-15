@@ -20,7 +20,7 @@ export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-6 flex justify-center';
 const ACCOUNT_SECTION_BORDER_CLASS = 'border-white/10';
 
 export const ACCOUNT_EMPTY_SECTION_CLASS =
-  'center min-h-24 w-full  border border-white/10 p-6 text-center text-xs sm:text-sm font-semibold tracking-wider text-white/50 uppercase';
+  'center min-h-24 w-full  border border-white/5 p-6 text-center text-xs sm:text-sm font-semibold tracking-wider text-white/50 uppercase';
 
 export function AccountInlineSectionState({ children, className = '' }) {
   return (

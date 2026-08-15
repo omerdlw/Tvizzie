@@ -1,12 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 
 import { pipe } from '@/shared/utils';
 import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
-import NotificationsModal from '@/domains/social/ui/modals/notifications-modal';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';
+
+const NotificationsModal = dynamic(
+  () => import('@/domains/social/ui/modals/notifications-modal'),
+  { ssr: false },
+);
+
 import { AccountProvider } from '@/modules/account';
 import { ContextMenuGlobal, ContextMenuProvider } from '@/modules/context-menu';
 import {

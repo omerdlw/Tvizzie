@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { getOrLoadCachedValue } from '@/infrastructure/http/http-server';
+import { CACHE_CONTROL, cacheControlHeaders, getOrLoadCachedValue } from '@/infrastructure/http/http-server';
 import { normalizeTimestamp } from '@/shared/utils';
 
 const DEFAULT_LIMIT = 8;
@@ -165,25 +164,17 @@ function normalizeListResult(row = {}, owner = null) {
   };
 }
 
-async function queryListsByColumn(admin, column, pattern, limit) {
+async function searchLists(admin, query, limit) {
+  const pattern = createPattern(query);
   const result = await admin
     .from('lists')
     .select(LIST_SELECT)
-    .ilike(column, pattern)
+    .or(`title.ilike.${pattern},description.ilike.${pattern}`)
     .order('updated_at', { ascending: false })
     .limit(limit);
 
   assertResult(result, 'Lists could not be searched');
-  return Array.isArray(result.data) ? result.data : [];
-}
-
-async function searchLists(admin, query, limit) {
-  const pattern = createPattern(query);
-  const [titleRows, descriptionRows] = await Promise.all([
-    queryListsByColumn(admin, 'title', pattern, limit),
-    queryListsByColumn(admin, 'description', pattern, limit),
-  ]);
-  const rows = dedupeByKey([...titleRows, ...descriptionRows], (row) => row.id).slice(0, limit);
+  const rows = Array.isArray(result.data) ? result.data : [];
   const ownerMap = await loadPublicProfileMap(
     admin,
     rows.map((row) => row.user_id),
@@ -394,12 +385,20 @@ export async function GET(request) {
     const lists = Array.isArray(payload?.lists) ? payload.lists : [];
     const reviews = Array.isArray(payload?.reviews) ? payload.reviews : [];
 
-    return NextResponse.json({
-      items: [...lists, ...reviews],
-      lists,
-      reviews,
-    });
+    return NextResponse.json(
+      {
+        items: [...lists, ...reviews],
+        lists,
+        reviews,
+      },
+      {
+        headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_COMMUNITY_SEARCH),
+      },
+    );
   } catch {
-    return NextResponse.json({ items: [], lists: [], reviews: [] });
+    return NextResponse.json(
+      { items: [], lists: [], reviews: [] },
+      { headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE) },
+    );
   }
 }

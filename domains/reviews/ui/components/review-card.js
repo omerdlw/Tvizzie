@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { TMDB_IMG } from '@/shared/constants';
 import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from '@/shared/utils';
@@ -114,22 +114,47 @@ function isInteractiveTarget(target) {
 }
 
 function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, onClick }) {
+  const [optimisticLiked, setOptimisticLiked] = useState(hasLiked);
+  const [optimisticCount, setOptimisticCount] = useState(likesCount);
+
+  useEffect(() => {
+    setOptimisticLiked(hasLiked);
+    setOptimisticCount(likesCount);
+  }, [hasLiked, likesCount]);
+
+  const handleClick = async (e) => {
+    if (disabled) return;
+    const nextLiked = !optimisticLiked;
+    const nextCount = Math.max(0, optimisticCount + (nextLiked ? 1 : -1));
+    setOptimisticLiked(nextLiked);
+    setOptimisticCount(nextCount);
+    try {
+      await onClick?.(e);
+    } catch {
+      setOptimisticLiked(hasLiked);
+      setOptimisticCount(likesCount);
+    }
+  };
+
   return (
     <button
       disabled={disabled}
-      onClick={onClick}
+      onClick={handleClick}
       type="button"
       className={cn(
-        'inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-all duration-300 ease-in-out disabled:cursor-default disabled:opacity-50',
-        hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
+        'inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors duration-200 disabled:cursor-default disabled:opacity-50',
+        optimisticLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
       )}
     >
       <Icon
         icon="solar:heart-bold"
         size={16}
-        className={hasLiked ? 'text-error' : 'text-white/50'}
+        className={cn(
+          'transition-transform duration-300',
+          optimisticLiked ? 'text-error scale-110' : 'text-white/50',
+        )}
       />
-      <span>{getReviewLikeText(likesCount)}</span>
+      <span className="tabular-nums">{getReviewLikeText(optimisticCount)}</span>
     </button>
   );
 }

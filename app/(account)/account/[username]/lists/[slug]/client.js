@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { mergeCollectionItemsWithExistingMetadata } from '@/domains/account/hooks';
 import { useAccountProfile } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
-import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import {
   buildPollingSubscriptionKey,
@@ -23,6 +22,7 @@ import {
 } from '@/domains/reviews/client';
 import { TMDB_IMG } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
+import { createListEditorSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-editor-surface';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
@@ -62,8 +62,8 @@ export default function Client({ routeData = null }) {
   );
 
   const auth = useAuth();
-  const { openModal } = useModal();
   const toast = useToast();
+  const { openSurface } = useNavigationActions();
   const [list, setList] = useState(initialList);
   const [listItems, setListItems] = useState(initialListItems);
   const [reviews, setReviews] = useState(initialListReviews);
@@ -365,31 +365,29 @@ export default function Client({ routeData = null }) {
 
   const handleEditListWithItems = useCallback(
     (targetList = list) => {
-      if (!isOwner || !auth.user?.id || !targetList?.id) return;
+      const resolvedList = targetList || list;
+      const effectiveUserId = auth.user?.id || resolvedUserId;
+      if (!resolvedList?.id || !effectiveUserId) return;
 
-      openModal(
-        'LIST_EDITOR_MODAL',
-        { desktop: 'center', mobile: 'bottom' },
-        {
-          data: {
-            isOwner: true,
-            userId: auth.user.id,
-            initialData: targetList,
-            initialItems: listItems,
-            onItemsChange: (nextItems) => {
-              setListItems(nextItems);
-              primeListItemsCache(nextItems);
-            },
-            onSuccess: (updatedList) => {
-              setList((current) =>
-                current?.id === updatedList?.id ? { ...current, ...updatedList } : updatedList,
-              );
-            },
+      openSurface(
+        createListEditorSurfaceEntry({
+          isOwner: true,
+          userId: effectiveUserId,
+          initialData: resolvedList,
+          initialItems: listItems,
+          onItemsChange: (nextItems) => {
+            setListItems(nextItems);
+            primeListItemsCache(nextItems);
           },
-        },
+          onSuccess: (updatedList) => {
+            setList((current) =>
+              current?.id === updatedList?.id ? { ...current, ...updatedList } : updatedList,
+            );
+          },
+        }),
       );
     },
-    [auth.user?.id, isOwner, list, listItems, openModal, primeListItemsCache],
+    [auth.user?.id, list, listItems, openSurface, primeListItemsCache, resolvedUserId],
   );
 
   const handleRequestRemoveListItem = useCallback(
@@ -423,8 +421,6 @@ export default function Client({ routeData = null }) {
     },
     [auth.user?.id, userProfile],
   );
-
-  const { openSurface } = useNavigationActions();
 
   const openReviewModal = useCallback(
     (review = null) => {

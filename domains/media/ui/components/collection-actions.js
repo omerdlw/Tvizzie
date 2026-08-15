@@ -72,20 +72,11 @@ function getMediaSnapshot(media) {
   };
 }
 
-function createCollectionActionState(isLoading = true) {
+function createCollectionActionState() {
   return {
     liked: false,
     watched: false,
     watchlist: false,
-    loadingLike: isLoading,
-    loadingWatched: isLoading,
-    loadingWatchlist: isLoading,
-    submittingLike: false,
-    submittingWatched: false,
-    submittingWatchlist: false,
-    likeIntent: null,
-    watchedIntent: null,
-    watchlistIntent: null,
   };
 }
 
@@ -94,10 +85,10 @@ function getActionPalette(palette, active) {
     return 'border cursor-pointer border-white/5 hover:border-white/10 hover:bg-white/5 text-white/70 hover:text-white';
   }
   if (palette === 'like') {
-    return 'border border-success/20 cursor-pointer bg-success/15 text-success hover:border-success/10 hover:bg-success/25';
+    return 'border border-success/30 cursor-pointer bg-success/20 text-success hover:border-success/40 hover:bg-success/30 shadow-[0_0_12px_rgba(74,222,128,0.15)]';
   }
   if (palette === 'watched' || palette === 'watchlist') {
-    return 'border border-info/20 cursor-pointer bg-info/15 text-info hover:border-info/10 hover:bg-info/25';
+    return 'border border-info/30 cursor-pointer bg-info/20 text-info hover:border-info/40 hover:bg-info/30 shadow-[0_0_12px_rgba(56,189,248,0.15)]';
   }
 
   return 'border cursor-pointer border-white/10 bg-primary/60 hover:border-white/15 hover:bg-primary/80 text-white/70 hover:text-white';
@@ -108,8 +99,6 @@ function ActionButton({
   disabled = false,
   icon,
   label,
-  loading = false,
-  loadingLabel = 'Loading',
   onClick,
   palette,
 }) {
@@ -119,20 +108,14 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-300 ease-in-out disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
+        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4 select-none',
         getActionPalette(palette, active),
       )}
     >
-      {loading ? (
-        <span className="truncate">{loadingLabel}</span>
-      ) : (
-        <>
-          <span className="inline-flex shrink-0">
-            <Icon icon={icon} size={16} className="" />
-          </span>
-          <span className="truncate">{label}</span>
-        </>
-      )}
+      <span className={cn('inline-flex shrink-0 transition-transform duration-200 ease-out', active ? 'scale-110' : 'group-hover:scale-105')}>
+        <Icon icon={icon} size={16} />
+      </span>
+      <span className="truncate">{label}</span>
     </button>
   );
 }
@@ -186,31 +169,14 @@ export default function CollectionActions({ additionalActions = [], media }) {
     pathname?.endsWith('/reviews') && mediaSnapshot?.entityId && mediaSnapshot?.entityType,
   );
   const [state, setState] = useState(createCollectionActionState);
-  // Status polling can briefly return the pre-mutation value while the API
-  // write has already succeeded. Keep that stale response from undoing the
-  // button's confirmed optimistic state.
-  const pendingStatusRef = useRef({ like: null, watchlist: null });
+  const pendingStatusRef = useRef({ like: null, watched: null, watchlist: null });
 
   useEffect(() => {
-    if (!mediaSnapshot.entityId) {
-      setState(createCollectionActionState(false));
+    if (!mediaSnapshot.entityId || !auth.isReady || !auth.isAuthenticated || !isSessionReady || !userId) {
       return undefined;
     }
-    if (!auth.isReady) {
-      return undefined;
-    }
-    if (!auth.isAuthenticated) {
-      setState(createCollectionActionState(false));
-      return undefined;
-    }
-    if (!isSessionReady || !userId) {
-      pendingStatusRef.current = { like: null, watchlist: null };
-      setState(createCollectionActionState());
-      return undefined;
-    }
+
     let isMounted = true;
-    pendingStatusRef.current = { like: null, watchlist: null };
-    setState(createCollectionActionState());
 
     const unsubscribeLike = subscribeToLikeStatus(
       { media: mediaSnapshot, userId },
@@ -223,7 +189,6 @@ export default function CollectionActions({ additionalActions = [], media }) {
         setState((prev) => ({
           ...prev,
           liked: isLikedStatus,
-          loadingLike: false,
         }));
       },
     );
@@ -232,10 +197,13 @@ export default function CollectionActions({ additionalActions = [], media }) {
       { media: mediaSnapshot, userId },
       (isWatchedStatus) => {
         if (!isMounted) return;
+        const pending = pendingStatusRef.current.watched;
+        if (pending && pending.expiresAt > Date.now() && pending.value !== isWatchedStatus) {
+          return;
+        }
         setState((prev) => ({
           ...prev,
           watched: isWatchedStatus,
-          loadingWatched: false,
         }));
       },
     );
@@ -251,7 +219,6 @@ export default function CollectionActions({ additionalActions = [], media }) {
         setState((prev) => ({
           ...prev,
           watchlist: isWatchlistStatus,
-          loadingWatchlist: false,
         }));
       },
     );
@@ -280,18 +247,15 @@ export default function CollectionActions({ additionalActions = [], media }) {
       router.push(authHref);
       return;
     }
-    if (state.submittingLike || state.loadingLike) {
-      return;
-    }
+
     const previousLikedState = state.liked;
     const nextLikedState = !state.liked;
-    const intent = nextLikedState ? 'add' : 'remove';
     pendingStatusRef.current.like = { value: nextLikedState, expiresAt: Date.now() + 5000 };
+
+    // 0ms Optimistic Instant Update
     setState((prev) => ({
       ...prev,
       liked: nextLikedState,
-      submittingLike: true,
-      likeIntent: intent,
     }));
 
     try {
@@ -299,15 +263,10 @@ export default function CollectionActions({ additionalActions = [], media }) {
         media: mediaSnapshot,
         userId: auth.user.id,
       });
-      // The mutation promise is the success signal. Keep the UI aligned with
-      // the user's click instead of trusting a toggle RPC's ambiguous boolean.
-      setState((prev) => ({ ...prev, liked: nextLikedState }));
     } catch {
       pendingStatusRef.current.like = null;
       setState((prev) => ({ ...prev, liked: previousLikedState }));
       toast.error('Action Failed', 'Could not update your like status. Please try again.');
-    } finally {
-      setState((prev) => ({ ...prev, submittingLike: false, likeIntent: null }));
     }
   };
 
@@ -320,18 +279,20 @@ export default function CollectionActions({ additionalActions = [], media }) {
       router.push(authHref);
       return;
     }
-    if (state.submittingWatched || state.loadingWatched) {
-      return;
-    }
+
     const previousWatchedState = state.watched;
+    const previousLikedState = state.liked;
+    const previousWatchlistState = state.watchlist;
     const nextWatchedState = !state.watched;
-    const intent = nextWatchedState ? 'add' : 'remove';
+
+    pendingStatusRef.current.watched = { value: nextWatchedState, expiresAt: Date.now() + 5000 };
+
+    // 0ms Optimistic Instant Update
     setState((prev) => ({
       ...prev,
       watched: nextWatchedState,
       liked: nextWatchedState ? prev.liked : false,
-      submittingWatched: true,
-      watchedIntent: intent,
+      watchlist: nextWatchedState ? false : prev.watchlist,
     }));
 
     try {
@@ -347,10 +308,14 @@ export default function CollectionActions({ additionalActions = [], media }) {
         });
       }
     } catch {
-      setState((prev) => ({ ...prev, watched: previousWatchedState }));
+      pendingStatusRef.current.watched = null;
+      setState((prev) => ({
+        ...prev,
+        watched: previousWatchedState,
+        liked: previousLikedState,
+        watchlist: previousWatchlistState,
+      }));
       toast.error('Action Failed', 'Could not update watched status. Please try again.');
-    } finally {
-      setState((prev) => ({ ...prev, submittingWatched: false, watchedIntent: null }));
     }
   };
 
@@ -363,21 +328,18 @@ export default function CollectionActions({ additionalActions = [], media }) {
       router.push(authHref);
       return;
     }
-    if (state.submittingWatchlist || state.loadingWatchlist) {
-      return;
-    }
+
     const previousWatchlistState = state.watchlist;
     const nextWatchlistState = !state.watchlist;
-    const intent = nextWatchlistState ? 'add' : 'remove';
     pendingStatusRef.current.watchlist = {
       value: nextWatchlistState,
       expiresAt: Date.now() + 5000,
     };
+
+    // 0ms Optimistic Instant Update
     setState((prev) => ({
       ...prev,
       watchlist: nextWatchlistState,
-      submittingWatchlist: true,
-      watchlistIntent: intent,
     }));
 
     try {
@@ -385,13 +347,13 @@ export default function CollectionActions({ additionalActions = [], media }) {
         media: mediaSnapshot,
         userId: auth.user.id,
       });
-      setState((prev) => ({ ...prev, watchlist: result?.isInWatchlist === true }));
+      if (typeof result?.isInWatchlist === 'boolean') {
+        setState((prev) => ({ ...prev, watchlist: result.isInWatchlist }));
+      }
     } catch {
       pendingStatusRef.current.watchlist = null;
       setState((prev) => ({ ...prev, watchlist: previousWatchlistState }));
       toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
-    } finally {
-      setState((prev) => ({ ...prev, submittingWatchlist: false, watchlistIntent: null }));
     }
   };
 
@@ -458,13 +420,8 @@ export default function CollectionActions({ additionalActions = [], media }) {
         <ActionItem index={1}>
           <ActionButton
             active={state.liked}
-            disabled={state.loadingLike || state.submittingLike}
             icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
             label={state.liked ? 'Liked' : 'Like'}
-            loading={state.loadingLike || state.submittingLike}
-            loadingLabel={
-              state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'
-            }
             onClick={handleLikeClick}
             palette="like"
           />
@@ -475,17 +432,8 @@ export default function CollectionActions({ additionalActions = [], media }) {
         <ActionItem index={2}>
           <ActionButton
             active={state.watched}
-            disabled={state.loadingWatched || state.submittingWatched}
             icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
-            label={state.watched ? 'Unwatch' : 'Mark Watched'}
-            loading={state.loadingWatched || state.submittingWatched}
-            loadingLabel={
-              state.loadingWatched
-                ? 'Checking'
-                : state.watchedIntent === 'remove'
-                  ? 'Removing'
-                  : 'Saving'
-            }
+            label={state.watched ? 'Watched' : 'Mark Watched'}
             onClick={handleWatchedClick}
             palette="watched"
           />
@@ -495,17 +443,8 @@ export default function CollectionActions({ additionalActions = [], media }) {
           <ActionItem index={3}>
             <ActionButton
               active={state.watchlist}
-              disabled={state.loadingWatchlist || state.submittingWatchlist}
               icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
               label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-              loading={state.loadingWatchlist || state.submittingWatchlist}
-              loadingLabel={
-                state.loadingWatchlist
-                  ? 'Checking'
-                  : state.watchlistIntent === 'remove'
-                    ? 'Removing'
-                    : 'Adding'
-              }
               onClick={handleWatchlistClick}
               palette="watchlist"
             />

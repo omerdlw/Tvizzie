@@ -210,20 +210,15 @@ export default function AccountAction(props) {
             <button
               type="button"
               onClick={onFollow}
-              disabled={isFollowLoading}
               className={actionClass({
                 tone: followAction.tone,
-                className: '',
+                className: 'active:scale-95 transition-all duration-300 ease-in-out',
               })}
             >
-              {isFollowLoading ? (
-                <span key="loading">Updating</span>
-              ) : (
-                <span key={followAction.label} className="flex items-center gap-2">
-                  <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
-                  {followAction.label}
-                </span>
-              )}
+              <span key={followAction.label} className="flex items-center gap-2">
+                <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                {followAction.label}
+              </span>
             </button>
           </div>
         ) : null}
@@ -380,20 +375,15 @@ export default function AccountAction(props) {
           <button
             type="button"
             onClick={onFollow}
-            disabled={isFollowLoading}
             className={actionClass({
               tone: followAction.tone,
-              className: '',
+              className: 'active:scale-95 transition-all duration-300 ease-in-out',
             })}
           >
-            {isFollowLoading ? (
-              <span key="loading">Updating</span>
-            ) : (
-              <span key={followAction.label} className="flex items-center gap-2">
-                <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
-                {followAction.label}
-              </span>
-            )}
+            <span key={followAction.label} className="flex items-center gap-2">
+              <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+              {followAction.label}
+            </span>
           </button>
         ) : null}
 
@@ -401,23 +391,18 @@ export default function AccountAction(props) {
           <button
             type="button"
             onClick={onToggleLike}
-            disabled={isLikeLoading}
             className={actionClass({
               tone: isLiked ? 'success' : 'muted',
-              className: '',
+              className: 'active:scale-95 transition-all duration-300 ease-in-out',
             })}
           >
-            {isLikeLoading ? (
-              <span key="loading">Updating</span>
-            ) : (
-              <span key={isLiked ? 'liked' : 'like'} className="flex items-center gap-2">
-                <Icon
-                  icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
-                  size={NAV_ACTION_STYLES.icon}
-                />
-                {isLiked ? 'Liked' : 'Like List'}
-              </span>
-            )}
+            <span key={isLiked ? 'liked' : 'like'} className="flex items-center gap-2">
+              <Icon
+                icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
+                size={NAV_ACTION_STYLES.icon}
+              />
+              {isLiked ? 'Liked' : 'Like List'}
+            </span>
           </button>
         ) : null}
 

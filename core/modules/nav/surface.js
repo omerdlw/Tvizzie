@@ -64,7 +64,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onBack();
           }}
-          className="center absolute top-0 right-9 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+          className="center absolute top-0 right-9 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           aria-label={backLabel}
           whileHover={{ scale: 1.08, y: -0.5 }}
           whileTap={{ scale: NAV_TAP_SCALE }}
@@ -81,7 +81,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           aria-label={closeLabel}
           whileHover={{ scale: 1.08, y: -0.5 }}
           whileTap={{ scale: NAV_TAP_SCALE }}

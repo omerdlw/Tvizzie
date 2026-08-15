@@ -14,6 +14,8 @@ import {
 } from '@/domains/social/client/follows';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
+import { useNavigationActions } from '@/modules/nav';
+import { createListEditorSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-editor-surface';
 import {
   useAccountCollectionRemoveActions,
   useAccountCollectionReorderActions,
@@ -47,6 +49,7 @@ export function useAccountPageActions({
   const searchParams = useSearchParams();
   const toast = useToast();
   const { openModal } = useModal();
+  const { openSurface } = useNavigationActions();
 
   const decrementCollectionCount = useCallback(
     (key) => {
@@ -75,21 +78,28 @@ export function useAccountPageActions({
     (list) => {
       const targetList = list || selectedList;
       if (!isOwner || !auth.user?.id || !targetList?.id) return;
-      openModal(
-        'LIST_EDITOR_MODAL',
-        { desktop: 'center', mobile: 'bottom' },
-        {
-          data: {
-            isOwner: true,
-            userId: auth.user.id,
-            initialData: targetList,
-            initialItems: targetList?.id === selectedList?.id ? listItems : [],
-            onItemsChange: targetList?.id === selectedList?.id ? setListItems : null,
+      openSurface(
+        createListEditorSurfaceEntry({
+          isOwner: true,
+          userId: auth.user.id,
+          initialData: targetList,
+          initialItems:
+            targetList?.id === selectedList?.id
+              ? listItems
+              : targetList?.items || targetList?.previewItems || [],
+          onItemsChange: targetList?.id === selectedList?.id ? setListItems : null,
+          onSuccess: (updatedList) => {
+            if (typeof setLists === 'function') {
+              setLists((cur) => {
+                if (!Array.isArray(cur)) return cur;
+                return cur.map((l) => (l.id === updatedList.id ? { ...l, ...updatedList } : l));
+              });
+            }
           },
-        },
+        }),
       );
     },
-    [auth.user?.id, isOwner, listItems, openModal, selectedList, setListItems],
+    [auth.user?.id, isOwner, listItems, openSurface, selectedList, setListItems, setLists],
   );
 
   const handleDeleteList = useCallback(

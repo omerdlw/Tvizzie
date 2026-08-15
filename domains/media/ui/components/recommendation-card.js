@@ -13,7 +13,12 @@ import {
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-overrides';
 
-export default function RecommendationCard({ movie, imagePriority = false, imageFetchPriority }) {
+export default function RecommendationCard({
+  movie,
+  imagePriority = false,
+  imageFetchPriority,
+  imageLoading,
+}) {
   usePosterPreferenceVersion();
   const mediaType = resolveExplicitMediaType(movie, 'movie');
   const resolvedTitle = getMediaTitle(movie);
@@ -28,6 +33,7 @@ export default function RecommendationCard({ movie, imagePriority = false, image
       }
       imageFetchPriority={imageFetchPriority}
       imagePriority={imagePriority}
+      imageLoading={imageLoading}
       imagePreset="poster"
       href={getMediaDetailPath({
         entityId: movie.id,

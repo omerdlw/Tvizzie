@@ -26,6 +26,7 @@ import { LIST_COMMENT_SORT_SET, LIST_DETAIL_ALLOWED_EYE_FLAGS } from './list-det
 function parseListDetailMediaFilters(search) {
   return parseMediaFilters(search, {
     allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
+    defaultSort: 'list_order',
   });
 }
 
@@ -81,7 +82,7 @@ export function useListDetailFilterState({
     () => applyReviewFilters(reviews, reviewFilters),
     [reviewFilters, reviews],
   );
-  const hasMediaFilters = hasActiveMediaFilters(mediaFilters);
+  const hasMediaFilters = hasActiveMediaFilters(mediaFilters, { defaultSort: 'list_order' });
   const hasReviewFilters = hasActiveReviewFilters(reviewFilters);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export function useListDetailFilterState({
       const mediaQueryString = buildManagedQueryString(params, {
         managedKeys: MEDIA_FILTER_QUERY_KEYS,
         resetPage: false,
-        values: toMediaQueryValues(nextMediaFilters),
+        values: toMediaQueryValues(nextMediaFilters, { defaultSort: 'list_order' }),
       });
       params = new URLSearchParams(mediaQueryString);
 

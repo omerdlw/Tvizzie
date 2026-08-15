@@ -135,7 +135,7 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     original_title: payload.original_title || null,
     poster_path: payload.poster_path || payload.posterPath || row.poster_path || null,
     popularity: normalizeNumber(payload.popularity, null),
-    position: normalizeNumber(payload.position, null),
+    position: normalizeNumber(payload.position ?? row.position, null),
     providerIds: normalizeArray(payload.providerIds || payload.provider_ids),
     providerNames: normalizeArray(payload.providerNames || payload.provider_names),
     providers: normalizeArray(payload.providers),

@@ -110,7 +110,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2 right-2 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+            className="center absolute top-2 right-2 z-10 size-8 cursor-pointer border border-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={16} />
           </motion.button>

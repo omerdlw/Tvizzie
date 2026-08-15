@@ -1,8 +1,13 @@
 'use client';
 
 import { cloneElement, isValidElement } from 'react';
-import AccountSocialModal from '@/domains/social/ui/modals/account-social-modal';
-import ListEditorModal from '@/domains/account/ui/modals/list-editor-modal';
+import dynamic from 'next/dynamic';
+
+const AccountSocialModal = dynamic(
+  () => import('@/domains/social/ui/modals/account-social-modal'),
+  { ssr: false },
+);
+
 import AccountAction from '@/domains/account/ui/nav-actions/account-action';
 import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
 import Icon from '@/ui/primitives/icon';
@@ -302,7 +307,6 @@ export function buildAccountPageState({
 
   return {
     modal: {
-      LIST_EDITOR_MODAL: ListEditorModal,
       ACCOUNT_SOCIAL_MODAL: AccountSocialModal,
     },
     loading: loadingState,

@@ -59,9 +59,12 @@ export const MEDIA_SORT_GROUPS = Object.freeze([
   }),
 ]);
 
-const MEDIA_SORT_VALUE_SET = new Set(
-  MEDIA_SORT_GROUPS.flatMap((group) => group.options.map((option) => option.value)),
-);
+const MEDIA_SORT_VALUE_SET = new Set([
+  ...MEDIA_SORT_GROUPS.flatMap((group) => group.options.map((option) => option.value)),
+  'list_order',
+  'custom',
+  'default',
+]);
 
 const BASE_GENRE_OPTIONS = Object.freeze([
   Object.freeze({ label: 'Action', value: 'action' }),
@@ -381,12 +384,16 @@ export function buildMediaKeySet(items = [], shouldInclude = () => true) {
   );
 }
 
-export function parseMediaFilters(searchParams, { allowedEyeFlags = null } = {}) {
+export function parseMediaFilters(
+  searchParams,
+  { allowedEyeFlags = null, defaultSort = DEFAULT_MEDIA_FILTERS.sort } = {},
+) {
   const query = normalizeString(searchParams?.get?.('mq'));
   const decade =
     normalizeString(searchParams?.get?.('mdec')).toLowerCase() || DEFAULT_MEDIA_FILTERS.decade;
   const genre = normalizeToken(searchParams?.get?.('mgen')) || DEFAULT_MEDIA_FILTERS.genre;
-  const sort = normalizeMediaSort(searchParams?.get?.('msort'));
+  const rawSort = searchParams?.get?.('msort');
+  const sort = rawSort ? normalizeMediaSort(rawSort) : defaultSort;
   const parsedEyeFlags = parseFlagSet(searchParams?.get?.('meye'));
   const eyeFlags =
     Array.isArray(allowedEyeFlags) && allowedEyeFlags.length > 0
@@ -405,9 +412,13 @@ export function parseMediaFilters(searchParams, { allowedEyeFlags = null } = {})
   };
 }
 
-export function toMediaQueryValues(filters = DEFAULT_MEDIA_FILTERS) {
+export function toMediaQueryValues(
+  filters = DEFAULT_MEDIA_FILTERS,
+  { defaultSort = DEFAULT_MEDIA_FILTERS.sort } = {},
+) {
   const normalizedFilters = {
     ...DEFAULT_MEDIA_FILTERS,
+    sort: defaultSort,
     ...(filters || {}),
   };
   const normalizedQuery = normalizeString(normalizedFilters.query);
@@ -425,7 +436,7 @@ export function toMediaQueryValues(filters = DEFAULT_MEDIA_FILTERS) {
     nextValues.mgen = normalizedFilters.genre;
   }
 
-  if (normalizedFilters.sort !== DEFAULT_MEDIA_FILTERS.sort) {
+  if (normalizedFilters.sort !== defaultSort) {
     nextValues.msort = normalizedFilters.sort;
   }
 
@@ -438,21 +449,23 @@ export function toMediaQueryValues(filters = DEFAULT_MEDIA_FILTERS) {
   return nextValues;
 }
 
-export function hasActiveMediaFilters(filters = DEFAULT_MEDIA_FILTERS) {
+export function hasActiveMediaFilters(
+  filters = DEFAULT_MEDIA_FILTERS,
+  { defaultSort = DEFAULT_MEDIA_FILTERS.sort } = {},
+) {
   const normalizedFilters = {
     ...DEFAULT_MEDIA_FILTERS,
+    sort: defaultSort,
     ...(filters || {}),
     query: normalizeString(filters?.query),
   };
 
-  if (
-    !isSameFilterState(normalizedFilters, DEFAULT_MEDIA_FILTERS, [
-      'decade',
-      'genre',
-      'query',
-      'sort',
-    ])
-  ) {
+  const isSameSort = (filters?.sort || defaultSort) === defaultSort;
+  const isSameDecade = (normalizedFilters.decade || 'all') === 'all';
+  const isSameGenre = (normalizedFilters.genre || 'all') === 'all';
+  const isSameQuery = !normalizedFilters.query;
+
+  if (!isSameSort || !isSameDecade || !isSameGenre || !isSameQuery) {
     return true;
   }
 
@@ -543,6 +556,11 @@ function sortMediaItems(items = [], sort = DEFAULT_MEDIA_FILTERS.sort) {
 
   decorated.sort((left, right) => {
     switch (sort) {
+      case 'list_order':
+      case 'custom':
+      case 'default': {
+        return left.index - right.index;
+      }
       case 'release_asc': {
         const diff = resolveReleaseTime(left.item) - resolveReleaseTime(right.item);
         if (diff !== 0) return diff;
@@ -639,6 +657,14 @@ export function getAllMediaGenreOptions() {
 }
 
 export function resolveMediaSortOption(value) {
+  if (value === 'list_order' || value === 'custom' || value === 'default') {
+    return {
+      groupLabel: 'Sort',
+      label: 'List order',
+      value,
+    };
+  }
+
   for (const group of MEDIA_SORT_GROUPS) {
     const option = group.options.find((entry) => entry.value === value);
 

@@ -1,7 +1,8 @@
 'use client';
 
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   cn,
   getImagePlaceholderDataUrl,
@@ -14,10 +15,45 @@ import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
 
 const CardWrapper = forwardRef(function CardWrapper(
-  { href, onClick, className, children, onKeyDown, ...props },
+  { href, onClick, className, children, onKeyDown, onPointerEnter, onPointerLeave, onTouchStart, onFocus, ...props },
   ref,
 ) {
+  const router = useRouter();
+  const prefetchTimerRef = useRef(null);
   const isClickable = typeof onClick === 'function';
+
+  const handlePointerEnter = (event) => {
+    onPointerEnter?.(event);
+    if (!href || typeof href !== 'string' || !href.startsWith('/')) {
+      return;
+    }
+    prefetchTimerRef.current = setTimeout(() => {
+      router.prefetch(href);
+    }, 65);
+  };
+
+  const handlePointerLeave = (event) => {
+    onPointerLeave?.(event);
+    if (prefetchTimerRef.current) {
+      clearTimeout(prefetchTimerRef.current);
+      prefetchTimerRef.current = null;
+    }
+  };
+
+  const handleTouchStart = (event) => {
+    onTouchStart?.(event);
+    if (href && typeof href === 'string' && href.startsWith('/')) {
+      router.prefetch(href);
+    }
+  };
+
+  const handleFocus = (event) => {
+    onFocus?.(event);
+    if (href && typeof href === 'string' && href.startsWith('/')) {
+      router.prefetch(href);
+    }
+  };
+
   const handleClick = (event) => {
     const interactive = event.target.closest('button, a, input, select, textarea, [role="button"]');
     if (interactive && interactive !== event.currentTarget) {
@@ -25,6 +61,7 @@ const CardWrapper = forwardRef(function CardWrapper(
     }
     onClick?.(event);
   };
+
   const handleKeyDown = (event) => {
     onKeyDown?.(event);
     const interactive = event.target.closest('button, a, input, select, textarea, [role="button"]');
@@ -39,12 +76,17 @@ const CardWrapper = forwardRef(function CardWrapper(
       onClick(event);
     }
   };
+
   if (href) {
     return (
       <Link
         ref={ref}
         href={href}
         onClick={handleClick}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onTouchStart={handleTouchStart}
+        onFocus={handleFocus}
         onDragStart={(event) => event.preventDefault()}
         className={className}
         {...props}

@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { resolveOptionalSessionRequest } from '@/domains/auth/server/session.server.js';
 import { canViewerAccessUserContent } from '@/domains/account/server/profile.server';
 import {
+  CACHE_CONTROL,
+  cacheControlHeaders,
   getOrLoadCachedValue,
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
@@ -57,7 +59,11 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({ data });
+    const headers = viewerId
+      ? cacheControlHeaders(CACHE_CONTROL.PRIVATE_USER_STATE)
+      : cacheControlHeaders(CACHE_CONTROL.PUBLIC_SOCIAL_PROOF);
+
+    return NextResponse.json({ data }, { headers });
   } catch (error) {
     return NextResponse.json(
       {
@@ -65,6 +71,7 @@ export async function GET(request) {
       },
       {
         status: Number.isFinite(Number(error?.status)) ? Number(error.status) : 500,
+        headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE),
       },
     );
   }

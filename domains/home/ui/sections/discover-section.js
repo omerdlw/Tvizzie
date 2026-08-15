@@ -222,8 +222,8 @@ export function DiscoverSection({
               key={`${item.media_type || mediaType}-${item.id}`}
               item={item}
               className="w-full"
-              imageLoading={index === 0 ? 'eager' : undefined}
-              imageFetchPriority={index === 0 ? 'high' : undefined}
+              imageLoading={index < 6 ? 'eager' : 'lazy'}
+              imageFetchPriority={index < 6 ? 'high' : undefined}
               fallbackMediaType={mediaType}
             />
           ))}

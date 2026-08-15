@@ -10,8 +10,8 @@ import {
   createApiErrorResponse,
   createApiSuccessResponse,
   getOrLoadCachedValue,
-  invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 import {
   invalidateFollowCachesForUsers,
@@ -52,17 +52,27 @@ function createMissingFieldResponse({ authContext, fieldName, requestMeta, userI
   });
 }
 
-async function invokeFollowControl({ authContext, body, request, requestMeta, userId }) {
-  return invokeInternalEdgeFunction('follow-control', {
-    body,
-    request,
-    requestMeta: {
-      ...requestMeta,
-      sessionId: authContext.sessionJti,
-      userId: userId || authContext.userId,
-    },
-    source: 'follow-control',
+async function invokeFollowControl({ body }) {
+  const admin = createAdminClient();
+  const action = normalizeValue(body?.action);
+  const actorId = normalizeValue(body?.actorUserId);
+  const targetId = normalizeValue(body?.targetUserId || body?.requesterId);
+
+  const { data, error } = await admin.rpc('follow_mutate_atomic', {
+    p_action: action,
+    p_actor_id: actorId,
+    p_target_id: targetId,
   });
+
+  if (error) {
+    throw new Error(error.message || 'Follow operation failed');
+  }
+
+  const result = Array.isArray(data) ? data[0] : data;
+  return {
+    ok: result?.out_ok ?? true,
+    status: result?.out_status ?? null,
+  };
 }
 
 async function executeFollowMutation({
@@ -163,6 +173,10 @@ export async function handleFollowsGet(request) {
     );
   } catch (error) {
     const status = Number.isFinite(Number(error?.status)) ? Number(error.status) : 500;
+
+    if (status === 403) {
+      return createApiSuccessResponse({ data: null, items: [], private: true });
+    }
 
     return createApiErrorResponse(
       {
