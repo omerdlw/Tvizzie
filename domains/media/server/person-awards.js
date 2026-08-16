@@ -1,7 +1,6 @@
 import 'server-only';
 
 import { cache } from 'react';
-import * as cheerio from 'cheerio';
 
 const AWARDS_REVALIDATE_SECONDS = 60 * 60 * 24;
 const AWARDS_TIMEOUT_MS = 10_000;
@@ -18,81 +17,127 @@ function createEmptyAwards() {
   };
 }
 
-function getAwardYear(ceremony, fallbackYear) {
-  const match = ceremony.match(/\((\d{4})\)/);
-  return match?.[1] || fallbackYear || '—';
+function decodeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&nbsp;/g, ' ');
 }
 
-function getAwardProject($, item) {
-  const projectLink = $(item).find('a[href^="/movie/"], a[href^="/tv/"]').first();
-  const href = projectLink.attr('href') || '';
-  const match = href.match(/^\/(movie|tv)\/(\d+)/);
-  const image = projectLink.find('img.poster').first();
-
-  return {
-    mediaType: match?.[1] || null,
-    poster: image.attr('src') || null,
-    project: image.attr('alt') || projectLink.attr('title') || null,
-    projectId: match?.[2] || null,
-  };
+function cleanText(str) {
+  if (!str) return '';
+  return decodeHtml(str.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 }
 
-function getAwardType($, item) {
-  const typeBadgeSelector = `span.${['round', 'ed-md'].join('')}`;
-  const type = $(item).find(typeBadgeSelector).first().text().trim();
-  return /win|kazand/i.test(type) ? 'Win' : 'Nominee';
-}
+function createAwardsPayload(rawHtml) {
+  if (!rawHtml) return createEmptyAwards();
 
-function getOrganizationAwards($, element) {
-  const organization = $(element);
-  const titleLink = organization.find('.font-semibold.leading-9.text-xl a').first();
-  const title = titleLink.text().trim();
+  const spaceY12Index = rawHtml.indexOf('space-y-12');
+  if (spaceY12Index === -1) return createEmptyAwards();
+  const mainHtml = rawHtml.slice(spaceY12Index);
 
-  if (!title) return null;
-
-  const logo = organization.find('img.logo').first().attr('src') || null;
-  const yearsByValue = new Map();
-
-  organization.find('.divide-y > div').each((_, item) => {
-    const ceremonyLink = $(item).find('a[href*="/ceremony/"]').first();
-    const categoryLink = $(item).find('a[href*="/category/"]').first();
-    const ceremony = ceremonyLink.text().trim();
-    const category = categoryLink.text().trim();
-
-    if (!ceremony || !category) return;
-
-    const year = getAwardYear(ceremony, $(item).find('p.md\\:text-right.font-bold').text().trim());
-    const categories = yearsByValue.get(year) || [];
-    categories.push({
-      category,
-      key: `${ceremonyLink.attr('href') || categoryLink.attr('href')}-${categories.length}`,
-      type: getAwardType($, item),
-      ...getAwardProject($, item),
+  const titleRegex = /<div class="[^"]*font-semibold leading-9 text-xl[^"]*"[^>]*>\s*<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
+  let match;
+  const titleMatches = [];
+  while ((match = titleRegex.exec(mainHtml)) !== null) {
+    titleMatches.push({
+      index: match.index,
+      href: match[1],
+      title: cleanText(match[2]),
     });
-    yearsByValue.set(year, categories);
-  });
+  }
 
-  const years = Array.from(yearsByValue, ([year, categories]) => ({
-    categories,
-    year,
-  })).sort((left, right) => right.year.localeCompare(left.year));
+  const organizations = [];
+  for (let i = 0; i < titleMatches.length; i++) {
+    const cur = titleMatches[i];
+    const nextIndex = i + 1 < titleMatches.length ? titleMatches[i + 1].index : mainHtml.length;
+    const prevBlock = mainHtml.substring(i === 0 ? 0 : titleMatches[i - 1].index, cur.index);
+    const orgChunk = mainHtml.substring(cur.index, nextIndex);
 
-  return years.length
-    ? {
-        id: titleLink.attr('href') || title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        logo,
-        title,
-        years,
+    const logoMatches = [...prevBlock.matchAll(/<img[^>]+class="[^"]*logo[^"]*"[^>]+src="([^"]+)"|<img[^>]+src="([^"]+)"[^>]+class="[^"]*logo[^"]*"/gi)];
+    let logo = null;
+    if (logoMatches.length > 0) {
+      const lastLogo = logoMatches[logoMatches.length - 1];
+      logo = lastLogo[1] || lastLogo[2] || null;
+    }
+
+    const divideYIndex = orgChunk.indexOf('divide-y');
+    if (divideYIndex === -1) continue;
+    const tableChunk = orgChunk.slice(divideYIndex);
+
+    const rowBlocks = tableChunk.split(/<div [^>]*class="[^"]*flex flex-row[^"]*"/);
+    const yearsByValue = new Map();
+
+    for (let r = 1; r < rowBlocks.length; r++) {
+      const row = rowBlocks[r];
+      const ceremonyMatch = row.match(/<a[^>]*href="([^"]*\/ceremony\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/);
+      const categoryMatch = row.match(/<a[^>]*href="([^"]*\/category\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/);
+      if (!ceremonyMatch || !categoryMatch) continue;
+
+      const ceremonyHref = ceremonyMatch[1];
+      const ceremony = cleanText(ceremonyMatch[2]);
+      const categoryHref = categoryMatch[1];
+      const category = cleanText(categoryMatch[2]);
+
+      const yearMatch = ceremony.match(/\((\d{4})\)/);
+      const fallbackYearMatch = row.match(/<p class="[^"]*font-bold[^"]*"[^>]*>([\s\S]*?)<\/p>/);
+      const fallbackYear = fallbackYearMatch ? cleanText(fallbackYearMatch[1]) : '';
+      const year = yearMatch ? yearMatch[1] : fallbackYear || '—';
+
+      const typeMatch = row.match(/<span[^>]*class="[^"]*round(?:ed-md)?\b[^"]*"[^>]*>([\s\S]*?)<\/span>/i);
+      const typeText = typeMatch ? cleanText(typeMatch[1]) : '';
+      const type = /win|kazand/i.test(typeText) ? 'Win' : 'Nominee';
+
+      const projectLinkMatch = row.match(/<a[^>]*href="(\/(?:movie|tv)\/(\d+)[^"]*)"[^>]*>([\s\S]*?)<\/a>/);
+      let mediaType = null;
+      let projectId = null;
+      let project = null;
+      let poster = null;
+
+      if (projectLinkMatch) {
+        const pHref = projectLinkMatch[1];
+        projectId = projectLinkMatch[2];
+        mediaType = pHref.startsWith('/movie/') ? 'movie' : 'tv';
+        const pInner = projectLinkMatch[3];
+        const imgMatch = pInner.match(/<img[^>]+src="([^"]+)"/i);
+        const altMatch = pInner.match(/<img[^>]+alt="([^"]+)"/i) || projectLinkMatch[0].match(/title="([^"]+)"/i);
+        poster = imgMatch ? imgMatch[1] : null;
+        project = altMatch ? decodeHtml(altMatch[1]) : null;
       }
-    : null;
-}
 
-function createAwardsPayload(html) {
-  const $ = cheerio.load(html);
-  const organizations = $('.space-y-12 > div')
-    .toArray()
-    .map((element) => getOrganizationAwards($, element))
-    .filter(Boolean);
+      const categories = yearsByValue.get(year) || [];
+      categories.push({
+        category,
+        key: `${ceremonyHref || categoryHref}-${categories.length}`,
+        type,
+        mediaType,
+        poster,
+        project,
+        projectId,
+      });
+      yearsByValue.set(year, categories);
+    }
+
+    const years = Array.from(yearsByValue, ([year, categories]) => ({
+      categories,
+      year,
+    })).sort((left, right) => right.year.localeCompare(left.year));
+
+    if (years.length) {
+      organizations.push({
+        id: cur.href || cur.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        logo,
+        title: cur.title,
+        years,
+      });
+    }
+  }
+
   const entries = organizations.flatMap((organization) =>
     organization.years.flatMap((year) => year.categories),
   );
@@ -133,3 +178,4 @@ export const getPersonAwards = cache(async (personId) => {
 
   return createAwardsPayload(await fetchTmdbAwards(normalizedPersonId));
 });
+
