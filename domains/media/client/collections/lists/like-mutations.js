@@ -11,6 +11,7 @@ import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
 } from '@/domains/social/client/notifications/notification-events';
+import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
 export async function toggleListLike({ ownerId, listId, userId }) {
   if (!ownerId || !listId || !userId) {
     throw new Error('ownerId, listId, and userId are required to like a list');
@@ -70,6 +71,11 @@ export async function toggleListLike({ ownerId, listId, userId }) {
       subjectType: 'list',
     });
   }
+
+  invalidatePollingSubscription('lists:slug', { refetch: true });
+  invalidatePollingSubscription('lists:liked', { refetch: true });
+  invalidatePollingSubscription('lists:user', { refetch: true });
+  invalidatePollingSubscription('lists:item', { refetch: true });
 
   return isNowLiked;
 }

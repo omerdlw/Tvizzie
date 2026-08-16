@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 
 import { readSessionFromRequest } from '@/domains/auth/server/session.server.js';
-import { assertRateLimit, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
+import { assertRateLimit } from '@/infrastructure/http/http-server';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 export const runtime = 'nodejs';
 
 const FEEDBACK_SCOPE = 'project';
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -19,29 +21,6 @@ function normalizeOptionalValue(value, maxLength = 400) {
   }
 
   return normalizedValue.slice(0, maxLength);
-}
-
-function resolveStatusCode(error) {
-  if (Number.isFinite(Number(error?.status))) {
-    return Number(error.status);
-  }
-
-  const message = normalizeValue(error?.message).toLowerCase();
-
-  if (
-    message.includes('required') ||
-    message.includes('invalid') ||
-    message.includes('unsupported') ||
-    message.includes('fewer')
-  ) {
-    return 400;
-  }
-
-  if (message.includes('authentication')) {
-    return 401;
-  }
-
-  return 500;
 }
 
 export async function POST(request) {
@@ -68,23 +47,39 @@ export async function POST(request) {
     }
 
     const sessionContext = await readSessionFromRequest(request).catch(() => null);
-    const payload = await invokeInternalEdgeFunction('feedback-control', {
-      body: {
-        action: 'submit',
+    const userId = normalizeOptionalValue(sessionContext?.userId, 80);
+    const safeUserId = userId && UUID_PATTERN.test(userId) ? userId : null;
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('feedback_submissions')
+      .insert({
         message,
         metadata: {
           referer: normalizeOptionalValue(request.headers.get('referer'), 1024),
           userAgent: normalizeOptionalValue(request.headers.get('user-agent'), 512),
         },
+        page_description: normalizeOptionalValue(body?.pageDescription, 600),
+        page_path: normalizeOptionalValue(body?.pagePath, 320),
+        page_title: normalizeOptionalValue(body?.pageTitle, 160),
         scope: FEEDBACK_SCOPE,
         source: normalizeOptionalValue(body?.source, 80) || 'context-menu',
-        userEmail: normalizeOptionalValue(sessionContext?.email, 320),
-        userId: normalizeOptionalValue(sessionContext?.userId, 80),
-      },
-    });
+        status: 'new',
+        user_email: normalizeOptionalValue(sessionContext?.email, 320),
+        user_id: safeUserId,
+      })
+      .select('id, created_at')
+      .single();
+
+    if (error) {
+      throw new Error(error.message || 'Feedback could not be stored');
+    }
 
     return NextResponse.json({
-      data: payload?.data || null,
+      data: {
+        createdAt: data?.created_at ?? null,
+        id: data?.id ?? null,
+      },
       success: true,
     });
   } catch (error) {

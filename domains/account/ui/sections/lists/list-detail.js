@@ -44,9 +44,12 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
     isFollowLoading,
     isLiked,
     isLikeLoading,
+    isListLoading,
+    isListItemsLoading,
     isOwner,
     isPageLoading,
     isResolvingProfile,
+    isReviewsLoading,
     itemRemoveConfirmation,
     likeCount,
     list,
@@ -129,8 +132,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       activeSection="lists"
       followerCount={followerCount}
       followState={followState}
-      followingCount={followingCount}
-      isLoading={isPageLoading}
+      isLoading={isPageLoading || isListLoading || (isResolvingProfile && !list)}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       likesCount={likeCount}
@@ -157,6 +159,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
               hasMediaFilters && hasListItems ? 'No titles match the current filters.' : undefined
             }
             icon="solar:clapperboard-bold"
+            isLoading={isListItemsLoading}
             items={filteredListItems}
             onPageChange={setMediaPage}
             showHeader={false}
@@ -226,6 +229,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             <ListDetailCommentsSection
               auth={auth}
               filteredReviews={filteredReviews}
+              isLoading={isReviewsLoading}
               list={list}
               onDeleteRequest={handleDeleteRequest}
               onEditReview={handleEditReview}

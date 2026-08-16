@@ -198,6 +198,11 @@ export function normalizeListRow(row = {}, likesMap = new Map()) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
   const ownerSnapshot = normalizeListOwnerSnapshot(payload.ownerSnapshot || {}, row.user_id);
   const computedLikesCount = Number(likesMap.get(row.id) || 0);
+  const rawLikes = Array.isArray(payload.likes)
+    ? payload.likes
+    : Array.isArray(row.likes)
+      ? row.likes
+      : [];
 
   return {
     coverUrl: payload.coverUrl || row.poster_path || '',
@@ -205,7 +210,7 @@ export function normalizeListRow(row = {}, likesMap = new Map()) {
     description: row.description || payload.description || '',
     id: row.id,
     itemsCount: Number.isFinite(Number(payload.itemsCount)) ? Number(payload.itemsCount) : 0,
-    likes: [],
+    likes: rawLikes,
     likesCount: Number.isFinite(Number(row.likes_count))
       ? Number(row.likes_count)
       : computedLikesCount,
@@ -359,11 +364,29 @@ async function findListRow({
 
 async function normalizeListRowWithLikes({ admin, checkAssert, row }) {
   if (!row) return null;
-  const likesMap = Number.isFinite(Number(row.likes_count))
-    ? new Map()
-    : await countListLikesByListIds(admin, checkAssert, [row.id]);
+  const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
+  let likes = Array.isArray(payload.likes) ? payload.likes : [];
 
-  return normalizeListRow(row, likesMap);
+  if (row.id) {
+    const { data: likesData } = await admin
+      .from('list_likes')
+      .select('user_id')
+      .eq('list_id', row.id);
+    if (Array.isArray(likesData) && likesData.length > 0) {
+      likes = likesData.map((l) => l.user_id);
+    }
+  }
+
+  const likesMap = Number.isFinite(Number(row.likes_count))
+    ? new Map([[row.id, Number(row.likes_count)]])
+    : new Map([[row.id, likes.length]]);
+
+  const normalized = normalizeListRow(row, likesMap);
+  return {
+    ...normalized,
+    likes,
+    likesCount: Math.max(normalized.likesCount, likes.length),
+  };
 }
 
 async function loadStandardCollection({
@@ -527,23 +550,30 @@ export async function getAccountResource({
   }
 
   if (resource === 'list-items') {
-    const list = await findListRow({
-      admin,
-      checkAssert,
-      execQuery,
-      fallbackMessage: 'List items could not be loaded',
-      label: `Resolve list ID for ${listId}`,
-      reference: listId,
-      select: 'id',
-      strict,
-      userId,
-    });
-    if (!list?.id) return [];
+    let resolvedTargetListId = listId;
+
+    if (!resolvedTargetListId || !isValidUuid(resolvedTargetListId)) {
+      const list = await findListRow({
+        admin,
+        checkAssert,
+        execQuery,
+        fallbackMessage: 'List items could not be loaded',
+        label: `Resolve list ID for ${slug || listId}`,
+        reference: slug || listId,
+        select: 'id',
+        strict,
+        userId,
+        usesSlugFallback: Boolean(slug),
+      });
+      resolvedTargetListId = list?.id || null;
+    }
+
+    if (!resolvedTargetListId) return [];
 
     let query = admin
       .from('list_items')
       .select(LIST_ITEM_SELECT)
-      .eq('list_id', list.id)
+      .eq('list_id', resolvedTargetListId)
       .order('position', { ascending: true, nullsFirst: false })
       .order('added_at', { ascending: true });
     const limit = calcLimit(limitCount, 0, 500);
@@ -551,7 +581,7 @@ export async function getAccountResource({
 
     const result = await execQuery(query, {
       fallbackValue: { data: [], error: null },
-      label: `List items for list ${list.id}`,
+      label: `List items for list ${resolvedTargetListId}`,
       strict,
     });
     if (result?.timedOut) return [];

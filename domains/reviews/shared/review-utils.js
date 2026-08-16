@@ -63,6 +63,20 @@ export function buildListSubjectMetadata({ list = null, listId, ownerId, ownerUs
   const resolvedSlug = list?.slug || listId;
   const resolvedOwnerId = ownerId || list?.ownerId || list?.ownerSnapshot?.id;
   const resolvedOwnerUsername = ownerUsername || list?.ownerSnapshot?.username || resolvedOwnerId;
+  const previewItems =
+    Array.isArray(list?.previewItems) && list.previewItems.length > 0
+      ? list.previewItems.filter(Boolean)
+      : Array.isArray(list?.items) && list.items.length > 0
+        ? list.items.slice(0, 5).filter(Boolean)
+        : [];
+  const poster =
+    list?.coverUrl ||
+    list?.poster_path ||
+    list?.posterPath ||
+    previewItems[0]?.poster_path_full ||
+    previewItems[0]?.poster_path ||
+    previewItems[0]?.posterPath ||
+    null;
 
   return {
     subjectHref: `/account/${resolvedOwnerUsername}/lists/${resolvedSlug}`,
@@ -70,8 +84,8 @@ export function buildListSubjectMetadata({ list = null, listId, ownerId, ownerUs
     subjectKey: createListReviewLikeKey(resolvedOwnerId, listId || list?.id),
     subjectOwnerId: resolvedOwnerId,
     subjectOwnerUsername: resolvedOwnerUsername,
-    subjectPreviewItems: Array.isArray(list?.previewItems) ? list.previewItems : [],
-    subjectPoster: list?.coverUrl || list?.previewItems?.[0]?.poster_path || null,
+    subjectPreviewItems: previewItems,
+    subjectPoster: poster,
     subjectSlug: resolvedSlug,
     subjectTitle: list?.title || 'Untitled List',
     subjectType: 'list',

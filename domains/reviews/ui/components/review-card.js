@@ -16,6 +16,16 @@ import Icon from '@/ui/primitives/icon';
 import ListPreviewComposition from '@/domains/media/ui/components/media-list-preview';
 import RatingStars from './rating-stars';
 
+function formatLetterboxdDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const day = date.getDate();
+  const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 function getReviewPosterSrc(review) {
   if (isTitleMediaType(review?.subjectType)) {
     const preferred = getPreferredMediaPosterSrc(
@@ -194,15 +204,23 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
 }
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
+  if (isAccountVariant && isListSubject) {
+    return (
+      <ListPreviewComposition
+        className="shrink-0"
+        fallbackPoster={src}
+        items={previewItems}
+      />
+    );
+  }
+
   const wrapperClass = isAccountVariant
     ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
     : 'relative size-10 sm:size-12 shrink-0 overflow-hidden';
 
   return (
     <div className={wrapperClass}>
-      {isAccountVariant && isListSubject ? (
-        <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
-      ) : src ? (
+      {src ? (
         <AdaptiveImage
           className="object-cover"
           src={src}
@@ -295,6 +313,8 @@ export default function ReviewCard({
   const timestamp = review.updatedAt || review.createdAt;
   const formattedDate = timestamp ? formatDate(timestamp) : 'Just now';
 
+  const letterboxdDate = timestamp ? formatLetterboxdDate(timestamp) : 'Just now';
+
   const accountHref = `/account/${username || review.user?.id || review.id}`;
   const visualSrc = isSubjectCardVariant
     ? getReviewPosterSrc(review)
@@ -303,14 +323,27 @@ export default function ReviewCard({
   const previewItems = Array.isArray(review.subjectPreviewItems) ? review.subjectPreviewItems : [];
 
   const reviewSubjectKey = review.subjectKey || review.mediaKey || null;
+  const isListSubject = review.subjectType === 'list';
   const hasLikedSubject = Boolean(
-    review.subjectType !== 'list' && reviewSubjectKey && likedMediaKeys?.has?.(reviewSubjectKey),
+    review.isLiked ||
+      review.hasLiked ||
+      review.is_liked ||
+      review.userLiked ||
+      review.payload?.isLiked ||
+      review.payload?.is_liked ||
+      (likedMediaKeys &&
+        ((reviewSubjectKey && likedMediaKeys.has(reviewSubjectKey)) ||
+          (review.subjectId &&
+            (likedMediaKeys.has(String(review.subjectId)) ||
+              likedMediaKeys.has(`list_${review.subjectId}`) ||
+              likedMediaKeys.has(`list:${review.subjectId}`))) ||
+          (review.subjectSlug && likedMediaKeys.has(String(review.subjectSlug))))),
   );
   const hasWatchedSubject = Boolean(
-    review.subjectType !== 'list' && reviewSubjectKey && watchedMediaKeys?.has?.(reviewSubjectKey),
+    !isListSubject && reviewSubjectKey && watchedMediaKeys?.has?.(reviewSubjectKey),
   );
   const isRewatch = Boolean(
-    review.subjectType !== 'list' && reviewSubjectKey && rewatchMediaKeys?.has?.(reviewSubjectKey),
+    !isListSubject && reviewSubjectKey && rewatchMediaKeys?.has?.(reviewSubjectKey),
   );
 
   const revealSpoiler = () => setIsSpoilerVisible(true);
@@ -374,7 +407,7 @@ export default function ReviewCard({
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-white/70">
                     {hasRating && <RatingStars rating={resolvedRating} />}
                     {hasLikedSubject && (
-                      <Icon icon="solar:heart-bold" size={16} className="text-error" />
+                      <Icon icon="solar:heart-bold" size={16} className="text-[#ff8000]" />
                     )}
                     {hasWatchedSubject && isRewatch && (
                       <Icon icon="solar:refresh-bold" size={16} className="text-success" />
@@ -419,29 +452,38 @@ export default function ReviewCard({
           ) : (
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <div className="flex flex-col gap-0.5 sm:hidden">
-                  <div className="flex items-center gap-1.5 text-xs text-white/50">
-                    {hasRating && <RatingStars rating={resolvedRating} />}
-                    {hasRating && <span className="text-white/30">-</span>}
-                    <span>{formattedDate}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-white/80">
-                    <span className="text-white/50">{activityLabel}</span>
+                {displayVariant === 'media-recent' ? (
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-white/70">
+                    <span className="text-white/50">Review by</span>
                     <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
+                    {hasRating && <RatingStars rating={resolvedRating} />}
+                    {hasLikedSubject && (
+                      <Icon icon="solar:heart-bold" size={16} className="text-[#ff8000]" />
+                    )}
                   </div>
-                </div>
-
-                <div className="hidden text-sm text-white/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
-                  {hasRating && <RatingStars rating={resolvedRating} />}
-                  <span className="text-white/50">{activityLabel}</span>
-                  <Link href={accountHref} className="font-semibold text-white hover:underline">
-                    {displayName}
-                  </Link>
-                  <span className="text-white/30">•</span>
-                  <span className="text-xs text-white/50">{formattedDate}</span>
-                </div>
+                ) : isListSubject || displayVariant === 'list-detail' ? (
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/70">
+                    <Link href={accountHref} className="font-semibold text-white hover:underline">
+                      {displayName}
+                    </Link>
+                    <span className="text-white/30">•</span>
+                    <span className="text-xs text-white/50 sm:text-sm">{formattedDate}</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-white/70">
+                    {hasRating && <RatingStars rating={resolvedRating} />}
+                    {hasLikedSubject && (
+                      <Icon icon="solar:heart-bold" size={16} className="text-[#ff8000]" />
+                    )}
+                    <span className="text-white/50">Watched by</span>
+                    <Link href={accountHref} className="font-semibold text-white hover:underline">
+                      {displayName}
+                    </Link>
+                    <span className="text-xs text-white/50 sm:text-sm">{letterboxdDate}</span>
+                  </div>
+                )}
 
                 {hasText ? (
                   isSpoilerHidden ? (

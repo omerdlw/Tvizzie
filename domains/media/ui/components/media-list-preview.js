@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { TMDB_IMG } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import {
@@ -10,6 +11,12 @@ import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 function getPreviewImage(item) {
+  if (!item) return null;
+  if (typeof item === 'string') {
+    if (item.startsWith('http://') || item.startsWith('https://')) return item;
+    if (item.startsWith('/')) return `${TMDB_IMG}/w342${item}`;
+    return item;
+  }
   const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
   if (preferredPoster) {
     return preferredPoster;
@@ -23,38 +30,63 @@ function getPreviewImage(item) {
     return `${TMDB_IMG}/w342${item.poster_path}`;
   }
 
+  if (item?.posterPath) {
+    return `${TMDB_IMG}/w342${item.posterPath}`;
+  }
+
+  if (item?.coverUrl) {
+    return item.coverUrl;
+  }
+
   return null;
 }
 
-export default function ListPreviewComposition({
+export default memo(function ListPreviewComposition({
   className = '',
-  emptyIcon = 'solar:list-broken',
+  emptyIcon = 'solar:list-bold',
   imageClassName = 'h-full w-full object-cover',
   items = [],
+  fallbackPoster = null,
 }) {
   usePosterPreferenceVersion();
-  const previewItems = Array.isArray(items) ? items.slice(0, 3) : [];
+  let rawItems = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (rawItems.length === 0 && fallbackPoster) {
+    rawItems = [{ poster_path: fallbackPoster }];
+  }
+  const previewItems = rawItems.slice(0, 4);
+
+  if (previewItems.length === 0) {
+    return (
+      <div className={cn('relative h-[68px] w-[82px] shrink-0', className)}>
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-white/10 bg-black text-white/50">
+          <Icon icon={emptyIcon} size={20} />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={cn(
-        'grid h-full w-full grid-cols-3 overflow-hidden border border-white/5',
-        className,
-      )}
-    >
-      {previewItems.length > 0 ? (
-        previewItems.map((item, index) => (
+    <div className={cn('relative h-[68px] w-[82px] shrink-0', className)}>
+      {previewItems.map((item, index) => {
+        const imageSrc = getPreviewImage(item);
+        return (
           <div
             key={
               item.mediaKey ||
               `${item.entityType || 'movie'}-${item.entityId || item.id || index}-${index}`
             }
-            className="h-full overflow-hidden border-r border-white/5 last:border-r-0"
+            className="border-primary absolute bottom-0 overflow-hidden border bg-black shadow-md"
+            style={{
+              width: '46px',
+              height: `${68 - index * 6}px`,
+              left: `${index * 12}px`,
+              zIndex: previewItems.length - index,
+            }}
           >
-            {getPreviewImage(item) ? (
+            {imageSrc ? (
               <AdaptiveImage
                 mode="img"
-                src={getPreviewImage(item)}
+                src={imageSrc}
                 alt={item.title || item.name || 'Poster'}
                 loading="lazy"
                 decoding="async"
@@ -62,17 +94,13 @@ export default function ListPreviewComposition({
                 wrapperClassName="h-full w-full"
               />
             ) : (
-              <div className="center h-full w-full">
+              <div className="center h-full w-full bg-white/5 text-white/50">
                 <Icon icon="solar:gallery-wide-bold" size={16} />
               </div>
             )}
           </div>
-        ))
-      ) : (
-        <div className="center col-span-3 h-full w-full">
-          <Icon icon={emptyIcon} size={20} />
-        </div>
-      )}
+        );
+      })}
     </div>
   );
-}
+});

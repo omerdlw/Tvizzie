@@ -145,12 +145,16 @@ function toMediaKey(item = {}) {
   }
 
   const entityType = normalizeString(
-    item?.entityType || item?.media_type || item?.subject?.type,
+    item?.entityType || item?.media_type || item?.subject?.type || (item?.slug ? 'list' : ''),
   ).toLowerCase();
-  const entityId = normalizeString(item?.entityId || item?.id || item?.subject?.id);
+  const entityId = normalizeString(item?.entityId || item?.id || item?.subject?.id || item?.listId);
 
   if (!entityType || !entityId) {
-    return '';
+    return entityId ? String(entityId) : '';
+  }
+
+  if (entityType === 'list') {
+    return `list_${entityId}`;
   }
 
   return buildMediaItemKey(entityType, entityId);
@@ -376,12 +380,25 @@ function formatDiscoveredLabel(value) {
 }
 
 export function buildMediaKeySet(items = [], shouldInclude = () => true) {
-  return new Set(
-    (Array.isArray(items) ? items : [])
-      .filter(shouldInclude)
-      .map((item) => toMediaKey(item))
-      .filter(Boolean),
-  );
+  const set = new Set();
+  (Array.isArray(items) ? items : []).filter(shouldInclude).forEach((item) => {
+    const key = toMediaKey(item);
+    if (key) set.add(key);
+    const rawId = item?.id || item?.entityId || item?.listId;
+    if (rawId) {
+      const idStr = String(rawId);
+      set.add(idStr);
+      set.add(`list_${idStr}`);
+      set.add(`list:${idStr}`);
+      if (item?.ownerId || item?.user_id) {
+        set.add(`list:${item.ownerId || item.user_id}:${idStr}`);
+      }
+    }
+    if (item?.slug) {
+      set.add(String(item.slug));
+    }
+  });
+  return set;
 }
 
 export function parseMediaFilters(

@@ -85,10 +85,10 @@ function getActionPalette(palette, active) {
     return 'border cursor-pointer border-white/5 hover:border-white/10 hover:bg-white/5 text-white/70 hover:text-white';
   }
   if (palette === 'like') {
-    return 'border border-success/30 cursor-pointer bg-success/20 text-success hover:border-success/40 hover:bg-success/30 shadow-[0_0_12px_rgba(74,222,128,0.15)]';
+    return 'border border-success/30 cursor-pointer bg-success/20 text-success hover:border-success/40 hover:bg-success/30';
   }
   if (palette === 'watched' || palette === 'watchlist') {
-    return 'border border-info/30 cursor-pointer bg-info/20 text-info hover:border-info/40 hover:bg-info/30 shadow-[0_0_12px_rgba(56,189,248,0.15)]';
+    return 'border border-info/30 cursor-pointer bg-info/20 text-info hover:border-info/40 hover:bg-info/30';
   }
 
   return 'border cursor-pointer border-white/10 bg-primary/60 hover:border-white/15 hover:bg-primary/80 text-white/70 hover:text-white';

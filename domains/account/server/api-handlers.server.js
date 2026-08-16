@@ -31,7 +31,6 @@ import {
   CACHE_CONTROL,
   cacheControlHeaders,
   getOrLoadCachedValue,
-  invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import { normalizeValue } from '@/shared/utils';
@@ -73,7 +72,11 @@ export async function handleAccountCollectionsGet(request) {
       viewerId,
     });
 
-    return NextResponse.json({ data, items: Array.isArray(data) ? data : [] });
+    const headers = viewerId
+      ? cacheControlHeaders(CACHE_CONTROL.PRIVATE_USER_STATE)
+      : cacheControlHeaders(CACHE_CONTROL.PUBLIC_MEDIA_COLLECTIONS);
+
+    return NextResponse.json({ data, items: Array.isArray(data) ? data : [] }, { headers });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
 
@@ -117,7 +120,11 @@ export async function handleAccountActivityGet(request) {
       viewerId,
     });
 
-    return NextResponse.json(payload);
+    const headers = viewerId
+      ? cacheControlHeaders(CACHE_CONTROL.PRIVATE_USER_STATE)
+      : cacheControlHeaders(CACHE_CONTROL.PUBLIC_MEDIA_COLLECTIONS);
+
+    return NextResponse.json(payload, { headers });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
 
@@ -167,7 +174,11 @@ export async function handleAccountProfileGet(request) {
       }
     }
 
-    return NextResponse.json({ profile: profile || null });
+    const headers = viewerId
+      ? cacheControlHeaders(CACHE_CONTROL.PRIVATE_USER_STATE)
+      : cacheControlHeaders(CACHE_CONTROL.PUBLIC_ACCOUNT_RESOLVE);
+
+    return NextResponse.json({ profile: profile || null }, { headers });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
 
@@ -334,7 +345,11 @@ export async function handleAccountReviewsGet(request) {
       viewerId,
     });
 
-    return NextResponse.json(payload);
+    const headers = viewerId
+      ? cacheControlHeaders(CACHE_CONTROL.PRIVATE_USER_STATE)
+      : cacheControlHeaders(CACHE_CONTROL.PUBLIC_MEDIA_REVIEWS);
+
+    return NextResponse.json(payload, { headers });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
 

@@ -222,17 +222,27 @@ function normalizeReviewResult(row = {}, { list = null, user = null } = {}) {
     : normalizeReviewSubjectFromPayload(payload, row);
   const reviewKey = row.media_key || (row.list_id ? `list:${row.list_id}` : subject.id);
 
+  const resolvedContent =
+    'content' in row && row.content !== undefined
+      ? (row.content ?? '')
+      : (payload.content ?? '');
+  const resolvedRating =
+    'rating' in row && row.rating !== undefined
+      ? row.rating !== null
+        ? Number(row.rating)
+        : null
+      : payload.rating !== null && payload.rating !== undefined
+        ? Number(payload.rating)
+        : null;
+
   return {
-    content: row.is_spoiler ? '' : row.content || payload.content || '',
+    content: row.is_spoiler ? '' : normalizeValue(resolvedContent),
     createdAt: normalizeTimestamp(row.created_at),
     href: subject.href,
     id: `${reviewKey}:${row.user_id}`,
     isSpoiler: row.is_spoiler === true,
     media_type: 'review',
-    rating:
-      row.rating === null || row.rating === undefined
-        ? (payload.rating ?? null)
-        : Number(row.rating),
+    rating: resolvedRating,
     subject,
     updatedAt: normalizeTimestamp(row.updated_at),
     user,

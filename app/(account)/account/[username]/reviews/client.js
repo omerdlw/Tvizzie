@@ -404,6 +404,7 @@ const ReviewsView = createAccountSectionView({
         isLoading={isFeedLoading}
         isLoadingMore={isLoadingMore}
         items={reviews}
+        likedLists={sectionState.likedLists || []}
         likes={likes}
         loadError={feedError}
         onDeleteRequest={handleDeleteReview}

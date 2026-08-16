@@ -73,6 +73,30 @@ export async function loadListSubjectMap(admin, listIds = []) {
     });
   }
 
+  const listsNeedingPreview = listRows.filter((row) => {
+    const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
+    return !Array.isArray(payload.previewItems) || payload.previewItems.length === 0;
+  });
+
+  const previewItemsMap = new Map();
+  if (listsNeedingPreview.length > 0) {
+    const listIds = listsNeedingPreview.map((r) => r.id);
+    const { data: itemRows } = await admin
+      .from('list_items')
+      .select('list_id,payload')
+      .in('list_id', listIds)
+      .order('position', { ascending: true, nullsFirst: false })
+      .order('added_at', { ascending: true });
+
+    (itemRows || []).forEach((item) => {
+      const current = previewItemsMap.get(item.list_id) || [];
+      if (current.length < 5 && item.payload) {
+        current.push(item.payload);
+        previewItemsMap.set(item.list_id, current);
+      }
+    });
+  }
+
   const listMap = new Map();
 
   listRows.forEach((row) => {
@@ -80,6 +104,16 @@ export async function loadListSubjectMap(admin, listIds = []) {
     const ownerUsername =
       payload?.ownerSnapshot?.username || ownerMap.get(row.user_id) || row.user_id;
     const slug = row.slug || row.id;
+    const previewItems =
+      Array.isArray(payload.previewItems) && payload.previewItems.length > 0
+        ? payload.previewItems.filter(Boolean)
+        : previewItemsMap.get(row.id) || [];
+    const poster =
+      row.poster_path ||
+      payload.coverUrl ||
+      previewItems[0]?.poster_path_full ||
+      (previewItems[0]?.poster_path ? `${TMDB_IMG}/w342${previewItems[0].poster_path}` : null) ||
+      null;
 
     listMap.set(row.id, {
       subjectHref: `/account/${ownerUsername}/lists/${slug}`,
@@ -87,8 +121,8 @@ export async function loadListSubjectMap(admin, listIds = []) {
       subjectKey: createListReviewLikeKey(row.user_id, row.id),
       subjectOwnerId: row.user_id,
       subjectOwnerUsername: ownerUsername,
-      subjectPreviewItems: Array.isArray(payload.previewItems) ? payload.previewItems : [],
-      subjectPoster: row.poster_path || payload.coverUrl || null,
+      subjectPreviewItems: previewItems,
+      subjectPoster: poster,
       subjectSlug: slug,
       subjectTitle: row.title || 'Untitled List',
       subjectType: 'list',

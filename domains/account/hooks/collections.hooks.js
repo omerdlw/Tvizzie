@@ -8,7 +8,11 @@ import {
   removeUserLike,
   subscribeToUserLikes,
 } from '@/domains/media/client/collections/likes';
-import { toggleUserListItem, subscribeToUserLists } from '@/domains/media/client/collections/lists';
+import {
+  toggleUserListItem,
+  subscribeToUserLists,
+  subscribeToLikedLists,
+} from '@/domains/media/client/collections/lists';
 import {
   getWatchlistDocRef,
   removeUserWatchedItem,
@@ -28,6 +32,7 @@ export const EMPTY_COLLECTION_COUNTS = Object.freeze({
   lists: 0,
   watched: 0,
   watchlist: 0,
+  likedLists: 0,
 });
 
 export const UNRESOLVED_COLLECTION_COUNTS = Object.freeze({
@@ -35,6 +40,7 @@ export const UNRESOLVED_COLLECTION_COUNTS = Object.freeze({
   lists: null,
   watched: null,
   watchlist: null,
+  likedLists: null,
 });
 
 const EMPTY_COLLECTION_ITEMS = Object.freeze({
@@ -42,6 +48,7 @@ const EMPTY_COLLECTION_ITEMS = Object.freeze({
   lists: [],
   watched: [],
   watchlist: [],
+  likedLists: [],
 });
 
 function normalizeCollectionCount(value) {
@@ -97,12 +104,14 @@ export function createSeededCollectionState({ initialCollections = null, resolve
     lists: getCollectionItems(initialCollections, 'lists', hasSeededCollectionSnapshot),
     watched: getCollectionItems(initialCollections, 'watched', hasSeededCollectionSnapshot),
     watchlist: getCollectionItems(initialCollections, 'watchlist', hasSeededCollectionSnapshot),
+    likedLists: getCollectionItems(initialCollections, 'likedLists', hasSeededCollectionSnapshot),
   };
   const counts = {
     likes: getCollectionCount(initialCollections, 'likes', hasSeededCollectionSnapshot),
     lists: getCollectionCount(initialCollections, 'lists', hasSeededCollectionSnapshot),
     watched: getCollectionCount(initialCollections, 'watched', hasSeededCollectionSnapshot),
     watchlist: getCollectionCount(initialCollections, 'watchlist', hasSeededCollectionSnapshot),
+    likedLists: getCollectionCount(initialCollections, 'likedLists', hasSeededCollectionSnapshot),
   };
 
   return {
@@ -113,6 +122,7 @@ export function createSeededCollectionState({ initialCollections = null, resolve
       lists: hasUsableSeededItems(items.lists, hasSeededCollectionSnapshot),
       watched: hasUsableSeededItems(items.watched, hasSeededCollectionSnapshot),
       watchlist: hasUsableSeededItems(items.watchlist, hasSeededCollectionSnapshot),
+      likedLists: hasUsableSeededItems(items.likedLists, hasSeededCollectionSnapshot),
     },
     items,
   };
@@ -124,6 +134,7 @@ export function getSeededCollectionUsage({ hasSeededItems, shouldForcePrivateRef
     lists: Boolean(hasSeededItems?.lists && !shouldForcePrivateRefresh),
     watched: Boolean(hasSeededItems?.watched && !shouldForcePrivateRefresh),
     watchlist: Boolean(hasSeededItems?.watchlist && !shouldForcePrivateRefresh),
+    likedLists: Boolean(hasSeededItems?.likedLists && !shouldForcePrivateRefresh),
   };
 }
 
@@ -463,6 +474,12 @@ const COLLECTION_SUBSCRIPTIONS = Object.freeze([
     mergeMetadata: false,
     subscribe: subscribeToUserLists,
   }),
+  Object.freeze({
+    key: 'likedLists',
+    label: 'Liked lists',
+    mergeMetadata: false,
+    subscribe: subscribeToLikedLists,
+  }),
 ]);
 
 function subscribeToAccountCollection({
@@ -558,11 +575,13 @@ export function useAccountCollections({
   const [watched, setWatched] = useState(seededState.items.watched);
   const [watchlist, setWatchlist] = useState(seededState.items.watchlist);
   const [lists, setLists] = useState(seededState.items.lists);
+  const [likedLists, setLikedLists] = useState(seededState.items.likedLists || []);
   const [collectionCounts, setCollectionCounts] = useState(seededState.counts);
   const [isLikesLoading, setIsLikesLoading] = useState(!shouldUseSeeded.likes);
   const [isWatchedLoading, setIsWatchedLoading] = useState(!shouldUseSeeded.watched);
   const [isWatchlistLoading, setIsWatchlistLoading] = useState(!shouldUseSeeded.watchlist);
   const [isListsLoading, setIsListsLoading] = useState(!shouldUseSeeded.lists);
+  const [isLikedListsLoading, setIsLikedListsLoading] = useState(!shouldUseSeeded.likedLists);
 
   useEffect(() => {
     const isPreviewOnlyMode = hasAnyCollectionPreviewLimit(normalizedPreviewLimits);
@@ -572,12 +591,14 @@ export function useAccountCollections({
     const shouldScopeByActiveTab = normalizedActiveTab && normalizedActiveTab !== 'overview';
     const activeCollectionKey = shouldScopeByActiveTab ? normalizedActiveTab : null;
     const setItemsByKey = {
+      likedLists: setLikedLists,
       likes: setLikes,
       lists: setLists,
       watched: setWatched,
       watchlist: setWatchlist,
     };
     const setLoadingByKey = {
+      likedLists: setIsLikedListsLoading,
       likes: setIsLikesLoading,
       lists: setIsListsLoading,
       watched: setIsWatchedLoading,
@@ -654,14 +675,21 @@ export function useAccountCollections({
   return {
     collectionCounts,
     isLoadingCollections:
-      isLikesLoading || isWatchedLoading || isWatchlistLoading || isListsLoading,
+      isLikesLoading ||
+      isWatchedLoading ||
+      isWatchlistLoading ||
+      isListsLoading ||
+      isLikedListsLoading,
+    isLikedListsLoading,
     isLikesLoading,
     isListsLoading,
     isWatchedLoading,
     isWatchlistLoading,
+    likedLists,
     likes,
     lists,
     setCollectionCounts,
+    setLikedLists,
     setLikes,
     setLists,
     setWatched,

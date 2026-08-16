@@ -127,13 +127,14 @@ export async function reorderUserListItems({ userId, listId, items = [] }) {
         ? 'tv'
         : 'movie';
     const rawId = String(
-      item?.entityId || item?.entity_id || item?.id || item?.mediaKey || '',
+      item?.entityId || item?.entity_id || item?.id || item?.mediaKey || item?.media_key || '',
     ).trim();
-    const cleanId = rawId.replace(/^(movie|tv)-/, '');
+    const cleanId = rawId.replace(/^(movie|tv)[-_]/, '');
     const mediaKey =
-      item?.mediaKey && typeof item.mediaKey === 'string' && item.mediaKey.includes('-')
+      item?.media_key ||
+      (item?.mediaKey && typeof item.mediaKey === 'string' && item.mediaKey.includes('_')
         ? item.mediaKey
-        : `${entityType}-${cleanId}`;
+        : buildMediaItemKey(entityType, cleanId));
     const position = index + 1;
 
     return client

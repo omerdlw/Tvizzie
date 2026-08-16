@@ -27,9 +27,17 @@ function buildReviewDocPath(subject = {}, userId) {
   return `media_items/${subject.subjectKey}/reviews/${userId}`;
 }
 
-export function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
+export function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = [], userOverride = null) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
-  const user = payload.user && typeof payload.user === 'object' ? payload.user : {};
+  const rawUser = payload.user && typeof payload.user === 'object' ? payload.user : {};
+  const user = userOverride
+    ? {
+        avatarUrl: userOverride.avatarUrl ?? userOverride.avatar_url ?? rawUser.avatarUrl ?? null,
+        id: userOverride.id || rawUser.id || row.user_id,
+        name: userOverride.name || userOverride.display_name || rawUser.name || rawUser.displayName || 'Anonymous User',
+        username: userOverride.username || rawUser.username || null,
+      }
+    : rawUser;
   const rawKey = String(row.media_key || payload.subjectKey || '').toLowerCase();
   const inferredSubjectType = rawKey.startsWith('tv_')
     ? 'tv'
@@ -56,19 +64,29 @@ export function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) 
   };
   const reviewUserId = row.user_id || payload.authorId || user.id || null;
 
+  const resolvedContent =
+    'content' in row && row.content !== undefined
+      ? (row.content ?? '')
+      : (payload.content ?? '');
+  const resolvedRating =
+    'rating' in row && row.rating !== undefined
+      ? row.rating !== null
+        ? Number(row.rating)
+        : null
+      : payload.rating !== null && payload.rating !== undefined
+        ? Number(payload.rating)
+        : null;
+
   return {
     authorId: reviewUserId,
-    content: row.content || payload.content || '',
+    content: resolvedContent,
     createdAt: normalizeTimestamp(row.created_at),
     docPath: buildReviewDocPath(subject, reviewUserId),
     id: `${buildReviewDocPath(subject, reviewUserId)}:${reviewUserId}`,
     isSpoiler: Boolean(row.is_spoiler || payload.isSpoiler),
     likes,
     mediaKey: row.media_key || subject.subjectKey || null,
-    rating:
-      row.rating === null || row.rating === undefined
-        ? (payload.rating ?? null)
-        : Number(row.rating),
+    rating: resolvedRating,
     reviewUserId,
     subjectHref: subject.subjectHref,
     subjectId: subject.subjectId,

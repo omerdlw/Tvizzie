@@ -25,6 +25,8 @@ const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   isResolvingProfile: false,
   itemRemoveConfirmation: null,
   likeCount: 0,
+  likedLists: [],
+  likes: [],
   listCount: 0,
   navDescription: null,
   pendingFollowRequestCount: 0,

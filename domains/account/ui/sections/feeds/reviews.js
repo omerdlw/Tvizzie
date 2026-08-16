@@ -38,6 +38,7 @@ export default function AccountReviewsFeed({
   isLoadingMore = false,
   items = [],
   loadError = null,
+  likedLists = [],
   likes = [],
   onDeleteRequest = null,
   onEdit = null,
@@ -108,7 +109,12 @@ export default function AccountReviewsFeed({
   const resolvedSummaryLabel = hasFilters
     ? `${filteredReviews.length} of ${listedReviewCount} shown`
     : (summaryLabel ?? `${listedReviewCount} Reviews`);
-  const likedMediaKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const likedMediaKeys = useMemo(() => {
+    const set = buildMediaKeySet(likes);
+    const listSet = buildMediaKeySet(likedLists);
+    listSet.forEach((key) => set.add(key));
+    return set;
+  }, [likes, likedLists]);
   const watchedMediaKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
   const rewatchMediaKeys = useMemo(
     () => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1),

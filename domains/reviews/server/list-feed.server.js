@@ -19,21 +19,22 @@ export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = nu
   }
 
   const admin = createAdminClient();
-  const canViewProfile = await canViewerAccessUserContent({
-    client: admin,
-    ownerId,
-    viewerId,
-  });
+  const [canViewProfile, reviewResult] = await Promise.all([
+    canViewerAccessUserContent({
+      client: admin,
+      ownerId,
+      viewerId,
+    }),
+    admin
+      .from('list_reviews')
+      .select(LIST_REVIEW_SELECT)
+      .eq('list_id', listId)
+      .order('updated_at', { ascending: false }),
+  ]);
 
   if (!canViewProfile) {
     throw createPrivateProfileError();
   }
-
-  const reviewResult = await admin
-    .from('list_reviews')
-    .select(LIST_REVIEW_SELECT)
-    .eq('list_id', listId)
-    .order('updated_at', { ascending: false });
 
   if (reviewResult.error) {
     throw new Error(reviewResult.error.message || 'List reviews could not be loaded');
@@ -45,11 +46,31 @@ export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = nu
     return [];
   }
 
-  const listMap = await loadListSubjectMap(admin, [listId]);
+  const subjectKey = createListReviewLikeKey(ownerId, listId);
+  const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+
+  const [listMap, likesMap, authorProfilesResult] = await Promise.all([
+    loadListSubjectMap(admin, [listId]),
+    fetchReviewLikes(admin, [subjectKey]),
+    userIds.length > 0
+      ? admin.from('profiles').select('id,username,display_name,avatar_url').in('id', userIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const userMap = new Map();
+  (authorProfilesResult.data || []).forEach((p) => {
+    userMap.set(p.id, {
+      avatarUrl: p.avatar_url || null,
+      id: p.id,
+      name: p.display_name || p.username || 'Anonymous User',
+      username: p.username || null,
+    });
+  });
+
   const subject = listMap.get(listId) || {
     subjectHref: null,
     subjectId: listId,
-    subjectKey: createListReviewLikeKey(ownerId, listId),
+    subjectKey,
     subjectOwnerId: ownerId,
     subjectOwnerUsername: ownerId,
     subjectPreviewItems: [],
@@ -58,11 +79,15 @@ export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = nu
     subjectTitle: 'Untitled List',
     subjectType: 'list',
   };
-  const likesMap = await fetchReviewLikes(admin, [subject.subjectKey]);
 
   return sortReviewsByUpdatedAtDesc(
     rows.map((row) =>
-      normalizeReviewRow(row, subject, likesMap.get(`${subject.subjectKey}:${row.user_id}`) || []),
+      normalizeReviewRow(
+        row,
+        subject,
+        likesMap.get(`${subject.subjectKey}:${row.user_id}`) || [],
+        userMap.get(row.user_id),
+      ),
     ),
   );
 }

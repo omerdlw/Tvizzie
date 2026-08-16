@@ -1,7 +1,5 @@
 import 'server-only';
 
-import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
-import { ACCOUNT_REVIEWS_FEED_FUNCTION } from '@/domains/reviews/shared/review-utils';
 import { fetchListReviewFeedServer } from './list-feed.server.js';
 import { fetchProfileReviewFeedLegacyServer } from './profile-feed.server.js';
 import { paginateReviewItems } from './review-normalizer.server.js';
@@ -35,28 +33,6 @@ export async function fetchProfileReviewFeedServer({
     if (Number(error?.status) === 403) throw error;
   }
 
-  try {
-    const result = await invokeInternalEdgeFunction(ACCOUNT_REVIEWS_FEED_FUNCTION, {
-      body: {
-        cursor,
-        mode,
-        pageSize,
-        userId,
-        viewerId,
-      },
-    });
-
-    return {
-      hasMore: result?.hasMore === true,
-      items: Array.isArray(result?.items) ? result.items : [],
-      nextCursor: result?.nextCursor ?? null,
-      totalCount: Number.isFinite(Number(result?.totalCount))
-        ? Number(result.totalCount)
-        : Array.isArray(result?.items)
-          ? result.items.length
-          : 0,
-    };
-  } catch {
-    return paginateReviewItems([], cursor, pageSize);
-  }
+  return paginateReviewItems([], cursor, pageSize);
 }
+

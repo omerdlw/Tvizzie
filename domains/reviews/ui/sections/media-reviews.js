@@ -293,6 +293,7 @@ export default function MediaReviews({
           <div key={listAnimationKey} style={{ willChange: 'transform, opacity, filter' }}>
             <ReviewList
               currentUserId={currentUserId}
+              displayVariant={isRecentListMode ? 'media-recent' : 'media-all'}
               isLoading={isLoading}
               loadError={loadError}
               onDeleteRequest={handleDeleteRequest}

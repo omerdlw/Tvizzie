@@ -298,14 +298,14 @@ function RelatedMoviesSection({ items, title, hasBottomBorder = true, isDeferred
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>
         <Carousel
           gap="gap-3"
-          itemClassName="w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-3.75rem)/6)]"
+          itemClassName="w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-2.25rem)/4)]"
         >
           {items.map((item, index) => (
             <RecommendationCard
               key={`${item.id}-${index}`}
               movie={item}
-              imageLoading={index < 3 ? 'eager' : 'lazy'}
-              imageFetchPriority={index < 3 ? 'high' : undefined}
+              imageLoading={index < 4 ? 'eager' : 'lazy'}
+              imageFetchPriority={index < 4 ? 'high' : undefined}
             />
           ))}
         </Carousel>

@@ -1,23 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import {
-  SUPABASE_PUBLISHABLE_KEY,
-  SUPABASE_URL,
-} from '@/infrastructure/supabase/supabase-constants';
 import {
   assertCsrfRequest,
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
 } from '@/domains/auth/server/security.server.js';
 import { getRequestContext, requireSessionRequest } from '@/domains/auth/server/session.server.js';
-import {
-  buildInternalRequestMeta,
-  executeWriteRollout,
-  invokeInternalEdgeFunction,
-} from '@/infrastructure/http/http-server';
 import {
   ALLOWED_MIME_TYPES,
   AVIF_BRANDS,
@@ -59,50 +49,72 @@ function assertMimeSignature(fileBuffer, mimeType) {
     throw createHttpError('Selected image file is empty or corrupted');
   }
 
-  const bytes = Array.from(fileBuffer.slice(0, 12));
-  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
-  const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
-  const isGif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46;
-  const isWebp =
-    bytes[0] === 0x52 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46 &&
-    bytes[3] === 0x46 &&
-    bytes[8] === 0x57 &&
-    bytes[9] === 0x41 &&
-    bytes[10] === 0x56 &&
-    bytes[11] === 0x45;
-  const isFtyp = bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70;
-  const ftypBrand = isFtyp ? String.fromCharCode(...bytes.slice(8, 12)).toLowerCase() : '';
-  const isAvif = isFtyp && AVIF_BRANDS.has(ftypBrand);
+  const header = Array.from(fileBuffer.subarray(0, 12));
 
-  if (mimeType === 'image/jpeg' && isJpeg) return;
-  if (mimeType === 'image/png' && isPng) return;
-  if (mimeType === 'image/gif' && isGif) return;
-  if (mimeType === 'image/webp' && isWebp) return;
-  if (mimeType === 'image/avif' && isAvif) return;
-
-  throw createHttpError('File contents do not match the declared image format');
-}
-
-// ============================================================
-// Storage Drivers (Edge & Admin Legacy)
-// ============================================================
-
-let signedUploadClient = null;
-
-function createSignedUploadClient() {
-  if (signedUploadClient) return signedUploadClient;
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    throw createHttpError('Supabase upload client is not configured', 500);
+  if (mimeType === 'image/jpeg') {
+    if (header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff) return;
+    throw createHttpError('Invalid JPEG file');
   }
-  signedUploadClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  return signedUploadClient;
+
+  if (mimeType === 'image/png') {
+    if (
+      header[0] === 0x89 &&
+      header[1] === 0x50 &&
+      header[2] === 0x4e &&
+      header[3] === 0x47 &&
+      header[4] === 0x0d &&
+      header[5] === 0x0a &&
+      header[6] === 0x1a &&
+      header[7] === 0x0a
+    )
+      return;
+    throw createHttpError('Invalid PNG file');
+  }
+
+  if (mimeType === 'image/webp') {
+    const isRiff =
+      header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46;
+    const isWebp =
+      header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
+    if (isRiff && isWebp) return;
+    throw createHttpError('Invalid WEBP file');
+  }
+
+  if (mimeType === 'image/gif') {
+    const isGif87 =
+      header[0] === 0x47 &&
+      header[1] === 0x49 &&
+      header[2] === 0x46 &&
+      header[3] === 0x38 &&
+      header[4] === 0x37 &&
+      header[5] === 0x61;
+    const isGif89 =
+      header[0] === 0x47 &&
+      header[1] === 0x49 &&
+      header[2] === 0x46 &&
+      header[3] === 0x38 &&
+      header[4] === 0x39 &&
+      header[5] === 0x61;
+    if (isGif87 || isGif89) return;
+    throw createHttpError('Invalid GIF file');
+  }
+
+  if (mimeType === 'image/avif') {
+    const isFtyp =
+      header[4] === 0x66 && header[5] === 0x74 && header[6] === 0x79 && header[7] === 0x70;
+    const brand = String.fromCharCode(...header.slice(8, 12)).toLowerCase();
+    if (isFtyp && AVIF_BRANDS.has(brand)) return;
+    throw createHttpError('Invalid AVIF file');
+  }
+
+  throw createHttpError('Unsupported image format');
 }
 
-export async function uploadWithLegacyAdminFlow({
+// ============================================================
+// Direct 1-Hop Supabase Storage Upload
+// ============================================================
+
+export async function uploadDirectMediaFile({
   fileBuffer,
   fileExtension,
   mimeType,
@@ -129,93 +141,11 @@ export async function uploadWithLegacyAdminFlow({
   return { bucket, path, url };
 }
 
-export async function uploadWithEdgeFlow({
-  authContext,
-  fileBuffer,
-  fileExtension,
-  fileSize,
-  mimeType,
-  request,
-  requestMeta,
-  target,
-}) {
-  const prepareResult = await invokeInternalEdgeFunction('account-media-upload', {
-    body: {
-      action: 'prepare-upload',
-      contentLength: fileSize,
-      extension: fileExtension,
-      mimeType,
-      target,
-      userId: authContext.userId,
-    },
-    idempotencyKey: requestMeta?.idempotencyKey,
-    request,
-    requestMeta,
-    source: 'account-media-upload',
-  });
-
-  const preparedBucket = normalizeValue(prepareResult?.bucket);
-  const preparedPath = normalizeValue(prepareResult?.path);
-  const token = normalizeValue(prepareResult?.token);
-  const preparedUrl = normalizeValue(prepareResult?.url);
-
-  if (!preparedBucket || !preparedPath || !token)
-    throw createHttpError('Image upload ticket is invalid', 500);
-
-  const uploadClient = createSignedUploadClient();
-  const uploadResult = await uploadClient.storage
-    .from(preparedBucket)
-    .uploadToSignedUrl(preparedPath, token, fileBuffer, {
-      cacheControl: '31536000',
-      contentType: mimeType,
-    });
-
-  if (uploadResult.error)
-    throw createHttpError(uploadResult.error.message || 'Image upload failed', 500);
-
-  const { data: { publicUrl = '' } = {} } = uploadClient.storage
-    .from(preparedBucket)
-    .getPublicUrl(preparedPath);
-  return {
-    bucket: preparedBucket,
-    path: preparedPath,
-    url: preparedUrl || normalizeValue(publicUrl),
-  };
-}
-
-export async function validateEdgeUploadTicket({
-  authContext,
-  fileExtension,
-  fileSize,
-  mimeType,
-  request,
-  requestMeta,
-  target,
-}) {
-  await invokeInternalEdgeFunction('account-media-upload', {
-    body: {
-      action: 'prepare-upload',
-      contentLength: fileSize,
-      dryRun: true,
-      extension: fileExtension,
-      mimeType,
-      target,
-      userId: authContext.userId,
-    },
-    request,
-    requestMeta,
-    source: 'account-media-upload-shadow',
-    timeoutMs: 8000,
-  });
-}
-
 // ============================================================
 // Media Upload HTTP Endpoint Handler
 // ============================================================
 
 export async function handleAccountMediaPost(request) {
-  const requestMeta = buildInternalRequestMeta(request, 'account-media-upload');
-
   try {
     const authContext = await requireSessionRequest(request, { allowBearerFallback: true });
     assertCsrfRequest(request, getRequestContext(request));
@@ -251,45 +181,18 @@ export async function handleAccountMediaPost(request) {
     const fileBuffer = new Uint8Array(arrayBuffer);
     assertMimeSignature(fileBuffer, mimeType);
 
-    const payload = await executeWriteRollout({
-      featureKey: 'media_upload_edge',
-      legacyWrite: () =>
-        uploadWithLegacyAdminFlow({
-          fileBuffer,
-          fileExtension,
-          mimeType,
-          target,
-          userId: authContext.userId,
-        }),
-      primaryWrite: () =>
-        uploadWithEdgeFlow({
-          authContext,
-          fileBuffer,
-          fileExtension,
-          fileSize,
-          mimeType,
-          request,
-          requestMeta,
-          target,
-        }),
-      shadowValidate: () =>
-        validateEdgeUploadTicket({
-          authContext,
-          fileExtension,
-          fileSize,
-          mimeType,
-          request,
-          requestMeta,
-          target,
-        }),
+    const mediaResult = await uploadDirectMediaFile({
+      fileBuffer,
+      fileExtension,
+      mimeType,
+      target,
+      userId: authContext.userId,
     });
 
-    const mediaResult = payload?.result || payload || {};
     return NextResponse.json({
-      ...payload,
-      bucket: mediaResult.bucket || payload?.bucket || null,
-      path: mediaResult.path || payload?.path || null,
-      url: mediaResult.url || payload?.url || null,
+      bucket: mediaResult.bucket || null,
+      path: mediaResult.path || null,
+      url: mediaResult.url || null,
       success: true,
     });
   } catch (error) {

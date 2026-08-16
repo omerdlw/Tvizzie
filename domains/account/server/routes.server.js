@@ -65,6 +65,7 @@ function createRouteState(base = null, extras = null) {
 
 function createInitialCollections({
   counts = null,
+  likedLists = [],
   likes = [],
   lists = [],
   resolvedUserId = null,
@@ -73,6 +74,7 @@ function createInitialCollections({
 }) {
   const normalizedLikes = Array.isArray(likes) ? likes : [];
   const normalizedLists = Array.isArray(lists) ? lists : [];
+  const normalizedLikedLists = Array.isArray(likedLists) ? likedLists : [];
   const normalizedWatched = Array.isArray(watched) ? watched : [];
   const normalizedWatchlist = Array.isArray(watchlist) ? watchlist : [];
 
@@ -84,11 +86,13 @@ function createInitialCollections({
 
   return {
     counts: {
+      likedLists: resolveCount(counts?.likedLists, normalizedLikedLists),
       likes: resolveCount(counts?.likes, normalizedLikes),
       lists: resolveCount(counts?.lists, normalizedLists),
       watched: resolveCount(counts?.watched, normalizedWatched),
       watchlist: resolveCount(counts?.watchlist, normalizedWatchlist),
     },
+    likedLists: normalizedLikedLists,
     likes: normalizedLikes,
     lists: normalizedLists,
     userId: resolvedUserId,
@@ -283,9 +287,9 @@ async function loadAccountResource(
 
 async function loadOverviewCollections(snapshot = null) {
   const userId = resolveSnapshotUserId(snapshot);
-  if (!userId) return { likes: [], lists: [], watched: [], watchlist: [] };
+  if (!userId) return { likedLists: [], likes: [], lists: [], watched: [], watchlist: [] };
 
-  const [likes, watched, watchlist, lists] = await Promise.all([
+  const [likes, watched, watchlist, lists, likedLists] = await Promise.all([
     loadAccountResource(snapshot, {
       fallback: [],
       limitCount: OVERVIEW_LIKES_LIMIT,
@@ -306,8 +310,13 @@ async function loadOverviewCollections(snapshot = null) {
       limitCount: OVERVIEW_LISTS_LIMIT,
       resource: 'lists',
     }),
+    loadAccountResource(snapshot, {
+      fallback: [],
+      limitCount: OVERVIEW_LISTS_LIMIT,
+      resource: 'liked-lists',
+    }),
   ]);
-  return { likes, lists, watched, watchlist };
+  return { likedLists, likes, lists, watched, watchlist };
 }
 
 function loadAccountActivityRouteFeed({
@@ -389,7 +398,7 @@ export async function getUsernameAccountOverviewRouteData(username) {
     });
   }
 
-  const [{ likes, lists, watched, watchlist }, rawActivityFeed] = await Promise.all([
+  const [{ likedLists, likes, lists, watched, watchlist }, rawActivityFeed] = await Promise.all([
     loadOverviewCollections(snapshot),
     loadAccountActivityRouteFeed({
       pageSize: OVERVIEW_ACTIVITY_LIMIT,
@@ -404,6 +413,7 @@ export async function getUsernameAccountOverviewRouteData(username) {
   return createRouteState(snapshot, {
     initialActivityFeed: createInitialFeed(rawActivityFeed, snapshot.initialResolvedUserId),
     initialCollections: createSnapshotInitialCollections(snapshot, {
+      likedLists,
       likes,
       lists,
       watched,
@@ -493,7 +503,7 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
         }),
         loadListReviewRouteFeed({
           listId: list.id,
-          ownerId: snapshot.initialResolvedUserId,
+          ownerId: list?.userId || list?.user_id || snapshot.initialResolvedUserId,
           viewerId: snapshot.viewerId,
         }),
       ])

@@ -94,7 +94,10 @@ export function resolveSubscriberPollInterval(subscriber, isHidden = false) {
   }
 
   if (isHidden) {
-    return subscriber.hiddenIntervalMs ?? subscriber.intervalMs ?? null;
+    return (
+      subscriber.hiddenIntervalMs ??
+      (subscriber.intervalMs ? Math.max(subscriber.intervalMs * 4, 120000) : null)
+    );
   }
 
   return subscriber.intervalMs ?? null;

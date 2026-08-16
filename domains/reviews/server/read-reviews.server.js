@@ -1,9 +1,10 @@
 import 'server-only';
 
+import { getOrLoadCachedValue } from '@/infrastructure/http/http-server';
 import {
-  getOrLoadCachedValue,
-  invokeInternalEdgeFunction,
-} from '@/infrastructure/http/http-server';
+  getListReviewsResource,
+  getMediaReviewsResource,
+} from './read-resources.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -33,28 +34,30 @@ export async function readReviews(query = {}) {
   if (!isValid) return { data: [] };
 
   const cacheKey = `reviews|resource=${request.resource}|listId=${request.listId}|ownerId=${request.ownerId}|entity=${request.entityType}:${request.entityId}|limit=${request.limitCount}`;
-  const body =
-    request.resource === 'list'
-      ? {
-          limitCount: request.limitCount,
-          listId: request.listId,
-          ownerId: request.ownerId,
-          resource: request.resource,
-        }
-      : {
-          entityId: request.entityId,
-          entityType: request.entityType,
-          limitCount: request.limitCount,
-          resource: request.resource,
-        };
-  const payload = await getOrLoadCachedValue({
+
+  const data = await getOrLoadCachedValue({
     cacheKey,
     enabled: true,
     ttlMs: 2000,
-    loader: () => invokeInternalEdgeFunction('reviews-read', { body }),
+    loader: async () => {
+      if (request.resource === 'list') {
+        return getListReviewsResource({
+          limitCount: request.limitCount,
+          listId: request.listId,
+          ownerId: request.ownerId,
+        });
+      }
+
+      return getMediaReviewsResource({
+        entityId: request.entityId,
+        entityType: request.entityType,
+        limitCount: request.limitCount,
+      });
+    },
   });
 
   return {
-    data: Array.isArray(payload?.data) ? payload.data : [],
+    data: Array.isArray(data) ? data : [],
   };
 }
+

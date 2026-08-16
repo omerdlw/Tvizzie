@@ -75,9 +75,9 @@ function normalizeListItem(item = {}) {
       ? 'tv'
       : 'movie';
   const rawId = String(
-    item?.entityId || item?.entity_id || item?.id || item?.mediaKey || '',
+    item?.entityId || item?.entity_id || item?.id || item?.mediaKey || item?.media_key || '',
   ).trim();
-  const entityId = rawId.replace(/^(movie|tv)-/, '');
+  const entityId = rawId.replace(/^(movie|tv)[-_]/, '');
   const title = String(
     item?.title || item?.name || item?.original_title || item?.original_name || '',
   ).trim();
@@ -103,7 +103,7 @@ function normalizeListItem(item = {}) {
     title: title || name || 'Untitled',
     vote_average: Number.isFinite(Number(item?.vote_average)) ? Number(item.vote_average) : null,
     vote_count: Number.isFinite(Number(item?.vote_count)) ? Number(item.vote_count) : null,
-    mediaKey: `${entityType}-${entityId}`,
+    mediaKey: `${entityType}_${entityId}`,
     position: Number.isFinite(Number(item?.position)) ? Number(item.position) : null,
   };
 }
@@ -117,10 +117,10 @@ const getDraftMediaKey = (item) => {
       ? 'tv'
       : 'movie';
   const rawId = String(
-    item?.entityId || item?.entity_id || item?.id || item?.mediaKey || '',
+    item?.entityId || item?.entity_id || item?.id || item?.mediaKey || item?.media_key || '',
   ).trim();
-  const cleanId = rawId.replace(/^(movie|tv)-/, '');
-  return `${type}-${cleanId}`;
+  const cleanId = rawId.replace(/^(movie|tv)[-_]/, '');
+  return `${type}_${cleanId}`;
 };
 
 const getItemDisplayTitle = (item) => item?.title || item?.name || 'Untitled';

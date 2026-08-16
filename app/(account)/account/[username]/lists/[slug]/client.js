@@ -64,9 +64,16 @@ export default function Client({ routeData = null }) {
   const auth = useAuth();
   const toast = useToast();
   const { openSurface } = useNavigationActions();
+  const hasSeededList = Boolean(initialList?.id);
+  const hasSeededListItems = hasSeededList && Array.isArray(initialListItems) && initialListItems.length > 0;
+  const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews) && initialListReviews.length > 0;
+
   const [list, setList] = useState(initialList);
   const [listItems, setListItems] = useState(initialListItems);
   const [reviews, setReviews] = useState(initialListReviews);
+  const [isListLoading, setIsListLoading] = useState(!hasSeededList);
+  const [isListItemsLoading, setIsListItemsLoading] = useState(!hasSeededListItems);
+  const [isReviewsLoading, setIsReviewsLoading] = useState(!hasSeededListReviews);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [listItemRemoveConfirmation, setListItemRemoveConfirmation] = useState(null);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
@@ -101,27 +108,27 @@ export default function Client({ routeData = null }) {
     watched,
     watchlist,
   } = sectionState;
-  const hasSeededList = Boolean(initialList?.id);
-  const hasSeededListItems = hasSeededList && Array.isArray(initialListItems);
-  const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews);
 
-  const listId = initialList?.id || null;
+  const listId = initialList?.id || list?.id || null;
 
   useEffect(() => {
     if (hasSeededList && initialList) {
       setList(initialList);
+      setIsListLoading(false);
     }
   }, [hasSeededList, slug, listId]);
 
   useEffect(() => {
     if (hasSeededListItems) {
       setListItems(initialListItems);
+      setIsListItemsLoading(false);
     }
   }, [hasSeededListItems, slug, listId]);
 
   useEffect(() => {
     if (hasSeededListReviews) {
       setReviews(initialListReviews);
+      setIsReviewsLoading(false);
     }
   }, [hasSeededListReviews, slug, listId]);
 
@@ -175,12 +182,13 @@ export default function Client({ routeData = null }) {
   }, [hasSeededListReviews, listId, resolvedUserId]);
 
   useEffect(() => {
-    if (!resolvedUserId) {
+    if (!resolvedUserId || !canViewProfileCollections) {
+      setIsListLoading(false);
       return undefined;
     }
-    if (!canViewProfileCollections) {
-      setList(null);
-      return undefined;
+
+    if (!hasSeededList) {
+      setIsListLoading(true);
     }
 
     return subscribeToUserListBySlug(
@@ -188,6 +196,7 @@ export default function Client({ routeData = null }) {
       slug,
       (nextList) => {
         if (nextList) setList(nextList);
+        setIsListLoading(false);
       },
       {
         fetchOnSubscribe: !hasSeededList,
@@ -195,18 +204,22 @@ export default function Client({ routeData = null }) {
           if (!hasSeededList) {
             setList(null);
           }
+          setIsListLoading(false);
         },
       },
     );
   }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug]);
 
   useEffect(() => {
-    if (!resolvedUserId || !list?.id) {
+    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+      if (!list?.id) {
+        setIsListItemsLoading(false);
+      }
       return undefined;
     }
-    if (!canViewProfileCollections) {
-      setListItems([]);
-      return undefined;
+
+    if (!hasSeededListItems) {
+      setIsListItemsLoading(true);
     }
 
     return subscribeToUserListItems(
@@ -214,6 +227,7 @@ export default function Client({ routeData = null }) {
       list.id,
       (nextItems) => {
         setListItems((current) => mergeCollectionItemsWithExistingMetadata(current, nextItems));
+        setIsListItemsLoading(false);
       },
       {
         fetchOnSubscribe: !hasSeededListItems,
@@ -221,27 +235,35 @@ export default function Client({ routeData = null }) {
           if (!hasSeededListItems) {
             setListItems([]);
           }
+          setIsListItemsLoading(false);
         },
       },
     );
   }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId]);
 
   useEffect(() => {
-    if (!resolvedUserId || !list?.id) {
-      return undefined;
-    }
-    if (!canViewProfileCollections) {
-      setReviews([]);
+    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+      if (!list?.id) {
+        setIsReviewsLoading(false);
+      }
       return undefined;
     }
 
-    return subscribeToListReviews({ list, ownerId: resolvedUserId, listId: list.id }, setReviews, {
+    if (!hasSeededListReviews) {
+      setIsReviewsLoading(true);
+    }
+
+    return subscribeToListReviews({ list, ownerId: resolvedUserId, listId: list.id }, (nextReviews) => {
+      setReviews(nextReviews);
+      setIsReviewsLoading(false);
+    }, {
       fetchOnSubscribe: !hasSeededListReviews,
       liveUserId: auth.user?.id || null,
       onError: () => {
         if (!hasSeededListReviews) {
           setReviews([]);
         }
+        setIsReviewsLoading(false);
       },
     });
   }, [auth.user?.id, canViewProfileCollections, hasSeededListReviews, list, resolvedUserId]);
@@ -441,37 +463,66 @@ export default function Client({ routeData = null }) {
         resolvedRouteData.username ||
         resolvedUserId;
 
+      const previewItems =
+        Array.isArray(list?.previewItems) && list.previewItems.length > 0
+          ? list.previewItems.filter(Boolean)
+          : Array.isArray(listItems) && listItems.length > 0
+            ? listItems.slice(0, 5).filter(Boolean)
+            : [];
+
+      const coverUrl =
+        list?.poster_path ||
+        list?.posterPath ||
+        list?.coverUrl ||
+        previewItems[0]?.poster_path_full ||
+        (previewItems[0]?.poster_path ? `${TMDB_IMG}/w342${previewItems[0].poster_path}` : null) ||
+        null;
+
       openSurface(
         createReviewEditorSurfaceEntry({
           list: {
-            coverUrl:
-              list?.poster_path ||
-              list?.posterPath ||
-              list?.coverUrl ||
-              listItems?.[0]?.poster_path ||
-              null,
+            coverUrl,
             id: list.id,
             ownerId: resolvedUserId,
             ownerSnapshot: {
               id: resolvedUserId,
               username: ownerUsername,
             },
-            previewItems: Array.isArray(list?.previewItems) ? list.previewItems : [],
+            previewItems,
             slug: list.slug || list.id,
             title: list.title || 'Untitled List',
           },
           listId: list.id,
-          onSuccess: reviewIdentity
-            ? (updatedReview) => {
-                setReviews((current) =>
-                  current.map((item) =>
-                    (item.docPath || item.id) === reviewIdentity
-                      ? { ...item, ...updatedReview }
-                      : item,
-                  ),
-                );
+          onSuccess: (updatedReview) => {
+            if (!updatedReview) return;
+            setReviews((current) => {
+              const reviewKey = updatedReview.docPath || updatedReview.id || reviewIdentity;
+              const existingIndex = current.findIndex(
+                (item) => (item.docPath || item.id) === reviewKey,
+              );
+              const mergedReview = {
+                ...updatedReview,
+                subjectPreviewItems:
+                  Array.isArray(updatedReview.subjectPreviewItems) && updatedReview.subjectPreviewItems.length > 0
+                    ? updatedReview.subjectPreviewItems
+                    : (existingIndex >= 0 ? current[existingIndex].subjectPreviewItems : null) || previewItems,
+                subjectPoster:
+                  updatedReview.subjectPoster ||
+                  (existingIndex >= 0 ? current[existingIndex].subjectPoster : null) ||
+                  coverUrl,
+              };
+
+              if (existingIndex >= 0) {
+                const nextList = [...current];
+                nextList[existingIndex] = {
+                  ...nextList[existingIndex],
+                  ...mergedReview,
+                };
+                return nextList;
               }
-            : null,
+              return [mergedReview, ...current];
+            });
+          },
           ownerId: resolvedUserId,
           review: targetReview,
           user: buildReviewModalUser(targetReview),
@@ -624,6 +675,9 @@ export default function Client({ routeData = null }) {
     handleToggleLike,
     isLiked,
     isLikeLoading,
+    isListLoading,
+    isListItemsLoading,
+    isReviewsLoading,
     itemRemoveConfirmation:
       reviewDeleteConfirmation || listItemRemoveConfirmation || itemRemoveConfirmation,
     list,

@@ -6,8 +6,11 @@ import {
   CACHE_CONTROL,
   cacheControlHeaders,
   getOrLoadCachedValue,
-  invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
+import {
+  getAccountSocialProofResource,
+  getMediaSocialProofResource,
+} from './resources.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -38,24 +41,19 @@ export async function GET(request) {
       enabled: !viewerId,
       ttlMs: 1500,
       loader: async () => {
-        const payload = await invokeInternalEdgeFunction('social-proof-read', {
-          body:
-            resource === 'account'
-              ? {
-                  canViewPrivateContent,
-                  resource: 'account',
-                  targetUserId,
-                  viewerId,
-                }
-              : {
-                  entityId,
-                  entityType,
-                  resource: 'media',
-                  viewerId,
-                },
-        });
+        if (resource === 'account') {
+          return getAccountSocialProofResource({
+            canViewPrivateContent,
+            targetUserId,
+            viewerId,
+          });
+        }
 
-        return payload?.data || null;
+        return getMediaSocialProofResource({
+          entityId,
+          entityType,
+          viewerId,
+        });
       },
     });
 

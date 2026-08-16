@@ -67,7 +67,7 @@ async function upsertMediaReview({ admin, body, userId }) {
 
   const rpcResult = await admin.rpc('review_upsert_media', {
     p_backdrop_path: mediaPayload?.backdrop_path || null,
-    p_content: content || null,
+    p_content: content ?? '',
     p_entity_id: mediaPayload?.entityId || '',
     p_entity_type: mediaPayload?.entityType || '',
     p_is_spoiler: Boolean(isSpoiler),

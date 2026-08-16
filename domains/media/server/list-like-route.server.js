@@ -46,8 +46,7 @@ export async function handleListLikePost(request) {
       return NextResponse.json({ error: 'List not found' }, { status: 404 });
     }
 
-    const userClient = createAuthenticatedSupabaseClient(session.accessToken);
-    const rpcResult = await userClient.rpc('collection_toggle_list_like', {
+    const rpcResult = await admin.rpc('collection_toggle_list_like', {
       p_list_id: listId,
       p_owner_id: ownerId,
       p_user_id: session.userId,

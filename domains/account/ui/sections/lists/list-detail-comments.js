@@ -7,11 +7,13 @@ import {
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
+import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import { REVIEW_ITEMS_PER_PAGE } from './list-detail-config';
 
 export default function ListDetailCommentsSection({
   auth,
   filteredReviews = [],
+  isLoading = false,
   list,
   onDeleteRequest,
   onEditReview,
@@ -35,6 +37,7 @@ export default function ListDetailCommentsSection({
     <CommentsView
       auth={auth}
       filteredReviews={filteredReviews}
+      isLoading={isLoading}
       list={list}
       onDeleteRequest={onDeleteRequest}
       onEditReview={onEditReview}
@@ -52,6 +55,7 @@ export default function ListDetailCommentsSection({
 function CommentsView({
   auth,
   filteredReviews,
+  isLoading = false,
   list,
   onDeleteRequest,
   onEditReview,
@@ -66,20 +70,22 @@ function CommentsView({
   return (
     <div className="flex w-full flex-col">
       <div className="flex flex-col gap-4 p-6">
-        {visibleReviews.length === 0 ? (
+        {isLoading && visibleReviews.length === 0 ? (
+          <ReviewCardsSkeletonList count={3} />
+        ) : visibleReviews.length === 0 ? (
           <AccountInlineSectionState>
             {reviews.length > 0 ? 'No comments match the current filters.' : 'No comments yet'}
           </AccountInlineSectionState>
         ) : (
           <ReviewList
             currentUserId={auth.user?.id || null}
-            displayVariant="account"
+            displayVariant="list-detail"
             isLoading={false}
             loadError={null}
             onDeleteRequest={onDeleteRequest}
             onEdit={onEditReview}
             onLike={onLikeReview}
-            showSubject={true}
+            showSubject={false}
             sortedReviews={visibleReviews}
             userProfile={userProfile}
             accountMotion
