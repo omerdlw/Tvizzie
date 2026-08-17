@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { CACHE_CONTROL, cacheControlHeaders, getOrLoadCachedValue } from '@/infrastructure/http/http-server';
-import { normalizeTimestamp } from '@/shared/utils';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { normalizeTimestamp } from '@/domains/shell/shared/utils';
 
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 20;
@@ -19,6 +20,7 @@ const LIST_SELECT = [
   'updated_at',
   'user_id',
 ].join(',');
+
 const MEDIA_REVIEW_SELECT = [
   'content',
   'created_at',

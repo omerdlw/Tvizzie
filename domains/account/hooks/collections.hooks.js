@@ -2,30 +2,36 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/modules/notification';
-import { TMDB_IMG } from '@/shared/constants';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import {
   getLikeDocRef,
   removeUserLike,
   subscribeToUserLikes,
-} from '@/domains/media/client/collections/likes';
+} from '@/domains/media/client/likes';
 import {
   toggleUserListItem,
   subscribeToUserLists,
   subscribeToLikedLists,
-} from '@/domains/media/client/collections/lists';
+} from '@/domains/media/client/lists';
 import {
   getWatchlistDocRef,
-  removeUserWatchedItem,
   removeUserWatchlistItem,
-  subscribeToUserWatched,
   subscribeToUserWatchlist,
-} from '@/domains/media/client/collections/watched-watchlist';
-import { updateUserMediaPosition } from '@/domains/media/utils/user-media';
+} from '@/domains/media/client/watchlist';
+import {
+  removeUserWatchedItem,
+  subscribeToUserWatched,
+} from '@/domains/media/client/watched';
+import {
+  updateUserMediaPosition,
+} from '@/domains/media/utils/poster-preferences';
 import {
   getMediaTitle,
-  notifyAccountLoadError,
   removeAccountCollectionItem,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/formatting';
+import {
+  notifyAccountLoadError,
+} from '@/domains/account/utils/feedback';
 
 export const EMPTY_COLLECTION_COUNTS = Object.freeze({
   likes: 0,

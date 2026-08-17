@@ -8,7 +8,7 @@ import {
 } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 
 function resolveRpcRow(data) {
   if (Array.isArray(data)) return data[0] || null;

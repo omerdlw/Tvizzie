@@ -1,20 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import CollectionActions from '@/domains/media/ui/components/collection-actions';
 import Sidebar from '@/domains/media/ui/components/sidebar';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
 import {
   createMovieBackdropImageUrl,
   getPreferredMovieBackground,
-} from '@/domains/media/services/media-data';
-import { getMediaBackgroundPreferenceFilePath } from '@/domains/media/utils/background-preferences';
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+} from '@/domains/media/utils/media-data';
+import {
+  getMediaBackgroundPreferenceFilePath,
+} from '@/domains/media/utils/background-preferences';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import Registry from '@/app/(media)/registry';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
-import { GridCrosshair } from '@/ui/layout/grid-crosshair';
+import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
 
 function createReviewState() {
   return {

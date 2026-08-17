@@ -3,10 +3,10 @@
 import { useCallback } from 'react';
 import { useNavigationActions } from '@/modules/nav';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
-import { createCreateListSurfaceEntry } from '@/domains/account/ui/nav-surfaces/create-list-surface';
+import { createCreateListSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-create-surface';
 // ListsView is defined in this route client.
 import AccountListsFeed from '@/domains/account/ui/sections/lists/lists-collection';
-import AccountAction from '@/domains/account/ui/nav-actions/account-action';
+import AccountAction from '@/domains/shell/navigation/action/account-action';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,

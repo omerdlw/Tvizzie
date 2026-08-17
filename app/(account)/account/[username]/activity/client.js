@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useSeededFeedState } from '@/domains/account/hooks';
+import {
+  useSeededFeedState,
+} from '@/domains/account/hooks/feed-state.hooks';
 import {
   buildManagedQueryString,
   normalizePage,
@@ -10,12 +12,14 @@ import {
   parsePageFromSearch,
   toActivityQueryValues,
 } from '@/domains/account/ui/filters/filtering';
-import { logDataError } from '@/domains/account/utils';
+import {
+  logDataError,
+} from '@/domains/account/utils/validation';
 import { fetchAccountActivityFeed } from '@/domains/account/client/account-api.client';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
-import AccountAction from '@/domains/account/ui/nav-actions/account-action';
+import AccountAction from '@/domains/shell/navigation/action/account-action';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,

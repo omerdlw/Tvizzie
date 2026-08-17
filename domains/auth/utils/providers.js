@@ -1,10 +1,10 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import {
   normalizeProviderId,
   resolveAuthCapabilities,
   resolvePrimaryProvider,
   uniqueStrings,
-} from '@/core/modules/auth/provider-utils';
+} from '@/modules/auth/provider-utils';
 import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from './oauth';
 
 export { resolveAuthCapabilities, resolvePrimaryProvider, uniqueStrings };

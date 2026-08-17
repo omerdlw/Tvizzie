@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/domains/account/ui/filters/filtering';
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 
 import {
   DefaultMenuItem,

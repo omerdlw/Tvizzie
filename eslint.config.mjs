@@ -17,18 +17,32 @@ export default [
         },
       },
     },
+    rules: {
+      'no-undef': 'error',
+    },
   },
   {
-    files: ['core/modules/**/*.{js,mjs,cjs,jsx}'],
+    files: ['modules/**/*.{js,mjs,cjs,jsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['@/domains/*', '@/app/*', '@/infrastructure/*'],
+              group: [
+                '@/domains/account*',
+                '@/domains/auth*',
+                '@/domains/home*',
+                '@/domains/legal*',
+                '@/domains/media*',
+                '@/domains/reviews*',
+                '@/domains/search*',
+                '@/domains/social*',
+                '@/app*',
+                '@/infrastructure*',
+              ],
               message:
-                'Core framework modules (core/modules) must remain black-box agnostics and cannot import from domains, app, or infrastructure.',
+                'Framework modules (modules/) can import from shell domain (@/domains/shell/*), ui (@/ui/*), and shared (@/shared/*). Feature domains, app, and infrastructure are restricted.',
             },
           ],
         },

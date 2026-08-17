@@ -10,7 +10,7 @@ import {
   createApiErrorResponse,
   createApiSuccessResponse,
 } from '@/infrastructure/http/http-server';
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 
 const UNAUTHORIZED_MESSAGE_PATTERNS = Object.freeze([
   'authentication session is required',

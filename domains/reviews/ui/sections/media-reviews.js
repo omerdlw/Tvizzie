@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { TMDB_IMG } from '@/shared/constants';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import { AuthGate } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav';
-import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
+import { createConfirmationSurfaceEntry } from '@/domains/shell/navigation/surfaces/confirmation-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/review-editor-surface';
 import { Button, Select } from '@/ui/primitives';
 import ReviewAuthFallback from '../components/review-auth-fallback';
 import ReviewHeader from '../components/review-header';
@@ -15,11 +15,13 @@ import { useMediaReviews } from '../../hooks/use-media-reviews';
 import {
   getRatingStats,
   parseReviewSortMode,
+  sortReviewsByMode,
+} from '@/domains/reviews/utils/formatting';
+import {
   REVIEW_SORT_MODE,
   REVIEW_SORT_OPTIONS,
-  sortReviewsByMode,
-} from '../../shared/review-data';
-import { GridCrosshair, GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+} from '@/domains/reviews/utils/constants';
+import { GridCrosshair, GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 
 export default function MediaReviews({
   entityId,

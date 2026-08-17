@@ -2,8 +2,12 @@
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ACCOUNT_CLIENT } from '@/domains/account/client';
-import { AUTH_ROUTE_NOTICE } from '@/domains/auth/utils';
+import {
+  ACCOUNT_CLIENT,
+} from '@/domains/account/client/profile.client';
+import {
+  AUTH_ROUTE_NOTICE,
+} from '@/domains/auth/utils/routes';
 import {
   getOAuthProviderIcon,
   getOAuthProviderLabel,
@@ -13,10 +17,10 @@ import {
 } from '@/domains/auth/utils/oauth';
 import { createClient as createSupabaseClient } from '@/infrastructure/supabase/supabase-client';
 import { fetchCanonicalSessionPayload } from '@/modules/auth/session-client';
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { Z_INDEX } from '@/shared/constants';
+import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
+import { Z_INDEX } from '@/domains/shell/shared/constants';
 import Icon from '@/ui/primitives/icon';
-import { Spinner } from '@/ui/feedback/spinner';
+import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
 
 const SESSION_POLL_ATTEMPTS = 8;
 const SESSION_POLL_DELAY_MS = 200;

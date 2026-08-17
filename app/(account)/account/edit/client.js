@@ -1,6 +1,8 @@
 'use client';
 
-import { useAccountEditPageState } from '@/domains/account/hooks';
+import {
+  useAccountEditPageState,
+} from '@/domains/account/hooks/account-edit-page-state';
 import { AccountEditView } from '@/domains/account/ui/sections/edit/account-edit-view';
 
 export default function Client({ initialSnapshot = null }) {

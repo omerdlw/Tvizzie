@@ -5,17 +5,25 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { deleteUserList } from '@/domains/media/client/collections/lists';
+import {
+  deleteUserList,
+} from '@/domains/media/client/lists';
 import {
   FOLLOW_STATUSES,
   cancelFollowRequest,
   followUser,
   unfollowUser,
 } from '@/domains/social/client/follows';
-import { getUserAvatarUrl } from '@/domains/account/utils';
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
+import {
+  getUserAvatarUrl,
+} from '@/domains/account/utils/avatar';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getCurrentPathWithSearch,
+} from '@/domains/auth/utils/routes';
 import { useNavigationActions } from '@/modules/nav';
-import { createListEditorSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-editor-surface';
+import { createListEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-editor-surface';
 import {
   useAccountCollectionRemoveActions,
   useAccountCollectionReorderActions,

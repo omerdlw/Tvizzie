@@ -1,4 +1,9 @@
-import { REVIEW_SORT_MODE, sortReviewsByMode } from '@/domains/reviews/shared/review-data';
+import {
+  REVIEW_SORT_MODE,
+} from '@/domains/reviews/utils/constants';
+import {
+  sortReviewsByMode,
+} from '@/domains/reviews/utils/formatting';
 
 import {
   isSameFilterState,

@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { useToast } from '@/modules/notification';
-import { subscribeToUserListItems } from '@/domains/media/client/collections/lists';
-import { notifyAccountLoadError } from '@/domains/account/utils';
+import {
+  subscribeToUserListItems,
+} from '@/domains/media/client/lists';
+import {
+  notifyAccountLoadError,
+} from '@/domains/account/utils/feedback';
 
 export function useAccountListItems({
   activeListId,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useNavHeight, useNavigationActions } from '@/modules/nav';
-import { ACCOUNT_ROUTE_SHELL_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import { AccountEditRegistry as Registry } from '@/app/(account)/registry';
 import {
   AccountHeroReveal,
@@ -10,9 +10,9 @@ import {
 } from '@/domains/account/ui/layouts/account-layout';
 import AccountGridFrame from '@/domains/account/ui/layouts/account-grid-frame';
 import AccountHero from '@/domains/account/ui/sections/account-hero';
-import { createAccountBioSurfaceEntry } from '@/domains/account/ui/nav-surfaces/account-bio-surface';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
-import { Spinner } from '@/ui/feedback/spinner';
+import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
+import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
 import { StatusState } from './account-edit-primitives';
 import { AccountGeneralSettingsForm } from './account-general-settings-form';
 import { AccountSecuritySettings } from './account-security-settings';

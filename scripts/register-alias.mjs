@@ -46,19 +46,7 @@ register(
 
     let targetPath = null;
 
-    if (specifier === '@/shared' || specifier.startsWith('@/shared/')) {
-      const sub = specifier.startsWith('@/shared/') ? specifier.slice(9) : '';
-      targetPath = path.join(rootDir, 'core', 'shared', sub);
-    } else if (specifier === '@/modules' || specifier.startsWith('@/modules/')) {
-      const sub = specifier.startsWith('@/modules/') ? specifier.slice(10) : '';
-      targetPath = path.join(rootDir, 'core', 'modules', sub);
-    } else if (specifier === '@/ui' || specifier.startsWith('@/ui/')) {
-      const sub = specifier.startsWith('@/ui/') ? specifier.slice(5) : '';
-      targetPath = path.join(rootDir, 'core', 'ui', sub);
-    } else if (specifier === '@/core' || specifier.startsWith('@/core/')) {
-      const sub = specifier.startsWith('@/core/') ? specifier.slice(7) : '';
-      targetPath = path.join(rootDir, 'core', sub);
-    } else if (specifier.startsWith('@/')) {
+    if (specifier.startsWith('@/')) {
       targetPath = path.join(rootDir, specifier.slice(2));
     } else if (specifier.startsWith('./') || specifier.startsWith('../')) {
       const parentDir = context.parentURL ? path.dirname(fileURLToPath(context.parentURL)) : rootDir;

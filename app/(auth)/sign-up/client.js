@@ -3,22 +3,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { setPendingAccountBootstrap } from '@/domains/auth/client';
+import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
+import {
+  setPendingAccountBootstrap,
+} from '@/domains/auth/client/storage';
 import {
   AUTH_PURPOSE,
+  INITIAL_SIGN_UP_FORM,
+} from '@/domains/auth/utils/constants';
+import {
   AUTH_ROUTE_NOTICE,
   AUTH_ROUTES,
-  INITIAL_SIGN_UP_FORM,
-  arePasswordRulesSatisfied,
   buildAuthHref,
+  resolvePostAuthRedirect,
+} from '@/domains/auth/utils/routes';
+import {
+  arePasswordRulesSatisfied,
   evaluatePasswordRules,
   hasSatisfiedPasswordRequirements,
   isPasswordConfirmationMismatchError,
   isPasswordRequirementError,
+} from '@/domains/auth/utils/password';
+import {
   resolveAuthErrorMessage,
-  resolvePostAuthRedirect,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/errors';
 import {
   createPendingSignUpPayload,
   finalizeOAuthSignUp,
@@ -30,7 +38,7 @@ import {
   SIGN_UP_FEEDBACK,
   validateSignUpEmail,
   validateSignUpProfile,
-} from '@/domains/auth/client/sign-up-workflow.client';
+} from '@/domains/auth/client/sign-up';
 import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
@@ -38,12 +46,18 @@ import {
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  PasswordToggleButton,
+} from '@/domains/auth/ui/components/form-primitives';
+import {
   AUTH_PAGE_FORM_CLASS,
   AuthPageShell,
+} from '@/domains/auth/ui/layouts/page-shell';
+import {
   AuthVerificationSurface,
+} from '@/domains/shell/navigation/surfaces/verification-surface';
+import {
   OAuthProviderList,
-  PasswordToggleButton,
-} from '@/domains/auth/ui';
+} from '@/domains/auth/ui/components/oauth-provider-list';
 import Icon from '@/ui/primitives/icon';
 import { Button, Input } from '@/ui/primitives';
 import { useAuth } from '@/modules/auth';

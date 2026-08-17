@@ -1,8 +1,10 @@
 import 'server-only';
 import { cache } from 'react';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { cleanString, normalizeTimestamp } from '@/shared/utils';
-import { normalizeFavoriteShowcaseItems } from '@/domains/media/shared/media';
+import { cleanString, normalizeTimestamp } from '@/domains/shell/shared/utils';
+import {
+  normalizeFavoriteShowcaseItems,
+} from '@/domains/media/utils/media-payload';
 import {
   ACCOUNT_PROFILE_SELECT,
   COUNTER_SELECT,
@@ -10,9 +12,13 @@ import {
   FOLLOW_COUNTS_TIMEOUT_MS,
   FOLLOW_STATUS_ACCEPTED,
   PROFILE_COUNTERS_TIMEOUT_MS,
+} from '@/domains/account/utils/constants';
+import {
   assertResult,
+} from '@/domains/account/utils/supabase';
+import {
   isValidUuid,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/uuid';
 
 // ============================================================
 // Profile Normalizers & Data Transforms

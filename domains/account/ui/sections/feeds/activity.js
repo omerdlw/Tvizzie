@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { normalizeFeedbackText } from '@/shared/utils';
+import { normalizeFeedbackText } from '@/domains/shell/shared/utils';
 import {
   collectActivitySubjectOptions,
   hasActiveActivityFilters,
@@ -17,7 +17,7 @@ import AccountSectionLayout, {
 import {
   ActivityItemsSkeletonList,
   FilterBarSkeleton,
-} from '@/domains/account/ui/skeletons/account-section-skeletons';
+} from '@/domains/account/ui/skeletons';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 
 function formatActivityTime(value) {

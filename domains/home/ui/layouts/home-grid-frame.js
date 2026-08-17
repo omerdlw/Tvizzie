@@ -1,7 +1,7 @@
 'use client';
 
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
-import { cn } from '@/shared/utils';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
+import { cn } from '@/domains/shell/shared/utils';
 
 export default function HomeGridFrame({ className = '' }) {
   return (

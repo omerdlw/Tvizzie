@@ -2,7 +2,10 @@ import 'server-only';
 
 import { cache } from 'react';
 
-import { isTvMediaType, normalizeMediaType } from '@/domains/media/utils';
+import {
+  isTvMediaType,
+  normalizeMediaType,
+} from '@/domains/media/utils/media-key';
 import { sanitizeTvResults } from '@/infrastructure/tmdb/clients/sanitize';
 
 import { TMDB_REVALIDATE } from './tmdb-client-config';

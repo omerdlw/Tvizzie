@@ -1,0 +1,395 @@
+'use client';
+
+import {
+  useDeferredValue,
+  useEffect,
+  useState,
+  useTransition,
+  useCallback,
+  useMemo,
+} from 'react';
+import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import { INFO_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import { useAuth } from '@/modules/auth';
+import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav/motion';
+import { useToast } from '@/modules/notification';
+import { createUserListWithItems } from '@/domains/media/client/lists';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
+import { cn } from '@/domains/shell/shared/utils';
+import { navActionClass } from '@/domains/shell/navigation/action/constants';
+import {
+  SEARCH_LIMITS,
+  SEARCH_TYPES,
+} from '@/domains/search/utils/constants';
+import {
+  SEARCH_STYLES,
+} from '@/domains/shell/navigation/action/constants';
+import { SearchActionControls } from '@/domains/shell/navigation/action/search-action';
+import { Input } from '@/ui/primitives';
+import {
+  normalizeSearchResult,
+  getDraftMediaKey,
+  LIST_SEARCH_TAB_ITEMS,
+  SURFACE_LIST_VARIANTS,
+  SearchResultRow,
+  SelectedListItemRow as DraftItemRow,
+} from './list-primitives';
+
+// --- TABS ---
+
+function ListSearchTabs({ searchType, onSearchTypeChange }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -5 }}
+      transition={NAV_FADE_TRANSITION}
+      className="overflow-hidden"
+    >
+      <div className={cn(SEARCH_STYLES.tabList, 'w-full')}>
+        {LIST_SEARCH_TAB_ITEMS.map((item) => {
+          const isActive = searchType === item.key;
+
+          return (
+            <motion.button
+              key={item.key}
+              type="button"
+              className={cn(
+                navActionClass({
+                  cn,
+                  button: SEARCH_STYLES.tabButton,
+                  isActive,
+                }),
+                'flex-1',
+              )}
+              onClick={() => onSearchTypeChange?.(item.key)}
+              whileTap={{ scale: NAV_TAP_SCALE }}
+              transition={NAV_MICRO_TRANSITION}
+            >
+              {item.label}
+            </motion.button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+
+// --- MAIN COMPONENT ---
+
+export function createCreateListSurfaceEntry(data = {}, config = {}) {
+  return {
+    component: CreateListSurface,
+    icon: 'solar:folder-open-bold',
+    title: 'Create List',
+    description: 'Add movies and TV shows to your new list',
+    props: { data },
+    ...config,
+  };
+}
+
+export default function CreateListSurface({ close, data }) {
+  const auth = useAuth();
+  const toast = useToast();
+  const router = useRouter();
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftDescription, setDraftDescription] = useState('');
+  const [draftItems, setDraftItems] = useState(() => {
+    const normalized = normalizeSearchResult(data?.media);
+    return normalized ? [normalized] : [];
+  });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [focusedField, setFocusedField] = useState(null);
+  const [searchType, setSearchType] = useState(SEARCH_TYPES.ALL);
+  const [, startSearchTransition] = useTransition();
+  const deferredSearchQuery = useDeferredValue(searchQuery.trim());
+
+  const selectedKeys = new Set(draftItems.map((item) => getDraftMediaKey(item)));
+  const canSubmit = Boolean(draftTitle.trim()) && draftItems.length > 0;
+  const showSearchResults =
+    searchResults.length > 0 || (deferredSearchQuery.length >= 2 && isSearching);
+  const filteredSearchResults = useMemo(
+    () =>
+      searchResults.filter(
+        (item) => searchType === SEARCH_TYPES.ALL || item.media_type === searchType,
+      ),
+    [searchResults, searchType],
+  );
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredSearchResults.length / SEARCH_LIMITS.RESULTS_PER_PAGE),
+  );
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const pageResults = useMemo(
+    () =>
+      filteredSearchResults.slice(
+        safePage * SEARCH_LIMITS.RESULTS_PER_PAGE,
+        safePage * SEARCH_LIMITS.RESULTS_PER_PAGE + SEARCH_LIMITS.RESULTS_PER_PAGE,
+      ),
+    [filteredSearchResults, safePage],
+  );
+
+  useEffect(() => {
+    if (!data?.media) return;
+    const normalized = normalizeSearchResult(data.media);
+    if (!normalized) return;
+
+    setDraftItems((current) => {
+      const key = getDraftMediaKey(normalized);
+      if (current.some((item) => getDraftMediaKey(item) === key)) return current;
+      return [...current, normalized];
+    });
+  }, [data?.media]);
+
+  useEffect(() => {
+    if (deferredSearchQuery.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      setCurrentPage(0);
+      return;
+    }
+
+    let ignore = false;
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const [movieRes, tvRes] = await Promise.all([
+          TmdbService.searchContent(deferredSearchQuery, 'movie', 1),
+          TmdbService.searchContent(deferredSearchQuery, 'tv', 1),
+        ]);
+        const results = [...(movieRes?.data?.results || []), ...(tvRes?.data?.results || [])]
+          .map(normalizeSearchResult)
+          .filter(Boolean);
+
+        if (!ignore) {
+          startSearchTransition(() => {
+            setSearchResults(results);
+            setCurrentPage(0);
+          });
+        }
+      } catch {
+        if (!ignore) setSearchResults([]);
+      } finally {
+        if (!ignore) setIsSearching(false);
+      }
+    }, 200);
+
+    return () => {
+      ignore = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [deferredSearchQuery, startSearchTransition]);
+
+  const handleAdd = useCallback((item) => {
+    const key = getDraftMediaKey(item);
+    setDraftItems((curr) =>
+      curr.some((x) => getDraftMediaKey(x) === key) ? curr : [...curr, item],
+    );
+  }, []);
+
+  const handleRemove = useCallback((item) => {
+    const key = getDraftMediaKey(item);
+    setDraftItems((curr) => curr.filter((x) => getDraftMediaKey(x) !== key));
+  }, []);
+
+  const handleSearchQueryChange = useCallback((nextQuery) => {
+    setSearchQuery(nextQuery);
+    setCurrentPage(0);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentPage(0);
+    setSearchType(SEARCH_TYPES.ALL);
+  }, []);
+
+  const handleSearchTypeChange = useCallback((nextSearchType) => {
+    setSearchType(nextSearchType);
+    setCurrentPage(0);
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event?.preventDefault?.();
+    if (isSaving || !canSubmit) return;
+    if (!auth.user?.id) {
+      toast.error('You must be signed in to create a list');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const nextList = await createUserListWithItems({
+        description: draftDescription,
+        items: draftItems,
+        title: draftTitle,
+        userId: auth.user.id,
+      });
+
+      close({ success: true, list: nextList });
+
+      const ownerHandle = nextList?.ownerSnapshot?.username;
+      if (ownerHandle && nextList?.slug) {
+        router.push(`/account/${ownerHandle}/lists/${nextList.slug}`);
+      }
+    } catch (error) {
+      toast.error(error?.message || 'The list could not be created');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            aria-label="List title"
+            id="list-title"
+            value={draftTitle}
+            onBlur={() => setFocusedField(null)}
+            onChange={(e) => setDraftTitle(e.target.value)}
+            onFocus={() => setFocusedField('title')}
+            placeholder="Name your list"
+            autoFocus
+            classNames={{
+              input: 'w-full text-sm placeholder:text-white/50 outline-none',
+              wrapper: cn(
+                navActionClass({
+                  cn,
+                  button: SEARCH_STYLES.input,
+                  isActive: focusedField === 'title',
+                }),
+                'min-w-0 flex-1',
+              ),
+            }}
+          />
+          <Input
+            aria-label="List description"
+            id="list-description"
+            value={draftDescription}
+            onBlur={() => setFocusedField(null)}
+            onChange={(e) => setDraftDescription(e.target.value)}
+            onFocus={() => setFocusedField('description')}
+            placeholder="Description (optional)"
+            classNames={{
+              input: 'w-full text-sm placeholder:text-white/50 outline-none',
+              wrapper: cn(
+                navActionClass({
+                  cn,
+                  button: SEARCH_STYLES.input,
+                  isActive: focusedField === 'description',
+                }),
+                'min-w-0 flex-1',
+              ),
+            }}
+          />
+        </div>
+        <SearchActionControls
+          ariaLabel="Search movies or TV shows"
+          hasNextPage={safePage < totalPages - 1}
+          hasPrevPage={safePage > 0}
+          loading={isSearching}
+          onClear={handleClearSearch}
+          onNextPage={() => setCurrentPage((page) => Math.min(page + 1, totalPages - 1))}
+          onPrevPage={() => setCurrentPage((page) => Math.max(page - 1, 0))}
+          onQueryChange={handleSearchQueryChange}
+          onSearchTypeChange={handleSearchTypeChange}
+          placeholder="Search movies or TV shows"
+          query={searchQuery}
+          searchType={searchType}
+          showTabs={false}
+        />
+      </div>
+
+      {showSearchResults || draftItems.length > 0 ? (
+        <div
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          className="max-h-[min(48dvh,20rem)] overflow-y-auto overscroll-contain"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {showSearchResults ? (
+              <motion.div
+                key="search-results"
+                variants={SURFACE_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-2"
+              >
+                <div className="flex flex-col gap-2">
+                  {pageResults.map((item) => (
+                    <SearchResultRow
+                      key={getDraftMediaKey(item)}
+                      item={item}
+                      isAdded={selectedKeys.has(getDraftMediaKey(item))}
+                      onAdd={handleAdd}
+                      onRemove={handleRemove}
+                    />
+                  ))}
+                  {isSearching && searchResults.length === 0 && (
+                    <div className="flex h-24 items-center justify-center text-sm font-medium text-white/50">
+                      Searching titles...
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="draft-items"
+                variants={SURFACE_LIST_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="flex flex-col gap-2"
+              >
+                {draftItems.length > 0 ? (
+                  <AnimatePresence initial={false}>
+                    {draftItems.map((item, index) => (
+                      <DraftItemRow
+                        key={getDraftMediaKey(item)}
+                        item={item}
+                        index={index}
+                        totalItems={draftItems.length}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                ) : null}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : null}
+
+      <AnimatePresence initial={false}>
+        {searchQuery.trim() ? (
+          <ListSearchTabs searchType={searchType} onSearchTypeChange={handleSearchTypeChange} />
+        ) : null}
+      </AnimatePresence>
+
+      <div className="flex w-full">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSaving || !canSubmit}
+          className={getNavActionClass({
+            variant: INFO_ACTION_TONE_CLASS,
+            className: 'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
+          })}
+        >
+          <span>{isSaving ? 'Creating...' : 'Create List'}</span>
+        </button>
+      </div>
+    </div>
+  );
+}

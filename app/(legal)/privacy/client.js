@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import LegalNavRegistry from '@/app/(legal)/registry';
-import LegalQuickLinks from '@/domains/legal/ui/components/legal-quick-links';
+import LegalQuickLinks from '@/domains/legal/ui/components/quick-links';
 import LegalPageShell, {
   LEGAL_PAGE_CONTENT_CLASS,
   LegalDocument,
   LegalSection,
-} from '@/domains/legal/ui/layouts/legal-page-shell';
+} from '@/domains/legal/ui/layouts/page-shell';
 
 const LAST_UPDATED = 'April 20, 2026';
 

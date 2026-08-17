@@ -1,7 +1,7 @@
 'use client';
 
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
-import { cn } from '@/shared/utils';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/domains/shell/shared/constants';
+import { cn } from '@/domains/shell/shared/utils';
 
 export default function AccountGridFrame({ className = '' }) {
   return (

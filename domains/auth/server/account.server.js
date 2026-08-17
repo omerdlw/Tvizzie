@@ -1,11 +1,15 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { validateUsername } from '@/domains/account/utils';
+import {
+  validateUsername,
+} from '@/domains/account/utils/validation';
 import {
   ACCOUNT_LIFECYCLE_TABLE,
+} from '@/domains/auth/utils/constants';
+import {
   resolveAuthCapabilities,
   resolveProviderIds,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/providers';
 
 export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({
   ACTIVE: 'ACTIVE',
@@ -178,7 +182,7 @@ export function assertPasswordProviderLinked(userRecord) {
   }
 }
 
-import { extractUuid } from './session/admin.server';
+import { extractUuid } from './admin.server.js';
 
 export async function purgeAccountData(userIdInput) {
   const normalizedUserId = extractUuid(userIdInput);

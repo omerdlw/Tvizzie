@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import { createSignedToken, verifySignedToken } from './tokens.server';
 
 export { createSignedToken, verifySignedToken };

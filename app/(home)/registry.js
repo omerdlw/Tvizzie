@@ -1,6 +1,6 @@
 'use client';
 
-import SearchAction from '@/domains/search/ui/nav-actions/search-action';
+import SearchAction from '@/domains/shell/navigation/action/search-action';
 import { createRouteRegistry } from '@/modules/registry/route-registry';
 
 export default createRouteRegistry({

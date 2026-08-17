@@ -7,7 +7,9 @@ import {
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
-import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import {
+  ReviewCardsSkeletonList,
+} from '@/domains/account/ui/skeletons';
 import { REVIEW_ITEMS_PER_PAGE } from './list-detail-config';
 
 export default function ListDetailCommentsSection({

@@ -4,22 +4,27 @@ import { Fragment, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-const CastModal = dynamic(() => import('@/domains/media/ui/modals/cast-modal'), { ssr: false });
-const ImagePreviewModal = dynamic(() => import('@/domains/media/ui/modals/image-preview-modal'), { ssr: false });
-const VideoPreviewModal = dynamic(() => import('@/domains/media/ui/modals/video-preview-modal'), { ssr: false });
-const MediaSocialProofModal = dynamic(() => import('@/domains/media/ui/modals/media-social-proof-modal'), { ssr: false });
+const CastModal = dynamic(() => import('@/domains/shell/modals/cast-modal'), { ssr: false });
+const ImagePreviewModal = dynamic(() => import('@/domains/shell/modals/image-preview-modal'), { ssr: false });
+const VideoPreviewModal = dynamic(() => import('@/domains/shell/modals/video-preview-modal'), { ssr: false });
+const MediaSocialProofModal = dynamic(() => import('@/domains/shell/modals/social-proof-modal'), { ssr: false });
 
-import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
-import SearchAction from '@/domains/search/ui/nav-actions/search-action';
-import MovieAction from '@/domains/media/ui/nav-actions/movie-action';
-import PersonAction from '@/domains/media/ui/nav-actions/person-action';
-import WatchProvidersSurface from '@/domains/media/ui/nav-surfaces/watch-providers-surface';
+import ReviewAction from '@/domains/shell/navigation/action/review-action';
+import SearchAction from '@/domains/shell/navigation/action/search-action';
+import MovieAction from '@/domains/shell/navigation/action/movie-action';
+import PersonAction from '@/domains/shell/navigation/action/person-action';
+import WatchProvidersSurface from '@/domains/shell/navigation/surfaces/watch-providers-surface';
 import ReviewEditorSurface, {
   createReviewEditorSurfaceEntry,
-} from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
-import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/shared/review-data';
-import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
-import { TMDB_IMG } from '@/shared/constants';
+} from '@/domains/shell/navigation/surfaces/review-editor-surface';
+import {
+  REVIEW_SORT_MODE,
+} from '@/domains/reviews/utils/constants';
+import {
+  parseReviewSortMode,
+} from '@/domains/reviews/utils/formatting';
+import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import { useRegistry } from '@/modules/registry';
 import { useNavigationActions, useNavigationState } from '@/modules/nav';
 import { useAuth } from '@/modules/auth';

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { getAccountSocialProof } from '@/domains/media/client/social-proof';
+import {
+  getAccountSocialProof,
+} from '@/domains/media/client/social-proof';
 import {
   FOLLOW_STATUSES,
   primeFollowRelationshipState,
@@ -10,7 +12,9 @@ import {
   subscribeToFollowers,
   subscribeToFollowing,
 } from '@/domains/social/client/follows';
-import { logDataError } from '@/domains/account/utils';
+import {
+  logDataError,
+} from '@/domains/account/utils/validation';
 
 export function useAccountRelationshipData({
   authIsReady,

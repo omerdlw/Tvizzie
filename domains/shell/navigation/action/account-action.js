@@ -1,0 +1,505 @@
+'use client';
+
+import { useEffect } from 'react';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getCurrentPathWithSearch,
+} from '@/domains/auth/utils/routes';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import Icon from '@/ui/primitives/icon';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/domains/shell/navigation/action/constants';
+import { useNavigationActions } from '@/modules/nav';
+import {
+  INFO_ACTION_TONE_CLASS,
+  SUCCESS_ACTION_TONE_CLASS,
+  WARNING_ACTION_TONE_CLASS,
+} from '@/domains/shell/shared/constants';
+
+const PROFILE_FOLLOW_ACTIONS = Object.freeze({
+  follow: {
+    icon: 'solar:user-plus-bold',
+    label: 'Follow',
+    tone: 'muted',
+  },
+  follow_back: {
+    icon: 'solar:user-plus-bold',
+    label: 'Follow Back',
+    tone: 'muted',
+  },
+  following: {
+    icon: 'solar:user-minus-bold',
+    label: 'Unfollow',
+    tone: 'active',
+  },
+  requested: {
+    icon: 'solar:clock-circle-bold',
+    label: 'Requested',
+    tone: 'info',
+  },
+});
+
+function actionClass({ tone = 'muted', className } = {}) {
+  return getNavActionClass({
+    variant:
+      tone === 'danger'
+        ? DESTRUCTIVE_ACTION_TONE_CLASS
+        : tone === 'success'
+          ? SUCCESS_ACTION_TONE_CLASS
+          : tone === 'info'
+            ? INFO_ACTION_TONE_CLASS
+            : tone === 'warning'
+              ? WARNING_ACTION_TONE_CLASS
+              : tone === 'active'
+                ? NAV_ACTION_STYLES.active
+                : NAV_ACTION_STYLES.muted,
+    className,
+  });
+}
+
+function getProfileFollowAction(state) {
+  return PROFILE_FOLLOW_ACTIONS[state] || PROFILE_FOLLOW_ACTIONS.follow;
+}
+
+export default function AccountAction(props) {
+  const {
+    mode,
+    activeEditTab,
+    editTabs = [],
+    activeTab,
+    tabs = [],
+    actionIcon,
+    actionLabel,
+    actionTone = 'muted',
+    followState = 'follow',
+    guestMode = 'sign-in',
+    isOwner,
+    isAuthenticated,
+    isFollowLoading = false,
+    inboxCount,
+    canManageRequests = false,
+    onFollow,
+    onOpenInbox,
+    onEditTabChange,
+    onTabChange,
+    onSignIn,
+    showProfileFollowAction = false,
+    isNotFound,
+    onOpenMediaUpload,
+    onCancel,
+    onSave,
+    isCancelDisabled = false,
+    cancelLabel = 'Cancel',
+    isUploadDisabled = false,
+    isSaveDisabled = false,
+    saveLabel = 'Save',
+    isSaveLoading,
+    showCancelAction = false,
+    showSaveAction = false,
+    showUploadAction = false,
+    uploadLabel = 'Upload Media',
+
+    isLiked,
+    isLikeLoading,
+    onDeleteList,
+    onEditList,
+    onAction,
+    onToggleLike,
+    onOpenReviewComposer,
+    ownReview,
+  } = props;
+  const { setCompactLock } = useNavigationActions();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentPath = getCurrentPathWithSearch(pathname, searchParams);
+  const guestHref = buildAuthHref(
+    guestMode === 'sign-up' ? AUTH_ROUTES.SIGN_UP : AUTH_ROUTES.SIGN_IN,
+    {
+      next: currentPath,
+    },
+  );
+  const guestLabel = guestMode === 'sign-up' ? 'Sign Up' : 'Sign In';
+  const guestIcon = guestMode === 'sign-up' ? 'solar:user-plus-bold' : 'solar:user-circle-bold';
+
+  useEffect(() => {
+    const shouldLockCompact = (mode === 'profile-edit' || mode === 'tab-switch') && showSaveAction;
+    setCompactLock('account-action', shouldLockCompact);
+
+    return () => {
+      setCompactLock('account-action', false);
+    };
+  }, [mode, setCompactLock, showSaveAction]);
+
+  if (mode === 'tab-switch') {
+    if (!tabs.length) {
+      return null;
+    }
+
+    const canShowFollowAction =
+      !isOwner && showProfileFollowAction && typeof onFollow === 'function';
+    const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
+    const canShowCancelAction = showCancelAction && typeof onCancel === 'function';
+
+    return (
+      <div className="mt-2.5 flex w-full flex-col gap-2">
+        {showSaveAction || canShowCancelAction ? (
+          <div className="flex w-full gap-2">
+            {canShowCancelAction ? (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isCancelDisabled}
+                className={actionClass({
+                  tone: 'muted',
+                  className: 'flex-1 justify-center',
+                })}
+              >
+                {cancelLabel}
+              </button>
+            ) : null}
+
+            {showSaveAction ? (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={isSaveLoading || isSaveDisabled}
+                className={actionClass({
+                  tone: isSaveDisabled ? 'muted' : 'success',
+                  className: canShowCancelAction
+                    ? 'flex-1 justify-center'
+                    : 'w-full justify-center',
+                })}
+              >
+                {isSaveLoading ? (
+                  <span key="saving">Saving</span>
+                ) : (
+                  <span key="save" className="flex items-center gap-2">
+                    <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+                    {saveLabel}
+                  </span>
+                )}
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <div
+            className="grid w-full gap-2"
+            style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+          >
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => onTabChange?.(tab.key)}
+                  aria-pressed={isActive}
+                  className={actionClass({
+                    tone: isActive ? 'active' : 'muted',
+                    className: 'relative justify-center overflow-hidden',
+                  })}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {canShowFollowAction && !showSaveAction ? (
+          <div className="flex w-full gap-2">
+            <button
+              type="button"
+              onClick={onFollow}
+              className={actionClass({
+                tone: followAction.tone,
+                className: 'active:scale-95 transition-all duration-300 ease-in-out',
+              })}
+            >
+              <span key={followAction.label} className="flex items-center gap-2">
+                <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                {followAction.label}
+              </span>
+            </button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (mode === 'profile-edit') {
+    const canShowUploadAction = showUploadAction && typeof onOpenMediaUpload === 'function';
+    const canShowCancelAction = showCancelAction && typeof onCancel === 'function';
+    const shouldShowTabRow = !showSaveAction;
+    const shouldShowBottomRow = canShowUploadAction || canShowCancelAction || showSaveAction;
+
+    return (
+      <div className="mt-2.5 flex w-full flex-col gap-2">
+        {shouldShowTabRow ? (
+          <div className="grid w-full grid-cols-2 gap-2">
+            {editTabs.map((tab) => {
+              const isActive = activeEditTab === tab.key;
+
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => onEditTabChange?.(tab.key)}
+                  aria-pressed={isActive}
+                  className={actionClass({
+                    tone: isActive ? 'active' : 'muted',
+                    className: 'justify-center',
+                  })}
+                >
+                  <Icon icon={tab.icon} size={NAV_ACTION_STYLES.icon} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {shouldShowBottomRow ? (
+          <div className="flex w-full gap-2">
+            {canShowUploadAction ? (
+              <button
+                type="button"
+                onClick={onOpenMediaUpload}
+                disabled={isUploadDisabled}
+                className={actionClass({
+                  tone: 'info',
+                  className: showSaveAction ? 'flex-1' : '',
+                })}
+              >
+                <Icon icon="solar:upload-bold" size={NAV_ACTION_STYLES.icon} />
+                {uploadLabel}
+              </button>
+            ) : null}
+
+            {canShowCancelAction ? (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isCancelDisabled}
+                className={actionClass({
+                  tone: 'muted',
+                  className: 'flex-1',
+                })}
+              >
+                {cancelLabel}
+              </button>
+            ) : null}
+
+            {showSaveAction ? (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={isSaveLoading || isSaveDisabled}
+                className={actionClass({
+                  tone: isSaveDisabled ? 'muted' : 'success',
+                  className: canShowUploadAction || canShowCancelAction ? 'flex-1' : '',
+                })}
+              >
+                {isSaveLoading ? (
+                  <span key="saving">Saving</span>
+                ) : (
+                  <span key="save" className="flex items-center gap-2">
+                    <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+                    {saveLabel}
+                  </span>
+                )}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (mode === 'save') {
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isSaveLoading || isSaveDisabled}
+          className={actionClass({ tone: !isSaveDisabled && 'success', className: '' })}
+        >
+          {isSaveLoading ? (
+            <span key="saving">Saving</span>
+          ) : (
+            <span key="save" className="flex items-center gap-2">
+              <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+              {saveLabel}
+            </span>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  if (mode === 'single-action') {
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        <button type="button" onClick={onAction} className={actionClass({ tone: actionTone })}>
+          {actionIcon ? <Icon icon={actionIcon} size={NAV_ACTION_STYLES.icon} /> : null}
+          {actionLabel}
+        </button>
+      </div>
+    );
+  }
+
+  if (isNotFound) {
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        <button
+          type="button"
+          onClick={() => (window.location.href = '/')}
+          className={actionClass()}
+        >
+          Back Home
+        </button>
+      </div>
+    );
+  }
+
+  const canShowFollowAction = !isOwner && showProfileFollowAction && typeof onFollow === 'function';
+  const canShowLikeListAction = !isOwner && typeof onToggleLike === 'function';
+  const canShowCommentAction = !isOwner && typeof onOpenReviewComposer === 'function';
+
+  if (canShowFollowAction || canShowLikeListAction || canShowCommentAction) {
+    const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
+
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        {canShowFollowAction ? (
+          <button
+            type="button"
+            onClick={onFollow}
+            className={actionClass({
+              tone: followAction.tone,
+              className: 'active:scale-95 transition-all duration-300 ease-in-out',
+            })}
+          >
+            <span key={followAction.label} className="flex items-center gap-2">
+              <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+              {followAction.label}
+            </span>
+          </button>
+        ) : null}
+
+        {canShowLikeListAction ? (
+          <button
+            type="button"
+            onClick={onToggleLike}
+            className={actionClass({
+              tone: isLiked ? 'success' : 'muted',
+              className: 'active:scale-95 transition-all duration-300 ease-in-out',
+            })}
+          >
+            <span key={isLiked ? 'liked' : 'like'} className="flex items-center gap-2">
+              <Icon
+                icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
+                size={NAV_ACTION_STYLES.icon}
+              />
+              {isLiked ? 'Liked' : 'Like List'}
+            </span>
+          </button>
+        ) : null}
+
+        {canShowCommentAction ? (
+          <button
+            type="button"
+            onClick={onOpenReviewComposer}
+            className={actionClass({ tone: 'muted', className: '' })}
+          >
+            <Icon
+              icon={ownReview ? 'solar:pen-bold' : 'solar:chat-round-bold'}
+              size={NAV_ACTION_STYLES.icon}
+            />
+            {ownReview ? 'Edit Comment' : 'Add Comment'}
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        <button
+          type="button"
+          onClick={() => {
+            if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
+              onSignIn();
+              return;
+            }
+
+            window.location.assign(guestHref);
+          }}
+          className={actionClass()}
+        >
+          <Icon icon={guestIcon} size={NAV_ACTION_STYLES.icon} />
+          {guestLabel}
+        </button>
+      </div>
+    );
+  }
+
+  if (isOwner) {
+    const showListActions = typeof onEditList === 'function' && typeof onDeleteList === 'function';
+    const shouldShowInboxAction =
+      canManageRequests && inboxCount > 0 && typeof onOpenInbox === 'function';
+
+    if (!showListActions && !shouldShowInboxAction && !canShowCommentAction) {
+      return null;
+    }
+
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        {showListActions ? (
+          <>
+            <button type="button" onClick={() => onEditList?.()} className={actionClass()}>
+              <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
+              Edit List
+            </button>
+            <button
+              type="button"
+              onClick={() => onDeleteList?.()}
+              className={actionClass({ tone: 'danger' })}
+            >
+              <Icon icon="solar:trash-bin-trash-bold" size={NAV_ACTION_STYLES.icon} />
+              Delete List
+            </button>
+          </>
+        ) : null}
+
+        {canShowCommentAction ? (
+          <button
+            type="button"
+            onClick={onOpenReviewComposer}
+            className={actionClass({ tone: 'muted', className: '' })}
+          >
+            <Icon
+              icon={ownReview ? 'solar:pen-bold' : 'solar:chat-round-bold'}
+              size={NAV_ACTION_STYLES.icon}
+            />
+            {ownReview ? 'Edit Comment' : 'Add Comment'}
+          </button>
+        ) : null}
+
+        {shouldShowInboxAction && (
+          <button type="button" onClick={onOpenInbox} className={actionClass({ tone: 'info' })}>
+            <Icon icon="solar:inbox-bold" size={NAV_ACTION_STYLES.icon} />
+            Inbox {inboxCount}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}

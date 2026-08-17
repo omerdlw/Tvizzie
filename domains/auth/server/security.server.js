@@ -1,22 +1,24 @@
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
-import { normalizeEmailValue, normalizeLowerValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeLowerValue, normalizeValue } from '@/domains/shell/shared/utils';
 import { createClient } from '@supabase/supabase-js';
 import {
   AUTH_COOKIE_PATH,
   CSRF_COOKIE_NAME,
-  normalizePassword,
   STEP_UP_COOKIE_NAME,
   STEP_UP_MAX_AGE_MS,
   STEP_UP_MAX_AGE_SECONDS,
+} from '@/domains/auth/utils/constants';
+import {
+  normalizePassword,
   validatePasswordRules,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/password';
 import {
   createCsrfToken,
   getCookieValue,
   isSecureCookieEnvironment,
   setCsrfCookie,
 } from './session.server';
-import { extractUuid } from './session/admin.server';
+import { extractUuid } from './admin.server.js';
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,

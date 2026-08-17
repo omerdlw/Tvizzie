@@ -1,7 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import { createAccountRoutePage } from '@/domains/account/ui/pages/account-route-page';
-import { isReservedAccountSegment } from '@/domains/account/utils';
+import {
+  isReservedAccountSegment,
+} from '@/domains/account/utils/validation';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,

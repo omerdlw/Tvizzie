@@ -21,7 +21,9 @@ import {
   toMediaQueryValues,
 } from '@/domains/account/ui/filters/filtering';
 import AccountPaginatedListGrid from '@/domains/account/ui/components/lists/list-grid';
-import { getMediaTitle as getAccountMediaTitle } from '@/domains/account/utils';
+import {
+  getMediaTitle as getAccountMediaTitle,
+} from '@/domains/account/utils/formatting';
 import {
   AccountListSortBar,
   AccountMediaFilterBar,
@@ -37,7 +39,7 @@ import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountReviewsFeed from '../feeds/reviews';
 import { Reorder } from 'framer-motion';
-import MediaCard from '@/domains/media/ui/components/media-card';
+import MediaCard from '@/domains/shell/shared/components/media-card';
 import { toAccountMediaCard, getCanonicalMediaKey } from '@/domains/account/utils/media-card';
 const LIKES_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({

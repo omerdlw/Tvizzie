@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createAppError } from './app-error.js';
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils.js';
 
 const rateLimitWindows = new Map();
 const MAX_RATE_LIMIT_BUCKETS = 10000;

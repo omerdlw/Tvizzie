@@ -1,12 +1,12 @@
 'use client';
 
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
 
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 
 const SKELETON = 'skeleton-block';
 const SOFT_SKELETON = 'skeleton-block-soft';

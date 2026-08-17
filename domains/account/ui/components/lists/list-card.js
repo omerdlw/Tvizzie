@@ -3,11 +3,11 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { TMDB_IMG } from '@/shared/constants';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
+} from '@/domains/media/utils/poster-preferences';
 import Icon from '@/ui/primitives/icon';
 
 const CARD_SCALE = 1.16;

@@ -1,8 +1,10 @@
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 import { createHash } from 'crypto';
 
-import { AUTH_AUDIT_TABLE } from '@/domains/auth/utils';
-import { getRequestContext } from './session/request-context.server';
+import {
+  AUTH_AUDIT_TABLE,
+} from '@/domains/auth/utils/constants';
+import { getRequestContext } from './session.server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 const ALLOWED_EVENT_TYPES = new Set([
@@ -203,5 +205,14 @@ export async function writeAuthAuditLog({
 
   if (insertResult.error) {
     throw new Error(insertResult.error.message || 'Auth audit log could not be persisted');
+  }
+}
+
+export async function logAuditServer({ event, metadata } = {}) {
+  try {
+    await writeAuthAuditLog({ eventType: event, metadata });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error?.message || 'Audit logging failed' };
   }
 }

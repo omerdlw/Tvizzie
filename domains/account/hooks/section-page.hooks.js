@@ -1,6 +1,8 @@
 'use client';
 
-import { getFollowState } from '@/domains/account/utils';
+import {
+  getFollowState,
+} from '@/domains/account/utils/formatting';
 import { useAccountPageActions } from './page-actions.hooks';
 import { useAccountPageData } from './page-data.hooks';
 

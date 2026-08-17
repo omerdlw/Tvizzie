@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAccountProfile } from '@/modules/account';
-import { notifyAccountLoadError } from '@/domains/account/utils';
+import {
+  notifyAccountLoadError,
+} from '@/domains/account/utils/feedback';
 
 export function useAccountEditData({ auth, initialSnapshot = null, toast = null }) {
   const resolvedUserId = auth?.user?.id || null;

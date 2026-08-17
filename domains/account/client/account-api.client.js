@@ -1,7 +1,7 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import { ensureAuthCsrfToken } from '@/core/modules/auth/http.client';
+import { ensureAuthCsrfToken } from '@/modules/auth/http.client';
 
 function toCollectionQuery({
   entityId = null,

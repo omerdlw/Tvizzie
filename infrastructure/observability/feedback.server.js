@@ -23,6 +23,13 @@ function normalizeOptionalValue(value, maxLength = 400) {
   return normalizedValue.slice(0, maxLength);
 }
 
+function resolveStatusCode(error) {
+  const message = String(error?.message || '').toLowerCase();
+  if (message.includes('rate limit')) return 429;
+  if (message.includes('auth') || message.includes('session')) return 401;
+  return error?.status || 500;
+}
+
 export async function POST(request) {
   try {
     const session = await readSessionFromRequest(request, { requireSession: false });

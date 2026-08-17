@@ -2,18 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { TMDB_IMG } from '@/shared/constants';
-import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from '@/shared/utils';
-import { getUserAvatarUrl } from '@/domains/account/utils';
-import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from '@/domains/shell/shared/utils';
+import {
+  getUserAvatarUrl,
+} from '@/domains/account/utils/avatar';
+import {
+  isTitleMediaType,
+  normalizeMediaType,
+} from '@/domains/media/utils/media-key';
 import {
   getPreferredMediaPosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
+} from '@/domains/media/utils/poster-preferences';
 import { Button } from '@/ui/primitives';
-import AdaptiveImage from '@/ui/primitives/adaptive-image';
+import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import ListPreviewComposition from '@/domains/media/ui/components/media-list-preview';
+import ListPreviewComposition from '@/domains/media/ui/components/list-preview-composition';
 import RatingStars from './rating-stars';
 
 function formatLetterboxdDate(value) {

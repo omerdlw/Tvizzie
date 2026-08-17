@@ -1,6 +1,10 @@
 import Client from '@/app/(home)/client';
-import { getImdbTop100 } from '@/domains/home/server/imdb-top-100.server';
-import { getUniqueDiscoverItems } from '@/domains/home/shared/discover';
+import {
+  getImdbTop100,
+} from '@/domains/home/server/imdb-top-100.server';
+import {
+  getUniqueDiscoverItems,
+} from '@/domains/home/utils/discover';
 
 import { discoverContent, getTrending } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 

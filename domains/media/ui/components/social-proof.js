@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
-import { subscribeToMediaSocialProof } from '@/domains/media/client/social-proof';
+import {
+  subscribeToMediaSocialProof,
+} from '@/domains/media/client/social-proof';
 import Icon from '@/ui/primitives/icon';
 const EMPTY_SOCIAL_PROOF = Object.freeze({
   reviews: {

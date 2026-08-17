@@ -2,7 +2,9 @@
 
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 import { AccountSkeleton } from '@/app/(account)/account/loading';
-import { AccountListDetailSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import {
+  AccountListDetailSkeleton,
+} from '@/domains/account/ui/skeletons';
 
 export default function Loading() {
   const profileShell = useAccountProfileShell();

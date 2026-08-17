@@ -6,23 +6,31 @@ import {
   AUTH_PURPOSE,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
-  clearAccountFeedback,
   completeEmailChangeRequest,
   completePasswordChangeRequest,
   completePasswordSetRequest,
   deleteAccountRequest,
+  resolveSecurityErrorMessage,
+} from '@/domains/account/utils/security';
+import {
+  clearAccountFeedback,
   emitAccountFeedback,
+} from '@/domains/account/utils/feedback';
+import {
   normalizeEmail,
   normalizeProviderDescriptors,
-  resolveSecurityErrorMessage,
-} from '@/domains/account/utils';
-import { AuthVerificationSurface } from '@/domains/auth/ui';
+} from '@/domains/account/utils/validation';
+import {
+  AuthVerificationSurface,
+} from '@/domains/shell/navigation/surfaces/verification-surface';
 import {
   AUTH_ROUTES,
   buildAuthHref,
+} from '@/domains/auth/utils/routes';
+import {
   getOAuthProviderLabel,
   normalizeOAuthProvider,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/oauth';
 
 export function resetLinkedProviderOverrides({
   setLinkedProviderDescriptorsOverride,
@@ -56,14 +64,14 @@ function resolveLinkedProviderIds(session) {
 
 export async function logCredentialAuditSuccess(event, metadata = {}) {
   try {
-    const { logAuditServer } = await import('@/domains/auth/api/audit.server');
+    const { logAuditServer } = await import('@/domains/auth/server/actions/audit-log.server');
     await logAuditServer({ event, metadata });
   } catch {}
 }
 
 export async function logCredentialAuditFailure(event, error) {
   try {
-    const { logAuditServer } = await import('@/domains/auth/api/audit.server');
+    const { logAuditServer } = await import('@/domains/auth/server/actions/audit-log.server');
     await logAuditServer({ event, metadata: { error: error?.message || 'Action failed' } });
   } catch {}
 }

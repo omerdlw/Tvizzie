@@ -12,6 +12,7 @@ import {
   ensureAccountProfileRecord,
 } from '@/domains/auth/server/account.server.js';
 import {
+  getAccountIdByUsername,
   getEditableAccountSnapshotByUserId,
   getAccountProfileByUserId,
   invalidateCachedAccountProfiles,
@@ -22,18 +23,20 @@ import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/feeds.ser
 import {
   ACCOUNT_READ_FUNCTION,
   ACCOUNT_WRITE_FUNCTION,
+} from '@/domains/account/utils/constants';
+import {
   normalizeAccountDisplayNameSearchValue,
   sanitizeAccountSearchTerm,
   sanitizeUsername,
   validateUsername,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/validation';
 import {
   CACHE_CONTROL,
   cacheControlHeaders,
   getOrLoadCachedValue,
 } from '@/infrastructure/http/http-server';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 
 export async function handleAccountCollectionsGet(request) {
   try {

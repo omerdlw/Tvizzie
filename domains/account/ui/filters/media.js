@@ -1,4 +1,6 @@
-import { buildMediaItemKey } from '@/domains/media/shared/media';
+import {
+  buildMediaItemKey,
+} from '@/domains/media/utils/media-key';
 
 import {
   buildHash,

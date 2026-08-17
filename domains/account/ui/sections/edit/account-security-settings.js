@@ -1,7 +1,10 @@
 'use client';
 
 import { ActionButton, Field, INPUT_BASE_CLASSES, SectionCard } from './account-edit-primitives';
-import { getOAuthProviderIcon, getOAuthProviderLabel } from '@/domains/auth/utils';
+import {
+  getOAuthProviderIcon,
+  getOAuthProviderLabel,
+} from '@/domains/auth/utils/oauth';
 import Icon from '@/ui/primitives/icon';
 
 export function AccountSecuritySettings({

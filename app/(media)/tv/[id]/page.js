@@ -5,8 +5,13 @@ import {
   delayMediaSkeletonPreview,
   loadMediaRouteData,
 } from '@/domains/media/server/title-route.server';
-import { getMediaComputedData } from '@/domains/media/services/media-data';
-import { getTvSeasonRatings, mergeTvSeasonRatings } from '@/domains/media/server/tv-season-ratings';
+import {
+  getTvSeasonRatings,
+  mergeTvSeasonRatings,
+} from '@/domains/media/server/tv-season-ratings.server';
+import {
+  getMediaComputedData,
+} from '@/domains/media/utils/media-data';
 import { getTvBase, getTvSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
-import { getUniqueDiscoverItems } from '@/domains/home/shared/discover';
+import { getUniqueDiscoverItems } from '@/domains/home/utils/discover';
 
 function normalizePage(value, fallback = 1) {
   const page = Number(value);

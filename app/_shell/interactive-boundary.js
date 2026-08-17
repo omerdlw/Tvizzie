@@ -3,13 +3,15 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-import { pipe } from '@/shared/utils';
-import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client';
+import { pipe } from '@/domains/shell/shared/utils';
+import {
+  ACCOUNT_PROVIDER_CONFIG,
+} from '@/domains/account/client/profile.client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';
 
 const NotificationsModal = dynamic(
-  () => import('@/domains/social/ui/modals/notifications-modal'),
+  () => import('@/domains/shell/modals/notifications-modal'),
   { ssr: false },
 );
 

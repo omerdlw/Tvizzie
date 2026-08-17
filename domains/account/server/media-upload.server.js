@@ -15,7 +15,7 @@ import {
   MAX_UPLOAD_BYTES,
   MAX_UPLOAD_BYTES_BY_TARGET,
   MIME_EXTENSION_MAP,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/constants';
 
 // ============================================================
 // Media Shared Helpers

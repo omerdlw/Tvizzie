@@ -2,28 +2,28 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import MediaCard from '@/domains/media/ui/components/media-card';
-import { TMDB_IMG } from '@/shared/constants';
+import MediaCard from '@/domains/shell/shared/components/media-card';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
+} from '@/domains/media/utils/poster-preferences';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountPagination from './account-pagination';
 import {
   buildAccountCollectionPageHref,
   formatPaginationSummaryLabel,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/formatting';
 import { AccountInlineSectionState } from '../sections/account-section';
 import AccountSectionLayout, {
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '../sections/account-section';
-import { MediaCardsSkeletonGrid } from '../skeletons/account-section-skeletons';
+import { MediaCardsSkeletonGrid } from '../skeletons';
 import { useNavigationActions } from '@/modules/nav';
 import { useAuth } from '@/modules/auth';
-import { createListPickerSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-picker-surface';
+import { createListPickerSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-picker-surface';
 import { createListItemPayload } from '@/domains/account/utils/media-card';
 const ITEMS_PER_PAGE = 36;
 

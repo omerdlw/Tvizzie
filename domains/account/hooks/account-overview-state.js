@@ -2,11 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
-import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
-import { TMDB_IMG } from '@/shared/constants';
-import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getCurrentPathWithSearch,
+} from '@/domains/auth/utils/routes';
+import {
+  deleteStoredReview,
+  toggleStoredReviewLike,
+} from '@/domains/reviews/client/mutations';
+import { createReviewEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/review-editor-surface';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import {
+  isPermissionDeniedError,
+  logDataError,
+} from '@/domains/account/utils/validation';
 import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.client';
 import { useAuth } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav/context';

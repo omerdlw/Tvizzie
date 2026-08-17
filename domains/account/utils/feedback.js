@@ -1,4 +1,4 @@
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
+import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events.js';
 import { isPermissionDeniedError } from './validation.js';
 
 const DEFAULT_ACCOUNT_FEEDBACK_PRIORITY = 112;

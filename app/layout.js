@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 
 import { geistSans, zuume } from '@/public/fonts';
 import './globals.css';

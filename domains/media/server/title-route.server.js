@@ -2,8 +2,10 @@ import 'server-only';
 
 import { notFound } from 'next/navigation';
 
-import { getMediaComputedData } from '@/domains/media/services/media-data';
-import { TMDB_IMG } from '@/shared/constants';
+import {
+  getMediaComputedData,
+} from '@/domains/media/utils/media-data';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 
 const SKELETON_PREVIEW_DELAY_MS = 2500;
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { notifyPosterPreferenceChange } from '@/domains/media/utils/user-media';
 
 const STORAGE_KEY = 'tvizzie.movie.background.preferences';
 const MAX_PREFERENCES = 200;
@@ -393,4 +392,14 @@ export function clearMediaPosterPreference(mediaType, mediaId) {
     notifyPosterPreferenceChange({ entityType: mediaType, entityId: mediaId });
   }
   return didClearPreference;
+}
+
+export const POSTER_PREFERENCE_CHANGE_EVENT = 'tvizzie:poster-preference-change';
+
+export function notifyPosterPreferenceChange(detail = {}) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.dispatchEvent(new CustomEvent(POSTER_PREFERENCE_CHANGE_EVENT, { detail }));
 }

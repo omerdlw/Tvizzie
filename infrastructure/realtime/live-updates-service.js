@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 import { createClient as createSupabaseBrowserClient } from '@/infrastructure/supabase/supabase-client';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 

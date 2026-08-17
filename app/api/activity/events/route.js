@@ -1,1 +1,1 @@
-export * from '@/domains/social/server/activity/route.server';
+export { POST, DELETE } from '@/domains/social/server/activity.server';

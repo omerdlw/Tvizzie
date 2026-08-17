@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 import { createHash, randomUUID } from 'crypto';
 
 function readHeader(request, headerName) {

@@ -1,21 +1,23 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 import { createContext, useContext, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSelectedLayoutSegment } from 'next/navigation';
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 import AccountHero from '../sections/account-hero';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
-import NotFoundTemplate from '@/ui/feedback/not-found-template';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
+import NotFoundTemplate from '@/domains/shell/layout/not-found-template';
 import { AccountSkeleton, renderAccountSectionSkeleton } from '@/app/(account)/account/loading';
 import AccountBackgroundRegistry from './account-background-registry';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/domains/shell/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
 import { useRegistry } from '@/modules/registry';
-import { getUserAvatarUrl } from '@/domains/account/utils';
-import { createAccountBioSurfaceEntry } from '@/domains/account/ui/nav-surfaces/account-bio-surface';
+import {
+  getUserAvatarUrl,
+} from '@/domains/account/utils/avatar';
+import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
 import { AccountProfileShellProvider, useAccountProfileShell } from './account-profile-context';
 import AccountGridFrame from './account-grid-frame';
 // ─── Nav Transition Context ───────────────────────────────────────────────────

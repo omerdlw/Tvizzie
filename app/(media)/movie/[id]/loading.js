@@ -1,9 +1,9 @@
 'use client';
 
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
 
 const SKELETON = 'skeleton-block';

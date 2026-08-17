@@ -6,20 +6,35 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { subscribeToLikeStatus, toggleUserLike } from '@/domains/media/client/collections/likes';
+import {
+  subscribeToLikeStatus,
+  toggleUserLike,
+} from '@/domains/media/client/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
   subscribeToWatchedStatus,
+} from '@/domains/media/client/watched';
+import {
   subscribeToWatchlistStatus,
   toggleUserWatchlistItem,
-} from '@/domains/media/client/collections/watched-watchlist';
-import { cn } from '@/shared/utils';
-import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
+} from '@/domains/media/client/watchlist';
+import { cn } from '@/domains/shell/shared/utils';
+import {
+  getMediaDetailPath,
+  resolveExplicitMediaType,
+} from '@/domains/media/utils/media-key';
+import {
+  getMediaTitle,
+} from '@/domains/media/utils/media-data';
+import {
+  AUTH_ROUTES,
+  buildAuthHref,
+  getCurrentPathWithSearch,
+} from '@/domains/auth/utils/routes';
 import { useNavigationActions } from '@/modules/nav';
-import { createListPickerSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-picker-surface';
-import WatchProvidersSurface from '@/domains/media/ui/nav-surfaces/watch-providers-surface';
+import { createListPickerSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-picker-surface';
+import WatchProvidersSurface from '@/domains/shell/navigation/surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';
 
 function getMediaSnapshot(media) {

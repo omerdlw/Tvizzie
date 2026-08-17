@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 import { getAccountIdByUsername } from './profile.server';
 
 export async function resolveAccountRequestUserId({ fallbackUserId = null, searchParams } = {}) {

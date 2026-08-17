@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { TMDB_IMG } from '@/shared/constants';
-import Carousel from '@/domains/media/ui/components/media-carousel';
-import SegmentedControl from '@/ui/primitives/segmented-control';
-import MediaCard from '@/domains/media/ui/components/media-card';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import Carousel from '@/domains/shell/shared/components/media-carousel';
+import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
+import MediaCard from '@/domains/shell/shared/components/media-card';
 import Icon from '@/ui/primitives/icon';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { GridCrosshair } from '@/ui/layout/grid-crosshair';
+import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
 function normalizeSeasonDetails(seasonDetails = []) {
   return new Map(
     (Array.isArray(seasonDetails) ? seasonDetails : [])

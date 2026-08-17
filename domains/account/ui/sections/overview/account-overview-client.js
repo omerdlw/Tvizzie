@@ -1,6 +1,6 @@
 'use client';
 
-import { FullscreenState } from '@/ui/feedback/fullscreen-state';
+import { FullscreenState } from '@/domains/shell/shared/components/feedback/fullscreen-state';
 import {
   AccountSectionStateProvider,
   useAccountSectionState,

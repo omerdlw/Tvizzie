@@ -1,10 +1,13 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import {
   normalizeProvider,
   resolveProviderDescriptors as resolveAuthProviderDescriptors,
   resolveProviderIds,
-} from '@/domains/auth/utils';
-import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/domains/auth/oauth';
+} from '@/domains/auth/utils/providers';
+import {
+  GOOGLE_PROVIDER_ID,
+  PASSWORD_PROVIDER_ID,
+} from '@/domains/auth/utils/oauth';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   SUPABASE_PUBLISHABLE_KEY,

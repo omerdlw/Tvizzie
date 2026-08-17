@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 
 const DAYS_PER_MONTH = 30;
 const HOURS_PER_DAY = 24;

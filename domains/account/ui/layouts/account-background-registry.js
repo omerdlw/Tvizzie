@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRegistry } from '@/modules/registry';
-import { resolveVersionedImageUrl } from '@/shared/utils';
+import { resolveVersionedImageUrl } from '@/domains/shell/shared/utils';
 
 export default function AccountBackgroundRegistry({ bannerUrl = null }) {
   const heroBannerSrc = useMemo(

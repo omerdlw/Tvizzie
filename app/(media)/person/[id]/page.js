@@ -9,7 +9,9 @@ import {
   getPersonBase,
   getPersonSecondary,
 } from '@/infrastructure/tmdb/clients/tmdb-server-client';
-import { getPersonAwards } from '@/domains/media/server/person-awards';
+import {
+  getPersonAwards,
+} from '@/domains/media/server/person-awards.server';
 import Client from '@/app/(media)/person/[id]/client';
 
 export async function generateMetadata({ params }) {

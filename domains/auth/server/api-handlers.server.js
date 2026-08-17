@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   applySupabaseSessionToResponse,
@@ -8,7 +8,7 @@ import {
   requireSessionRequest,
   setDeviceIdCookie,
 } from './session.server';
-import { getUserById, revokeRefreshTokens } from './session/admin.server';
+import { getUserById, revokeRefreshTokens } from './admin.server.js';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   assertCsrfRequest,
@@ -45,10 +45,12 @@ import {
 import { ensureAccountProfileRecord } from './account.server';
 import {
   PURPOSES,
+  SECURE_PURPOSES,
+} from '@/domains/auth/utils/constants';
+import {
   resolveAuthCapabilities,
   resolveProviderIds,
-  SECURE_PURPOSES,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/providers';
 
 export async function handleSignInPost(request) {
   try {

@@ -3,20 +3,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/client/requests';
-import { signInWithPassword } from '@/domains/auth/client/sign-in-workflow.client';
+import {
+  assertPasswordAccountStatus,
+  completePasswordReset,
+} from '@/domains/auth/client/requests';
+import {
+  signInWithPassword,
+} from '@/domains/auth/client/sign-in';
 import {
   AUTH_PURPOSE,
-  AUTH_ROUTES,
   INITIAL_RESET_FLOW,
+} from '@/domains/auth/utils/constants';
+import {
+  AUTH_ROUTES,
   buildAuthHref,
   consumeAuthRouteNoticeCookie,
   isEmailIdentifier,
-  resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   resolveSignInNoticeToast,
+} from '@/domains/auth/utils/routes';
+import {
+  resolveAuthErrorMessage,
+} from '@/domains/auth/utils/errors';
+import {
   validatePassword,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/password';
 import { getOAuthProviderLabel } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
@@ -24,18 +35,26 @@ import {
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  PasswordToggleButton,
+} from '@/domains/auth/ui/components/form-primitives';
+import {
   AUTH_PAGE_FORM_CLASS,
   AuthPageShell,
+} from '@/domains/auth/ui/layouts/page-shell';
+import {
   AuthVerificationSurface,
+} from '@/domains/shell/navigation/surfaces/verification-surface';
+import {
   ForgotPasswordAction,
+} from '@/domains/shell/navigation/action/forgot-password-action';
+import {
   OAuthProviderList,
-  PasswordToggleButton,
-} from '@/domains/auth/ui';
+} from '@/domains/auth/ui/components/oauth-provider-list';
 import { Button, Input } from '@/ui/primitives';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
+import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
 import AuthRegistry from '@/app/(auth)/registry';
 import Link from 'next/link';
 

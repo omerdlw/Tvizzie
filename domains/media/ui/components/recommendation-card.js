@@ -1,17 +1,19 @@
 'use client';
 
-import MediaCard from '@/domains/media/ui/components/media-card';
-import { TMDB_IMG } from '@/shared/constants';
+import MediaCard from '@/domains/shell/shared/components/media-card';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import {
   getMediaDetailPath,
+  resolveExplicitMediaType,
+} from '@/domains/media/utils/media-key';
+import {
   getMediaReleaseDate,
   getMediaTitle,
-  resolveExplicitMediaType,
-} from '@/domains/media/utils';
+} from '@/domains/media/utils/media-data';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
+} from '@/domains/media/utils/poster-preferences';
 
 export default function RecommendationCard({
   movie,

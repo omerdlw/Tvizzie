@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 const DEFAULT_NAV_CLASS =

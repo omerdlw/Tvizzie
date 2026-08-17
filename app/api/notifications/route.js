@@ -2,7 +2,7 @@ import {
   handleNotificationsDelete,
   handleNotificationsGet,
   handleNotificationsPatch,
-} from '@/domains/social/server/notifications/route.server';
+} from '@/domains/social/server/notifications.server';
 
 export const GET = handleNotificationsGet;
 export const PATCH = handleNotificationsPatch;

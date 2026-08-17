@@ -4,16 +4,18 @@ import { cloneElement, isValidElement } from 'react';
 import dynamic from 'next/dynamic';
 
 const AccountSocialModal = dynamic(
-  () => import('@/domains/social/ui/modals/account-social-modal'),
+  () => import('@/domains/shell/modals/account-social-modal'),
   { ssr: false },
 );
 
-import AccountAction from '@/domains/account/ui/nav-actions/account-action';
-import ReviewAction from '@/domains/reviews/ui/nav-actions/review-action';
+import AccountAction from '@/domains/shell/navigation/action/account-action';
+import ReviewAction from '@/domains/shell/navigation/action/review-action';
 import Icon from '@/ui/primitives/icon';
-import { getUserAvatarUrl } from '@/domains/account/utils';
-import { Spinner } from '@/ui/feedback/spinner';
-import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
+import {
+  getUserAvatarUrl,
+} from '@/domains/account/utils/avatar';
+import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { createConfirmationSurfaceEntry } from '@/domains/shell/navigation/surfaces/confirmation-surface';
 import { createAccountSectionRegistry } from '@/domains/account/ui/sections/account-section-factory';
 import { createRouteRegistry } from '@/modules/registry/route-registry';
 
@@ -381,11 +383,79 @@ export function buildAccountPageState({
     },
   };
 }
+export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
+  isAuthenticated: false,
+});
+
+export function noopAccountRegistryHandler() {}
+
+export function buildAccountRegistryState(sectionState = null, overrides = null) {
+  const {
+    auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
+    followState = 'follow',
+    handleEditProfile,
+    handleFollow,
+    handleOpenFollowList,
+    handleSignInRequest,
+    isFollowLoading = false,
+    isOwner = false,
+    isPageLoading = false,
+    isResolvingProfile = false,
+    itemRemoveConfirmation = null,
+    listDeleteConfirmation = null,
+    pendingFollowRequestCount = 0,
+    profile = null,
+    resolveError = null,
+    unfollowConfirmation = null,
+    username,
+  } = sectionState || {};
+
+  return buildAccountPageState({
+    authIsAuthenticated: auth.isAuthenticated,
+    authUser: auth.user || null,
+    followState,
+    handleEditProfile,
+    handleFollow,
+    handleOpenFollowList,
+    handleSignInRequest,
+    extraNavActions: overrides?.extraNavActions ?? [],
+    isFollowLoading,
+    isOwner,
+    isPageLoading: overrides?.isPageLoading ?? isPageLoading,
+    isResolvingProfile,
+    isSectionEditing: false,
+    isSectionOrderDirty: false,
+    isSectionSaveLoading: false,
+    itemRemoveConfirmation: overrides?.itemRemoveConfirmation ?? itemRemoveConfirmation,
+    listDeleteConfirmation: overrides?.listDeleteConfirmation ?? listDeleteConfirmation,
+    navActionOverride: overrides?.navActionOverride ?? null,
+    navDescription: overrides?.navDescription ?? null,
+    navSurface: overrides?.navSurface ?? null,
+    navRegistrySource: overrides?.navRegistrySource,
+    onDeleteList: overrides?.onDeleteList,
+    onEditList: overrides?.onEditList,
+    onOpenReviewComposer: overrides?.onOpenReviewComposer,
+    ownReview: overrides?.ownReview,
+    onSaveSectionOrder: null,
+    onToggleLike: overrides?.onToggleLike,
+    pendingFollowRequestCount,
+    profile,
+    resolveError,
+    reviewState: overrides?.reviewState,
+    showProfileFollowAction: overrides?.showProfileFollowAction ?? true,
+    showToolbarFollowActionWithOverride: overrides?.showToolbarFollowActionWithOverride,
+    unfollowConfirmation: overrides?.unfollowConfirmation ?? unfollowConfirmation,
+    username,
+    isLiked: overrides?.isLiked ?? false,
+    isLikeLoading: overrides?.isLikeLoading ?? false,
+  });
+}
 
 export const AccountOverviewRegistry = createAccountSectionRegistry({
   displayName: 'AccountOverviewRegistry',
   navDescription: (sectionState) => sectionState.navDescription,
   navRegistrySource: 'account-overview',
+  buildState: buildAccountRegistryState,
 });
 
 const ACCOUNT_EDIT_REGISTRY_SOURCE = 'account-edit';

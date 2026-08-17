@@ -6,19 +6,28 @@ import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
-} from '@/domains/account/hooks';
-import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
+} from '@/domains/account/hooks/feed-state.hooks';
+import {
+  isPermissionDeniedError,
+  logDataError,
+} from '@/domains/account/utils/validation';
 import { useToast } from '@/modules/notification';
 import {
   fetchAccountResource,
   fetchAccountReviewFeed,
 } from '@/domains/account/client/account-api.client';
-import { updateFavoriteShowcase } from '@/domains/media/client/collections/likes';
-import { toggleStoredReviewLike } from '@/domains/reviews/client';
-import { subscribeToUserWatched } from '@/domains/media/client/collections/watched-watchlist';
+import {
+  updateFavoriteShowcase,
+} from '@/domains/media/client/likes';
+import {
+  subscribeToUserWatched,
+} from '@/domains/media/client/watched';
+import {
+  toggleStoredReviewLike,
+} from '@/domains/reviews/client/mutations';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountLikesFeed from '@/domains/account/ui/sections/collections/likes-collection';
-import AccountAction from '@/domains/account/ui/nav-actions/account-action';
+import AccountAction from '@/domains/shell/navigation/action/account-action';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,

@@ -1,17 +1,25 @@
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { canViewerAccessUserContent, createPrivateProfileError } from './profile.server';
-import { normalizeTimestamp, normalizeValue } from '@/shared/utils';
+import { normalizeTimestamp, normalizeValue } from '@/domains/shell/shared/utils';
 
-import { buildMediaItemKey } from '@/domains/media/shared/media';
-import { isTitleMediaType } from '@/domains/media/utils';
+import {
+  buildMediaItemKey,
+} from '@/domains/media/utils/media-key';
+import {
+  isTitleMediaType,
+} from '@/domains/media/utils/media-key';
 import {
   LIST_COLLECTION_SELECT,
   LIST_ITEM_SELECT,
   MEDIA_COLLECTION_SELECT,
   WATCHED_SELECT,
+} from '@/domains/account/utils/constants';
+import {
   assertResult,
+} from '@/domains/account/utils/supabase';
+import {
   isValidUuid,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/uuid';
 
 const ACCOUNT_COLLECTION_RESOURCE_KEYS = new Set([
   'likes',

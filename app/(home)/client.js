@@ -1,10 +1,10 @@
 'use client';
 
-import { TMDB_IMG } from '@/shared/constants';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
 import Registry from '@/app/(home)/registry';
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
 import { TrendingSection } from '@/domains/home/ui/sections/trending-section';
 import { TopRatedSection } from '@/domains/home/ui/sections/top-rated-section';

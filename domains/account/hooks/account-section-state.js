@@ -2,11 +2,14 @@
 
 import { createContext, useContext, useMemo } from 'react';
 
-import { useAccountSectionPage } from '@/domains/account/hooks';
 import {
-  EMPTY_ACCOUNT_REGISTRY_AUTH,
-  noopAccountRegistryHandler,
-} from '@/domains/account/hooks/account-registry-state';
+  useAccountSectionPage,
+} from '@/domains/account/hooks/page.hooks';
+const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
+  isAuthenticated: false,
+});
+
+function noopAccountRegistryHandler() {}
 
 const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   auth: EMPTY_ACCOUNT_REGISTRY_AUTH,

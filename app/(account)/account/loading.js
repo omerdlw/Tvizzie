@@ -1,7 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { AccountSkeletonLayout } from '@/domains/account/ui/skeletons/account-skeleton-layout';
+import {
+  AccountSkeletonLayout,
+} from '@/domains/account/ui/skeletons';
 import {
   AccountActivitySkeleton,
   AccountEditSkeleton,
@@ -10,7 +12,7 @@ import {
   AccountMediaGridSkeleton,
   AccountOverviewSkeleton,
   AccountReviewsSkeleton,
-} from '@/domains/account/ui/skeletons/account-section-skeletons';
+} from '@/domains/account/ui/skeletons';
 
 export function resolveAccountTabFromPathname(pathname) {
   if (!pathname) return { activeTab: 'overview', variant: 'overview' };

@@ -15,7 +15,9 @@ import {
   fetchListReviewFeedServer,
   fetchProfileReviewFeedServer,
 } from '@/domains/reviews/server/feeds.server';
-import { getFollowResource } from '@/domains/social/server/follows/resources.server';
+import {
+  getFollowResource,
+} from '@/domains/social/server/follows.server';
 import {
   ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS,
   EMPTY_ARRAY,
@@ -26,7 +28,7 @@ import {
   OVERVIEW_REVIEW_LIMIT,
   OVERVIEW_WATCHED_LIMIT,
   OVERVIEW_WATCHLIST_LIMIT,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/constants';
 
 function buildCookieRequest(cookieStore) {
   return {

@@ -1,7 +1,7 @@
 'use client';
 
 import { LIST_SORT_OPTIONS } from '@/domains/account/ui/filters/filtering';
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 
 import {
   DefaultMenuItem,

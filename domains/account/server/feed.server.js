@@ -1,6 +1,11 @@
 import 'server-only';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { ACTIVITY_EVENT_TYPES, ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/utils';
+import {
+  ACTIVITY_EVENT_TYPES,
+} from '@/domains/social/client/activity';
+import {
+  ACTIVITY_EVENT_TYPE_SET,
+} from '@/domains/social/utils/constants';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
@@ -13,9 +18,11 @@ import {
   ACTIVITY_SORT_MODES,
   ACTIVITY_SUBJECT_FILTERS,
   FOLLOW_STATUS_ACCEPTED,
-} from '@/domains/account/utils';
-import { normalizeMediaType } from '@/domains/media/utils';
-import { chunkArray, normalizeTimestamp, normalizeValue } from '@/shared/utils';
+} from '@/domains/account/utils/constants';
+import {
+  normalizeMediaType,
+} from '@/domains/media/utils/media-key';
+import { chunkArray, normalizeTimestamp, normalizeValue } from '@/domains/shell/shared/utils';
 
 const ACTIVITY_QUERY_MINIMUM_WINDOW = 50;
 const ACTIVITY_QUERY_WINDOW_MULTIPLIER = 3;

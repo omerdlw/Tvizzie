@@ -15,7 +15,7 @@ import {
   PASSWORD_PROVIDER_ID,
   resolveOAuthIntent,
   sanitizeAuthNextPath,
-} from '@/core/modules/auth/provider-utils';
+} from '@/modules/auth/provider-utils';
 
 export {
   getOAuthProviderConfig,

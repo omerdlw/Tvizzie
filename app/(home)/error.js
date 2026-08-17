@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
+import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
 import { getErrorReporter } from '@/modules/error-boundary/reporter';
-import FullscreenState from '@/ui/feedback/fullscreen-state';
+import FullscreenState from '@/domains/shell/shared/components/feedback/fullscreen-state';
 
 export default function HomeError({ error, reset }) {
   useEffect(() => {

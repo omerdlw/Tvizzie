@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import FilmographyCard from '../components/person/filmography-card';
-import { getFilmographyCredits } from '@/domains/media/utils/person-data';
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
-import SegmentedControl from '@/ui/primitives/segmented-control';
+import FilmographyCard from '../components/filmography-card';
+import {
+  getFilmographyCredits,
+} from '@/domains/media/utils/person-data';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
 import Icon from '@/ui/primitives/icon';
 
 export default function PersonFilmographySection({ person }) {

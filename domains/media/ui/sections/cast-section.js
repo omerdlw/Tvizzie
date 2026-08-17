@@ -2,26 +2,26 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { TMDB_IMG } from '@/shared/constants';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
   resolveImageFetchPriority,
   resolveImageLoading,
   resolveImageQuality,
-} from '@/shared/utils';
+} from '@/domains/shell/shared/utils';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
-import SegmentedControl from '@/ui/primitives/segmented-control';
-import AdaptiveImage from '@/ui/primitives/adaptive-image';
+} from '@/domains/media/utils/poster-preferences';
+import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
+import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { GridCrosshair } from '@/ui/layout/grid-crosshair';
+import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 

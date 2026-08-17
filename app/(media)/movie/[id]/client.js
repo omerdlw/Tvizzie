@@ -13,23 +13,24 @@ import {
   createMovieBackdropImageUrl,
   createMoviePosterImageUrl,
   getPreferredMovieBackground,
-} from '@/domains/media/services/media-data';
+  getGalleryImages,
+  getMediaComputedData,
+} from '@/domains/media/utils/media-data';
 import { Suspense, use } from 'react';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import CastSection from '@/domains/media/ui/sections/cast-section';
 import CollectionActions from '@/domains/media/ui/components/collection-actions';
 import GallerySection from '@/domains/media/ui/sections/gallery-section';
 import ImagesSection from '@/domains/media/ui/sections/images-section';
 import RecommendationCard from '@/domains/media/ui/components/recommendation-card';
 import Sidebar from '@/domains/media/ui/components/sidebar';
-import { getGalleryImages, getMediaComputedData } from '@/domains/media/services/media-data';
 import VideosSection from '@/domains/media/ui/sections/videos-section';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
 import TvSeasonsSection from '@/domains/media/ui/sections/seasons-section';
 import TvSeasonRatings from '@/domains/media/ui/components/tv-season-ratings';
-import TvSeasonRatingsSkeleton from '@/domains/media/ui/components/tv-season-ratings-skeleton';
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import TvSeasonRatingsSkeleton from '@/domains/media/ui/skeletons';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import Registry from '@/app/(media)/registry';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
 import {
@@ -37,9 +38,9 @@ import {
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
 import Icon from '@/ui/primitives/icon';
-import Carousel from '@/domains/media/ui/components/media-carousel';
-import { cn } from '@/core/shared/utils';
-import { GridCrosshair } from '@/ui/layout/grid-crosshair';
+import Carousel from '@/domains/shell/shared/components/media-carousel';
+import { cn } from '@/domains/shell/shared/utils';
+import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
 
 function createReviewState() {
   return {

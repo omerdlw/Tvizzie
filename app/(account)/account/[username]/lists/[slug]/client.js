@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { mergeCollectionItemsWithExistingMetadata } from '@/domains/account/hooks';
+import {
+  mergeCollectionItemsWithExistingMetadata,
+} from '@/domains/account/hooks/collections.hooks';
 import { useAccountProfile } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
@@ -9,21 +11,26 @@ import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import { getMediaTitle, removeAccountCollectionItem } from '@/domains/account/utils';
+import {
+  getMediaTitle,
+  removeAccountCollectionItem,
+} from '@/domains/account/utils/formatting';
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
   toggleListLike,
-} from '@/domains/media/client/collections/lists';
+} from '@/domains/media/client/lists';
 import {
   deleteListReview,
-  subscribeToListReviews,
   toggleStoredReviewLike,
-} from '@/domains/reviews/client';
-import { TMDB_IMG } from '@/shared/constants';
+} from '@/domains/reviews/client/mutations';
+import {
+  subscribeToListReviews,
+} from '@/domains/reviews/client/subscriptions';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
-import { createListEditorSurfaceEntry } from '@/domains/account/ui/nav-surfaces/list-editor-surface';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
+import { createListEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,

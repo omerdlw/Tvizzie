@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/core/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 import {
   Field,
   INPUT_BASE_CLASSES,

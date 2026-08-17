@@ -1,7 +1,9 @@
 import { createHash, randomBytes, randomInt, timingSafeEqual } from 'crypto';
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { validateUsername } from '@/domains/account/utils';
+import {
+  validateUsername,
+} from '@/domains/account/utils/validation';
 import {
   AUTH_CHALLENGE_SELECT,
   AUTH_CHALLENGE_TABLE,
@@ -14,17 +16,22 @@ import {
   PENDING_SIGN_IN_MAX_AGE_SECONDS,
   PURPOSES,
   RESEND_COOLDOWN_MS,
-  resolveAuthCapabilities,
-  getOAuthProviderLabel,
-  resolveProviderIds,
   SECURE_PURPOSES,
   TOKEN_VERSION,
   TRUSTED_DEVICE_COOKIE_PREFIX,
   TRUSTED_DEVICE_MAX_AGE_MS,
   TRUSTED_DEVICE_MAX_AGE_SECONDS,
-} from '@/domains/auth/utils';
+} from '@/domains/auth/utils/constants';
+import {
+  resolveAuthCapabilities,
+  resolvePrimaryProvider,
+  resolveProviderIds,
+} from '@/domains/auth/utils/providers';
+import {
+  getOAuthProviderLabel,
+} from '@/domains/auth/utils/oauth';
 import { AUTH_COOKIE_PATH, getCookieValue, isSecureCookieEnvironment } from './session.server';
-import { createAdminAuthFacade } from './session/admin.server';
+import { createAdminAuthFacade } from './admin.server.js';
 import {
   createChallengeProofToken,
   createSignedToken,

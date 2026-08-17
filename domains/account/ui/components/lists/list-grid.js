@@ -7,12 +7,14 @@ import AccountSectionLayout, {
   AccountInlineSectionState,
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
-import { ListCardsSkeletonGrid } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import {
+  ListCardsSkeletonGrid,
+} from '@/domains/account/ui/skeletons';
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
 import {
   buildAccountCollectionPageHref,
   formatPaginationSummaryLabel,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/formatting';
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
 export default function AccountPaginatedListGrid({

@@ -5,16 +5,24 @@ import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
-} from '@/domains/account/hooks';
-import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
+} from '@/domains/account/hooks/feed-state.hooks';
+import {
+  isPermissionDeniedError,
+  logDataError,
+} from '@/domains/account/utils/validation';
 import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.client';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { TMDB_IMG } from '@/shared/constants';
-import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
-import { subscribeToUserWatched } from '@/domains/media/client/collections/watched-watchlist';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import {
+  deleteStoredReview,
+  toggleStoredReviewLike,
+} from '@/domains/reviews/client/mutations';
+import {
+  subscribeToUserWatched,
+} from '@/domains/media/client/watched';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/nav-surfaces/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountReviewFeed from '@/domains/account/ui/sections/feeds/reviews';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';

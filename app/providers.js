@@ -8,7 +8,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
 import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
-import { pipe } from '@/shared/utils';
+import { pipe } from '@/domains/shell/shared/utils';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
 import { AuthProvider, createSupabaseAuthAdapter } from '@/modules/auth';

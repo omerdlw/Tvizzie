@@ -1,13 +1,13 @@
 'use client';
 
-import { getUniqueDiscoverItems } from '@/domains/home/shared/discover';
+import { getUniqueDiscoverItems } from '@/domains/home/utils/discover';
 import {
   HOME_SECTION_CONTENT_CLASS,
   HOME_SECTION_HEADER_CLASS,
   HOME_SECTION_TITLE_CLASS,
 } from '@/domains/home/ui/layouts/home-section';
 import { PosterRail } from '../components/poster-rail';
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 
 export function HomeRailSection({ fallbackMediaType, items = [], limit, showRank = false, title }) {
   const railItems = getUniqueDiscoverItems(items, limit);

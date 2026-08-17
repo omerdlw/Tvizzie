@@ -1,9 +1,9 @@
 'use client';
 
-import { OAUTH_PROVIDER_KEYS } from '@/core/modules/auth/provider-utils';
+import { OAUTH_PROVIDER_KEYS } from '@/modules/auth/provider-utils';
 import OAuthProviderButton from './oauth-provider-button';
 
-export default function OAuthProviderList({
+export function OAuthProviderList({
   activeProvider = null,
   disabled = false,
   mode,
@@ -25,3 +25,5 @@ export default function OAuthProviderList({
     </div>
   );
 }
+
+export default OAuthProviderList;

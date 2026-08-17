@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 import {

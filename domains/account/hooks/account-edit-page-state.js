@@ -7,28 +7,45 @@ import {
   AUTH_ROUTES,
   buildAuthHref,
   getCurrentPathWithSearch,
+} from '@/domains/auth/utils/routes';
+import {
   normalizeOAuthProvider,
-} from '@/domains/auth/utils';
-import { uploadAccountMediaFile } from '@/domains/account/client';
-import { useAccountEditData, useAccountSecurityActions } from '@/domains/account/hooks';
+} from '@/domains/auth/utils/oauth';
+import {
+  uploadAccountMediaFile,
+} from '@/domains/account/client/profile.client';
+import {
+  useAccountEditData,
+} from '@/domains/account/hooks/account-edit-data.hooks';
+import {
+  useAccountSecurityActions,
+} from '@/domains/account/hooks/security.hooks';
 import {
   ACCOUNT_MEDIA_UPLOAD_CONFIG,
+} from '@/domains/account/utils/constants';
+import {
   INITIAL_DELETE_FLOW,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
+} from '@/domains/account/utils/security';
+import {
   clearAccountFeedback,
   emitAccountFeedback,
+} from '@/domains/account/utils/feedback';
+import {
   getAvatarFallback,
+} from '@/domains/account/utils/avatar';
+import {
   logDataError,
   normalizeEmail,
   normalizeOptionalText,
-} from '@/domains/account/utils';
+} from '@/domains/account/utils/validation';
 import { useAccount } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useNavigationActions } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import { createFileUploadSurfaceEntry } from '@/ui/feedback/file-upload-surface';
+import { createFileUploadSurfaceEntry } from '@/domains/shell/navigation/surfaces/file-upload-surface';
 
 export function useAccountEditPageState({ initialSnapshot = null }) {
   const { updateCurrentAccount } = useAccount();

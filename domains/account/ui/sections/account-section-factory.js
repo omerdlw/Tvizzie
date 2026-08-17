@@ -4,9 +4,8 @@ import { useState } from 'react';
 
 import { useRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
-import SearchAction from '@/domains/search/ui/nav-actions/search-action';
+import SearchAction from '@/domains/shell/navigation/action/search-action';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
-import { buildAccountRegistryState } from '../../hooks/account-registry-state';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,
@@ -24,6 +23,7 @@ export function createAccountSectionRegistry({
   navDescription = null,
   navRegistrySource,
   resolveOverrides = null,
+  buildState = null,
 }) {
   function AccountSectionRegistry(props) {
     const sectionState = useAccountSectionState();
@@ -39,38 +39,40 @@ export function createAccountSectionRegistry({
     const resolvedOverrides = resolveOverrides ? resolveOverrides(stableSectionState, props) : null;
 
     useRegistry(
-      buildAccountRegistryState(stableSectionState, {
-        isPageLoading: props.isPageLoading ?? stableSectionState.isPageLoading,
-        navDescription:
-          typeof navDescription === 'function'
-            ? navDescription(stableSectionState, props)
-            : (navDescription ?? stableSectionState.navDescription),
-        navRegistrySource,
-        ...(resolvedOverrides || {}),
-        extraNavActions: [
-          ...(Array.isArray(resolvedOverrides?.extraNavActions)
-            ? resolvedOverrides.extraNavActions
-            : []),
-          {
-            key: 'search-overlay',
-            tooltip: 'Search',
-            icon: isSearching ? 'material-symbols:close-rounded' : 'solar:magnifer-linear',
-            order: 30,
-            onClick: (event) => {
-              event.stopPropagation();
-              setIsSearching((value) => !value);
-            },
-          },
-        ],
-        navActionOverride: isSearching ? (
-          <SearchAction />
-        ) : (
-          (resolvedOverrides?.navActionOverride ?? null)
-        ),
-        showToolbarFollowActionWithOverride: isSearching
-          ? false
-          : resolvedOverrides?.showToolbarFollowActionWithOverride,
-      }),
+      typeof buildState === 'function'
+        ? buildState(stableSectionState, {
+            isPageLoading: props.isPageLoading ?? stableSectionState.isPageLoading,
+            navDescription:
+              typeof navDescription === 'function'
+                ? navDescription(stableSectionState, props)
+                : (navDescription ?? stableSectionState.navDescription),
+            navRegistrySource,
+            ...(resolvedOverrides || {}),
+            extraNavActions: [
+              ...(Array.isArray(resolvedOverrides?.extraNavActions)
+                ? resolvedOverrides.extraNavActions
+                : []),
+              {
+                key: 'search-overlay',
+                tooltip: 'Search',
+                icon: isSearching ? 'material-symbols:close-rounded' : 'solar:magnifer-linear',
+                order: 30,
+                onClick: (event) => {
+                  event.stopPropagation();
+                  setIsSearching((value) => !value);
+                },
+              },
+            ],
+            navActionOverride: isSearching ? (
+              <SearchAction />
+            ) : (
+              (resolvedOverrides?.navActionOverride ?? null)
+            ),
+            showToolbarFollowActionWithOverride: isSearching
+              ? false
+              : resolvedOverrides?.showToolbarFollowActionWithOverride,
+          })
+        : null
     );
 
     return null;

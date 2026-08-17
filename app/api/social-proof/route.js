@@ -1,1 +1,1 @@
-export * from '@/domains/social/server/social-proof/route.server';
+export { GET } from '@/domains/social/server/social-proof.server';

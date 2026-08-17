@@ -1,5 +1,5 @@
-import NotFoundAction from '@/ui/feedback/not-found-action';
-import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
+import NotFoundAction from '@/domains/shell/navigation/action/not-found-action';
+import { createConfirmationSurfaceEntry } from '@/domains/shell/navigation/surfaces/confirmation-surface';
 
 function createGuardSurface({ message, onCancel, onConfirm }) {
   return createConfirmationSurfaceEntry({

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/utils';
+import { cn } from '@/domains/shell/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 export default function RatingStars({ rating, className = '' }) {

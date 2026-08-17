@@ -16,7 +16,7 @@ export const AuthRouteRegistry = createRouteRegistry({
 
 export const AUTH_PAGE_FORM_CLASS = 'mx-auto flex w-full flex-col gap-3 px-6 sm:px-10';
 
-export default function AuthPageShell({ children }) {
+export function AuthPageShell({ children }) {
   return (
     <main className="relative flex min-h-dvh w-full items-center justify-center overflow-x-hidden px-4 pt-6 pb-28">
       <div className="pointer-events-none absolute inset-0 flex justify-center px-4">
@@ -29,3 +29,5 @@ export default function AuthPageShell({ children }) {
     </main>
   );
 }
+
+export default AuthPageShell;

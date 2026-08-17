@@ -1,5 +1,8 @@
-import { normalizeValue } from '@/shared/utils';
-import { AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/domains/auth/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
+import {
+  AUTH_ROUTE_NOTICE_COOKIE_NAME,
+  normalizeAuthRouteNotice,
+} from '@/domains/auth/utils/routes';
 import {
   assertSessionNotRevoked,
   AUTH_COOKIE_PATH,
@@ -145,7 +148,7 @@ function resolvePolicy(policyKey) {
   return policy;
 }
 
-import { extractUuid } from './session/admin.server';
+import { extractUuid } from './admin.server.js';
 
 export async function requirePolicySession(request, policyKey) {
   const resolvedPolicyKey =

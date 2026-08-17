@@ -5,7 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountClient, useAccountProfile, useResolvedAccountUser } from '@/modules/account';
 import { useAuthSessionReady } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
-import { notifyAccountLoadError } from '@/domains/account/utils';
+import {
+  notifyAccountLoadError,
+} from '@/domains/account/utils/feedback';
 import { useAccountCollections } from './collections.hooks';
 import { useAccountListItems } from './list-items.hooks';
 import { useAccountRelationshipData, useAccountSocialProof } from './relationship.hooks';

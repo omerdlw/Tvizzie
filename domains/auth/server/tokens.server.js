@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'crypto';
-import { normalizeValue } from '@/shared/utils';
+import { normalizeValue } from '@/domains/shell/shared/utils';
 
 export function createSignedToken(payload, { secret }) {
   const normalizedSecret = normalizeValue(secret);

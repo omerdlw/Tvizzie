@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 
-import { TMDB_IMG } from '@/shared/constants';
-import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/shared/utils';
-import AdaptiveImage from '@/ui/primitives/adaptive-image';
+import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/domains/shell/shared/utils';
+import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
 

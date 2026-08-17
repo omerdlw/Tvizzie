@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   abortAccountDeleteLifecycle,
@@ -14,7 +14,7 @@ import {
 } from './account.server';
 import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from './policies.server';
 import { clearAuthCookies, getRequestContext } from './session.server';
-import { deleteUser, extractUuid, getUserById, revokeRefreshTokens } from './session/admin.server';
+import { deleteUser, extractUuid, getUserById, revokeRefreshTokens } from './admin.server.js';
 import {
   assertCsrfRequest,
   assertRecentReauth,

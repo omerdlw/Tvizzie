@@ -77,7 +77,7 @@ test('3. Anonymous Write Security (RLS Enforcement)', async () => {
 });
 
 test('4. IMDb Top 100 Static Dataset Integrity (0 Runtime Subrequests)', async () => {
-  const { IMDB_TOP_100_MOVIES, IMDB_TOP_100_TV_SHOWS } = await import('../domains/home/shared/imdb-top-100-data.js');
+  const { IMDB_TOP_100_MOVIES, IMDB_TOP_100_TV_SHOWS } = await import('../domains/home/utils/imdb-top-100-data.js');
   const { getImdbTop100 } = await import('../domains/home/server/imdb-top-100.server.js');
 
   assert.equal(IMDB_TOP_100_MOVIES.length, 100, 'Must have exactly 100 movies');
@@ -350,7 +350,7 @@ test('15. TMDb In-Memory Cache Deduplication & Stampede Protection', async () =>
 });
 
 test('16. Media Detail Path & Link Builders Integrity', async () => {
-  const { getMediaDetailPath } = await import('../domains/media/utils/index.js');
+  const { getMediaDetailPath } = await import('../domains/media/utils/media-key.js');
   
   const moviePath = getMediaDetailPath({ entityId: '550', entityType: 'movie' });
   assert.equal(moviePath, '/movie/550');
@@ -374,7 +374,7 @@ test('17. Community Search GIN Trigram Query Performance', async () => {
 });
 
 test('18. Modal Configuration & Position Constants Integrity', async () => {
-  const { MODAL_LABELS, MODAL_PRESETS } = await import('../core/modules/modal/config.js');
+  const { MODAL_LABELS, MODAL_PRESETS } = await import('../modules/modal/config.js');
   
   assert.ok(MODAL_PRESETS.PREVIEW_MODAL, 'PREVIEW_MODAL preset exists');
   assert.ok(MODAL_LABELS.NOTIFICATIONS_MODAL || MODAL_LABELS.PREVIEW_MODAL, 'MODAL_LABELS exists');
@@ -400,8 +400,8 @@ test('19. List Item Reordering Swap Logic Integrity', async () => {
 });
 
 test('20. Notifications Direct Database Resources Integrity', async () => {
-  const { getNotificationList, getUnreadNotificationCount } = await import('../domains/social/server/notifications/notification-resources.server.js');
-  const { NOTIFICATION_TYPE_SET } = await import('../domains/social/utils/index.js');
+  const { getNotificationList, getUnreadNotificationCount } = await import('../domains/social/server/notifications.server.js');
+  const { NOTIFICATION_TYPE_SET } = await import('../domains/social/utils/constants.js');
   const { data: profiles } = await adminClient.from('profiles').select('id').limit(1);
   if (!profiles || profiles.length === 0) return;
 
@@ -428,7 +428,7 @@ test('21. Search Quality Events Clean Purge & Concurrency RPC Integrity', async 
 });
 
 test('22. Follow Relationship State & Optimistic Privacy Logic Integrity', async () => {
-  const { FOLLOW_STATUSES } = await import('../domains/social/utils/index.js');
+  const { FOLLOW_STATUSES } = await import('../domains/social/utils/constants.js');
   assert.equal(FOLLOW_STATUSES.ACCEPTED, 'accepted');
   assert.equal(FOLLOW_STATUSES.PENDING, 'pending');
 
@@ -438,7 +438,7 @@ test('22. Follow Relationship State & Optimistic Privacy Logic Integrity', async
 });
 
 test('23. Direct Social Proof Resources Integrity (Zero Deno Edge Hop)', async () => {
-  const { getMediaSocialProofResource, getAccountSocialProofResource } = await import('../domains/social/server/social-proof/resources.server.js');
+  const { getMediaSocialProofResource, getAccountSocialProofResource } = await import('../domains/social/server/social-proof.server.js');
   
   const mediaProof = await getMediaSocialProofResource({
     entityId: '550',
@@ -458,7 +458,7 @@ test('23. Direct Social Proof Resources Integrity (Zero Deno Edge Hop)', async (
 });
 
 test('24. Direct Reviews Read Resources Integrity (Zero Deno Edge Hop)', async () => {
-  const { getMediaReviewsResource, getListReviewsResource } = await import('../domains/reviews/server/read-resources.server.js');
+  const { getMediaReviewsResource, getListReviewsResource } = await import('../domains/reviews/server/resources.server.js');
 
   const mediaReviews = await getMediaReviewsResource({
     entityId: '550',

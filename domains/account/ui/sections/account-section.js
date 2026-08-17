@@ -1,16 +1,16 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 import Link from 'next/link';
-import { normalizeFeedbackContent, cn } from '@/shared/utils';
+import { normalizeFeedbackContent, cn } from '@/domains/shell/shared/utils';
 import Icon from '@/ui/primitives/icon';
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
+import { ACCOUNT_SECTION_SHELL_CLASS } from '@/domains/shell/shared/constants';
 import {
   PosterCardsSkeletonRow,
   ListCardsSkeletonGrid,
   ActivityItemsSkeletonList,
   ReviewCardsSkeletonList,
-} from '@/domains/account/ui/skeletons/account-section-skeletons';
+} from '@/domains/account/ui/skeletons';
 
 export const ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS = 'px-4';
 export const ACCOUNT_SECTION_HEADER_PADDING_CLASS = `min-h-14 ${ACCOUNT_SECTION_HORIZONTAL_PADDING_CLASS}`;

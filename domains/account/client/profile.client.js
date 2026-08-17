@@ -2,10 +2,12 @@
 
 import {
   clearPendingAccountBootstrap,
-  createCsrfHeaders,
   getPendingAccountBootstrap,
-} from '@/domains/auth/client';
-import { ensureAuthCsrfToken } from '@/core/modules/auth/http.client';
+} from '@/domains/auth/client/storage';
+import {
+  createAuthCsrfHeaders as createCsrfHeaders,
+} from '@/domains/auth/client/http';
+import { ensureAuthCsrfToken } from '@/modules/auth/http.client';
 import { createAccountAdapter, createAccountClient } from '@/modules/account';
 import {
   assertSupabaseResult,
@@ -17,8 +19,10 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import { validateUsername } from '@/domains/account/utils';
-import { cleanString, isValidUrl, normalizeValue } from '@/shared/utils';
+import {
+  validateUsername,
+} from '@/domains/account/utils/validation';
+import { cleanString, isValidUrl, normalizeValue } from '@/domains/shell/shared/utils';
 import {
   resolveAccountByUsername,
   fetchAccountProfile,

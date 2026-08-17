@@ -6,23 +6,26 @@ import {
   getPersonPosterPreferenceFilePath,
   setPersonPosterPreference,
 } from '@/domains/media/utils/poster-preferences';
-import { calculateAge, getBackgroundMovieCandidates } from '@/domains/media/utils/person-data';
-import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/shared/constants';
+import {
+  calculateAge,
+  getBackgroundMovieCandidates,
+} from '@/domains/media/utils/person-data';
+import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/domains/shell/shared/constants';
 import { Suspense, use } from 'react';
-import PersonAwards from '@/domains/media/ui/components/person/awards';
-import PersonAwardsSkeleton from '@/domains/media/ui/components/person/awards-skeleton';
-import PersonBio from '@/domains/media/ui/components/person/bio';
+import PersonAwards from '@/domains/media/ui/sections/awards-section';
+import PersonAwardsSkeleton from '@/domains/media/ui/skeletons';
+import PersonBio from '@/domains/media/ui/components/person-bio';
 import PersonFilmographySection from '@/domains/media/ui/sections/filmography-section';
-import PersonGallery from '@/domains/media/ui/components/person/gallery';
-import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import PersonTimeline from '@/domains/media/ui/components/person/timeline';
-import PersonTimelineSkeleton from '@/domains/media/ui/components/person/timeline-skeleton';
+import PersonGallery from '@/domains/media/ui/sections/gallery-section';
+import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
+import PersonTimeline from '@/domains/media/ui/sections/timeline-section';
+import PersonTimelineSkeleton from '@/domains/media/ui/skeletons';
 import { PersonDeferredContentSkeleton } from './loading';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
 import Registry from '@/app/(media)/registry';
-import AdaptiveImage from '@/ui/primitives/adaptive-image';
+import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
 import PersonGridFrame from '@/domains/media/ui/layouts/person-grid-frame';
-import { GridShellCrosshairs } from '@/ui/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 
 function getMovieBackdropSrc(credit) {
   return credit?.backdrop_path ? `${TMDB_IMG}/original${credit.backdrop_path}` : null;
@@ -131,7 +134,7 @@ function PersonMainContent({ person }) {
   const hasGallery = person?.images?.profiles?.length > 0;
   return (
     <>
-      {hasGallery ? <PersonGallery images={person.images} /> : null}
+      {hasGallery ? <PersonGallery images={person.images} type="person" /> : null}
       <PersonFilmographySection person={person} />
     </>
   );
