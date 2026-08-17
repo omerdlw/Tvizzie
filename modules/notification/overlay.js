@@ -61,7 +61,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden border border-white/10 bg-black/70 p-2 shadow-[0_18px_56px_rgba(0,0,0,0.40)] backdrop-blur-lg transition-[background-color,border-color,color,box-shadow] duration-300 ease-out',
+        'pointer-events-auto relative w-full overflow-hidden border border-white/10 bg-black/70 p-2 shadow-[0_18px_56px_rgba(0,0,0,0.40)] backdrop-blur-lg transition-all duration-300 ease-in-out',
         dismissible && 'touch-pan-y',
         theme.surface,
       )}

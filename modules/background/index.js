@@ -314,7 +314,7 @@ export function BackgroundOverlay() {
 
           {overlay && (
             <div
-              className="absolute inset-0 transition-opacity"
+              className="absolute inset-0 transition-all duration-300 ease-in-out"
               style={{
                 opacity: overlayOpacity,
                 backgroundColor: overlayColor,

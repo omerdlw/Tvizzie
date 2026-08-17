@@ -126,7 +126,7 @@ export class ErrorBoundaryCore extends React.Component {
           <button
             type="button"
             onClick={this.resetError}
-            className="bg-error hover:bg-error/90 px-4 py-2 text-xs font-medium text-black transition-colors"
+            className="bg-error hover:bg-error/90 px-4 py-2 text-xs font-medium text-black transition-all duration-300 ease-in-out"
           >
             Try Again
           </button>

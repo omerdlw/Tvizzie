@@ -76,7 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group isolation-isolate flex items-center gap-3 border border-white/5 backdrop-blur-sm hover:border-white/10 hover:bg-white/5',
+        'group isolation-isolate flex items-center gap-3 border transition-all duration-300 ease-in-out border-white/5 backdrop-blur-sm hover:border-white/10 hover:bg-white/5',
         compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >

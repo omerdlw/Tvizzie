@@ -223,7 +223,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5  px-3 text-left text-[13px] font-medium text-white/70 transition-[background-color,color,box-shadow] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/5 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full items-center gap-2.5  px-3 text-left text-[13px] font-medium text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/5 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -231,7 +231,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   );
 
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-white/55 transition-colors duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80',
+    'shrink-0 text-white/55 transition-all duration-300 ease-in-out group-hover:text-white/80',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,

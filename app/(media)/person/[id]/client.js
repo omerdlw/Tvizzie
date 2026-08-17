@@ -134,7 +134,7 @@ function PersonMainContent({ person }) {
   const hasGallery = person?.images?.profiles?.length > 0;
   return (
     <>
-      {hasGallery ? <PersonGallery images={person.images} type="person" /> : null}
+      {hasGallery ? <PersonGallery images={person.images} type="person" fullBleed /> : null}
       <PersonFilmographySection person={person} />
     </>
   );

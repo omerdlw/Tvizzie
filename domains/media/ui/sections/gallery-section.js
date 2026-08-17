@@ -9,9 +9,9 @@ import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair, GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
 
-export default function GallerySection({ images, type = 'movie' }) {
+export default function GallerySection({ images, type = 'movie', fullBleed = false }) {
   const { openModal } = useModal();
 
   const isPerson = type === 'person' || Boolean(images?.profiles && !images?.backdrops);
@@ -34,10 +34,16 @@ export default function GallerySection({ images, type = 'movie' }) {
             Gallery
           </h2>
         </div>
-        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
-          <GridCrosshair side="left" />
-          <GridCrosshair side="right" />
-        </div>
+        {fullBleed ? (
+          <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+            <GridShellCrosshairs />
+          </div>
+        ) : (
+          <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+            <GridCrosshair side="left" />
+            <GridCrosshair side="right" />
+          </div>
+        )}
       </div>
 
       <div className={MEDIA_DETAIL_SECTION_CONTENT_CLASS}>

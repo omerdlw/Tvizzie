@@ -16,6 +16,7 @@ import Client from '@/app/(media)/person/[id]/client';
 
 export async function generateMetadata({ params }) {
   const { media: person, response } = await loadMediaRouteData(params, getPersonBase);
+  if (!person) console.error('[generateMetadata person error]', response);
 
   if (!person || response.status === 404) {
     return { title: 'Person Not Found' };
@@ -39,7 +40,14 @@ export default async function PersonDetailPage({ params, searchParams }) {
   await delayMediaSkeletonPreview(searchParams);
   const { id, media: person, response } = await loadMediaRouteData(params, getPersonBase);
 
-  if (!person || response.status === 404) {
+  if (response?.status === 404) {
+    notFound();
+  }
+
+  if (!person) {
+    if (response?.status >= 500 || response?.error) {
+      throw new Error(`Failed to load person data (${response?.error || response?.status})`);
+    }
     notFound();
   }
 

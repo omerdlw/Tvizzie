@@ -296,7 +296,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-opacity duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-all duration-300 ease-in-out"
               aria-label="Close active top modal"
             />
           )}

@@ -17,10 +17,10 @@ import {
 } from './motion';
 
 export const CANCEL_BUTTON_CLASS =
-  'h-8 shrink-0 cursor-pointer border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white/70 transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/5 hover:text-white';
+  'h-8 shrink-0 cursor-pointer border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white/70 transition-all duration-300 ease-in-out hover:bg-white/5 hover:text-white';
 
 export const ACTION_BUTTON_CLASS = cn(
-  'h-8 shrink-0 cursor-pointer px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-[background-color,border-color,color,box-shadow,transform] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/10 disabled:text-white/50',
+  'h-8 shrink-0 cursor-pointer px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/10 disabled:text-white/50',
   INFO_ACTION_TONE_CLASS,
 );
 

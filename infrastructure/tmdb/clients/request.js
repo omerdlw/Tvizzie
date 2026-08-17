@@ -35,7 +35,7 @@ export function buildTmdbUrl(pathname, query = {}) {
 const LAST_KNOWN_GOOD_TMDB_CACHE = new Map();
 const MAX_FALLBACK_CACHE_ENTRIES = 500;
 
-async function executeRawTmdbRequest(pathname, { query, revalidate, tags } = {}) {
+async function fetchSingleTmdbRequest(pathname, { query, revalidate, tags } = {}) {
   const resolvedTtl = Math.max(Number(revalidate) || 600, 60);
   const tmdbUrl = buildTmdbUrl(pathname, query);
 
@@ -80,6 +80,18 @@ async function executeRawTmdbRequest(pathname, { query, revalidate, tags } = {})
   }
 }
 
+async function executeRawTmdbRequest(pathname, options = {}) {
+  let response = await fetchSingleTmdbRequest(pathname, options);
+
+  // Retry once on transient failures (5xx or timeout/network error)
+  if (response.status >= 500 || response.error) {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    response = await fetchSingleTmdbRequest(pathname, options);
+  }
+
+  return response;
+}
+
 export async function tmdbRequest(pathname, { query, revalidate, tags } = {}) {
   const normalizedPath = String(pathname || '').trim();
   const sortedQuery = query
@@ -114,26 +126,42 @@ export async function tmdbRequest(pathname, { query, revalidate, tags } = {}) {
             const firstKey = LAST_KNOWN_GOOD_TMDB_CACHE.keys().next().value;
             LAST_KNOWN_GOOD_TMDB_CACHE.delete(firstKey);
           }
-        } else if (LAST_KNOWN_GOOD_TMDB_CACHE.has(cacheKey)) {
+          return response;
+        }
+
+        if (LAST_KNOWN_GOOD_TMDB_CACHE.has(cacheKey)) {
           // Serve resilient stale cache if live call temporarily failed
           return LAST_KNOWN_GOOD_TMDB_CACHE.get(cacheKey);
         }
 
-        return response;
+        // For 404s, allow caching the negative response
+        if (response?.status === 404) {
+          return response;
+        }
+
+        // Do not cache transient errors (5xx, timeout, network failure) in memoryCache
+        const transientError = new Error(response?.error || 'TMDB request failed');
+        transientError.status = response?.status || 503;
+        transientError.response = response;
+        throw transientError;
       },
     });
 
     return result;
-  } catch {
-    // If loader threw unexpected exception, check resilient fallback
+  } catch (error) {
+    // If loader threw or failed, check resilient fallback first
     if (LAST_KNOWN_GOOD_TMDB_CACHE.has(cacheKey)) {
       return LAST_KNOWN_GOOD_TMDB_CACHE.get(cacheKey);
     }
 
+    if (error?.response) {
+      return error.response;
+    }
+
     return {
       data: null,
-      error: 'TMDB request failed',
-      status: 503,
+      error: error?.message || 'TMDB request failed',
+      status: error?.status || 503,
     };
   }
 }

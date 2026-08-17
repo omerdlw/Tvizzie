@@ -1,4 +1,4 @@
-export const TMDB_FETCH_TIMEOUT_MS = 4500;
+export const TMDB_FETCH_TIMEOUT_MS = 10000;
 
 export const TMDB_HEADERS = Object.freeze({
   accept: 'application/json',
