@@ -30,7 +30,7 @@ export function PersonAwardsSkeleton() {
 
       {/* Category / Filter Section Skeleton */}
       <section className="relative w-full">
-        <div className="flex w-full flex-wrap items-center gap-2 p-4">
+        <div className="flex w-full flex-wrap items-center gap-2 p-4 sm:p-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className={`h-8 min-w-0 flex-auto ${SOFT}`} />
           ))}
@@ -54,11 +54,11 @@ export function PersonAwardsSkeleton() {
               <div className={`h-16 w-12 shrink-0 ${S}`} />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <div className={`h-5 w-40 ${S}`} />
                   <div className={`h-4 w-12 ${SOFT}`} />
+                  <div className={`h-4 w-28 ${SOFT}`} />
                 </div>
-                <div className={`h-4 w-56 ${SOFT}`} />
-                <div className={`h-3 w-24 ${SOFT}`} />
+                <div className={`h-5 w-44 ${S}`} />
+                <div className={`h-3 w-32 ${SOFT}`} />
               </div>
             </div>
           ))}
@@ -140,7 +140,12 @@ export function TvSeasonRatingsSkeleton() {
   );
 }
 
+export function MovieAwardsSkeleton() {
+  return <PersonAwardsSkeleton />;
+}
+
 export default {
+  MovieAwardsSkeleton,
   PersonAwardsSkeleton,
   PersonTimelineSkeleton,
   TvSeasonRatingsSkeleton,

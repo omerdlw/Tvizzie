@@ -1,12 +1,14 @@
 import { createTitleDetailRoute } from '@/domains/media/server/title-route.server';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
+import { getMovieAwards } from '@/domains/media/server/movie-awards.server';
 
 import Client from '@/app/(media)/movie/[id]/client';
 
 const route = createTitleDetailRoute({
   Client,
   fallbackTitle: 'Movie Not Found',
+  getAwards: getMovieAwards,
   getBase: getMovieBase,
   getSecondary: getMovieSecondary,
   isDisplayable: isDisplayableMovie,

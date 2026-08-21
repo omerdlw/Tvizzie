@@ -116,11 +116,54 @@ function compareReleaseDate(first, second) {
   );
 }
 
+function scoreBackgroundCandidate(credit) {
+  if (!credit?.backdrop_path) return -1000;
+
+  const voteCount = credit.vote_count || 0;
+  const voteAverage = credit.vote_average || 0;
+  const popularity = credit.popularity || 0;
+  const isTv = credit.media_type === 'tv';
+  const episodeCount = Number(credit.episode_count) || 0;
+  const order = typeof credit.order === 'number' ? credit.order : 10;
+  const char = String(credit.character || '').toLowerCase();
+
+  let roleWeight = 1.0;
+  if (isTv) {
+    if (episodeCount >= 20) roleWeight = 2.0;
+    else if (episodeCount >= 10) roleWeight = 1.6;
+    else if (episodeCount >= 5) roleWeight = 1.2;
+    else if (episodeCount <= 2) roleWeight = 0.25;
+    else roleWeight = 0.7;
+  } else {
+    if (order === 0) roleWeight = 1.6;
+    else if (order <= 2) roleWeight = 1.3;
+    else if (order <= 5) roleWeight = 1.0;
+    else if (order <= 10) roleWeight = 0.7;
+    else roleWeight = 0.3;
+  }
+
+  if (
+    char.includes('uncredited') ||
+    char.includes('cameo') ||
+    char.includes('self') ||
+    char.includes('archive')
+  ) {
+    roleWeight *= 0.2;
+  }
+
+  const impactScore =
+    Math.log10(Math.max(1, voteCount)) * 25 +
+    Math.log10(Math.max(1, popularity)) * 10 +
+    voteAverage * 5;
+
+  return impactScore * roleWeight;
+}
+
 function compareBackgroundCandidate(first, second) {
   return (
     Number(Boolean(second?.backdrop_path)) - Number(Boolean(first?.backdrop_path)) ||
+    scoreBackgroundCandidate(second) - scoreBackgroundCandidate(first) ||
     comparePopularity(first, second) ||
-    compareReleaseDate(first, second) ||
     String(first?.id || '').localeCompare(String(second?.id || ''))
   );
 }

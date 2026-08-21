@@ -15,11 +15,13 @@ import {
 import { getTvBase, getTvSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
+import { getTvAwards } from '@/domains/media/server/movie-awards.server';
 import Client from '@/app/(media)/tv/[id]/client';
 
 const route = createTitleDetailRoute({
   Client,
   fallbackTitle: 'TV Series Not Found',
+  getAwards: getTvAwards,
   getBase: getTvBase,
   getSecondary: getTvSecondary,
   isDisplayable: isDisplayableTv,
@@ -57,10 +59,12 @@ export default async function TvDetailPage({ params, searchParams }) {
         seasons: tv.seasons,
       }),
   );
+  const awardsPromise = getTvAwards(tv.id).catch(() => null);
 
   return (
     <Client
       key={`tv-${tv.id}`}
+      awardsPromise={awardsPromise}
       computed={getMediaComputedData(tv)}
       mediaType="tv"
       movie={getClientTvData(tv)}

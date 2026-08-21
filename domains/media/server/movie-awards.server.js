@@ -4,8 +4,8 @@ import { cache } from 'react';
 
 const AWARDS_REVALIDATE_SECONDS = 60 * 60 * 24;
 const AWARDS_TIMEOUT_MS = 10_000;
-const PERSON_ID_PATTERN = /^\d+$/;
-const TMDB_AWARDS_URL = 'https://www.themoviedb.org/person';
+const MEDIA_ID_PATTERN = /^\d+$/;
+const TMDB_BASE_URL = 'https://www.themoviedb.org';
 
 function createEmptyAwards() {
   return {
@@ -107,10 +107,10 @@ function createAwardsPayload(rawHtml) {
       const projectLinkMatch = row.match(
         /<a[^>]*href="(\/(?:movie|tv)\/(\d+)[^"]*)"[^>]*>([\s\S]*?)<\/a>/,
       );
-      let mediaType = null;
-      let projectId = null;
-      let project = null;
       let poster = null;
+      let project = null;
+      let projectId = null;
+      let mediaType = null;
 
       if (projectLinkMatch) {
         const pHref = projectLinkMatch[1];
@@ -124,17 +124,40 @@ function createAwardsPayload(rawHtml) {
         project = altMatch ? decodeHtml(altMatch[1]) : null;
       }
 
+      const personMatches = [
+        ...row.matchAll(
+          /<a[^>]*href="\/person\/(\d+)[^"]*"[^>]*title="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g,
+        ),
+      ];
+
+      const recipients = [];
+      const seenPersonIds = new Set();
+      for (const pm of personMatches) {
+        const personId = pm[1];
+        if (seenPersonIds.has(personId)) continue;
+        seenPersonIds.add(personId);
+        const personName = cleanText(pm[2]);
+        const imgMatch = pm[3].match(/<img[^>]+src="([^"]+)"/i);
+        const profile = imgMatch ? imgMatch[1] : null;
+        recipients.push({
+          id: personId,
+          name: personName,
+          profile,
+        });
+      }
+
       const categories = yearsByValue.get(year) || [];
       categories.push({
         category,
         categoryHref,
         ceremony,
         ceremonyHref,
-        key: `${ceremonyHref || categoryHref}-${categories.length}`,
+        key: `${ceremonyHref}-${categoryHref}-${categories.length}`,
         mediaType,
         poster,
         project,
         projectId,
+        recipients,
         type,
       });
       yearsByValue.set(year, categories);
@@ -168,8 +191,9 @@ function createAwardsPayload(rawHtml) {
   };
 }
 
-async function fetchTmdbAwards(personId) {
-  const response = await fetch(`${TMDB_AWARDS_URL}/${personId}/awards?language=en-US`, {
+async function fetchTmdbMediaAwards(mediaType, id) {
+  const resolvedType = mediaType === 'tv' ? 'tv' : 'movie';
+  const response = await fetch(`${TMDB_BASE_URL}/${resolvedType}/${id}/awards?language=en-US`, {
     headers: {
       Accept: 'text/html,application/xhtml+xml',
       'Accept-Language': 'en-US,en;q=0.9',
@@ -177,34 +201,56 @@ async function fetchTmdbAwards(personId) {
     },
     next: {
       revalidate: AWARDS_REVALIDATE_SECONDS,
-      tags: [`person-awards:${personId}`],
+      tags: [`${resolvedType}-awards:${id}`],
     },
     signal: AbortSignal.timeout(AWARDS_TIMEOUT_MS),
   });
 
   if (!response.ok) {
-    throw new Error(`TMDB awards request failed with status ${response.status}`);
+    throw new Error(`TMDB ${resolvedType} awards request failed with status ${response.status}`);
   }
 
   return response.text();
 }
 
-export const getPersonAwards = cache(async (personId) => {
-  const normalizedPersonId = String(personId || '').trim();
-  if (!PERSON_ID_PATTERN.test(normalizedPersonId)) return createEmptyAwards();
+export const getMediaAwards = cache(async (mediaType, id) => {
+  const normalizedId = String(id || '').trim();
+  if (!MEDIA_ID_PATTERN.test(normalizedId)) return createEmptyAwards();
 
-  return createAwardsPayload(await fetchTmdbAwards(normalizedPersonId));
+  try {
+    return createAwardsPayload(await fetchTmdbMediaAwards(mediaType, normalizedId));
+  } catch {
+    return createEmptyAwards();
+  }
 });
 
-export async function getPersonAwardsServer({ personId }) {
-  if (!personId) return { success: false, error: 'missing_person_id' };
+export const getMovieAwards = cache(async (movieId) => {
+  return getMediaAwards('movie', movieId);
+});
+
+export const getTvAwards = cache(async (tvId) => {
+  return getMediaAwards('tv', tvId);
+});
+
+export async function getMediaAwardsServer({ id, mediaType = 'movie', movieId, tvId }) {
+  const resolvedId = id || movieId || tvId;
+  const resolvedType = mediaType === 'tv' || Boolean(tvId) ? 'tv' : 'movie';
+  if (!resolvedId) return { success: false, error: 'missing_id' };
 
   try {
     return {
       success: true,
-      data: await getPersonAwards(personId),
+      data: await getMediaAwards(resolvedType, resolvedId),
     };
   } catch {
     return { success: false, error: 'awards_unavailable' };
   }
+}
+
+export async function getMovieAwardsServer({ movieId }) {
+  return getMediaAwardsServer({ mediaType: 'movie', id: movieId });
+}
+
+export async function getTvAwardsServer({ tvId }) {
+  return getMediaAwardsServer({ mediaType: 'tv', id: tvId });
 }

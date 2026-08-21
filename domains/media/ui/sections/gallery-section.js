@@ -97,10 +97,16 @@ export default function GallerySection({ images, type = 'movie', fullBleed = fal
           })}
         </Carousel>
       </div>
-      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
-        <GridCrosshair side="left" />
-        <GridCrosshair side="right" />
-      </div>
+      {fullBleed ? (
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+          <GridShellCrosshairs />
+        </div>
+      ) : (
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
+        </div>
+      )}
     </section>
   );
 }

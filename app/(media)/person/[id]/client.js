@@ -225,11 +225,6 @@ function PersonView({
               }`}
               key={`person-view-${activeView}`}
             >
-              {activeView !== 'main' ? (
-                <div className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-                  <GridShellCrosshairs />
-                </div>
-              ) : null}
               {activeView === 'awards' ? (
                 <Suspense fallback={<PersonAwardsSkeleton />}>
                   <PersonAwards personId={person.id} awardsPromise={awardsPromise} />

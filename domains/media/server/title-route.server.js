@@ -127,6 +127,7 @@ function createTitleReviewsMetadata(media, { fallbackTitle }) {
 export function createTitleDetailRoute({
   Client,
   fallbackTitle,
+  getAwards,
   getBase,
   getSecondary,
   isDisplayable,
@@ -147,10 +148,12 @@ export function createTitleDetailRoute({
       const secondaryDataPromise = getSecondary(id).then(
         (secondaryResponse) => secondaryResponse?.data || {},
       );
+      const awardsPromise = typeof getAwards === 'function' ? getAwards(id).catch(() => null) : null;
 
       return (
         <Client
           key={`${mediaType}-${media.id}`}
+          awardsPromise={awardsPromise}
           computed={getMediaComputedData(media)}
           mediaType={mediaType}
           movie={media}

@@ -81,6 +81,9 @@ export default function PersonFilmographySection({ person }) {
           ))}
         </div>
       </div>
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
+        <GridShellCrosshairs />
+      </div>
     </section>
   );
 }

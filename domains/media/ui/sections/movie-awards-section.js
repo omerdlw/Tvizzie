@@ -1,12 +1,12 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
-import MediaThumb from '../components/media-thumb';
-import { getPersonAwardsServer } from '@/domains/media/server/person-awards.server.js';
+import { getMediaAwardsServer } from '@/domains/media/server/movie-awards.server.js';
 import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import MediaThumb from '../components/media-thumb';
 import { cn } from '@/domains/shell/shared/utils';
 
 function buildTimeline(organizations = []) {
@@ -24,6 +24,7 @@ function buildTimeline(organizations = []) {
           poster: award.poster,
           project: award.project,
           projectId: award.projectId,
+          recipients: award.recipients || [],
           type: award.type,
           year: yearObj.year || '—',
         })),
@@ -35,7 +36,7 @@ function buildTimeline(organizations = []) {
     );
 }
 
-function usePersonAwards({ personId, awardsPromise }) {
+function useMediaAwards({ mediaId, mediaType = 'movie', awardsPromise }) {
   const initialAwardsData = awardsPromise ? use(awardsPromise) : null;
   const [awardsData, setAwardsData] = useState(initialAwardsData);
   const [status, setStatus] = useState(initialAwardsData ? 'ready' : 'loading');
@@ -47,12 +48,12 @@ function usePersonAwards({ personId, awardsPromise }) {
       return;
     }
 
-    if (!personId) return;
+    if (!mediaId) return;
 
     let isCurrent = true;
     setStatus('loading');
 
-    void getPersonAwardsServer({ personId }).then((response) => {
+    void getMediaAwardsServer({ id: mediaId, mediaType }).then((response) => {
       if (!isCurrent) return;
       if (!response?.success) {
         setAwardsData(null);
@@ -66,7 +67,7 @@ function usePersonAwards({ personId, awardsPromise }) {
     return () => {
       isCurrent = false;
     };
-  }, [personId, initialAwardsData]);
+  }, [mediaId, mediaType, initialAwardsData]);
 
   const allItems = useMemo(() => buildTimeline(awardsData?.organizations), [awardsData]);
 
@@ -153,7 +154,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`flex w-full items-center justify-center gap-1.5 cursor-pointer truncate border border-white/5 px-3.5 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
+        className={`flex w-full items-center justify-center gap-1.5 cursor-pointer truncate border border-white/5 px-3 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
           isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
@@ -175,24 +176,47 @@ function AwardFilterPill({
   );
 }
 
-function AwardCard({ award }) {
-  const isWin = award.type === 'Win';
-  const mediaType = award.mediaType === 'tv' ? 'tv' : 'movie';
-  const hasProjectLink = Boolean(award.projectId);
+function RecipientChip({ recipient }) {
+  return (
+    <Link
+      href={`/person/${recipient.id}`}
+      className="group/recipient inline-flex items-center gap-2 border border-white/5 bg-white/5 py-1 pr-2.5 pl-1 text-xs font-medium text-white/80 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
+    >
+      {recipient.profile ? (
+        <div className="relative size-6 shrink-0 overflow-hidden bg-black/40">
+          <AdaptiveImage
+            mode="img"
+            src={recipient.profile}
+            alt={recipient.name}
+            className="size-full object-cover"
+            wrapperClassName="size-full"
+          />
+        </div>
+      ) : (
+        <div className="flex size-6 shrink-0 items-center justify-center bg-white/10 text-white/50">
+          <Icon icon="solar:user-linear" size={14} />
+        </div>
+      )}
+      <span className="truncate group-hover/recipient:underline">{recipient.name}</span>
+    </Link>
+  );
+}
 
-  const cardContent = (
+function MovieAwardCard({ award }) {
+  const isWin = award.type === 'Win';
+  const recipients = award.recipients || [];
+
+  return (
     <div
       className={cn(
         'group relative flex items-start gap-3 border p-3.5 backdrop-blur-sm transition-all duration-300 ease-in-out sm:gap-4 sm:p-4',
-        isWin
-          ? 'border-warning/40 hover:border-warning/70 hover:bg-white/5'
-          : 'border-white/5 hover:border-white/15 hover:bg-white/5',
+        isWin ? 'border-warning/40 hover:border-warning/70 hover:bg-white/5' : 'border-white/5 hover:border-white/15 hover:bg-white/5',
       )}
     >
       {award.poster ? (
         <MediaThumb
           poster={award.poster}
-          alt={award.project || award.category || 'Project'}
+          alt={award.project || award.category || 'Award'}
           className="h-auto w-14 shrink-0 sm:w-16"
         />
       ) : award.organizationLogo ? (
@@ -243,33 +267,26 @@ function AwardCard({ award }) {
 
         <div className="flex flex-col gap-0.5">
           <h3 className="text-sm font-semibold text-white sm:text-base">{award.category}</h3>
-          {award.project ? (
-            <p className="truncate text-xs font-medium text-white/70 group-hover:text-white sm:text-sm">
-              {award.project}
-              {award.ceremony && award.ceremony !== award.organization ? ` · ${award.ceremony}` : ''}
-            </p>
-          ) : (
-            <p className="truncate text-xs text-white/50 sm:text-sm">
-              {award.organization}
-            </p>
-          )}
+          <p className="truncate text-xs text-white/50 sm:text-sm">
+            {award.organization}
+            {award.ceremony && award.ceremony !== award.organization ? ` · ${award.ceremony}` : ''}
+          </p>
         </div>
+
+        {recipients.length > 0 ? (
+          <div className="mt-1 flex flex-col gap-1.5 pt-2 border-t border-white/5">
+            <span className="text-[10px] font-semibold tracking-wider text-white/40 uppercase sm:text-[11px]">
+              {recipients.length === 1 ? 'Nominated Person' : 'Shared With'}
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {recipients.map((recipient) => (
+                <RecipientChip key={recipient.id} recipient={recipient} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
-
-      {hasProjectLink && (
-        <div className="shrink-0 self-center pr-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <Icon icon="solar:alt-arrow-right-bold" size={18} className="text-white/50" />
-        </div>
-      )}
     </div>
-  );
-
-  return hasProjectLink ? (
-    <Link href={`/${mediaType}/${award.projectId}`} className="block cursor-pointer">
-      {cardContent}
-    </Link>
-  ) : (
-    cardContent
   );
 }
 
@@ -284,11 +301,13 @@ function AwardsMessage({ children }) {
   );
 }
 
-export default function PersonAwards({ personId, awardsPromise }) {
+export default function MovieAwards({ movieId, tvId, mediaId, mediaType = 'movie', awardsPromise }) {
+  const resolvedMediaId = mediaId || movieId || tvId;
   const { academyWins, allItems, emmyWins, nominations, organizations, status, wins } =
-    usePersonAwards({
+    useMediaAwards({
       awardsPromise,
-      personId,
+      mediaId: resolvedMediaId,
+      mediaType,
     });
   const [activeFilter, setActiveFilter] = useState('all');
 
@@ -306,8 +325,9 @@ export default function PersonAwards({ personId, awardsPromise }) {
     return <AwardsMessage>No awards information found</AwardsMessage>;
   }
 
-  const majorWinsCount = academyWins > 0 ? academyWins : emmyWins;
-  const majorWinsLabel = academyWins > 0 ? 'Oscars' : 'Emmys';
+  const isTv = mediaType === 'tv';
+  const majorWinsCount = isTv ? emmyWins : academyWins;
+  const majorWinsLabel = isTv ? 'Emmys' : 'Oscars';
 
   return (
     <section className="relative w-full">
@@ -338,13 +358,14 @@ export default function PersonAwards({ personId, awardsPromise }) {
           )}
         </div>
 
-        {/* Full-width hero bottom border line */}
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
+        {/* Hero bottom border line */}
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
         </div>
       </div>
 
-      {/* Category / Filter Section */}
+      {/* Filter Section */}
       <section className="relative w-full">
         <div className="flex w-full flex-wrap items-center gap-2 p-4 sm:p-6">
           <AwardFilterPill
@@ -375,8 +396,9 @@ export default function PersonAwards({ personId, awardsPromise }) {
             );
           })}
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-          <GridShellCrosshairs />
+        <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+          <GridCrosshair side="left" />
+          <GridCrosshair side="right" />
         </div>
       </section>
 
@@ -384,12 +406,13 @@ export default function PersonAwards({ personId, awardsPromise }) {
       <div className="w-full p-6">
         <div key={activeFilter} className="flex w-full flex-col gap-3">
           {filteredItems.map((award) => (
-            <AwardCard key={`${activeFilter}-${award.key}`} award={award} />
+            <MovieAwardCard key={`${activeFilter}-${award.key}`} award={award} />
           ))}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10 backdrop-blur-sm">
-        <GridShellCrosshairs />
+      <div className="pointer-events-none absolute right-px bottom-0 left-px h-px bg-white/10 backdrop-blur-sm">
+        <GridCrosshair side="left" />
+        <GridCrosshair side="right" />
       </div>
     </section>
   );

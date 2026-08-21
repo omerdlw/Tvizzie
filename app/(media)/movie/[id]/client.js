@@ -29,7 +29,8 @@ import VideosSection from '@/domains/media/ui/sections/videos-section';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
 import TvSeasonsSection from '@/domains/media/ui/sections/seasons-section';
 import TvSeasonRatings from '@/domains/media/ui/components/tv-season-ratings';
-import TvSeasonRatingsSkeleton from '@/domains/media/ui/skeletons';
+import TvSeasonRatingsSkeleton, { MovieAwardsSkeleton } from '@/domains/media/ui/skeletons';
+import MovieAwards from '@/domains/media/ui/sections/movie-awards-section';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
 import Registry from '@/app/(media)/registry';
 import MediaGridFrame from '@/domains/media/ui/layouts/media-grid-frame';
@@ -103,6 +104,7 @@ async function resolveFirstLoadablePosterFilePath(candidates = []) {
 }
 
 export default function Client({
+  awardsPromise,
   computed,
   mediaType = 'movie',
   movie,
@@ -267,6 +269,7 @@ export default function Client({
       mediaType={mediaType}
       movie={resolvedMovie}
       ratingsPromise={ratingsPromise}
+      awardsPromise={awardsPromise}
       reviewState={reviewState}
       secondaryDataPromise={secondaryDataPromise}
       setReviewState={setReviewState}
@@ -474,16 +477,17 @@ function MovieSecondaryContent({
 }
 
 function MovieView({
-  onSetMoviePoster,
-  onSetMovieBackground,
-  onResetMoviePoster,
-  onResetMovieBackground,
-  canResetMoviePoster,
-  canResetMovieBackground,
+  awardsPromise,
   backgroundImage,
+  canResetMovieBackground,
+  canResetMoviePoster,
   computed,
   mediaType = 'movie',
   movie,
+  onResetMovieBackground,
+  onResetMoviePoster,
+  onSetMovieBackground,
+  onSetMoviePoster,
   ratingsPromise,
   reviewState,
   secondaryDataPromise,
@@ -498,6 +502,8 @@ function MovieView({
     movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
   const isRatingsView = mediaType === 'tv' && activeView === 'ratings' && Boolean(ratingsPromise);
   const hasRatingsView = mediaType === 'tv' && Boolean(ratingsPromise);
+  const isAwardsView = activeView === 'awards';
+  const hasAwardsView = Boolean(awardsPromise) || Boolean(movie?.id);
   const ratingSeasonCount = (Array.isArray(movie?.seasons) ? movie.seasons : []).filter(
     (season) => Number(season?.season_number) > 0,
   ).length;
@@ -534,9 +540,11 @@ function MovieView({
         />
         <div
           style={ratingsLayoutStyle}
-          className={`relative z-10 mx-auto flex w-full flex-col pb-12 [overflow-anchor:none] ${
+          className={`relative z-10 mx-auto flex w-full flex-col ${
+            isRatingsView || isAwardsView ? 'lg:pb-0' : 'pb-12'
+          } [overflow-anchor:none] ${
             isRatingsView
-              ? 'lg:w-[var(--ratings-shell-width)] lg:max-w-none lg:pb-0'
+              ? 'lg:w-[var(--ratings-shell-width)] lg:max-w-none'
               : PAGE_SHELL_MAX_WIDTH_CLASS
           }`}
         >
@@ -553,8 +561,8 @@ function MovieView({
                 topContent={
                   <CollectionActions
                     media={collectionMedia}
-                    additionalActions={
-                      hasRatingsView
+                    additionalActions={[
+                      ...(hasRatingsView
                         ? [
                             {
                               active: isRatingsView,
@@ -564,8 +572,19 @@ function MovieView({
                               onClick: () => setActiveView(isRatingsView ? 'main' : 'ratings'),
                             },
                           ]
-                        : []
-                    }
+                        : []),
+                      ...(hasAwardsView
+                        ? [
+                            {
+                              active: isAwardsView,
+                              icon: isAwardsView ? 'solar:arrow-left-bold' : 'solar:cup-star-bold',
+                              key: 'awards',
+                              label: isAwardsView ? 'Back to Details' : 'Awards',
+                              onClick: () => setActiveView(isAwardsView ? 'main' : 'awards'),
+                            },
+                          ]
+                        : []),
+                    ]}
                   />
                 }
                 writers={writers}
@@ -581,6 +600,16 @@ function MovieView({
                 <div>
                   <Suspense fallback={<TvSeasonRatingsSkeleton />}>
                     <TvSeasonRatings ratingsPromise={ratingsPromise} />
+                  </Suspense>
+                </div>
+              ) : isAwardsView ? (
+                <div>
+                  <Suspense fallback={<MovieAwardsSkeleton />}>
+                    <MovieAwards
+                      mediaId={movie.id}
+                      mediaType={mediaType}
+                      awardsPromise={awardsPromise}
+                    />
                   </Suspense>
                 </div>
               ) : (
@@ -626,7 +655,7 @@ function MovieView({
             </div>
           </div>
 
-          {!isRatingsView ? (
+          {!isRatingsView && !isAwardsView ? (
             <div className="w-full">
               <MediaReviews
                 entityId={movie.id}
@@ -643,13 +672,13 @@ function MovieView({
             </div>
           ) : null}
 
-          {isRatingsView ? (
+          {isRatingsView || isAwardsView ? (
             <div className="hidden lg:ml-96 lg:block lg:border-l lg:border-white/10 lg:pb-12">
               <NavHeightSpacer />
             </div>
           ) : null}
         </div>
-        <NavHeightSpacer className={isRatingsView ? 'lg:hidden' : ''} />
+        <NavHeightSpacer className={isRatingsView || isAwardsView ? 'lg:hidden' : ''} />
       </PageGradientShell>
     </>
   );
