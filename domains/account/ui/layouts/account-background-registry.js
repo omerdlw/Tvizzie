@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRegistry } from '@/modules/registry';
-import { resolveVersionedImageUrl } from '@/domains/shell/shared/utils';
+import { resolveVersionedImageUrl } from '@/shared/image-policy';
 
 export default function AccountBackgroundRegistry({ bannerUrl = null }) {
   const heroBannerSrc = useMemo(
@@ -15,12 +15,14 @@ export default function AccountBackgroundRegistry({ bannerUrl = null }) {
 
   const backgroundConfig = useMemo(
     () =>
-      heroBannerSrc &&
-      {
-        image: heroBannerSrc,
-        leftGradient: 3,
-        rightGradient: 3,
-      }[heroBannerSrc],
+      heroBannerSrc
+        ? {
+            image: heroBannerSrc,
+            leftGradient: 3,
+            rightGradient: 3,
+          }
+        : null,
+    [heroBannerSrc],
   );
 
   useRegistry({ background: backgroundConfig });

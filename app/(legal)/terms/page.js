@@ -1,6 +1,4 @@
-export const dynamic = 'force-dynamic';
-
-import TermsClient from '@/app/(legal)/terms/client';
+import TermsDocument from '@/domains/legal/ui/documents/terms-document';
 
 export const metadata = {
   title: 'Terms of Service',
@@ -11,5 +9,5 @@ export const metadata = {
 };
 
 export default function TermsPage() {
-  return <TermsClient />;
+  return <TermsDocument />;
 }

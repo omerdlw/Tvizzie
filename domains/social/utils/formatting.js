@@ -1,4 +1,4 @@
-import { normalizeValue as normalizeActivityKeyPart } from '@/domains/shell/shared/utils';
+import { normalizeValue as normalizeActivityKeyPart } from '@/shared/normalize';
 
 export { normalizeActivityKeyPart };
 

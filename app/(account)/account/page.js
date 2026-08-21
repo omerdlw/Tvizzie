@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
-import { getCurrentAccountOverviewRouteData } from '@/domains/account/server/routes.server';
-import Client from '@/app/(account)/account/client';
+import { getCurrentAccountOverviewRouteData } from '@/domains/account/server/page-data';
+import AccountOverviewView from '@/domains/account/ui/pages/account-overview';
 
 export default async function AccountPage() {
   const routeData = await getCurrentAccountOverviewRouteData();
@@ -15,7 +15,7 @@ export default async function AccountPage() {
   // bootstrapped. Render the client bootstrapper instead of bouncing that
   // authenticated request back to /sign-in.
   if (routeData?.initialResolvedUserId) {
-    return <Client routeData={routeData} />;
+    return <AccountOverviewView routeData={routeData} />;
   }
 
   redirect('/sign-in');

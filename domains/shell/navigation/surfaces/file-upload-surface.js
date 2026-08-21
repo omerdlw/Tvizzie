@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useId, useRef, useState } from 'react';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
 
 const DEFAULT_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';

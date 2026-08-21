@@ -1,13 +1,13 @@
 'use client';
 
 import { memo } from 'react';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import { cn } from '@/domains/shell/shared/utils';
+import { TMDB_IMG } from '@/shared/constants';
+import { cn } from '@/ui/class-names';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 function getPreviewImage(item) {

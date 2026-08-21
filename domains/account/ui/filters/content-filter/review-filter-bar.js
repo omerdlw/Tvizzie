@@ -1,9 +1,7 @@
 'use client';
 
-import {
-  REVIEW_SORT_MODE,
-} from '@/domains/reviews/utils/constants';
-import { cn } from '@/domains/shell/shared/utils';
+import { REVIEW_SORT_MODE } from '@/domains/reviews/utils/constants';
+import { cn } from '@/ui/class-names';
 
 import {
   RATING_MODE_OPTIONS,

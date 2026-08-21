@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 
-import { FullscreenState } from '@/domains/shell/shared/components/feedback/fullscreen-state';
-import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
+import { FullscreenState } from '@/ui/feedback/fullscreen-state';
+import { EVENT_TYPES, globalEvents } from '@/shared/events';
 import { getErrorReporter } from '@/modules/error-boundary/reporter';
 
 export default function GlobalError({ error, reset }) {

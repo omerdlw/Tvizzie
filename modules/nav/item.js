@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { useBackgroundActions, useBackgroundState } from '@/modules/background/context';
-import { useElementHeight, useNavBadge } from '@/modules/nav/hooks';
+import { useElementHeight } from '@/modules/nav/hooks/use-element-height';
+import { useNavBadge } from '@/modules/nav/hooks/use-nav-badge';
 import {
   NAV_BADGE_TRANSITION,
   NAV_CARD_SPRING,
@@ -13,7 +14,7 @@ import {
   NAV_PEEK_SPRING,
   textCrossfadeVariants,
 } from '@/modules/nav/motion';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import Iconify from '@/ui/primitives/icon';
 
 import { NavActionsContainer } from './actions';

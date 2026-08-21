@@ -8,12 +8,8 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import {
-  scheduleAccountSummaryRefresh,
-} from '@/domains/account/client/profile.client';
-import {
-  FOLLOW_STATUSES,
-} from '@/domains/social/utils/constants';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
+import { FOLLOW_STATUSES } from '@/domains/social/utils/constants';
 import {
   createEmptyRelationshipState,
   normalizeLiveFollowPayload,

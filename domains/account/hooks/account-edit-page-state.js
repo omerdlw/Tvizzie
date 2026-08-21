@@ -3,38 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  AUTH_ROUTES,
-  buildAuthHref,
-  getCurrentPathWithSearch,
-} from '@/domains/auth/utils/routes';
-import {
-  normalizeOAuthProvider,
-} from '@/domains/auth/utils/oauth';
-import {
-  uploadAccountMediaFile,
-} from '@/domains/account/client/profile.client';
-import {
-  useAccountEditData,
-} from '@/domains/account/hooks/account-edit-data.hooks';
-import {
-  useAccountSecurityActions,
-} from '@/domains/account/hooks/security.hooks';
-import {
-  ACCOUNT_MEDIA_UPLOAD_CONFIG,
-} from '@/domains/account/utils/constants';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils/routes';
+import { normalizeOAuthProvider } from '@/domains/auth/utils/oauth';
+import { uploadAccountMediaFile } from '@/domains/account/client/profile';
+import { useAccountEditData } from '@/domains/account/hooks/account-edit-data';
+import { useAccountSecurityActions } from '@/domains/account/hooks/security';
+import { ACCOUNT_MEDIA_UPLOAD_CONFIG } from '@/domains/account/utils/constants';
 import {
   INITIAL_DELETE_FLOW,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
 } from '@/domains/account/utils/security';
-import {
-  clearAccountFeedback,
-  emitAccountFeedback,
-} from '@/domains/account/utils/feedback';
-import {
-  getAvatarFallback,
-} from '@/domains/account/utils/avatar';
+import { clearAccountFeedback, emitAccountFeedback } from '@/domains/account/utils/feedback';
+import { getAvatarFallback } from '@/domains/account/utils/avatar';
 import {
   logDataError,
   normalizeEmail,

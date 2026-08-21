@@ -4,43 +4,28 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useState,
   useMemo,
   useRef,
   useSyncExternalStore,
 } from 'react';
-import { DEFAULT_SOURCE, DYNAMIC_SOURCE, HISTORY_LIMIT, REGISTRY_TYPES } from './constants';
+import { DEFAULT_SOURCE, DYNAMIC_SOURCE, REGISTRY_TYPES } from './constants';
 import {
   applyOperation,
-  createRecordKey,
   createInitialRegistries,
   createRegisterOperation,
-  createTimerKey,
   createUnregisterOperation,
   hasOperationEffect,
   isValidRegistryTarget,
-  removeSourceRecord,
   resolveEffectiveOperations,
   resolveEntryValue,
-  resolveHistoryLimit,
   runScopedBatch,
-  summarizeHistoryValue,
-  toSourceRecord,
 } from './store';
 
 const NOOP = () => {};
 const DEFAULT_REGISTRY_ACTIONS = Object.freeze({
   batch: (fn) => (typeof fn === 'function' ? fn({ register: NOOP, unregister: NOOP }) : 0),
-  clearHistory: NOOP,
   register: NOOP,
-  reset: NOOP,
   unregister: NOOP,
-});
-
-const DEFAULT_REGISTRY_STATE = Object.freeze({
-  entries: {},
-  history: [],
 });
 
 const DEFAULT_REGISTRY_SUBSCRIPTION = Object.freeze({
@@ -49,26 +34,13 @@ const DEFAULT_REGISTRY_SUBSCRIPTION = Object.freeze({
   subscribe: () => NOOP,
 });
 
-const DEFAULT_REGISTRY_HISTORY = Object.freeze({
-  clearHistory: NOOP,
-  enabled: false,
-  history: [],
-});
-
 const RegistryActionsContext = createContext(null);
-const RegistryStateContext = createContext(null);
 const RegistrySubscriptionContext = createContext(null);
-const RegistryHistoryContext = createContext(null);
 
 export { REGISTRY_TYPES };
 
-export function RegistryProvider({ children, enableHistory = true }) {
-  const historyEnabled = Boolean(enableHistory);
-  const [registries, setRegistries] = useState(createInitialRegistries);
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const registriesRef = useRef(registries);
-  const expiryTimersRef = useRef(new Map());
-  const historyRef = useRef([]);
+export function RegistryProvider({ children }) {
+  const registriesRef = useRef(createInitialRegistries());
   const listenersRef = useRef(new Map());
   const entrySnapshotsRef = useRef(new Map());
   const valueSnapshotsRef = useRef(new Map());
@@ -91,96 +63,12 @@ export function RegistryProvider({ children, enableHistory = true }) {
     if (previousState === nextState) return;
 
     registriesRef.current = nextState;
-    setRegistries(nextState);
 
     Object.keys(nextState).forEach((type) => {
       if (previousState[type] !== nextState[type]) {
         listenersRef.current.get(type)?.forEach((listener) => listener());
       }
     });
-  }, []);
-
-  const appendHistory = useCallback(
-    (entry) => {
-      if (!historyEnabled) return;
-
-      const nextEntry = {
-        timestamp: Date.now(),
-        ...entry,
-      };
-
-      const nextHistory = [...historyRef.current, nextEntry];
-
-      if (nextHistory.length > HISTORY_LIMIT) {
-        historyRef.current = nextHistory.slice(nextHistory.length - HISTORY_LIMIT);
-        setHistoryVersion((prev) => prev + 1);
-        return;
-      }
-
-      historyRef.current = nextHistory;
-      setHistoryVersion((prev) => prev + 1);
-    },
-    [historyEnabled],
-  );
-
-  const clearExpiryTimer = useCallback((type, key, source = DEFAULT_SOURCE, instanceId = null) => {
-    const timerKey = createTimerKey(type, key, source, instanceId);
-    const timeoutId = expiryTimersRef.current.get(timerKey);
-
-    if (!timeoutId) return;
-
-    clearTimeout(timeoutId);
-    expiryTimersRef.current.delete(timerKey);
-  }, []);
-
-  const scheduleExpiry = useCallback(
-    (type, key, source, record) => {
-      clearExpiryTimer(type, key, source, record.instanceId);
-
-      if (!record?.expiresAt) return;
-
-      const timerKey = createTimerKey(type, key, source, record.instanceId);
-      const delay = Math.max(0, record.expiresAt - Date.now());
-
-      const timeoutId = setTimeout(() => {
-        expiryTimersRef.current.delete(timerKey);
-
-        const currentState = registriesRef.current;
-        const currentRecord = toSourceRecord(
-          currentState[type]?.[key]?.[createRecordKey(source, record.instanceId)],
-          source,
-        );
-
-        if (!currentRecord || currentRecord.expiresAt !== record.expiresAt) {
-          return;
-        }
-
-        const nextState = removeSourceRecord(currentState, type, key, source, record.instanceId);
-        if (nextState === currentState) return;
-
-        commitRegistries(nextState);
-
-        appendHistory({
-          action: 'expire',
-          expiresAt: record.expiresAt,
-          source,
-          type,
-          key,
-        });
-      }, delay);
-
-      expiryTimersRef.current.set(timerKey, timeoutId);
-    },
-    [appendHistory, clearExpiryTimer, commitRegistries],
-  );
-
-  useEffect(() => {
-    const expiryTimers = expiryTimersRef.current;
-
-    return () => {
-      expiryTimers.forEach((timeoutId) => clearTimeout(timeoutId));
-      expiryTimers.clear();
-    };
   }, []);
 
   const register = useCallback(
@@ -202,19 +90,8 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
       const nextState = applyOperation(currentState, operation);
       commitRegistries(nextState);
-      scheduleExpiry(type, key, operation.source, operation.record);
-
-      appendHistory({
-        action: 'register',
-        expiresAt: operation.record.expiresAt,
-        payload: summarizeHistoryValue(operation.record.value),
-        priority: operation.record.priority,
-        source: operation.source,
-        type,
-        key,
-      });
     },
-    [appendHistory, commitRegistries, scheduleExpiry],
+    [commitRegistries],
   );
 
   const unregister = useCallback(
@@ -226,17 +103,9 @@ export function RegistryProvider({ children, enableHistory = true }) {
       if (!hasOperationEffect(currentState, operation)) return;
 
       const nextState = applyOperation(currentState, operation);
-      clearExpiryTimer(type, key, operation.source, operation.instanceId);
       commitRegistries(nextState);
-
-      appendHistory({
-        action: 'unregister',
-        source: operation.source,
-        type,
-        key,
-      });
     },
-    [appendHistory, clearExpiryTimer, commitRegistries],
+    [commitRegistries],
   );
 
   const batch = useCallback(
@@ -271,67 +140,9 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
       commitRegistries(nextState);
 
-      effectiveOperations.forEach((operation) => {
-        if (operation.kind === 'register') {
-          scheduleExpiry(operation.type, operation.key, operation.source, operation.record);
-          return;
-        }
-
-        clearExpiryTimer(operation.type, operation.key, operation.source, operation.instanceId);
-      });
-
-      appendHistory({
-        action: 'batch',
-        count: effectiveOperations.length,
-        operations: effectiveOperations.map((operation) => {
-          if (operation.kind === 'register') {
-            return {
-              action: operation.kind,
-              expiresAt: operation.record.expiresAt,
-              payload: summarizeHistoryValue(operation.record.value),
-              priority: operation.record.priority,
-              source: operation.source,
-              type: operation.type,
-              key: operation.key,
-            };
-          }
-
-          return {
-            action: operation.kind,
-            source: operation.source,
-            type: operation.type,
-            key: operation.key,
-          };
-        }),
-      });
-
       return effectiveOperations.length;
     },
-    [appendHistory, clearExpiryTimer, commitRegistries, scheduleExpiry],
-  );
-
-  const get = useCallback(
-    (type, key) => {
-      return resolveEntryValue(type, registries[type]?.[key]);
-    },
-    [registries],
-  );
-
-  const getAll = useCallback(
-    (type) => {
-      const typeRegistry = registries[type] || {};
-      const resolved = {};
-
-      Object.keys(typeRegistry).forEach((key) => {
-        const value = resolveEntryValue(type, typeRegistry[key]);
-        if (value !== undefined) {
-          resolved[key] = value;
-        }
-      });
-
-      return resolved;
-    },
-    [registries],
+    [commitRegistries],
   );
 
   const getSnapshot = useCallback((type, key) => {
@@ -369,58 +180,24 @@ export function RegistryProvider({ children, enableHistory = true }) {
     return resolved;
   }, []);
 
-  const getHistory = useCallback(
-    (limit = HISTORY_LIMIT) => {
-      if (!historyEnabled) return [];
-
-      return historyRef.current.slice(-resolveHistoryLimit(limit));
-    },
-    [historyEnabled],
-  );
-
-  const clearHistory = useCallback(() => {
-    if (!historyEnabled) return;
-
-    historyRef.current = [];
-    setHistoryVersion((prev) => prev + 1);
-  }, [historyEnabled]);
-
   const actionsValue = useMemo(
     () => ({
-      clearHistory,
       unregister,
-      getHistory,
       register,
       batch,
     }),
-    [batch, clearHistory, getHistory, register, unregister],
+    [batch, register, unregister],
   );
-
-  const stateValue = useMemo(() => ({ registries, get, getAll }), [registries, get, getAll]);
   const subscriptionValue = useMemo(
     () => ({ getEntriesSnapshot, getSnapshot, subscribe }),
     [getEntriesSnapshot, getSnapshot, subscribe],
   );
 
-  const historyValue = useMemo(
-    () => ({
-      clearHistory,
-      enabled: historyEnabled,
-      getHistory,
-      historyVersion,
-    }),
-    [clearHistory, getHistory, historyEnabled, historyVersion],
-  );
-
   return (
     <RegistryActionsContext.Provider value={actionsValue}>
-      <RegistryHistoryContext.Provider value={historyValue}>
-        <RegistrySubscriptionContext.Provider value={subscriptionValue}>
-          <RegistryStateContext.Provider value={stateValue}>
-            {children}
-          </RegistryStateContext.Provider>
-        </RegistrySubscriptionContext.Provider>
-      </RegistryHistoryContext.Provider>
+      <RegistrySubscriptionContext.Provider value={subscriptionValue}>
+        {children}
+      </RegistrySubscriptionContext.Provider>
     </RegistryActionsContext.Provider>
   );
 }
@@ -428,17 +205,6 @@ export function RegistryProvider({ children, enableHistory = true }) {
 export function useRegistryActions() {
   const context = useContext(RegistryActionsContext);
   return context ?? DEFAULT_REGISTRY_ACTIONS;
-}
-
-export function useRegistryState() {
-  const context = useContext(RegistryStateContext);
-  return context ?? DEFAULT_REGISTRY_STATE;
-}
-
-export function useRegistryContext() {
-  const actions = useRegistryActions();
-  const state = useRegistryState();
-  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
 }
 
 function useRegistrySubscription() {
@@ -460,31 +226,6 @@ export function useRegistryEntries(type) {
   const getEntries = useCallback(() => getEntriesSnapshot(type), [getEntriesSnapshot, type]);
 
   return useSyncExternalStore(subscribeToType, getEntries, getEntries);
-}
-
-export function useRegistryHistory(limit = HISTORY_LIMIT) {
-  const context = useContext(RegistryHistoryContext);
-
-  if (!context) {
-    return DEFAULT_REGISTRY_HISTORY;
-  }
-
-  const { clearHistory, enabled, getHistory } = context;
-
-  const history = getHistory(limit);
-
-  const resetHistory = useCallback(() => {
-    clearHistory();
-  }, [clearHistory]);
-
-  return useMemo(
-    () => ({
-      clearHistory: resetHistory,
-      enabled,
-      history,
-    }),
-    [enabled, history, resetHistory],
-  );
 }
 
 function useModalRegistryActions() {

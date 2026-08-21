@@ -1,6 +1,4 @@
-import {
-  REVIEW_SORT_MODE,
-} from '@/domains/reviews/utils/constants';
+import { REVIEW_SORT_MODE } from '@/domains/reviews/utils/constants';
 
 export const REVIEW_SORT_OPTIONS = Object.freeze([
   { label: 'When Reviewed (Newest)', value: REVIEW_SORT_MODE.NEWEST },

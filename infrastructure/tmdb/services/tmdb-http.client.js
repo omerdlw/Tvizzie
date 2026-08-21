@@ -1,4 +1,4 @@
-import { TMDB_API_URL } from '@/domains/shell/shared/constants';
+import { TMDB_API_URL } from '@/shared/constants';
 
 export const TMDB_SEARCH_REQUEST_TIMEOUT_MS = Object.freeze({
   full: 12000,

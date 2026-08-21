@@ -2,26 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  AUTH_ROUTES,
-  buildAuthHref,
-  getCurrentPathWithSearch,
-} from '@/domains/auth/utils/routes';
-import {
-  deleteStoredReview,
-  toggleStoredReviewLike,
-} from '@/domains/reviews/client/mutations';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils/routes';
+import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client/mutations';
 import { createReviewEditorSurfaceEntry } from '@/domains/shell/navigation/surfaces/review-editor-surface';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import {
-  isPermissionDeniedError,
-  logDataError,
-} from '@/domains/account/utils/validation';
-import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.client';
+import { TMDB_IMG } from '@/shared/constants';
+import { isPermissionDeniedError, logDataError } from '@/domains/account/utils/validation';
+import { fetchAccountReviewFeed } from '@/domains/account/client/account-api';
 import { useAuth } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav/context';
 import { useToast } from '@/modules/notification';
-import { hasMatchingSeededFeed, useDeferredPreviewFeed } from './page.hooks';
+import { hasMatchingSeededFeed, useDeferredPreviewFeed } from './feed-state';
 import { useAccountSectionEngine } from './account-section-state';
 
 const COLLECTION_PREVIEW_LIMITS = Object.freeze({
@@ -191,11 +181,20 @@ export function useAccountOverviewState(routeData = null) {
     (review) => {
       if (!auth.user?.id || !isOwner) return;
 
-      const poster = review?.subjectPoster;
+      const isListComment = review?.subjectType === 'list';
+      const poster = isListComment
+        ? (review?.subjectPreviewItems?.[0]?.poster_path ||
+           review?.subjectPreviewItems?.[0]?.posterPath ||
+           review?.subjectPreviewItems?.[0]?.poster_path_full ||
+           review?.subjectPoster)
+        : review?.subjectPoster;
+
       setReviewDeleteConfirmation({
         confirmLoadingText: 'Deleting',
         confirmText: 'Delete',
-        description: 'This review will be permanently removed from your profile.',
+        description: isListComment
+          ? 'This comment will be permanently removed from your profile.'
+          : 'This review will be permanently removed from your profile.',
         icon: poster ? (poster.startsWith('/') ? `${TMDB_IMG}/w342${poster}` : poster) : undefined,
         isDestructive: true,
         onCancel: () => setReviewDeleteConfirmation(null),
@@ -211,7 +210,7 @@ export function useAccountOverviewState(routeData = null) {
             throw error;
           }
         },
-        title: 'Delete Review?',
+        title: isListComment ? 'Delete Comment?' : 'Delete Review?',
       });
     },
     [auth.user?.id, isOwner, setReviewItems, toast],

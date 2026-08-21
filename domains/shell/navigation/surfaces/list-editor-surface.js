@@ -1,35 +1,23 @@
 'use client';
 
-import {
-  useDeferredValue,
-  useEffect,
-  useState,
-  useTransition,
-  useCallback,
-  useMemo,
-} from 'react';
+import { useDeferredValue, useEffect, useState, useTransition, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { INFO_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 import { useAuth } from '@/modules/auth';
-import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { getNavActionClass } from '@/modules/nav/action-styles';
 import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav/motion';
 import { useToast } from '@/modules/notification';
 import {
   reorderUserListItems,
   toggleUserListItem,
   updateUserList,
-} from '@/domains/media/client/lists';
+} from '@/domains/account/client/lists';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
-import { cn } from '@/domains/shell/shared/utils';
-import { navActionClass } from '@/domains/shell/navigation/action/constants';
-import {
-  SEARCH_LIMITS,
-  SEARCH_TYPES,
-} from '@/domains/search/utils/constants';
-import {
-  SEARCH_STYLES,
-} from '@/domains/shell/navigation/action/constants';
-import { SearchActionControls } from '@/domains/shell/navigation/action/search-action';
+import { cn } from '@/ui/class-names';
+import { navActionClass } from '@/domains/shell/navigation/actions/constants';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';
+import { SEARCH_STYLES } from '@/domains/shell/navigation/actions/constants';
+import { SearchActionControls } from '@/domains/shell/navigation/actions/search-action';
 import { Input } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import {
@@ -268,9 +256,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
       const removedItems = resolvedInitialItems.filter(
         (item) => !draftKeys.has(getDraftMediaKey(item)),
       );
-      const addedItems = draftItems.filter(
-        (item) => !initialKeys.has(getDraftMediaKey(item)),
-      );
+      const addedItems = draftItems.filter((item) => !initialKeys.has(getDraftMediaKey(item)));
 
       if (removedItems.length > 0) {
         await Promise.all(

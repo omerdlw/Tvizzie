@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { globalEvents, EVENT_TYPES } from '@/domains/shell/shared/events';
+import { globalEvents, EVENT_TYPES } from '@/shared/events';
 import { getErrorReporter } from './reporter';
 
 function isDevelopment() {

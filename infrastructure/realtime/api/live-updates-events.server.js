@@ -1,9 +1,9 @@
-import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/server/session.js';
+import { buildInternalRequestMeta } from '@/infrastructure/http/request-meta.server';
 import {
-  buildInternalRequestMeta,
   createApiErrorResponse,
   createApiSuccessResponse,
-} from '@/infrastructure/http/http-server';
+} from '@/infrastructure/http/api-response.server';
 
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 

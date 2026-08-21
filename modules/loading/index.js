@@ -1,7 +1,7 @@
 'use client';
 
-import { useIsFullscreenStateActive } from '@/domains/shell/shared/components/feedback/fullscreen-state';
-import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
+import { Spinner } from '@/ui/feedback/spinner';
 
 import { useLoadingState } from './context';
 

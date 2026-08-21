@@ -23,9 +23,7 @@ import {
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
-import {
-  FilterBarSkeleton,
-} from '@/domains/account/ui/skeletons';
+import { FilterBarSkeleton } from '@/domains/account/ui/skeletons';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
 export default function AccountReviewsFeed({

@@ -5,12 +5,8 @@ import {
   createPollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import {
-  createMediaSnapshot,
-} from '@/domains/media/utils/media-key';
-import {
-  isTitleMediaType,
-} from '@/domains/media/utils/media-key';
+import { createMediaSnapshot } from '@/domains/media/utils/media-key';
+import { isTitleMediaType } from '@/domains/media/utils/media-key';
 
 function createEmptyProofGroup() {
   return {

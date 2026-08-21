@@ -2,26 +2,26 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
   resolveImageFetchPriority,
   resolveImageLoading,
   resolveImageQuality,
-} from '@/domains/shell/shared/utils';
+} from '@/shared/image-policy';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
-import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import SegmentedControl from '@/ui/components/segmented-control';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair } from '@/ui/layouts/grid-crosshair';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
@@ -76,7 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group isolation-isolate flex items-center gap-3 border transition-all duration-300 ease-in-out border-white/5 backdrop-blur-sm hover:border-white/10 hover:bg-white/5',
+        'group isolation-isolate flex items-center gap-3 border border-white/5 backdrop-blur-sm transition-all duration-300 ease-in-out hover:border-white/10 hover:bg-white/5',
         compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >

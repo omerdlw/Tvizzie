@@ -1,10 +1,12 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
-import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/domains/shell/shared/constants';
-import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
-import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
-import AccountGridFrame from '@/domains/account/ui/layouts/account-grid-frame';
+import { usePathname } from 'next/navigation';
+
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
+import NavHeightSpacer from '@/modules/nav/nav-height-spacer';
+import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
+import { PageGridFrame } from '@/ui/layouts/page-grid-frame';
 
 const S = 'skeleton-block';
 const SOFT = 'skeleton-block-soft';
@@ -71,7 +73,7 @@ export function AccountHeroSkeleton() {
 export function AccountSkeletonLayout({ activeTab = 'overview', children }) {
   return (
     <PageGradientShell className="overflow-hidden">
-      <AccountGridFrame />
+      <PageGridFrame minHeightClassName="min-h-screen" widthClassName={ACCOUNT_ROUTE_SHELL_CLASS} />
       <div
         className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 pb-12 sm:gap-8`}
       >
@@ -88,6 +90,72 @@ export function AccountSkeletonLayout({ activeTab = 'overview', children }) {
       <NavHeightSpacer />
     </PageGradientShell>
   );
+}
+
+export function resolveAccountTabFromPathname(pathname) {
+  if (!pathname) return { activeTab: 'overview', variant: 'overview' };
+
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments[0] !== 'account') {
+    return { activeTab: 'overview', variant: 'overview' };
+  }
+
+  if (segments[1] === 'edit') {
+    return { activeTab: 'overview', variant: 'edit' };
+  }
+
+  if (segments.length <= 2) {
+    return { activeTab: 'overview', variant: 'overview' };
+  }
+
+  const subtab = segments[2];
+  switch (subtab) {
+    case 'activity':
+      return { activeTab: 'activity', variant: 'activity' };
+    case 'likes':
+      return { activeTab: 'likes', variant: 'likes' };
+    case 'watched':
+      return { activeTab: 'watched', variant: 'watched' };
+    case 'watchlist':
+      return { activeTab: 'watchlist', variant: 'watchlist' };
+    case 'reviews':
+      return { activeTab: 'reviews', variant: 'reviews' };
+    case 'lists':
+      return { activeTab: 'lists', variant: 'lists' };
+    default:
+      return { activeTab: 'overview', variant: 'overview' };
+  }
+}
+
+export function renderAccountSectionSkeleton(tabOrVariant) {
+  switch (tabOrVariant) {
+    case 'activity':
+      return <AccountActivitySkeleton />;
+    case 'likes':
+    case 'watched':
+    case 'watchlist':
+      return <AccountMediaGridSkeleton />;
+    case 'reviews':
+      return <AccountReviewsSkeleton />;
+    case 'lists':
+      return <AccountListsSkeleton />;
+    case 'list-detail':
+      return <AccountListDetailSkeleton />;
+    case 'edit':
+      return <AccountEditSkeleton />;
+    case 'overview':
+    default:
+      return <AccountOverviewSkeleton />;
+  }
+}
+
+export function AccountSkeleton({ activeTab: explicitActiveTab, children }) {
+  const pathname = usePathname();
+  const { activeTab: pathActiveTab, variant } = resolveAccountTabFromPathname(pathname);
+  const activeTab = explicitActiveTab || pathActiveTab;
+  const content = children || renderAccountSectionSkeleton(explicitActiveTab || variant);
+
+  return <AccountSkeletonLayout activeTab={activeTab}>{content}</AccountSkeletonLayout>;
 }
 
 function SectionSkeleton({

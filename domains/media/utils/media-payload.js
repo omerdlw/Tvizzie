@@ -1,8 +1,6 @@
 import { assertTitleMedia, buildMediaItemKey } from './media-key.js';
-import { normalizeTimestamp, normalizeLowerValue } from '@/domains/shell/shared/utils.js';
-import {
-  isTitleMediaType,
-} from '@/domains/media/utils/media-key';
+import { normalizeTimestamp, normalizeLowerValue } from '@/shared/normalize';
+import { isTitleMediaType } from '@/domains/media/utils/media-key';
 
 function normalizeNumber(value, fallback = null) {
   const parsed = Number(value);

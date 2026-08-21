@@ -9,13 +9,14 @@ Bu belge, **Tvizzie** projesinin mimari felsefesini, katmanlı klasör yapısın
 **Tvizzie**, modern, yüksek performanslı ve sosyal odaklı bir Film, Dizi (TV) ve Kişi (Oyuncu/Yönetmen) takip ve inceleme platformudur (Letterboxd & Serializd benzeri).
 
 ### 🛠️ Ana Teknolojiler:
-* **Framework:** [Next.js 16 (App Router)](https://nextjs.org/) + **React 19** (React Compiler desteği ile)
-* **Backend & Veritabanı:** [Supabase](https://supabase.com/) (`@supabase/ssr`, PostgreSQL, Row-Level Security, Realtime SSE/Broadcast)
-* **Harici Medya Verisi:** [TMDB (The Movie Database) API](https://developer.themoviedb.org/docs) (Çok katmanlı sunucu önbellekleme ve arama sıralama motoru ile)
-* **Dağıtım / Edge:** [Cloudflare Pages & Workers](https://developers.cloudflare.com/) (`@opennextjs/cloudflare` + `wrangler`)
-* **Stil & Tasarım:** [Tailwind CSS v4](https://tailwindcss.com/) + Özel CSS Değişkenleri (`app/globals.css`)
-* **Tipografi:** *Zuume* (Display/Başlıklar) & *OpenAISans* (Arayüz/Gövde Metinleri)
-* **Animasyon & Arayüz:** [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.darkroom.engineering/) (Smooth Scroll), [Radix UI](https://www.radix-ui.com/) Primitives, [Lucide React](https://lucide.dev/) / Iconify
+
+- **Framework:** [Next.js 16 (App Router)](https://nextjs.org/) + **React 19** (React Compiler desteği ile)
+- **Backend & Veritabanı:** [Supabase](https://supabase.com/) (`@supabase/ssr`, PostgreSQL, Row-Level Security, Realtime SSE/Broadcast)
+- **Harici Medya Verisi:** [TMDB (The Movie Database) API](https://developer.themoviedb.org/docs) (Çok katmanlı sunucu önbellekleme ve arama sıralama motoru ile)
+- **Dağıtım / Edge:** [Cloudflare Pages & Workers](https://developers.cloudflare.com/) (`@opennextjs/cloudflare` + `wrangler`)
+- **Stil & Tasarım:** [Tailwind CSS v4](https://tailwindcss.com/) + Özel CSS Değişkenleri (`app/globals.css`)
+- **Tipografi:** _Zuume_ (Display/Başlıklar) & _OpenAISans_ (Arayüz/Gövde Metinleri)
+- **Animasyon & Arayüz:** [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.darkroom.engineering/) (Smooth Scroll), [Radix UI](https://www.radix-ui.com/) Primitives, [Lucide React](https://lucide.dev/) / Iconify
 
 ---
 
@@ -29,106 +30,133 @@ Root (@/)
 ├── domains/           # [İş Mantığı & Alanlar] Domain-bazlı modüller (account, media, auth, reviews, social...)
 ├── infrastructure/    # [Dış Entegrasyonlar] HTTP motoru, Supabase, TMDB, SSE/Realtime, Job Queue
 ├── modules/           # [Uygulama İskeleti] Global Nav, Modal, Context Menu, Notification, Registry sistemleri
+├── shared/            # [Bağımsız Kernel] Katman bağımsız normalization, browser request ve motion primitive'leri
 ├── ui/                # [Tasarım Sistemi] Saf ve yeniden kullanılabilir atomik bileşenler (Button, Input, Select...)
 ├── public/            # [Statik Varlıklar] Fontlar (OpenAISans, Zuume), resimler, dokular
 └── scripts/           # [Yardımcı Araçlar] DB Seed, Test ve Node Alias yardımcıları
 ```
 
 ### 📐 İçe Aktarma (Import) ve Katman Kuralları:
+
 1. **Yol Takma Adı:** `@/*` proje kök dizinini (`./*`) temsil eder (`jsconfig.json` ve `package.json` imports tanımlı).
 2. **Bağımlılık Yönü:**
-   * `app/` ➔ `domains/`, `modules/`, `ui/`, `infrastructure/` kullanabilir.
-   * `domains/` ➔ `modules/`, `ui/`, `infrastructure/` kullanabilir. Domainler arası doğrudan derin bağımlılıklar yerine gevşek bağlı yapılar tercih edilir.
-   * `modules/` ➔ `ui/`, `infrastructure/` kullanabilir.
-   * `infrastructure/` ➔ Dış servislere bağlanır; UI veya sayfa bağımlılığı içermez.
-   * `ui/` ➔ Saf bileşen katmanıdır; iş mantığı veya domain verisi içermez.
+   - `app/` ➔ `domains/`, `modules/`, `ui/`, `infrastructure/`, `shared/` kullanabilir.
+   - `domains/` ➔ `modules/`, `ui/`, `infrastructure/`, `shared/` kullanabilir; `app/` katmanına bağımlı olamaz.
+   - `modules/` ➔ `ui/`, `shared/` ve doğrudan third-party package'ları kullanabilir; `domains/`, `app/` veya project-specific `infrastructure/` bağımlılığı içermez.
+   - `shared/` ➔ `app/`, `domains/`, `modules/` veya `infrastructure/` bağımlılığı içermez.
+   - `infrastructure/` ➔ dış servis ve transport katmanlarını sahiplenir; yalnız açık server-domain contracts üzerinden orchestration yapabilir, UI veya `app/` bağımlılığı içermez.
+   - `ui/` ➔ Saf bileşen katmanıdır; iş mantığı veya domain verisi içermez.
 
 ---
 
 ## 3. Katmanların Derinlemesine Analizi
 
 ### 3.1. `app/` — Next.js 16 App Router
-Sayfalar, yönlendirme grupları (`Route Groups`), API uç noktaları ve genel sayfa iskeletini barındırır.
-* **`(home)`:** Ana keşif sayfası, öne çıkan içerikler ve trendler.
-* **`(media)`:** Film (`movie/[id]`), Dizi (`tv/[id]`), Kişi (`person/[id]`) ve detaylı inceleme sayfaları.
-* **`(account)`:** Kullanıcı profili (`account/[username]`), aktivite, izlenenler, izleme listesi, beğeniler, özel listeler ve profil düzenleme.
-* **`(auth)`:** Giriş (`sign-in`), kayıt (`sign-up`), e-posta doğrulama ve OAuth callback sayfaları.
-* **`(legal)`:** Gizlilik politikası ve kullanım şartları.
-* **`_shell/`:** Genel navigasyon runtime'ı, geçiş yakalayıcıları ve etkileşim sınırları.
-* **`api/`:** Sunucu tarafı REST/Edge API rotaları (Auth, TMDB proxy, Hesap işlemleri, Sosyal aktiviteler, Arama, SSE bildirimleri).
-* **`globals.css` / `layout.js` / `providers.js`:** Kök sağlayıcılar (Auth, Navigation, Context Menu, Modal, Theme) ve global stiller.
 
-#### 💡 Sunucu/İstemci Ayrımı Deseni (`page.js` + `client.js`):
-Tüm sayfa rotalarında katı bir ayrım uygulanır:
-* **`page.js` (Server Component):** Sayfa meta verilerini (`generateMetadata`) hazırlar, ilk SSR verilerini sunucudan çeker ve doğrudan `client.js` bileşenine aktarır.
-* **`client.js` (Client Component - `"use client"`):** Etkileşimli UI durumunu, istemci hook'larını ve animasyonları yönetir.
+Sayfalar, yönlendirme grupları (`Route Groups`), API uç noktaları ve genel sayfa iskeletini barındırır.
+
+- **`(home)`:** Ana keşif sayfası, öne çıkan içerikler ve trendler.
+- **`(media)`:** Film (`movie/[id]`), Dizi (`tv/[id]`), Kişi (`person/[id]`) ve detaylı inceleme sayfaları.
+- **`(account)`:** Kullanıcı profili (`account/[username]`), aktivite, izlenenler, izleme listesi, beğeniler, özel listeler ve profil düzenleme.
+- **`(auth)`:** Giriş (`sign-in`), kayıt (`sign-up`), e-posta doğrulama ve OAuth callback sayfaları.
+- **`(legal)`:** Gizlilik politikası ve kullanım şartları.
+- **`_shell/`:** Genel navigasyon runtime'ı, geçiş yakalayıcıları ve etkileşim sınırları.
+- **`api/`:** Sunucu tarafı REST/Edge API rotaları (Auth, TMDB proxy, Hesap işlemleri, Sosyal aktiviteler, Arama, SSE bildirimleri).
+- **`globals.css` / `layout.js` / `providers.js`:** Kök sağlayıcılar (Auth, Navigation, Context Menu, Modal, Theme) ve global stiller.
+
+#### 💡 Sunucu/İstemci Ayrımı:
+
+- **`page.js` (Server Component):** Metadata ve server data ownership için varsayılan route entry point'tir.
+- **Client boundary:** Yalnız state, browser API, event handler veya client hook gerektiren en küçük alt ağaçta `"use client"` kullanılır. `page.js → client.js` ayrımı zorunlu bir template değildir; statik legal rotalarda olduğu gibi server-first rendering korunur.
+
+#### Dosya ve Runtime İsimlendirme Sözleşmesi
+
+- **Framework dosyaları:** `page.js`, `layout.js`, `loading.js`, `error.js`, `not-found.js` ve `route.js` Next.js anlamlarını korur; semantic isim uğruna yeniden adlandırılmaz.
+- **HTTP transport ownership:** Varsayılan olarak `Request`, `NextResponse`, request body/query parsing ve status-code mapping ilgili `app/api/**/route.js` dosyasının sorumluluğudur. Bir domain transport adapter'ı ancak birden fazla endpoint arasında güvenlik, cookie veya response contract'ı merkezileştiriyorsa korunur; tek-consumer route shim'leri oluşturulmaz.
+- **Dedicated runtime dizinleri:** `server/` ve `client/` dizinleri runtime bilgisinin primary owner'ıdır. Bu dizinlerde dosya adı yalnız davranışı anlatır; aynı bilgi `.server.js` veya `.client.js` ile tekrarlanmaz.
+- **Mixed runtime dizinleri:** `ui/`, `infrastructure/` veya başka bir mixed dizinde runtime boundary öncelikle source directive ve import graph ile ifade edilir. Runtime suffix yalnız import güvenliği için gerçek bir değer sağladığında kullanılır; `ui/pages` ve domain registry dosyalarında `.client` tekrarı yapılmaz.
+- **Semantic route implementation:** Route implementation dosyaları generic `client.js`, `server.js`, `Client` veya `View` yerine temsil ettiği davranışı anlatır (`media-detail.js`, `MediaDetail`). Client runtime gerekiyorsa dosyanın başındaki `"use client"` directive'i source of truth'tür.
+- **Tek sinyal ilkesi:** `server/title-route.server.js` veya `client/account-api.client.js` gibi aynı runtime bilgisini birden fazla kez encode eden isimler kullanılmaz.
+- **Skeleton ownership:** Domain'e ait skeleton primitive'leri yalnız `domains/<domain>/ui/skeletons.js` içinde tanımlanır. Route'a özgü bütüncül görünüm ilgili App Router `loading.js` dosyasında bu primitive'ler compose edilerek kurulur; `*-skeleton.client.js` gibi paralel page dosyaları oluşturulmaz.
+- **Ortak media-type contract'ı:** `movie`, `tv`, `person`, `list` ve `user` type vocabulary'si `shared/media-type.js` tarafından sahiplenilir. Infrastructure adapter'ları domain utility'lerine ters yönde bağımlı olmaz.
 
 ---
 
 ### 3.2. `domains/` — İş Mantığı (Domain-Driven Modules)
+
 Her domain kendi içinde bağımsız bir modül gibi davranır:
 
-| Domain | Sorumluluk & İçerik |
-| :--- | :--- |
-| **`account`** | Kullanıcı profili, istatistikler, avatar yükleme, profil güncelleme, takipçi/takip edilen ilişkileri, listeler ve özel medya filtreleme. |
-| **`auth`** | Supabase kimlik doğrulama, oturum yaşam döngüsü, Google OAuth, şifre sıfırlama, güvenlik token'ları ve audit logging. |
-| **`home`** | Ana sayfa keşif akışı (`discover-feed`), IMDb Top 100 verisi ve öne çıkan içerik bölümleri. |
-| **`legal`** | Yasal metinler, sözleşme içerikleri ve biçimlendirme. |
-| **`media`** | Film/Dizi/Kişi detay kartları, ödüller (Oscars, Bafta, Emmy), sezon/bölüm reyting grafikleri, izleme listesi / beğenme / izlendi durumları. |
-| **`reviews`** | Kullanıcı incelemeleri, puanlama sistemi, spoiler koruması, inceleme beğenileri ve yorumları. |
-| **`search`** | TMDB ve yerel topluluk hibrit araması, arama sonuçları sıralama ve metin eşleştirme motoru. |
-| **`shell`** | Uygulama ana kabuğu, gezinme çubuğu aksiyonları, modal pencereleri (resim/video önizleme, bildirimler, sosyal kanıt). |
-| **`social`** | Kullanıcı aktiviteleri akışı, takip sistemi, gerçek zamanlı bildirimler ve sosyal kanıt (social proof) verisi. |
+| Domain        | Sorumluluk & İçerik                                                                                                                         |
+| :------------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`account`** | Kullanıcı profili, istatistikler, avatar yükleme, profil güncelleme, takipçi/takip edilen ilişkileri, listeler ve özel medya filtreleme.    |
+| **`auth`**    | Supabase kimlik doğrulama, oturum yaşam döngüsü, Google OAuth, şifre sıfırlama, güvenlik token'ları ve audit logging.                       |
+| **`home`**    | Ana sayfa keşif akışı (`discover-feed`), IMDb Top 100 verisi ve öne çıkan içerik bölümleri.                                                 |
+| **`legal`**   | Yasal metinler, sözleşme içerikleri ve biçimlendirme.                                                                                       |
+| **`media`**   | Film/Dizi/Kişi detay kartları, ödüller (Oscars, Bafta, Emmy), sezon/bölüm reyting grafikleri, izleme listesi / beğenme / izlendi durumları. |
+| **`reviews`** | Kullanıcı incelemeleri, puanlama sistemi, spoiler koruması, inceleme beğenileri ve yorumları.                                               |
+| **`search`**  | TMDB ve yerel topluluk hibrit araması, arama sonuçları sıralama ve metin eşleştirme motoru.                                                 |
+| **`shell`**   | Uygulama ana kabuğu, gezinme çubuğu aksiyonları, modal pencereleri (resim/video önizleme, bildirimler, sosyal kanıt).                       |
+| **`social`**  | Kullanıcı aktiviteleri akışı, takip sistemi, gerçek zamanlı bildirimler ve sosyal kanıt (social proof) verisi.                              |
 
-*Her domain genellikle şu alt dizinlere sahiptir:*
-* `client/`: İstemci tarafı API çağrıları ve veri yönetim servisleri.
-* `server/`: Sunucu tarafı rota işleyicileri, sunucu aksiyonları ve veri erişim katmanı.
-* `ui/`: Domain'e özgü UI bileşenleri, bölümler (`sections/`) ve iskelet yükleme durumları (`skeletons.js`).
-* `hooks/`: Durum yönetimi ve veri yakalama için özel React kancaları.
-* `utils/`: Domain sabitleri, doğrulama şemaları ve biçimlendiriciler.
+_Her domain genellikle şu alt dizinlere sahiptir:_
+
+- `client/`: İstemci tarafı API çağrıları ve veri yönetim servisleri.
+- `server/`: Sunucu tarafı domain işlemleri, page-data composition ve veri erişimi. App Router HTTP adaptörleri `app/api/**/route.js` içinde kalır.
+- `ui/`: Domain'e özgü UI bileşenleri, bölümler (`sections/`) ve iskelet yükleme durumları (`skeletons.js`).
+- `hooks/`: Durum yönetimi ve veri yakalama için özel React kancaları.
+- `utils/`: Domain sabitleri, doğrulama şemaları ve biçimlendiriciler.
 
 ---
 
 ### 3.3. `infrastructure/` — Dış Servisler ve Altyapı
+
 Sistem altyapısı ve üçüncü parti entegrasyonlarını soyutlar:
-* **`http/`:** Standartlaştırılmış API yanıt şablonları (`ApiResponse`), hata sınıfları (`AppError`), bellek içi önbellek (`memory-cache`), istek hız sınırlayıcı (`rate-limiter`) ve aşamalı dağıtım (`write-rollout`).
-* **`supabase/`:** Sunucu ve istemci SSR Supabase istemcileri (`createClient`), admin yetkili servis istemcisi, auth token saklama ve proxy yönetimi.
-* **`tmdb/`:** TMDB REST API entegrasyonu, katalog sorgulayıcı, detay ve ödül toplayıcı, arama sonuçları ağırlıklandırma/sıralama algoritmaları ve görsel yardımcıları.
-* **`realtime/`:** Server-Sent Events (SSE) altyapısı, canlı güncelleme yayınları (`realtime-broadcast`), polling fallback servisi ve kullanıcı olayları yöneticisi.
-* **`jobs/`:** Uygulama içi asenkron arka plan görevleri ve kuyruk yönetimi (`app-event-queue`).
-* **`observability/`:** Kullanıcı geri bildirimleri ve web hayati değerleri (`web-vitals`) telemetrisi.
-* **`runtime/`:** Uygulama sağlık kontrolü (`health.server.js`).
+
+- **`http/`:** Standartlaştırılmış API yanıt şablonları (`ApiResponse`), hata sınıfları (`AppError`), bellek içi önbellek (`memory-cache`), istek hız sınırlayıcı (`rate-limiter`) ve aşamalı dağıtım (`write-rollout`).
+- **`supabase/`:** Sunucu ve istemci SSR Supabase istemcileri (`createClient`), admin yetkili servis istemcisi, auth token saklama ve proxy yönetimi.
+- **`tmdb/`:** TMDB REST API entegrasyonu, katalog sorgulayıcı, detay ve ödül toplayıcı, arama sonuçları ağırlıklandırma/sıralama algoritmaları ve görsel yardımcıları.
+- **`realtime/`:** Server-Sent Events (SSE) altyapısı, canlı güncelleme yayınları (`realtime-broadcast`), polling fallback servisi ve kullanıcı olayları yöneticisi.
+- **`jobs/`:** Uygulama içi asenkron arka plan görevleri ve kuyruk yönetimi (`app-event-queue`).
+- **`observability/`:** Kullanıcı geri bildirimleri ve web hayati değerleri (`web-vitals`) telemetrisi.
+- **`runtime/`:** Uygulama sağlık kontrolü (`health.server.js`).
 
 ---
 
 ### 3.4. `modules/` — Çekirdek Uygulama Primitives
+
 Uygulama genelinde paylaşılan mikro mimariler:
-* **`nav/`:** Akıllı gezinme sistemi; state-machine tabanlı, klavye kısayollarını destekleyen, dinamik yükseklik ve yüzey yönetimi (`surface-model`) sunan menü motoru.
-* **`modal/`:** Global, animasyonlu, yığınlanabilir modal (diyalog) yönetim altyapısı.
-* **`context-menu/`:** Sağ tık / uzun basma menü motoru ve tetikleyicileri.
-* **`notification/`:** Toast ve kalıcı bildirim sistemi.
-* **`registry/`:** Rota ve eklenti kayıt motoru (Plugin / Registry Architecture).
-* **`error-boundary/`:** Hata yakalama, raporlama ve kurtarma sınırları.
-* **`auth` & `account`:** Oturum durumu ve hesap bağlamı sağlayıcıları.
-* **`background` / `loading`:** Global arka plan efektleri ve yükleme durumları.
+
+`modules/account` ve `modules/auth`, Tvizzie domain implementation'ı değil; farklı projelere taşınabilen hesap/oturum runtime foundation'ıdır. Tvizzie'ye özgü profil, liste, route ve Supabase veri davranışları `domains/account`, `domains/auth` ve açık adapter seam'lerinde kalır. Bu nedenle dependency yönü `domains/account|auth → modules/account|auth` şeklindedir; tersi yönde import yapılmaz.
+
+- **`nav/`:** Akıllı gezinme sistemi; context tabanlı state ownership, klavye kısayolları, dinamik yükseklik ve yüzey yönetimi (`surface-model`) sunan menü motoru.
+- **`modal/`:** Global, animasyonlu, yığınlanabilir modal (diyalog) yönetim altyapısı.
+- **`context-menu/`:** Sağ tık / uzun basma menü motoru ve tetikleyicileri.
+- **`notification/`:** Toast ve kalıcı bildirim sistemi.
+- **`registry/`:** Rota ve eklenti kayıt motoru (Plugin / Registry Architecture).
+- **`error-boundary/`:** Hata yakalama, raporlama ve kurtarma sınırları.
+- **`auth` & `account`:** Oturum durumu ve hesap bağlamı sağlayıcıları.
+- **`background` / `loading`:** Global arka plan efektleri ve yükleme durumları.
 
 ---
 
 ### 3.5. `ui/` — Atomik Tasarım Sistemi (UI Primitives)
+
 Saf, domainden bağımsız, erişilebilir (Radix destekli) ve Tailwind ile stillendirilmiş temel bileşenler:
-* `button.js`: Dinamik varyantlı (primary, secondary, ghost, danger vb.) butonlar.
-* `input.js` & `textarea.js`: Form giriş elemanları.
-* `select/`: Standart Select, Combobox, Multi-Select, Searchable Select ve Async Select bileşenleri.
-* `checkbox.js`, `switch.js`: Seçim kontrol elemanları.
-* `popover.js`, `tooltip.js`: Bağlamsal açılır kutular ve ipuçları.
-* `icon.js`: Optimize edilmiş ikon render motoru.
+
+- `button.js`: Dinamik varyantlı (primary, secondary, ghost, danger vb.) butonlar.
+- `input.js` & `textarea.js`: Form giriş elemanları.
+- `select/`: Standart Select, Combobox, Multi-Select, Searchable Select ve Async Select bileşenleri.
+- `checkbox.js`, `switch.js`: Seçim kontrol elemanları.
+- `popover.js`, `tooltip.js`: Bağlamsal açılır kutular ve ipuçları.
+- `icon.js`: Optimize edilmiş ikon render motoru.
 
 ---
 
 ### 3.6. `public/` & `scripts/`
-* **`public/fonts/`:** Özel web fontları — *OpenAISans* (Light, Regular, Medium, Semibold, Bold ve Italic) ve *Zuume* (Bold).
-* **`public/images/`:** Arka plan greni (noise) ve logo varlıkları.
-* **`scripts/`:** Veritabanı testleri (`test-supabase-runtime.mjs`), geliştirme verisi tohumlama (`dev-seed-dataset.mjs`) ve modül takma ad kayıtçısı (`register-alias.mjs`).
+
+- **`public/fonts/`:** Özel web fontları — _OpenAISans_ (Light, Regular, Medium, Semibold, Bold ve Italic) ve _Zuume_ (Bold).
+- **`public/images/`:** Arka plan greni (noise) ve logo varlıkları.
+- **`scripts/`:** Veritabanı testleri (`test-supabase-runtime.mjs`), geliştirme verisi tohumlama (`dev-seed-dataset.mjs`) ve modül takma ad kayıtçısı (`register-alias.mjs`).
 
 ---
 
@@ -137,10 +165,10 @@ Saf, domainden bağımsız, erişilebilir (Radix destekli) ve Tailwind ile still
 Yapay zeka modelleri ve ajanlar kod üretirken veya düzenlerken aşağıdaki kurallara **kesinlikle** uymalıdır:
 
 1. **Katman İhlali Yapmayın:** `ui/primitives` içine doğrudan veritabanı sorgusu veya domain mantığı koymayın. Domain mantığını `domains/<alan>/` altında tutun.
-2. **Server/Client Ayrımı:** Veri getirme ve meta veri üretimini `page.js` (Server Component) içinde yapın; kullanıcı etkileşimi ve animasyon gerektiren UI parçalarını `client.js` (`"use client"`) içinde tanımlayın.
+2. **Server/Client Ayrımı:** Veri getirme ve metadata ownership'ini Server Components içinde tutun; `"use client"` sınırını yalnız browser davranışı gerektiren en küçük cohesive subtree'ye uygulayın.
 3. **Stil Bütünlüğü:**
-   * Tailwind CSS v4 ve `app/globals.css` içindeki CSS değişkenlerini (`--bg-*`, `--text-*`, `--border-*`) kullanın.
-   * Başlık ve büyük vurgu metinlerinde `font-zuume` / `tracking-wider`, gövde ve UI elemanlarında `font-sans` (OpenAISans) tercih edin.
+   - Tailwind CSS v4 ve `app/globals.css` içindeki CSS değişkenlerini (`--bg-*`, `--text-*`, `--border-*`) kullanın.
+   - Başlık ve büyük vurgu metinlerinde `font-zuume` / `tracking-wider`, gövde ve UI elemanlarında `font-sans` (OpenAISans) tercih edin.
 4. **Veri Güvenliği ve Doğrulama:** API rotalarında ve sunucu işlemlerinde (`infrastructure/http/api-response.server.js` ve `AppError`) standart hata formatını kullanın.
 5. **Önbellek & Edge Uyumluluğu:** Cloudflare Workers / Pages ortamı gözetilerek Node.js'e özgü native modüller yerine standart Web API'leri (`fetch`, `Request`, `Response`, `crypto`) ve `@supabase/ssr` desenleri kullanılmalıdır.
 
@@ -152,6 +180,9 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 
 ```text
 .
+├── .github
+│   └── workflows
+│       └── ci.yml
 ├── .vscode
 │   └── settings.json
 ├── app
@@ -159,6 +190,7 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── navigation
 │   │   │   ├── account-nav-links.js
 │   │   │   └── account-nav-registry.js
+│   │   ├── compose-providers.js
 │   │   ├── global-context-menu-registry.js
 │   │   ├── interactive-boundary.js
 │   │   ├── nav-runtime.js
@@ -168,101 +200,75 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── account
 │   │   │   ├── [username]
 │   │   │   │   ├── activity
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── likes
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── lists
 │   │   │   │   │   ├── [slug]
-│   │   │   │   │   │   ├── client.js
 │   │   │   │   │   │   ├── loading.js
 │   │   │   │   │   │   └── page.js
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── reviews
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── watched
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
 │   │   │   │   ├── watchlist
-│   │   │   │   │   ├── client.js
 │   │   │   │   │   └── page.js
-│   │   │   │   ├── client.js
 │   │   │   │   ├── layout.js
 │   │   │   │   ├── loading.js
 │   │   │   │   ├── not-found.js
 │   │   │   │   └── page.js
 │   │   │   ├── edit
-│   │   │   │   ├── client.js
 │   │   │   │   ├── loading.js
 │   │   │   │   ├── not-found.js
 │   │   │   │   └── page.js
-│   │   │   ├── client.js
 │   │   │   ├── error.js
 │   │   │   ├── loading.js
 │   │   │   ├── not-found.js
 │   │   │   └── page.js
-│   │   ├── layout.js
-│   │   └── registry.js
+│   │   └── layout.js
 │   ├── (auth)
 │   │   ├── callback
-│   │   │   ├── client.js
 │   │   │   └── page.js
 │   │   ├── sign-in
-│   │   │   ├── client.js
 │   │   │   └── page.js
 │   │   ├── sign-up
-│   │   │   ├── client.js
 │   │   │   └── page.js
 │   │   ├── error.js
 │   │   ├── layout.js
-│   │   ├── loading.js
-│   │   └── registry.js
+│   │   └── loading.js
 │   ├── (home)
-│   │   ├── client.js
 │   │   ├── error.js
 │   │   ├── loading.js
-│   │   ├── page.js
-│   │   └── registry.js
+│   │   └── page.js
 │   ├── (legal)
 │   │   ├── privacy
-│   │   │   ├── client.js
 │   │   │   └── page.js
 │   │   ├── terms
-│   │   │   ├── client.js
 │   │   │   └── page.js
 │   │   ├── error.js
-│   │   ├── loading.js
-│   │   └── registry.js
+│   │   └── loading.js
 │   ├── (media)
 │   │   ├── movie
 │   │   │   └── [id]
 │   │   │       ├── reviews
-│   │   │       │   ├── client.js
 │   │   │       │   └── page.js
-│   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
 │   │   │       └── page.js
 │   │   ├── person
 │   │   │   └── [id]
-│   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
 │   │   │       └── page.js
 │   │   ├── tv
 │   │   │   └── [id]
 │   │   │       ├── reviews
-│   │   │       │   ├── client.js
 │   │   │       │   └── page.js
-│   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
 │   │   │       └── page.js
-│   │   ├── layout.js
-│   │   └── registry.js
+│   │   └── layout.js
 │   ├── api
 │   │   ├── account
 │   │   │   ├── activity
@@ -349,34 +355,31 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 ├── domains
 │   ├── account
 │   │   ├── client
-│   │   │   ├── account-api.client.js
-│   │   │   ├── collections.client.js
-│   │   │   └── profile.client.js
+│   │   │   ├── account-api.js
+│   │   │   ├── collections.js
+│   │   │   ├── lists.js
+│   │   │   └── profile.js
 │   │   ├── hooks
-│   │   │   ├── account-edit-data.hooks.js
+│   │   │   ├── account-edit-data.js
 │   │   │   ├── account-edit-page-state.js
 │   │   │   ├── account-overview-state.js
 │   │   │   ├── account-section-state.js
-│   │   │   ├── collections.hooks.js
-│   │   │   ├── feed-state.hooks.js
-│   │   │   ├── list-items.hooks.js
+│   │   │   ├── collections.js
+│   │   │   ├── feed-state.js
+│   │   │   ├── list-items.js
 │   │   │   ├── media-feed-state.js
-│   │   │   ├── page-actions.hooks.js
-│   │   │   ├── page-data.hooks.js
-│   │   │   ├── page.hooks.js
-│   │   │   ├── relationship.hooks.js
-│   │   │   ├── section-page.hooks.js
-│   │   │   └── security.hooks.js
+│   │   │   ├── page-actions.js
+│   │   │   ├── page-data.js
+│   │   │   ├── relationship.js
+│   │   │   ├── section-page.js
+│   │   │   └── security.js
 │   │   ├── server
-│   │   │   ├── actions
-│   │   │   │   └── profile.server.js
-│   │   │   ├── api-handlers.server.js
-│   │   │   ├── collections.server.js
-│   │   │   ├── feed.server.js
-│   │   │   ├── media-upload.server.js
-│   │   │   ├── profile.server.js
-│   │   │   ├── request-target.server.js
-│   │   │   └── routes.server.js
+│   │   │   ├── collections.js
+│   │   │   ├── feed.js
+│   │   │   ├── media-upload.js
+│   │   │   ├── page-data.js
+│   │   │   ├── profile.js
+│   │   │   └── request-target.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── lists
@@ -401,11 +404,19 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   │   └── reviews.js
 │   │   │   ├── layouts
 │   │   │   │   ├── account-background-registry.js
-│   │   │   │   ├── account-grid-frame.js
 │   │   │   │   ├── account-layout.js
 │   │   │   │   └── account-profile-context.js
 │   │   │   ├── pages
-│   │   │   │   └── account-route-page.js
+│   │   │   │   ├── account-activity.js
+│   │   │   │   ├── account-edit.js
+│   │   │   │   ├── account-likes.js
+│   │   │   │   ├── account-list-detail.js
+│   │   │   │   ├── account-lists.js
+│   │   │   │   ├── account-overview.js
+│   │   │   │   ├── account-reviews.js
+│   │   │   │   ├── account-route-page.js
+│   │   │   │   ├── account-watched.js
+│   │   │   │   └── account-watchlist.js
 │   │   │   ├── sections
 │   │   │   │   ├── collections
 │   │   │   │   │   ├── likes-collection.js
@@ -427,7 +438,6 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   │   │   ├── lists-collection.js
 │   │   │   │   │   └── use-list-detail-filters.js
 │   │   │   │   ├── overview
-│   │   │   │   │   ├── account-overview-client.js
 │   │   │   │   │   ├── activity.js
 │   │   │   │   │   ├── favorites.js
 │   │   │   │   │   ├── lists.js
@@ -439,6 +449,7 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   │   ├── account-hero.js
 │   │   │   │   ├── account-section-factory.js
 │   │   │   │   └── account-section.js
+│   │   │   ├── registry.js
 │   │   │   └── skeletons.js
 │   │   └── utils
 │   │       ├── avatar.js
@@ -454,35 +465,37 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │       └── validation.js
 │   ├── auth
 │   │   ├── client
-│   │   │   ├── http.js
 │   │   │   ├── requests.js
 │   │   │   ├── sign-in.js
 │   │   │   ├── sign-up.js
 │   │   │   └── storage.js
 │   │   ├── server
 │   │   │   ├── actions
-│   │   │   │   └── audit-log.server.js
-│   │   │   ├── account-routes.server.js
-│   │   │   ├── account.server.js
-│   │   │   ├── admin.server.js
-│   │   │   ├── api-handlers.server.js
-│   │   │   ├── audit-log.server.js
-│   │   │   ├── google-provider.server.js
-│   │   │   ├── password-status.server.js
-│   │   │   ├── policies.server.js
-│   │   │   ├── proof-tokens.server.js
-│   │   │   ├── response.server.js
-│   │   │   ├── security.server.js
-│   │   │   ├── session.server.js
-│   │   │   ├── tokens.server.js
-│   │   │   └── verification.server.js
+│   │   │   │   └── audit-log.js
+│   │   │   ├── account-routes.js
+│   │   │   ├── account.js
+│   │   │   ├── admin.js
+│   │   │   ├── api-handlers.js
+│   │   │   ├── audit-log.js
+│   │   │   ├── password-status.js
+│   │   │   ├── policies.js
+│   │   │   ├── proof-tokens.js
+│   │   │   ├── response.js
+│   │   │   ├── security.js
+│   │   │   ├── session.js
+│   │   │   ├── tokens.js
+│   │   │   └── verification.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── form-primitives.js
 │   │   │   │   ├── oauth-provider-button.js
 │   │   │   │   └── oauth-provider-list.js
-│   │   │   └── layouts
-│   │   │       └── page-shell.js
+│   │   │   ├── layouts
+│   │   │   │   └── page-shell.js
+│   │   │   └── pages
+│   │   │       ├── oauth-callback.js
+│   │   │       ├── sign-in.js
+│   │   │       └── sign-up.js
 │   │   └── utils
 │   │       ├── constants.js
 │   │       ├── errors.js
@@ -494,18 +507,18 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── client
 │   │   │   └── use-discover-feed.js
 │   │   ├── server
-│   │   │   └── imdb-top-100.server.js
+│   │   │   └── imdb-top-100.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   └── poster-rail.js
 │   │   │   ├── layouts
-│   │   │   │   ├── home-grid-frame.js
 │   │   │   │   └── home-section.js
-│   │   │   └── sections
-│   │   │       ├── discover-section.js
-│   │   │       ├── home-rail-section.js
-│   │   │       ├── top-rated-section.js
-│   │   │       └── trending-section.js
+│   │   │   ├── pages
+│   │   │   │   └── home.js
+│   │   │   ├── sections
+│   │   │   │   ├── discover-section.js
+│   │   │   │   └── home-rail-section.js
+│   │   │   └── registry.js
 │   │   └── utils
 │   │       ├── discover.js
 │   │       └── imdb-top-100-data.js
@@ -513,24 +526,25 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   └── quick-links.js
-│   │   │   └── layouts
-│   │   │       └── page-shell.js
+│   │   │   ├── documents
+│   │   │   │   ├── privacy-document.js
+│   │   │   │   └── terms-document.js
+│   │   │   ├── layouts
+│   │   │   │   └── page-shell.js
+│   │   │   └── registry.js
 │   │   └── utils
-│   │       ├── constants.js
-│   │       └── formatting.js
+│   │       └── constants.js
 │   ├── media
 │   │   ├── client
 │   │   │   ├── likes.js
-│   │   │   ├── lists.js
 │   │   │   ├── social-proof.js
 │   │   │   ├── watched.js
 │   │   │   └── watchlist.js
 │   │   ├── server
-│   │   │   ├── list-like-route.server.js
-│   │   │   ├── movie-awards.server.js
-│   │   │   ├── person-awards.server.js
-│   │   │   ├── title-route.server.js
-│   │   │   └── tv-season-ratings.server.js
+│   │   │   ├── movie-awards.js
+│   │   │   ├── person-awards.js
+│   │   │   ├── title-route.js
+│   │   │   └── tv-season-ratings.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── collection-actions.js
@@ -543,13 +557,9 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   │   ├── recommendation-card.js
 │   │   │   │   ├── sidebar.js
 │   │   │   │   ├── social-links.js
-│   │   │   │   ├── social-proof.js
-│   │   │   │   ├── static-route-elements.js
 │   │   │   │   └── tv-season-ratings.js
 │   │   │   ├── layouts
-│   │   │   │   ├── media-detail-section.js
-│   │   │   │   ├── media-grid-frame.js
-│   │   │   │   └── person-grid-frame.js
+│   │   │   │   └── media-detail-section.js
 │   │   │   ├── sections
 │   │   │   │   ├── awards-section.js
 │   │   │   │   ├── cast-section.js
@@ -560,10 +570,14 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   │   ├── seasons-section.js
 │   │   │   │   ├── timeline-section.js
 │   │   │   │   └── videos-section.js
+│   │   │   ├── pages
+│   │   │   │   ├── media-detail.js
+│   │   │   │   ├── media-reviews.js
+│   │   │   │   └── person-detail.js
+│   │   │   ├── registry.js
 │   │   │   └── skeletons.js
 │   │   └── utils
 │   │       ├── background-preferences.js
-│   │       ├── constants.js
 │   │       ├── media-data.js
 │   │       ├── media-key.js
 │   │       ├── media-payload.js
@@ -577,10 +591,9 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── hooks
 │   │   │   └── use-media-reviews.js
 │   │   ├── server
-│   │   │   ├── actions.server.js
-│   │   │   ├── feeds.server.js
-│   │   │   ├── resources.server.js
-│   │   │   └── routes.server.js
+│   │   │   ├── actions.js
+│   │   │   ├── feeds.js
+│   │   │   └── resources.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── rating-range-selector.js
@@ -601,19 +614,13 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   ├── search-api.js
 │   │   │   └── search-cache.js
 │   │   ├── server
-│   │   │   └── community-route.server.js
-│   │   ├── ui
+│   │   │   └── community-search.js
 │   │   └── utils
 │   │       ├── constants.js
 │   │       ├── ranking.js
 │   │       ├── result.js
 │   │       └── text.js
 │   ├── shell
-│   │   ├── layout
-│   │   │   ├── grid-crosshair.js
-│   │   │   ├── nav-height-spacer.js
-│   │   │   ├── not-found-template.js
-│   │   │   └── page-gradient-shell.js
 │   │   ├── modals
 │   │   │   ├── account-social-modal.js
 │   │   │   ├── cast-modal.js
@@ -622,7 +629,7 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   ├── social-proof-modal.js
 │   │   │   └── video-preview-modal.js
 │   │   ├── navigation
-│   │   │   ├── action
+│   │   │   ├── actions
 │   │   │   │   ├── account-action.js
 │   │   │   │   ├── constants.js
 │   │   │   │   ├── forgot-password-action.js
@@ -643,34 +650,19 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │       ├── review-editor-surface.js
 │   │   │       ├── verification-surface.js
 │   │   │       └── watch-providers-surface.js
-│   │   └── shared
-│   │       ├── components
-│   │       │   ├── feedback
-│   │       │   │   ├── empty-state.js
-│   │       │   │   ├── fullscreen-state.js
-│   │       │   │   └── spinner.js
-│   │       │   ├── adaptive-image.js
-│   │       │   ├── media-card.js
-│   │       │   ├── media-carousel.js
-│   │       │   └── segmented-control.js
-│   │       ├── hooks
-│   │       │   ├── use-click-outside.js
-│   │       │   ├── use-debounce.js
-│   │       │   └── use-draggable-scroll.js
-│   │       ├── constants.js
-│   │       ├── events.js
-│   │       └── utils.js
+│   │   ├── ui
+│   │   │   └── skeletons.js
+│   │   └── not-found-template.js
 │   └── social
 │       ├── client
 │       │   ├── activity.js
 │       │   ├── follows.js
 │       │   └── notifications.js
 │       ├── server
-│       │   ├── activity.server.js
-│       │   ├── follows.server.js
-│       │   ├── notifications.server.js
-│       │   └── social-proof.server.js
-│       ├── ui
+│       │   ├── activity.js
+│       │   ├── follows.js
+│       │   ├── notifications.js
+│       │   └── social-proof.js
 │       └── utils
 │           ├── constants.js
 │           └── formatting.js
@@ -683,19 +675,13 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── api-result.js
 │   │   ├── app-error.js
 │   │   ├── cache-policy.server.js
-│   │   ├── http-client.js
-│   │   ├── http-server.js
-│   │   ├── index.js
 │   │   ├── memory-cache.server.js
 │   │   ├── rate-limiter.server.js
 │   │   ├── request-meta.server.js
 │   │   ├── route-context.server.js
 │   │   ├── runtime-policy-constants.js
 │   │   ├── supabase-data-service.js
-│   │   ├── supabase-edge-internal.server.js
-│   │   ├── write-rollout-config.server.js
-│   │   ├── write-rollout-executor.server.js
-│   │   └── write-rollout.server.js
+│   │   └── write-rollout-config.server.js
 │   ├── jobs
 │   │   ├── app-event-queue.server.js
 │   │   └── app-events-route.server.js
@@ -714,13 +700,13 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   ├── runtime
 │   │   └── health.server.js
 │   ├── supabase
-│   │   ├── admin.js
+│   │   ├── admin-client.server.js
+│   │   ├── admin-config.server.js
 │   │   ├── auth-storage.js
-│   │   ├── proxy.js
+│   │   ├── browser-client.js
+│   │   ├── public-config.js
 │   │   ├── response-client.server.js
-│   │   ├── supabase-client.js
-│   │   ├── supabase-constants.js
-│   │   └── supabase-server.js
+│   │   └── session-proxy.js
 │   └── tmdb
 │       ├── api
 │       │   └── route.server.js
@@ -751,12 +737,8 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── context.js
 │   │   ├── hooks.js
 │   │   └── index.js
-│   ├── api
-│   │   ├── cache.js
-│   │   └── index.js
 │   ├── auth
 │   │   ├── adapters
-│   │   │   ├── api.js
 │   │   │   ├── create-adapter.js
 │   │   │   └── supabase-adapter.js
 │   │   ├── action-flows.js
@@ -794,14 +776,10 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── context.js
 │   │   ├── header.js
 │   │   ├── index.js
-│   │   ├── motion.js
-│   │   ├── title.js
-│   │   └── utils.js
+│   │   └── motion.js
 │   ├── nav
 │   │   ├── hooks
-│   │   │   ├── index.js
 │   │   │   ├── navigation-status-model.js
-│   │   │   ├── use-action-height.js
 │   │   │   ├── use-element-height.js
 │   │   │   ├── use-nav-badge.js
 │   │   │   ├── use-nav-height-controller.js
@@ -816,6 +794,7 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   │   ├── use-navigation-status.js
 │   │   │   ├── use-navigation.js
 │   │   │   └── use-surface-stack.js
+│   │   ├── action-styles.js
 │   │   ├── actions.js
 │   │   ├── context.js
 │   │   ├── elements.js
@@ -825,7 +804,7 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── item.js
 │   │   ├── layout.js
 │   │   ├── motion.js
-│   │   ├── state-machine.js
+│   │   ├── nav-height-spacer.js
 │   │   ├── surface-model.js
 │   │   ├── surface.js
 │   │   └── utils.js
@@ -838,13 +817,11 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 │   │   ├── motion.js
 │   │   └── overlay.js
 │   └── registry
-│       ├── plugins
-│       │   └── index.js
+│       ├── apply-config.js
 │       ├── bootstrap.js
 │       ├── constants.js
 │       ├── context.js
 │       ├── index.js
-│       ├── injector.js
 │       ├── route-registry.js
 │       ├── store.js
 │       └── use-registry.js
@@ -872,13 +849,53 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 ├── scripts
 │   ├── register-alias.mjs
 │   └── test-supabase-runtime.mjs
+├── shared
+│   ├── hooks
+│   │   ├── use-click-outside.js
+│   │   ├── use-debounce.js
+│   │   └── use-draggable-scroll.js
+│   ├── client-request.js
+│   ├── constants.js
+│   ├── events.js
+│   ├── feedback.js
+│   ├── format.js
+│   ├── image-policy.js
+│   ├── media-type.js
+│   ├── motion.js
+│   ├── normalize.js
+│   └── url.js
+├── tests
+│   └── characterization
+│       ├── api-contracts.test.js
+│       ├── auth-csrf.test.js
+│       ├── client-request.test.js
+│       ├── legal-route-boundary.test.js
+│       ├── motion-foundation.test.js
+│       ├── nav-contracts.test.js
+│       ├── registry-store.test.js
+│       ├── security-policy.test.js
+│       ├── shared-normalize.test.js
+│       └── supabase-boundary.test.js
 ├── ui
+│   ├── class-names.js
+│   ├── components
+│   │   ├── adaptive-image.js
+│   │   ├── media-card.js
+│   │   ├── media-carousel.js
+│   │   └── segmented-control.js
+│   ├── feedback
+│   │   ├── empty-state.js
+│   │   ├── fullscreen-state.js
+│   │   └── spinner.js
+│   ├── layouts
+│   │   ├── grid-crosshair.js
+│   │   ├── page-gradient-shell.js
+│   │   └── page-grid-frame.js
 │   └── primitives
 │       ├── select
 │       │   ├── async-select.js
 │       │   ├── combobox.js
 │       │   ├── default-select.js
-│       │   ├── index.js
 │       │   ├── multi-select.js
 │       │   └── searchable-select.js
 │       ├── button.js
@@ -900,12 +917,12 @@ Aşağıda projenin tüm güncel dosya ve dizin yapısı eksiksiz olarak listele
 ├── .prettierrc.cjs
 ├── eslint.config.mjs
 ├── jsconfig.json
-├── middleware.js
 ├── next.config.mjs
 ├── open-next.config.ts
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.mjs
+├── proxy.js
 ├── tailwind.config.js
 └── wrangler.jsonc
 ```

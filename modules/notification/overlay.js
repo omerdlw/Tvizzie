@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { MOTION_EASINGS } from '@/shared/motion';
 
-import { SEMANTIC_SURFACE_CLASSES } from '@/domains/shell/shared/constants';
-import { cn, normalizeFeedbackText } from '@/domains/shell/shared/utils';
+import { SEMANTIC_SURFACE_CLASSES } from '@/shared/constants';
+import { cn } from '@/ui/class-names';
+import { normalizeFeedbackText } from '@/shared/feedback';
 import Icon from '@/ui/primitives/icon';
-import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { getNavActionClass } from '@/modules/nav/action-styles';
 
 import { NOTIFICATION_CONFIG } from './config';
 
@@ -124,7 +126,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
                 whileTap={{ y: 1 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.18, ease: MOTION_EASINGS.EMPHASIZED }}
                 onClick={(e) => {
                   e.stopPropagation();
                   action.onClick?.();

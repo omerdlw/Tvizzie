@@ -1,8 +1,6 @@
 'use client';
 
-import {
-  getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
 
 function formatFollowCount(value) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(
@@ -36,7 +34,7 @@ export default function AccountBioSurface({ description = '' }) {
   const normalizedDescription = String(description || '').trim();
 
   return (
-    <div className="bg-white/5 max-h-[min(40dvh,18rem)] w-full overflow-y-auto px-4 py-2">
+    <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto bg-white/5 px-4 py-2">
       {normalizedDescription ? (
         <div className="py-1">
           <p className="text-left text-sm leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-line text-white/70">

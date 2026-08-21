@@ -2,10 +2,10 @@
 
 import { Wifi, WifiOff } from 'lucide-react';
 
-import { DESTRUCTIVE_ACTION_TONE_CLASS, SEMANTIC_SURFACE_CLASSES } from '@/domains/shell/shared/constants';
-import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { DESTRUCTIVE_ACTION_TONE_CLASS, SEMANTIC_SURFACE_CLASSES } from '@/shared/constants';
+import { getNavActionClass } from '@/modules/nav/action-styles';
 import { Button } from '@/ui/primitives';
-import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { Spinner } from '@/ui/feedback/spinner';
 
 const STATUS_PRIORITY = Object.freeze({
   ACCOUNT_DELETE: 115,

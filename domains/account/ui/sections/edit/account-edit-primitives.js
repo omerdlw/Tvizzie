@@ -1,10 +1,10 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 import { AccountSectionHeading } from '@/domains/account/ui/sections/account-section';
-import { ACCOUNT_SECTION_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
-import { cn } from '@/domains/shell/shared/utils';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import { ACCOUNT_SECTION_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';
+import { cn } from '@/ui/class-names';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 export const INPUT_BASE_CLASSES =

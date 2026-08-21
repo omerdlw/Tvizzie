@@ -1,10 +1,11 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 import Link from 'next/link';
-import { normalizeFeedbackContent, cn } from '@/domains/shell/shared/utils';
+import { normalizeFeedbackContent } from '@/shared/feedback';
+import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/domains/shell/shared/constants';
+import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
 import {
   PosterCardsSkeletonRow,
   ListCardsSkeletonGrid,

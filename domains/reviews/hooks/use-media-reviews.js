@@ -7,22 +7,10 @@ import { useAccountProfile } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
 import { useNavHeight } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import {
-  deleteMediaReview,
-  toggleReviewLike,
-} from '@/domains/reviews/client/mutations';
-import {
-  subscribeToMediaReviews,
-} from '@/domains/reviews/client/subscriptions';
-import {
-  getRatingStats,
-  sortReviews,
-} from '@/domains/reviews/utils/formatting';
-import {
-  AUTH_ROUTES,
-  buildAuthHref,
-  getCurrentPathWithSearch,
-} from '@/domains/auth/utils/routes';
+import { deleteMediaReview, toggleReviewLike } from '@/domains/reviews/client/mutations';
+import { subscribeToMediaReviews } from '@/domains/reviews/client/subscriptions';
+import { getRatingStats, sortReviews } from '@/domains/reviews/utils/formatting';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils/routes';
 
 const PENDING_LIKE_TIMEOUT_MS = 3000;
 

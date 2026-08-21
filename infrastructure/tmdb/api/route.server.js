@@ -6,7 +6,7 @@ import {
   getTrending,
   searchContent,
 } from '@/infrastructure/tmdb/clients/tmdb-server-client';
-import { CACHE_CONTROL, cacheControlHeaders } from '@/infrastructure/http/http-server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/infrastructure/http/cache-policy.server';
 import { resolveWatchRegionFromRequestHeaders } from '@/infrastructure/tmdb/services/watch-region';
 
 const TMDB_ACTIONS = Object.freeze({

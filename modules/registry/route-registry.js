@@ -1,6 +1,6 @@
 'use client';
 
-import { useRegistry } from '@/modules/registry';
+import { useRegistry } from './use-registry';
 
 export function createRouteRegistry({ displayName = 'RouteRegistry', resolveConfig }) {
   function RouteRegistry(props) {

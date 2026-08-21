@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createAppError } from './app-error.js';
-import { normalizeValue } from '@/domains/shell/shared/utils.js';
+import { normalizeValue } from '@/shared/normalize';
 
 const rateLimitWindows = new Map();
 const MAX_RATE_LIMIT_BUCKETS = 10000;
@@ -37,7 +37,10 @@ function cleanupExpiredBuckets(now) {
   }
 }
 
-export function checkRateLimit(request, { key = 'default', limit = 30, windowSeconds = 60, userId = null } = {}) {
+export function checkRateLimit(
+  request,
+  { key = 'default', limit = 30, windowSeconds = 60, userId = null } = {},
+) {
   const clientId = resolveClientIdentifier(request, userId);
   const bucketKey = `${key}:${clientId}`;
   const now = Date.now();

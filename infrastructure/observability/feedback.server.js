@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { readSessionFromRequest } from '@/domains/auth/server/session.server.js';
-import { assertRateLimit } from '@/infrastructure/http/http-server';
-import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { readSessionFromRequest } from '@/domains/auth/server/session.js';
+import { assertRateLimit } from '@/infrastructure/http/rate-limiter.server';
+import { createAdminClient } from '@/infrastructure/supabase/admin-client.server';
 
 export const runtime = 'nodejs';
 

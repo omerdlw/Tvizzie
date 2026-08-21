@@ -1,23 +1,21 @@
 'use client';
 
-import Carousel from '@/domains/shell/shared/components/media-carousel';
-import MediaCard from '@/domains/shell/shared/components/media-card';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import Carousel from '@/ui/components/media-carousel';
+import MediaCard from '@/ui/components/media-card';
+import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
 import {
   MEDIA_DETAIL_SECTION_CONTENT_CLASS,
   MEDIA_DETAIL_SECTION_HEADER_CLASS,
 } from '@/domains/media/ui/layouts/media-detail-section';
-import { GridCrosshair, GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair, GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 
 export default function GallerySection({ images, type = 'movie', fullBleed = false }) {
   const { openModal } = useModal();
 
   const isPerson = type === 'person' || Boolean(images?.profiles && !images?.backdrops);
-  const rawList = isPerson
-    ? images?.profiles || images
-    : images?.backdrops || images;
+  const rawList = isPerson ? images?.profiles || images : images?.backdrops || images;
 
   const normalizedImages = Array.isArray(rawList) ? rawList : [];
 

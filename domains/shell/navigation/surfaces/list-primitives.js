@@ -2,30 +2,20 @@
 
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav/motion';
-import { cn, formatYear } from '@/domains/shell/shared/utils';
-import {
-  SEARCH_TYPES,
-} from '@/domains/search/utils/constants';
-import {
-  SEARCH_STYLES,
-} from '@/domains/shell/navigation/action/constants';
+import { cn } from '@/ui/class-names';
+import { formatYear } from '@/shared/format';
+import { SEARCH_TYPES } from '@/domains/search/utils/constants';
+import { SEARCH_STYLES } from '@/domains/shell/navigation/actions/constants';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 // --- CONSTANTS ---
-
-export const STACK_SKELETON_CLASSES = Object.freeze([
-  'skeleton-block',
-  'skeleton-block-soft',
-  'skeleton-block-soft',
-  'skeleton-block-soft',
-]);
 
 export const LIST_SEARCH_TAB_ITEMS = Object.freeze([
   { key: SEARCH_TYPES.ALL, label: 'All' },
@@ -90,9 +80,7 @@ export function normalizeSearchResult(item = {}) {
 export function normalizeListItem(item = {}) {
   if (!item) return null;
   const entityType =
-    String(
-      item?.entityType || item?.entity_type || item?.media_type || item?.mediaType || 'movie',
-    )
+    String(item?.entityType || item?.entity_type || item?.media_type || item?.mediaType || 'movie')
       .trim()
       .toLowerCase() === 'tv'
       ? 'tv'
@@ -151,7 +139,9 @@ export function getItemDisplayTitle(item) {
 }
 
 export function getItemYear(item) {
-  return formatYear(item?.release_date || item?.first_air_date || item?.firstAirDate || item?.releaseDate);
+  return formatYear(
+    item?.release_date || item?.first_air_date || item?.firstAirDate || item?.releaseDate,
+  );
 }
 
 export function getPreviewImage(item) {
@@ -189,7 +179,10 @@ export const SearchResultRow = memo(function SearchResultRow({ item, isAdded, on
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
-  const posterSrc = item?.poster_path || item?.posterPath ? `${TMDB_IMG}/w92${item.poster_path || item.posterPath}` : undefined;
+  const posterSrc =
+    item?.poster_path || item?.posterPath
+      ? `${TMDB_IMG}/w92${item.poster_path || item.posterPath}`
+      : undefined;
 
   return (
     <motion.button
@@ -223,7 +216,7 @@ export const SearchResultRow = memo(function SearchResultRow({ item, isAdded, on
             <span className="truncate text-xs font-semibold text-white/90 group-hover/result:text-white">
               {title}
             </span>
-            <span className="shrink-0 text-[10px] uppercase text-white/30">
+            <span className="shrink-0 text-[10px] text-white/30 uppercase">
               {isTv ? 'TV' : 'Movie'}
             </span>
           </div>
@@ -233,9 +226,13 @@ export const SearchResultRow = memo(function SearchResultRow({ item, isAdded, on
 
       <div className="shrink-0 text-white/40 transition-colors duration-150">
         {isAdded ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-info group-hover/result:text-error">
+          <span className="text-info group-hover/result:text-error inline-flex items-center gap-1 text-[11px] font-medium">
             <Icon icon="solar:check-circle-bold" size={15} className="group-hover/result:hidden" />
-            <Icon icon="solar:trash-bin-trash-bold" size={15} className="hidden group-hover/result:inline" />
+            <Icon
+              icon="solar:trash-bin-trash-bold"
+              size={15}
+              className="hidden group-hover/result:inline"
+            />
             <span className="group-hover/result:hidden">Added</span>
             <span className="hidden group-hover/result:inline">Remove</span>
           </span>
@@ -261,7 +258,10 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
-  const posterSrc = item?.poster_path || item?.posterPath ? `${TMDB_IMG}/w92${item.poster_path || item.posterPath}` : undefined;
+  const posterSrc =
+    item?.poster_path || item?.posterPath
+      ? `${TMDB_IMG}/w92${item.poster_path || item.posterPath}`
+      : undefined;
 
   return (
     <motion.div
@@ -287,7 +287,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-xs font-medium text-white/90">{title}</span>
-            <span className="shrink-0 text-[10px] uppercase text-white/30">
+            <span className="shrink-0 text-[10px] text-white/30 uppercase">
               {isTv ? 'TV' : 'Movie'}
             </span>
           </div>
@@ -326,7 +326,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
           whileTap={NAV_TAP_SCALE}
           onClick={() => onRemove(item)}
           aria-label={`Remove ${title} from list`}
-          className="center h-7 w-7 text-white/40 transition-colors duration-150 hover:text-error"
+          className="center hover:text-error h-7 w-7 text-white/40 transition-colors duration-150"
         >
           <Icon icon="solar:trash-bin-trash-bold" size={14} />
         </motion.button>

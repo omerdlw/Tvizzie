@@ -7,29 +7,22 @@ import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
   fetchMediaCollectionStatus,
-} from '@/domains/account/client/collections.client';
+} from '@/domains/account/client/collections';
 import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
 import {
   createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-} from '@/domains/media/utils/media-key';
+import { assertTitleMedia, buildMediaItemKey } from '@/domains/media/utils/media-key';
 import {
   createMediaRow,
   ensureUserId,
   normalizeMediaPayload,
 } from '@/domains/media/utils/media-payload';
-import {
-  ACTIVITY_EVENT_TYPES,
-  fireActivityEvent,
-} from '@/domains/social/client/activity';
-import {
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils/constants';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/domains/social/client/activity';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils/constants';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
@@ -116,21 +109,12 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   const rpcRow = await executeMediaCollectionRpc({
     client,
     fnName: 'collection_toggle_watchlist',
-    params: createMediaCollectionToggleRpcParams({ row, userId }),
+    params: createMediaCollectionToggleRpcParams({ row }),
     fallbackMessage: 'Watchlist item could not be updated',
   });
   const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
-  let isInWatchlist =
+  const isInWatchlist =
     resolvedRpcRow?.is_in_watchlist === true || resolvedRpcRow?.isInWatchlist === true;
-
-  try {
-    const status = await fetchWatchlistStatus({ media, userId });
-    if (typeof status?.isInWatchlist === 'boolean') {
-      isInWatchlist = status.isInWatchlist;
-    }
-  } catch {
-    // Keep the RPC result when the follow-up status read is unavailable.
-  }
 
   if (isInWatchlist) {
     const mediaSnapshot = assertTitleMedia(
@@ -164,6 +148,7 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
+  scheduleAccountSummaryRefresh(userId);
 
   return nextResult;
 }
@@ -177,7 +162,6 @@ export async function removeUserWatchlistItem({ media = null, mediaKey = null, u
     fnName: 'collection_remove_watchlist',
     params: {
       p_media_key: resolvedMediaKey,
-      p_user_id: userId,
     },
     fallbackMessage: 'Watchlist item could not be removed',
   });
@@ -191,6 +175,7 @@ export async function removeUserWatchlistItem({ media = null, mediaKey = null, u
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
+  scheduleAccountSummaryRefresh(userId);
 
   return {
     mediaKey: resolvedMediaKey,

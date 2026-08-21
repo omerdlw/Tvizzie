@@ -8,7 +8,7 @@ import {
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,
   WARNING_ACTION_TONE_CLASS,
-} from '@/domains/shell/shared/constants';
+} from '@/shared/constants';
 
 const SEMANTIC_VARIANT_CLASSES = Object.freeze({
   danger: DESTRUCTIVE_ACTION_TONE_CLASS,

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
+import { EVENT_TYPES, globalEvents } from '@/shared/events';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import {
   API_ERROR_BATCH_DELAY,

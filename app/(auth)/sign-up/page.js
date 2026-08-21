@@ -2,12 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense } from 'react';
 
-import Client from '@/app/(auth)/sign-up/client';
+import SignUpView from '@/domains/auth/ui/pages/sign-up';
 
 export default function SignUpPage() {
   return (
     <Suspense fallback={null}>
-      <Client />
+      <SignUpView />
     </Suspense>
   );
 }

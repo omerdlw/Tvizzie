@@ -4,7 +4,7 @@ import {
   SEMANTIC_SURFACE_CLASSES,
   SUCCESS_ACTION_TONE_CLASS,
   WARNING_ACTION_TONE_CLASS,
-} from '@/domains/shell/shared/constants';
+} from '@/shared/constants';
 import { CRITICAL_TYPES, TOAST_TYPES } from './context';
 
 export const NOTIFICATION_CONFIG = Object.freeze({

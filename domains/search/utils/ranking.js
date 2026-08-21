@@ -1,4 +1,4 @@
-import { toFiniteNumber } from '@/domains/shell/shared/utils.js';
+import { toFiniteNumber } from '@/shared/normalize';
 
 import { SEARCH_TYPES } from './constants.js';
 import { normalizeResult } from './result.js';

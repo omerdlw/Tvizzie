@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { createAccountRoutePage } from '@/domains/account/ui/pages/account-route-page';
-import { getUsernameAccountListsRouteData } from '@/domains/account/server/routes.server';
-import Client from '@/app/(account)/account/[username]/lists/client';
+import { getUsernameAccountListsRouteData } from '@/domains/account/server/page-data';
+import AccountListsView from '@/domains/account/ui/pages/account-lists';
 
-export default createAccountRoutePage(Client, getUsernameAccountListsRouteData);
+export default createAccountRoutePage(AccountListsView, getUsernameAccountListsRouteData);

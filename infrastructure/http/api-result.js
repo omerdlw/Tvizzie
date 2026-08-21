@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/domains/shell/shared/utils';
+import { normalizeValue } from '@/shared/normalize';
 
 export function buildApiSuccessResult(
   data = null,

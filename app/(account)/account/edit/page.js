@@ -1,11 +1,11 @@
-import { getCurrentEditableAccountSnapshot } from '@/domains/account/server/routes.server';
+import { getCurrentEditableAccountSnapshot } from '@/domains/account/server/page-data';
 
-import Client from '@/app/(account)/account/edit/client';
+import AccountEditPage from '@/domains/account/ui/pages/account-edit';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const initialSnapshot = await getCurrentEditableAccountSnapshot();
 
-  return <Client initialSnapshot={initialSnapshot} />;
+  return <AccountEditPage initialSnapshot={initialSnapshot} />;
 }

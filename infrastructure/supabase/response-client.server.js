@@ -4,7 +4,7 @@ import {
   SUPABASE_AUTH_COOKIE_OPTIONS,
   SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_URL,
-} from './supabase-constants';
+} from './public-config';
 
 export function createSupabaseResponseClient(request, response) {
   return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

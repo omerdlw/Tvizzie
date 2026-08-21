@@ -1,21 +1,18 @@
 'use client';
 
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import {
   getMediaDetailPath,
   isTitleMediaType,
   resolveExplicitMediaType,
 } from '@/domains/media/utils/media-key';
-import {
-  getMediaReleaseDate,
-  getMediaTitle,
-} from '@/domains/media/utils/media-data';
+import { getMediaReleaseDate, getMediaTitle } from '@/domains/media/utils/media-data';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
-import { cn } from '@/domains/shell/shared/utils';
-import MediaCard from '@/domains/shell/shared/components/media-card';
+import { cn } from '@/ui/class-names';
+import MediaCard from '@/ui/components/media-card';
 
 export default function MediaPosterCard({
   item,

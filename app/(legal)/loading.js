@@ -1,6 +1,6 @@
 'use client';
 
-import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { Spinner } from '@/ui/feedback/spinner';
 
 export default function Loading() {
   return (

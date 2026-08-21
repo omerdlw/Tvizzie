@@ -1,4 +1,4 @@
-export function createAccountRoutePage(Client, loadRouteData, options = null) {
+export function createAccountRoutePage(View, loadRouteData, options = null) {
   return async function Page(props = {}) {
     const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
     const resolvedParams = params || null;
@@ -17,6 +17,6 @@ export function createAccountRoutePage(Client, loadRouteData, options = null) {
           : undefined,
     );
 
-    return <Client routeData={routeData} />;
+    return <View routeData={routeData} />;
   };
 }

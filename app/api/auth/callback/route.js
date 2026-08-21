@@ -7,7 +7,7 @@ import {
   sanitizeAuthNextPath,
 } from '@/domains/auth/utils/oauth';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
-import { makeAuthResponsePrivate } from '@/domains/auth/server/response.server';
+import { makeAuthResponsePrivate } from '@/domains/auth/server/response';
 
 function normalizeValue(value) {
   return String(value || '').trim();

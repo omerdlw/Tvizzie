@@ -1,4 +1,4 @@
-import { globalEvents } from '@/domains/shell/shared/events';
+import { globalEvents } from '@/shared/events';
 
 const createEventEmitter = (eventType) => (data) =>
   globalEvents.emit(eventType, {

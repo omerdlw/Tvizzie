@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TMDB_IMG } from '@/domains/shell/shared/constants.js';
-import { normalizeValue } from '@/domains/shell/shared/utils.js';
+import { TMDB_IMG } from '@/shared/constants.js';
+import { normalizeValue } from '@/shared/normalize';
 import {
   getMediaPosterPreferenceFilePath,
   POSTER_PREFERENCE_CHANGE_EVENT,
@@ -304,7 +304,7 @@ export function getPreferredSearchImageSrc(item, size = 'w342') {
   return null;
 }
 
-const POSITION_IN_PAYLOAD_TABLES = new Set(['favorites', 'likes', 'watchlist', 'watched']);
+const POSITION_IN_PAYLOAD_TABLES = new Set(['likes', 'watchlist', 'watched']);
 
 function ensureDocRef(docRef) {
   if (!docRef || typeof docRef !== 'object') {

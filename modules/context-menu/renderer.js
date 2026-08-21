@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Z_INDEX } from '@/domains/shell/shared/constants';
+import { Z_INDEX } from '@/shared/constants';
 import Icon from '@/ui/primitives/icon';
 
 import { useContextMenu } from './context';

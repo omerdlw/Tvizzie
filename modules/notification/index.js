@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { Z_INDEX } from '@/domains/shell/shared/constants';
-import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
+import { Z_INDEX } from '@/shared/constants';
+import { EVENT_TYPES, globalEvents } from '@/shared/events';
 
 import { CRITICAL_TYPES, useNotificationActions, useNotificationState } from './context';
 import { NotificationOverlay } from './overlay';

@@ -7,10 +7,7 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import {
-  NOTIFICATION_EVENT_TYPES,
-  NOTIFICATION_TYPES,
-} from '@/domains/social/utils/constants';
+import { NOTIFICATION_EVENT_TYPES, NOTIFICATION_TYPES } from '@/domains/social/utils/constants';
 
 const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 60000;

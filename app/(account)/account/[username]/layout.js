@@ -1,6 +1,6 @@
 import ProfileLayout, { AccountNotFoundState } from '@/domains/account/ui/layouts/account-layout';
-import { getUsernameAccountSnapshot } from '@/domains/account/server/routes.server';
-import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
+import { getUsernameAccountSnapshot } from '@/domains/account/server/page-data';
+import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 
 /**
  * Server Component layout shell for /account/[username]/* routes.

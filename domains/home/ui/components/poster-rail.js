@@ -1,6 +1,6 @@
 'use client';
 
-import Carousel from '@/domains/shell/shared/components/media-carousel';
+import Carousel from '@/ui/components/media-carousel';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
 
 export function PosterRail({ fallbackMediaType = 'movie', items = [], showRank = false }) {

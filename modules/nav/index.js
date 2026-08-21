@@ -4,15 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { Z_INDEX } from '@/domains/shell/shared/constants';
-import { useClickOutside } from '@/domains/shell/shared/hooks/use-click-outside';
-import { useNavigation } from '@/modules/nav/hooks';
+import { Z_INDEX } from '@/shared/constants';
+import { useClickOutside } from '@/shared/hooks/use-click-outside';
+import { useNavigation } from '@/modules/nav/hooks/use-navigation';
 import { useNavHeightController } from '@/modules/nav/hooks/use-nav-height-controller';
 import { useNavKeyboard } from '@/modules/nav/hooks/use-nav-keyboard';
 import { useNavViewport } from '@/modules/nav/hooks/use-nav-viewport';
 import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/modules/nav/motion';
-import { cn } from '@/domains/shell/shared/utils';
-import { useIsFullscreenStateActive } from '@/domains/shell/shared/components/feedback/fullscreen-state';
+import { cn } from '@/ui/class-names';
+import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 
 import Item from './item';
 import { estimateCompactCardWidth } from './layout';
@@ -31,7 +31,9 @@ export {
   useNavigationContext,
   useNavigationState,
 } from './context';
-export { useActionHeight, useElementHeight, useNavHeight, useNavigation } from './hooks';
+export { useElementHeight } from './hooks/use-element-height';
+export { useNavHeight } from './hooks/use-nav-height';
+export { useNavigation } from './hooks/use-navigation';
 export { NavSurfaceHeader, default as NavSurfaceShell, useSurfaceHeader } from './surface';
 export { NAV_SURFACE_RENDER_MODE } from './surface-model';
 

@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeLowerValue, normalizeValue } from '@/domains/shell/shared/utils';
+import { normalizeEmailValue, normalizeLowerValue, normalizeValue } from '@/shared/normalize';
 
 export const GITHUB_PROVIDER_ID = 'github';
 export const GOOGLE_PROVIDER_ID = 'google.com';

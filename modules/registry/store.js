@@ -1,10 +1,4 @@
-import {
-  DEFAULT_SOURCE,
-  HISTORY_LIMIT,
-  REGISTRY_RESOLVERS,
-  REGISTRY_TYPES,
-  isRegistryType,
-} from './constants';
+import { DEFAULT_SOURCE, REGISTRY_RESOLVERS, REGISTRY_TYPES, isRegistryType } from './constants';
 
 const SOURCE_PRIORITY = Object.freeze({
   static: 100,
@@ -23,7 +17,6 @@ export function createInitialRegistries() {
     [REGISTRY_TYPES.CONTEXT_MENU]: {},
     [REGISTRY_TYPES.BACKGROUND]: {},
     [REGISTRY_TYPES.LOADING]: {},
-    [REGISTRY_TYPES.THEME]: {},
     [REGISTRY_TYPES.MODAL]: {},
     [REGISTRY_TYPES.NAV]: {},
     [REGISTRY_TYPES.NAV_RUNTIME]: {},
@@ -63,11 +56,6 @@ function resolveInstanceId(value) {
   return null;
 }
 
-function normalizeTtlMs(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
 function resolveRegisterInput(sourceOrOptions, optionsArg) {
   if (typeof sourceOrOptions === 'string') {
     return {
@@ -104,10 +92,9 @@ function resolveUnregisterInput(sourceOrOptions) {
   return { instanceId: null, source: DEFAULT_SOURCE };
 }
 
-function buildSourceRecord({ source, value, instanceId = null, priority, timestamp, ttlMs }) {
+function buildSourceRecord({ source, value, instanceId = null, priority, timestamp }) {
   return {
     updatedAt: timestamp,
-    expiresAt: ttlMs ? timestamp + ttlMs : null,
     instanceId: typeof instanceId === 'string' ? instanceId : null,
     priority,
     value,
@@ -146,27 +133,6 @@ function resolveRecordPriority(options, source) {
   return SOURCE_PRIORITY[source] ?? 0;
 }
 
-export function summarizeHistoryValue(value) {
-  if (Array.isArray(value)) {
-    return { kind: 'array', size: value.length };
-  }
-
-  if (isObject(value)) {
-    const keys = Object.keys(value);
-    return { kind: 'object', keys: keys.slice(0, 8), size: keys.length };
-  }
-
-  if (typeof value === 'string') {
-    return { kind: 'string', size: value.length, value: value.slice(0, 120) };
-  }
-
-  if (typeof value === 'function') {
-    return { kind: 'function' };
-  }
-
-  return { kind: typeof value, value };
-}
-
 export function toSourceRecord(rawRecord, source = DEFAULT_SOURCE) {
   if (!rawRecord) return null;
 
@@ -175,7 +141,6 @@ export function toSourceRecord(rawRecord, source = DEFAULT_SOURCE) {
 
     return {
       updatedAt: Number(rawRecord.updatedAt) || 0,
-      expiresAt: Number(rawRecord.expiresAt) > 0 ? Number(rawRecord.expiresAt) : null,
       instanceId: typeof rawRecord.instanceId === 'string' ? rawRecord.instanceId : null,
       priority: Number.isFinite(parsedPriority) ? parsedPriority : (SOURCE_PRIORITY[source] ?? 0),
       source: typeof rawRecord.source === 'string' ? rawRecord.source : source,
@@ -185,16 +150,11 @@ export function toSourceRecord(rawRecord, source = DEFAULT_SOURCE) {
 
   return {
     updatedAt: 0,
-    expiresAt: null,
     instanceId: null,
     priority: SOURCE_PRIORITY[source] ?? 0,
     source,
     value: rawRecord,
   };
-}
-
-function isRecordExpired(record, now = Date.now()) {
-  return Number(record?.expiresAt) > 0 && now >= Number(record.expiresAt);
 }
 
 function getSourceRank(source) {
@@ -227,7 +187,6 @@ function recordsHaveSameValue(prevRecord, nextRecord) {
 function hasRecordChanged(prevRecord, nextRecord) {
   if (!prevRecord) return true;
   if (prevRecord.priority !== nextRecord.priority) return true;
-  if (prevRecord.expiresAt !== nextRecord.expiresAt) return true;
   if (prevRecord.source !== nextRecord.source) return true;
   if (prevRecord.instanceId !== nextRecord.instanceId) return true;
   if (!recordsHaveSameValue(prevRecord, nextRecord)) return true;
@@ -310,12 +269,12 @@ function getResolverKind(type) {
   return REGISTRY_RESOLVERS[type] || 'priority';
 }
 
-export function resolveEntryValue(type, entry, now = Date.now()) {
+export function resolveEntryValue(type, entry) {
   if (!entry) return undefined;
 
   const activeRecords = Object.entries(entry)
     .map(([source, rawRecord]) => toSourceRecord(rawRecord, source))
-    .filter((record) => record && !isRecordExpired(record, now));
+    .filter(Boolean);
 
   if (activeRecords.length === 0) return undefined;
 
@@ -348,14 +307,9 @@ export function resolveEntryValue(type, entry, now = Date.now()) {
   return winner.value;
 }
 
-export function createTimerKey(type, key, source, instanceId = null) {
-  return `${type}:${key}:${createRecordKey(source, instanceId)}`;
-}
-
 export function createRegisterOperation(type, key, item, sourceOrOptions, optionsArg, timestamp) {
   const { source, options } = resolveRegisterInput(sourceOrOptions, optionsArg);
   const instanceId = resolveInstanceId(options);
-  const ttlMs = normalizeTtlMs(options.ttlMs);
   const priority = resolveRecordPriority(options, source);
   const record = buildSourceRecord({
     source,
@@ -363,7 +317,6 @@ export function createRegisterOperation(type, key, item, sourceOrOptions, option
     instanceId,
     priority,
     timestamp,
-    ttlMs,
   });
 
   return {
@@ -373,7 +326,6 @@ export function createRegisterOperation(type, key, item, sourceOrOptions, option
     instanceId,
     type,
     key,
-    ttlMs,
   };
 }
 
@@ -469,9 +421,4 @@ export function runScopedBatch(batch, executor, createScopedQueue) {
   return batch((queue) => {
     executor(createScopedQueue(queue));
   });
-}
-
-export function resolveHistoryLimit(limit = HISTORY_LIMIT) {
-  const parsedLimit = Number(limit);
-  return Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.floor(parsedLimit) : HISTORY_LIMIT;
 }

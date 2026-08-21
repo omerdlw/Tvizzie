@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { cn, resolveVersionedImageUrl } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
+import { resolveVersionedImageUrl } from '@/shared/image-policy';
 import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
 } from '@/domains/account/utils/avatar';
 import Link from 'next/link';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import { useModal } from '@/modules/modal';
 import { useAuth } from '@/modules/auth';
 function formatHeroCount(value) {

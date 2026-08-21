@@ -1,9 +1,7 @@
 'use client';
 
-import { cn } from '@/domains/shell/shared/utils';
-import {
-  Tooltip,
-} from '@/ui/primitives/tooltip';
+import { cn } from '@/ui/class-names';
+import { Tooltip } from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
 
 const SOCIAL_LINKS = [

@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { apiCache } from '@/modules/api';
 import { ErrorBoundaryCore } from './core';
 
 export { GlobalErrorListener } from './listener';
@@ -17,11 +16,6 @@ const COMPONENT_ERROR_MESSAGE = 'Component failed to load';
 export function GlobalError({ children, onReset, fallback }) {
   const pathname = usePathname();
 
-  const handleReset = () => {
-    apiCache.clear();
-    onReset?.();
-  };
-
   return (
     <ErrorBoundaryCore
       title={GLOBAL_ERROR_TITLE}
@@ -29,7 +23,7 @@ export function GlobalError({ children, onReset, fallback }) {
       resetKey={pathname}
       variant="full"
       fallback={fallback}
-      onReset={handleReset}
+      onReset={onReset}
     >
       {children}
     </ErrorBoundaryCore>

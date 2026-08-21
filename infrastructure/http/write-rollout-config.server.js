@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-import { normalizeLowerValue as normalizeValue } from '@/domains/shell/shared/utils.js';
+import { normalizeLowerValue as normalizeValue } from '@/shared/normalize';
 
 import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from './runtime-policy-constants.js';
 

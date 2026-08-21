@@ -1,7 +1,5 @@
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import {
-  getPreferredMoviePosterSrc,
-} from '@/domains/media/utils/poster-preferences';
+import { TMDB_IMG } from '@/shared/constants';
+import { getPreferredMoviePosterSrc } from '@/domains/media/utils/poster-preferences';
 
 export function toAccountMediaCard(item = {}) {
   const mediaType = item.media_type || item.entityType;

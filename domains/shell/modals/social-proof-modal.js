@@ -10,7 +10,7 @@ import {
 } from '@/domains/account/utils/avatar';
 import { Container } from '@/modules/modal';
 import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal/motion';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 function buildUserActionMap(socialProof) {

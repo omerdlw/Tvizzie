@@ -6,11 +6,8 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
-import { normalizeValue as normalizeSubjectValue } from '@/domains/shell/shared/utils.js';
-import {
-  REVIEW_LIMIT,
-  REVIEW_LIVE_EVENT_TYPE,
-} from '@/domains/reviews/utils/constants';
+import { normalizeValue as normalizeSubjectValue } from '@/shared/normalize';
+import { REVIEW_LIMIT, REVIEW_LIVE_EVENT_TYPE } from '@/domains/reviews/utils/constants';
 import {
   fetchListReviews,
   fetchMediaReviews,

@@ -5,9 +5,7 @@ import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  ACTIVITY_EVENT_TYPES,
-} from '@/domains/social/utils/constants';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/utils/constants';
 
 async function postActivityEvent({ eventType, payload = {} }) {
   return requestApiJson('/api/activity/events', {

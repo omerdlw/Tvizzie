@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { Z_INDEX } from '@/domains/shell/shared/constants';
+import { Z_INDEX } from '@/shared/constants';
 import { cn, resolveSlotClasses } from './primitive-support';
 const Tooltip = forwardRef(
   (
@@ -43,7 +43,7 @@ const Tooltip = forwardRef(
             sideOffset={sideOffset}
             collisionPadding={collisionPadding}
             className={cn(
-              'tooltip-content pointer-events-none select-none z-(--z-tooltip) font-medium',
+              'tooltip-content pointer-events-none z-(--z-tooltip) font-medium select-none',
               'rounded-md bg-white px-2.5 py-1 text-xs font-semibold tracking-tight text-black shadow-lg shadow-black/25',
               classes.content,
               classes.root,

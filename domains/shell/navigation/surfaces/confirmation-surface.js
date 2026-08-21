@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { cn } from '@/domains/shell/shared/utils';
-import { NAV_SURFACE_RENDER_MODE } from '@/modules/nav';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { cn } from '@/ui/class-names';
+import { NAV_SURFACE_RENDER_MODE, useSurfaceHeader } from '@/modules/nav';
+import { Description, Icon as BadgeIcon, Title } from '@/modules/nav/elements';
 
 const BUTTON_TONES = Object.freeze({
   danger:
@@ -31,6 +32,13 @@ function isPromiseLike(value) {
 function stopEvent(event) {
   event.preventDefault();
   event.stopPropagation();
+}
+
+function isImageIconSource(icon) {
+  return (
+    typeof icon === 'string' &&
+    (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:image/'))
+  );
 }
 
 export function ConfirmationActions({ confirmation = {}, onCancel = null, onConfirm = null }) {
@@ -133,31 +141,44 @@ export function createConfirmationSurfaceEntry(confirmation, fallbackItem = null
     return null;
   }
 
+  const icon = confirmation.icon ?? fallbackItem?.icon ?? null;
+  const title = confirmation.title ?? fallbackItem?.title ?? fallbackItem?.name ?? null;
+  const description = confirmation.description ?? fallbackItem?.description ?? null;
+  const isImage = isImageIconSource(icon);
+
   return {
     renderMode: NAV_SURFACE_RENDER_MODE.COMPONENT,
     component: ConfirmationSurface,
     content: null,
     props: {
-      confirmation,
+      confirmation: {
+        ...confirmation,
+        icon,
+        title,
+        description,
+      },
     },
     action: null,
     showAction: false,
     dismissible: false,
     onClose: null,
-    icon: confirmation.icon ?? fallbackItem?.icon ?? null,
-    title: confirmation.title ?? fallbackItem?.title ?? fallbackItem?.name ?? null,
-    description: confirmation.description ?? fallbackItem?.description ?? null,
+    icon: isImage ? icon : '',
+    title: isImage ? title : '',
+    description: isImage ? description : '',
     trailing: null,
     closeLabel: confirmation.closeLabel ?? null,
   };
 }
 
 export default function ConfirmationSurface({ close = null, confirmation = {} }) {
+  const { icon, title, description } = confirmation;
+  const isImage = isImageIconSource(icon);
+
   function dismissCurrentConfirmation(result = null) {
     close?.(result);
   }
 
-  return (
+  const actions = (
     <ConfirmationActions
       confirmation={confirmation}
       onCancel={() => {
@@ -187,5 +208,34 @@ export default function ConfirmationSurface({ close = null, confirmation = {} })
         });
       }}
     />
+  );
+
+  if (isImage) {
+    return <div className="w-full">{actions}</div>;
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center gap-4 text-center">
+      {icon ? (
+        <div className="center relative shrink-0">
+          <BadgeIcon icon={icon} />
+        </div>
+      ) : null}
+
+      <div className="flex flex-col items-center gap-1.5 px-2">
+        {title ? (
+          <Title text={title} style={{ className: '!normal-case !text-base font-bold text-white' }} />
+        ) : null}
+        {description ? (
+          <Description
+            text={description}
+            maxLines={4}
+            style={{ className: '!opacity-70 !text-sm text-white/70' }}
+          />
+        ) : null}
+      </div>
+
+      <div className="w-full pt-1">{actions}</div>
+    </div>
   );
 }

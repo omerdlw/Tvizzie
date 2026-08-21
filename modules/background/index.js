@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Z_INDEX } from '@/domains/shell/shared/constants';
+import { Z_INDEX } from '@/shared/constants';
 import { useBackgroundActions, useBackgroundState } from './context';
 
 export { BackgroundProvider, useBackgroundState } from './context';

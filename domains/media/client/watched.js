@@ -6,10 +6,8 @@ import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
   fetchMediaCollectionStatus,
-} from '@/domains/account/client/collections.client';
-import {
-  scheduleAccountSummaryRefresh,
-} from '@/domains/account/client/profile.client';
+} from '@/domains/account/client/collections';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
 import {
   assertSupabaseResult,
   getSupabaseClient,
@@ -19,23 +17,19 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-} from '@/domains/media/utils/media-key';
+import { assertTitleMedia, buildMediaItemKey } from '@/domains/media/utils/media-key';
 import {
   createMediaPayload,
   ensureUserId,
   normalizeMediaPayload,
 } from '@/domains/media/utils/media-payload';
-import { removeUserLike } from './likes.js';
 import {
-  ACTIVITY_EVENT_TYPES,
-  fireActivityEvent,
-} from '@/domains/social/client/activity';
-import {
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils/constants';
+  getFavoriteShowcaseSubscriptionKey,
+  getLikeStatusSubscriptionKey,
+  getUserLikesSubscriptionKey,
+} from './likes.js';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/domains/social/client/activity';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils/constants';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
@@ -183,13 +177,13 @@ export async function markUserWatched({
       p_poster_path: mediaPayload.poster_path || null,
       p_source_last_action: sourceLastAction || 'watched',
       p_title: mediaPayload.title || null,
-      p_user_id: userId,
     },
     fallbackMessage: 'Watched item could not be saved',
   });
-  const isNew = rpcRow?.is_new === true;
-  const watchCount = Number(rpcRow?.watch_count || 1);
-  const wasRemovedFromWatchlist = rpcRow?.was_removed_from_watchlist === true;
+  const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  const isNew = resolvedRpcRow?.is_new === true;
+  const watchCount = Number(resolvedRpcRow?.watch_count || 1);
+  const wasRemovedFromWatchlist = resolvedRpcRow?.was_removed_from_watchlist === true;
 
   if (isNew) {
     fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHED_ADDED, {
@@ -256,21 +250,17 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
 
   const resolvedMediaKey = mediaKey || getWatchedDocRef(userId, media).id;
 
-  const likeResult = await removeUserLike({
-    media,
-    mediaKey: resolvedMediaKey,
-    userId,
-  });
   const rpcRow = await executeMediaCollectionRpc({
     client: getSupabaseClient(),
     fnName: 'collection_remove_watched',
     params: {
       p_media_key: resolvedMediaKey,
-      p_user_id: userId,
     },
     fallbackMessage: 'Watched item could not be removed',
   });
-  const wasRemoved = rpcRow?.removed === true;
+  const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  const wasRemoved = resolvedRpcRow?.removed === true;
+  const wasUnliked = resolvedRpcRow?.was_unliked === true;
 
   primePollingSubscription(getWatchedStatusSubscriptionKey({ media, userId }), {
     isWatched: false,
@@ -280,12 +270,29 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
     refetch: true,
   });
+
+  if (wasUnliked) {
+    if (media) {
+      invalidatePollingSubscription(getLikeStatusSubscriptionKey({ media, userId }), {
+        payload: {
+          isLiked: false,
+          like: null,
+        },
+      });
+    }
+    invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
+      refetch: true,
+    });
+    invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+      refetch: true,
+    });
+  }
   scheduleAccountSummaryRefresh(userId);
 
   return {
     isWatched: false,
     mediaKey: resolvedMediaKey,
-    wasUnliked: likeResult?.wasRemoved === true,
+    wasUnliked,
     wasRemoved,
   };
 }

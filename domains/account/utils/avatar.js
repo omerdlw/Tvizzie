@@ -1,4 +1,5 @@
-import { isValidUrl, resolveVersionedImageUrl } from '@/domains/shell/shared/utils';
+import { isValidUrl } from '@/shared/url';
+import { resolveVersionedImageUrl } from '@/shared/image-policy';
 
 const DEFAULT_USER_AVATAR = '/images/default-avatar.svg';
 

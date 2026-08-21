@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Container } from '@/modules/modal';
+import { MOTION_EASINGS } from '@/shared/motion';
 
 export default function VideoPreviewModal({ close, data }) {
   const [isPlaying, setIsPlaying] = useState(Boolean(data?.key));
@@ -41,7 +42,7 @@ export default function VideoPreviewModal({ close, data }) {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+        transition={{ duration: 0.28, ease: MOTION_EASINGS.SOFT }}
         className="relative aspect-video h-auto w-full overflow-hidden bg-black"
       >
         <AnimatePresence>
@@ -59,4 +60,3 @@ export default function VideoPreviewModal({ close, data }) {
     </Container>
   );
 }
-

@@ -3,17 +3,14 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-import { pipe } from '@/domains/shell/shared/utils';
-import {
-  ACCOUNT_PROVIDER_CONFIG,
-} from '@/domains/account/client/profile.client';
+import { composeProviders } from '@/app/_shell/compose-providers';
+import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client/profile';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';
 
-const NotificationsModal = dynamic(
-  () => import('@/domains/shell/modals/notifications-modal'),
-  { ssr: false },
-);
+const NotificationsModal = dynamic(() => import('@/domains/shell/modals/notifications-modal'), {
+  ssr: false,
+});
 
 import { AccountProvider } from '@/modules/account';
 import { ContextMenuGlobal, ContextMenuProvider } from '@/modules/context-menu';
@@ -29,13 +26,13 @@ import { NotificationBadgeListener, NotificationListener } from '@/modules/notif
 import { useRegistry } from '@/modules/registry';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 
-const InteractiveProviders = pipe(
+const InteractiveProviders = composeProviders(
   [AccountProvider, { config: ACCOUNT_PROVIDER_CONFIG }],
   [NotificationProvider],
   [ContextMenuProvider],
 );
 
-const AuthInteractiveProviders = pipe([NotificationProvider]);
+const AuthInteractiveProviders = composeProviders([NotificationProvider]);
 
 function resolveSentryGlobal() {
   if (typeof window === 'undefined') {

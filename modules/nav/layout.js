@@ -1,4 +1,4 @@
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 
 // --- CONSTANTS ---
 

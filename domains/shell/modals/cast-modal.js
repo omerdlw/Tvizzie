@@ -4,15 +4,15 @@ import { useEffect, useState, useMemo, memo } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import { Container } from '@/modules/modal';
 import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal/motion';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
-import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
+import AdaptiveImage from '@/ui/components/adaptive-image';
+import SegmentedControl from '@/ui/components/segmented-control';
 import Icon from '@/ui/primitives/icon';
 
 function normalizeEntries(list, fallbackSubtitle) {

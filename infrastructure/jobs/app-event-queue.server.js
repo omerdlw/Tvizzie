@@ -1,13 +1,9 @@
 import 'server-only';
 
-import { normalizeValue } from '@/domains/shell/shared/utils';
-import { createAdminClient } from '@/infrastructure/supabase/admin';
-import {
-  processActivityEvent,
-} from '@/domains/social/server/activity.server';
-import {
-  processNotificationEvent,
-} from '@/domains/social/server/notifications.server';
+import { normalizeValue } from '@/shared/normalize';
+import { createAdminClient } from '@/infrastructure/supabase/admin-client.server';
+import { processActivityEvent } from '@/domains/social/server/activity';
+import { processNotificationEvent } from '@/domains/social/server/notifications';
 
 export const APP_EVENT_JOB_KINDS = {
   ACTIVITY_EVENT: 'activity_event',

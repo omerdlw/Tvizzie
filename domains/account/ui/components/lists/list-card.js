@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { MOTION_EASINGS } from '@/shared/motion';
+import { TMDB_IMG } from '@/shared/constants';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
@@ -179,7 +180,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                           animate={{
                             filter: `brightness(${isHovered ? Math.min(1, brightness + 0.2) : brightness}) contrast(1.08) saturate(${1 - distanceFromCenter * 0.2}) blur(${isHovered ? 0 : blurAmount}px)`,
                           }}
-                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: 0.3, ease: MOTION_EASINGS.CINEMATIC }}
                         />
                       ) : (
                         <div className="center h-full w-full bg-black/50 text-white/40">
@@ -200,7 +201,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             }}
             transition={{
               rotateX: { type: 'spring', stiffness: 180, damping: 22, mass: 0.8 },
-              backgroundColor: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+              backgroundColor: { duration: 0.3, ease: MOTION_EASINGS.CINEMATIC },
             }}
             style={{ transformOrigin: 'center bottom' }}
           >

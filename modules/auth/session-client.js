@@ -1,5 +1,7 @@
 'use client';
 
+import { requestJson } from '@/shared/client-request';
+
 const CANONICAL_SESSION_CACHE_TTL_MS = 1500;
 
 const CANONICAL_SESSION_STATE = {
@@ -38,19 +40,11 @@ export async function fetchCanonicalSessionPayload({ force = false } = {}) {
 
   const requestPromise = (async () => {
     try {
-      const response = await fetch('/api/auth/session', {
-        cache: 'no-store',
-        credentials: 'include',
-      });
-      const payload = await response.json().catch(() => createAnonymousSessionPayload());
-
-      if (!response.ok) {
-        const error = new Error(payload?.error || 'Session could not be loaded');
-        error.code = payload?.code || null;
-        error.status = response.status;
-        error.data = payload;
-        throw error;
-      }
+      const payload =
+        (await requestJson('/api/auth/session', {
+          fallbackMessage: 'Session could not be loaded',
+          retryCount: 0,
+        })) || createAnonymousSessionPayload();
 
       CANONICAL_SESSION_STATE.value = payload;
       CANONICAL_SESSION_STATE.expiresAt = Date.now() + CANONICAL_SESSION_CACHE_TTL_MS;

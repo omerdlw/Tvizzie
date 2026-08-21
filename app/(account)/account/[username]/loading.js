@@ -2,10 +2,10 @@
 
 import { usePathname } from 'next/navigation';
 import {
+  AccountSkeleton,
   renderAccountSectionSkeleton,
   resolveAccountTabFromPathname,
-} from '@/app/(account)/account/loading';
-import { AccountSkeleton } from '@/app/(account)/account/loading';
+} from '@/domains/account/ui/skeletons';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 
 /**

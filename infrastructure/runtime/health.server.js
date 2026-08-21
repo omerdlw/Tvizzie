@@ -1,11 +1,8 @@
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 import { NextResponse } from 'next/server';
 
-import {
-  CACHE_CONTROL,
-  ROLLOUT_CONFIG,
-  cacheControlHeaders,
-} from '@/infrastructure/http/http-server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/infrastructure/http/cache-policy.server';
+import { ROLLOUT_CONFIG } from '@/infrastructure/http/write-rollout-config.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

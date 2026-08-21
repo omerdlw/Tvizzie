@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import MediaCard from '@/domains/shell/shared/components/media-card';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import MediaCard from '@/ui/components/media-card';
+import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
   getPreferredMoviePosterSrc,

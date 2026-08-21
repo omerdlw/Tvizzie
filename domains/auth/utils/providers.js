@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeValue } from '@/domains/shell/shared/utils';
+import { normalizeEmailValue, normalizeValue } from '@/shared/normalize';
 import {
   normalizeProviderId,
   resolveAuthCapabilities,

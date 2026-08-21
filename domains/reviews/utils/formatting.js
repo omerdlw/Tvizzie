@@ -1,15 +1,10 @@
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-} from '@/domains/media/utils/media-key';
-import {
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils/constants';
+import { assertTitleMedia, buildMediaItemKey } from '@/domains/media/utils/media-key';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils/constants';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/utils/formatting';
-import { normalizeValue } from '@/domains/shell/shared/utils.js';
+import { normalizeValue } from '@/shared/normalize';
 import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS } from './constants.js';
 
 const REVIEW_SORT_MODE_SET = new Set(REVIEW_SORT_OPTIONS.map((opt) => opt.value));

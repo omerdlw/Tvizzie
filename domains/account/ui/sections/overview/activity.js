@@ -2,14 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  useSeededFeedState,
-} from '@/domains/account/hooks/feed-state.hooks';
-import {
-  isPermissionDeniedError,
-  logDataError,
-} from '@/domains/account/utils/validation';
-import { fetchAccountActivityFeed } from '@/domains/account/client/account-api.client';
+import { useSeededFeedState } from '@/domains/account/hooks/feed-state';
+import { isPermissionDeniedError, logDataError } from '@/domains/account/utils/validation';
+import { fetchAccountActivityFeed } from '@/domains/account/client/account-api';
 import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
 
 function hasMatchingInitialFeed(initialFeed = null, resolvedUserId = null) {

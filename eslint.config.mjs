@@ -22,6 +22,23 @@ export default [
     },
   },
   {
+    files: ['domains/**/*.{js,mjs,cjs,jsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app*'],
+              message:
+                'Domain code cannot import the app composition layer. Move route composition into app/ or expose a domain-owned interface.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['modules/**/*.{js,mjs,cjs,jsx}'],
     rules: {
       'no-restricted-imports': [

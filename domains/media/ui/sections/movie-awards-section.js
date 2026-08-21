@@ -1,13 +1,13 @@
 'use client';
 
-import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair } from '@/ui/layouts/grid-crosshair';
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
-import { getMediaAwardsServer } from '@/domains/media/server/movie-awards.server.js';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import { getMediaAwardsServer } from '@/domains/media/server/movie-awards.js';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import MediaThumb from '../components/media-thumb';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 
 function buildTimeline(organizations = []) {
   return (organizations || [])
@@ -91,9 +91,7 @@ function useMediaAwards({ mediaId, mediaType = 'movie', awardsPromise }) {
   const academyWins = allItems.filter(
     (i) => i.type === 'Win' && /academy|oscar/i.test(i.organization),
   ).length;
-  const emmyWins = allItems.filter(
-    (i) => i.type === 'Win' && /emmy/i.test(i.organization),
-  ).length;
+  const emmyWins = allItems.filter((i) => i.type === 'Win' && /emmy/i.test(i.organization)).length;
 
   return {
     academyWins,
@@ -154,7 +152,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`flex w-full items-center justify-center gap-1.5 cursor-pointer truncate border border-white/5 px-3 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
+        className={`flex w-full cursor-pointer items-center justify-center gap-1.5 truncate border border-white/5 px-3 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
           isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
@@ -210,7 +208,9 @@ function MovieAwardCard({ award }) {
     <div
       className={cn(
         'group relative flex items-start gap-3 border p-3.5 backdrop-blur-sm transition-all duration-300 ease-in-out sm:gap-4 sm:p-4',
-        isWin ? 'border-warning/40 hover:border-warning/70 hover:bg-white/5' : 'border-white/5 hover:border-white/15 hover:bg-white/5',
+        isWin
+          ? 'border-warning/40 hover:border-warning/70 hover:bg-white/5'
+          : 'border-white/5 hover:border-white/15 hover:bg-white/5',
       )}
     >
       {award.poster ? (
@@ -274,10 +274,7 @@ function MovieAwardCard({ award }) {
         </div>
 
         {recipients.length > 0 ? (
-          <div className="mt-1 flex flex-col gap-1.5 pt-2 border-t border-white/5">
-            <span className="text-[10px] font-semibold tracking-wider text-white/40 uppercase sm:text-[11px]">
-              {recipients.length === 1 ? 'Nominated Person' : 'Shared With'}
-            </span>
+          <div className="mt-1 flex flex-col gap-1.5 border-t border-white/5 pt-2">
             <div className="flex flex-wrap items-center gap-1.5">
               {recipients.map((recipient) => (
                 <RecipientChip key={recipient.id} recipient={recipient} />
@@ -301,7 +298,13 @@ function AwardsMessage({ children }) {
   );
 }
 
-export default function MovieAwards({ movieId, tvId, mediaId, mediaType = 'movie', awardsPromise }) {
+export default function MovieAwards({
+  movieId,
+  tvId,
+  mediaId,
+  mediaType = 'movie',
+  awardsPromise,
+}) {
   const resolvedMediaId = mediaId || movieId || tvId;
   const { academyWins, allItems, emmyWins, nominations, organizations, status, wins } =
     useMediaAwards({

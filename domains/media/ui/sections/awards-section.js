@@ -1,13 +1,13 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
 import MediaThumb from '../components/media-thumb';
-import { getPersonAwardsServer } from '@/domains/media/server/person-awards.server.js';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
-import { cn } from '@/domains/shell/shared/utils';
+import { getPersonAwardsServer } from '@/domains/media/server/person-awards.js';
+import AdaptiveImage from '@/ui/components/adaptive-image';
+import { cn } from '@/ui/class-names';
 
 function buildTimeline(organizations = []) {
   return (organizations || [])
@@ -90,9 +90,7 @@ function usePersonAwards({ personId, awardsPromise }) {
   const academyWins = allItems.filter(
     (i) => i.type === 'Win' && /academy|oscar/i.test(i.organization),
   ).length;
-  const emmyWins = allItems.filter(
-    (i) => i.type === 'Win' && /emmy/i.test(i.organization),
-  ).length;
+  const emmyWins = allItems.filter((i) => i.type === 'Win' && /emmy/i.test(i.organization)).length;
 
   return {
     academyWins,
@@ -153,7 +151,7 @@ function AwardFilterPill({
       <button
         type="button"
         onClick={onClick}
-        className={`flex w-full items-center justify-center gap-1.5 cursor-pointer truncate border border-white/5 px-3.5 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
+        className={`flex w-full cursor-pointer items-center justify-center gap-1.5 truncate border border-white/5 px-3.5 py-2 text-center text-xs font-semibold backdrop-blur-sm transition-all duration-300 ease-in-out ${
           isActive ? `${activeColorClass}` : 'bg-white/5 text-white/70 hover:bg-white/10'
         }`}
       >
@@ -246,12 +244,12 @@ function AwardCard({ award }) {
           {award.project ? (
             <p className="truncate text-xs font-medium text-white/70 group-hover:text-white sm:text-sm">
               {award.project}
-              {award.ceremony && award.ceremony !== award.organization ? ` · ${award.ceremony}` : ''}
+              {award.ceremony && award.ceremony !== award.organization
+                ? ` · ${award.ceremony}`
+                : ''}
             </p>
           ) : (
-            <p className="truncate text-xs text-white/50 sm:text-sm">
-              {award.organization}
-            </p>
+            <p className="truncate text-xs text-white/50 sm:text-sm">{award.organization}</p>
           )}
         </div>
       </div>

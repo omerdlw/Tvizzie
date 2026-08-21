@@ -20,18 +20,14 @@ import {
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
 } from '@/domains/account/utils/avatar';
-import { cn } from '@/domains/shell/shared/utils';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import { cn } from '@/ui/class-names';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import {
-  DESTRUCTIVE_ACTION_TONE_CLASS,
-  INFO_ACTION_TONE_CLASS,
-} from '@/domains/shell/shared/constants';
+import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants';
+import { NotificationListSkeleton } from '@/domains/shell/ui/skeletons';
 
-const TOOL_BUTTON_CLASS =
-  'size-7 cursor-pointer transition-all duration-300 ease-in-out';
-const SKELETON_COUNT = 16;
+const TOOL_BUTTON_CLASS = 'size-7 cursor-pointer transition-all duration-300 ease-in-out';
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
@@ -218,18 +214,6 @@ const NotificationRow = memo(function NotificationRow({
   );
 });
 
-function NotificationSkeleton() {
-  return (
-    <div className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
-      <div className="size-10 shrink-0 bg-white/5" />
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-3/5 bg-white/5" />
-        <div className="h-2 w-2/5 bg-white/5" />
-      </div>
-    </div>
-  );
-}
-
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
   const toast = useToast();
@@ -413,9 +397,7 @@ export default function NotificationsModal({ close, header, data }) {
               animate="visible"
               exit="exit"
             >
-              {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-                <NotificationSkeleton key={index} />
-              ))}
+              <NotificationListSkeleton />
             </motion.div>
           ) : loadError ? (
             <motion.div

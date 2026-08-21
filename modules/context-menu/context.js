@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useState, useMemo, useEffect } from 'react';
-import { toFiniteNumber } from '@/domains/shell/shared/utils';
+import { toFiniteNumber } from '@/shared/normalize';
 
 const ContextMenuContext = createContext(null);
 

@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { requestJson } from '@/shared/client-request';
+import { TMDB_IMG } from '@/shared/constants';
 import {
   DEFAULT_WATCH_REGION,
   normalizeWatchRegion,
   resolveWatchRegionFromBrowser,
 } from '@/infrastructure/tmdb/services/watch-region';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 
 const MAX_WATCH_PROVIDERS = 6;
 
@@ -40,13 +41,7 @@ function buildProviderList(watchProviders) {
 }
 
 async function requestWatchRegion() {
-  const response = await fetch('/api/tmdb/watch-region', {
-    cache: 'no-store',
-  });
-  if (!response.ok) {
-    return null;
-  }
-  return response.json();
+  return requestJson('/api/tmdb/watch-region', { retryCount: 0 });
 }
 
 export default function WatchProvidersSurface({ close, providers }) {

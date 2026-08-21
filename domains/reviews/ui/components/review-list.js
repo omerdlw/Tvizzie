@@ -1,13 +1,9 @@
 'use client';
 
-import { normalizeFeedbackText } from '@/domains/shell/shared/utils';
-import {
-  mergeReviewUser,
-} from '@/domains/reviews/utils/formatting';
+import { normalizeFeedbackText } from '@/shared/feedback';
+import { mergeReviewUser } from '@/domains/reviews/utils/formatting';
 import ReviewCard from './review-card';
-import {
-  ReviewCardsSkeletonList,
-} from '@/domains/account/ui/skeletons';
+import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons';
 
 export default function ReviewList({
   baseDelay = 0,

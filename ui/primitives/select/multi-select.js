@@ -5,7 +5,7 @@ import { forwardRef, useMemo } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ChevronDown } from 'lucide-react';
 
-import { Z_INDEX } from '@/domains/shell/shared/constants';
+import { Z_INDEX } from '@/shared/constants';
 
 import Checkbox from '../checkbox';
 import { cn, resolveNestedClassName, resolveSlotClasses, useSelect } from '../primitive-support';

@@ -1,13 +1,13 @@
 import {
   isTransientSessionError,
   requireAuthenticatedRequest,
-} from '@/domains/auth/server/session.server.js';
+} from '@/domains/auth/server/session.js';
 import { createUserEventStream } from '@/infrastructure/realtime/user-events.server';
 
 import {
   buildInternalRequestMeta,
   setResponseRequestMeta,
-} from '@/infrastructure/http/http-server';
+} from '@/infrastructure/http/request-meta.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

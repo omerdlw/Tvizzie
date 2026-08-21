@@ -3,10 +3,10 @@
 import { isValidElement } from 'react';
 import { motion } from 'framer-motion';
 
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
 
-import { INFO_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 import { MODAL_POSITIONS } from '@/modules/modal/config';
 import {
   MODAL_CONTENT_VARIANTS,

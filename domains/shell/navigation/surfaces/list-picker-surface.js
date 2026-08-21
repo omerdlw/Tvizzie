@@ -2,7 +2,7 @@
 
 import { useEffect, useState, memo } from 'react';
 import { motion } from 'framer-motion';
-import { INFO_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 import { useAuthSessionReady } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav';
 import { NAV_TAP_SCALE } from '@/modules/nav/motion';
@@ -11,13 +11,13 @@ import {
   getUserListMemberships,
   subscribeToUserLists,
   toggleUserListItem,
-} from '@/domains/media/client/lists';
+} from '@/domains/account/client/lists';
 import { createCreateListSurfaceEntry } from './list-create-surface';
-import { cn } from '@/domains/shell/shared/utils';
-import { getNavActionClass } from '@/domains/shell/navigation/action/constants';
+import { cn } from '@/ui/class-names';
+import { getNavActionClass } from '@/modules/nav/action-styles';
 import Icon from '@/ui/primitives/icon';
+import { ListPickerSkeleton } from '@/domains/shell/ui/skeletons';
 import {
-  STACK_SKELETON_CLASSES,
   SURFACE_LIST_VARIANTS,
   SURFACE_LIST_ITEM_VARIANTS,
   getChangedListIds,
@@ -66,42 +66,6 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
     </motion.button>
   );
 });
-
-function LoadingSkeleton() {
-  return (
-    <div className="flex flex-col gap-2">
-      {Array.from({ length: 10 }).map((_, index) => (
-        <div
-          key={`skeleton-${index}`}
-          className="flex h-24 items-center gap-2 border border-white/5 p-3"
-        >
-          <div className="relative h-[68px] w-[82px] shrink-0">
-            {[0, 1, 2, 3].map((stackIndex) => (
-              <div
-                key={`stack-${index}-${stackIndex}`}
-                className={cn(
-                  'absolute bottom-0 overflow-hidden border border-white/5',
-                  STACK_SKELETON_CLASSES[stackIndex] || 'skeleton-block-soft',
-                )}
-                style={{
-                  position: 'absolute',
-                  width: '46px',
-                  height: `${68 - stackIndex * 6}px`,
-                  left: `${stackIndex * 12}px`,
-                  zIndex: 4 - stackIndex,
-                }}
-              />
-            ))}
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="skeleton-block h-4 w-2/5" />
-            <div className="skeleton-block-soft h-3 w-4/5" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // --- MAIN COMPONENT ---
 
@@ -263,7 +227,7 @@ export default function ListPickerSurface({ close, data }) {
         onWheel={handleListWheel}
       >
         {isLoading ? (
-          <LoadingSkeleton />
+          <ListPickerSkeleton />
         ) : lists.length === 0 ? (
           <div className="center min-h-52 flex-col gap-2 text-center">
             <p className="text-[11px] font-bold tracking-widest text-white/50 uppercase">

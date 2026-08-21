@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronDown, Loader2 } from 'lucide-react';
-import { Z_INDEX } from '@/domains/shell/shared/constants';
+import { Z_INDEX } from '@/shared/constants';
 import Input from '../input';
 import { cn, resolveNestedClassName, resolveSlotClasses } from '../primitive-support';
 const AsyncSelect = forwardRef(

@@ -4,22 +4,17 @@ import {
   createTitleDetailRoute,
   delayMediaSkeletonPreview,
   loadMediaRouteData,
-} from '@/domains/media/server/title-route.server';
-import {
-  getTvSeasonRatings,
-  mergeTvSeasonRatings,
-} from '@/domains/media/server/tv-season-ratings.server';
-import {
-  getMediaComputedData,
-} from '@/domains/media/utils/media-data';
+} from '@/domains/media/server/title-route';
+import { getTvSeasonRatings, mergeTvSeasonRatings } from '@/domains/media/server/tv-season-ratings';
+import { getMediaComputedData } from '@/domains/media/utils/media-data';
 import { getTvBase, getTvSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
-import { getTvAwards } from '@/domains/media/server/movie-awards.server';
-import Client from '@/app/(media)/tv/[id]/client';
+import { getTvAwards } from '@/domains/media/server/movie-awards';
+import MediaDetailView from '@/domains/media/ui/pages/media-detail';
 
 const route = createTitleDetailRoute({
-  Client,
+  View: MediaDetailView,
   fallbackTitle: 'TV Series Not Found',
   getAwards: getTvAwards,
   getBase: getTvBase,
@@ -62,7 +57,7 @@ export default async function TvDetailPage({ params, searchParams }) {
   const awardsPromise = getTvAwards(tv.id).catch(() => null);
 
   return (
-    <Client
+    <MediaDetailView
       key={`tv-${tv.id}`}
       awardsPromise={awardsPromise}
       computed={getMediaComputedData(tv)}

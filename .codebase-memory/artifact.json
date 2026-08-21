@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "599f6e4a9c8afedf9b907188151d8a1b8101d6c8",
-    "indexed_at": "2026-08-21T11:21:41Z",
+    "commit": "f270a22711007bdc67ed0b7dc42314a56c92d590",
+    "indexed_at": "2026-08-21T18:19:57Z",
     "project": "Users-omerdlw-Documents-Tvizzie",
-    "nodes": 5210,
-    "edges": 14420,
-    "original_size": 17104896,
-    "compressed_size": 3237310,
+    "nodes": 0,
+    "edges": 0,
+    "original_size": 11862016,
+    "compressed_size": 2576479,
     "compression_level": 3
 }

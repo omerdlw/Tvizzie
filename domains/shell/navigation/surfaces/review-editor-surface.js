@@ -3,22 +3,14 @@
 import { useState } from 'react';
 
 import { useToast } from '@/modules/notification';
-import {
-  upsertListReview,
-  upsertMediaReview,
-} from '@/domains/reviews/client/mutations';
-import {
-  getReviewMinLength,
-  getReviewValidationError,
-} from '@/domains/reviews/utils/validation';
-import {
-  REVIEW_MAX_LENGTH,
-} from '@/domains/reviews/utils/constants';
+import { upsertListReview, upsertMediaReview } from '@/domains/reviews/client/mutations';
+import { getReviewMinLength, getReviewValidationError } from '@/domains/reviews/utils/validation';
+import { REVIEW_MAX_LENGTH } from '@/domains/reviews/utils/constants';
 import RatingSelector from '@/domains/reviews/ui/components/rating-selector';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/domains/shell/navigation/action/constants';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/modules/nav/action-styles';
 import { Textarea } from '@/ui/primitives';
-import { cn } from '@/domains/shell/shared/utils';
-import { INFO_ACTION_TONE_CLASS } from '@/domains/shell/shared/constants';
+import { cn } from '@/ui/class-names';
+import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
 const FORM_ID = 'review-editor-surface-form';

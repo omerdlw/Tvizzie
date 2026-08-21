@@ -1,4 +1,4 @@
-import NotFoundTemplate from '@/domains/shell/layout/not-found-template';
+import NotFoundTemplate from '@/domains/shell/not-found-template';
 
 export default function NotFound() {
   return (

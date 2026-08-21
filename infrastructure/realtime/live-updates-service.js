@@ -1,7 +1,7 @@
 'use client';
 
-import { normalizeValue } from '@/domains/shell/shared/utils';
-import { createClient as createSupabaseBrowserClient } from '@/infrastructure/supabase/supabase-client';
+import { normalizeValue } from '@/shared/normalize';
+import { createClient as createSupabaseBrowserClient } from '@/infrastructure/supabase/browser-client';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 
 const eventSourceRegistry = new Map();
@@ -127,6 +127,7 @@ function attachSupabaseRealtimeSource(entry) {
   const channelName = `live-updates:${entry.userId}`;
   const channel = supabaseClient.channel(channelName, {
     config: {
+      private: true,
       broadcast: {
         self: false,
       },

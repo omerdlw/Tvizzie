@@ -2,21 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from '@/domains/shell/shared/utils';
-import {
-  getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
-import {
-  isTitleMediaType,
-  normalizeMediaType,
-} from '@/domains/media/utils/media-key';
+import { TMDB_IMG } from '@/shared/constants';
+import { canUseNextImageOptimization, resolveImageQuality } from '@/shared/image-policy';
+import { cn } from '@/ui/class-names';
+import { formatDate } from '@/shared/format';
+import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
+import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils/media-key';
 import {
   getPreferredMediaPosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
 import { Button } from '@/ui/primitives';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import ListPreviewComposition from '@/domains/media/ui/components/list-preview-composition';
 import RatingStars from './rating-stars';
@@ -211,11 +208,7 @@ function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inli
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   if (isAccountVariant && isListSubject) {
     return (
-      <ListPreviewComposition
-        className="shrink-0"
-        fallbackPoster={src}
-        items={previewItems}
-      />
+      <ListPreviewComposition className="shrink-0" fallbackPoster={src} items={previewItems} />
     );
   }
 
@@ -331,18 +324,18 @@ export default function ReviewCard({
   const isListSubject = review.subjectType === 'list';
   const hasLikedSubject = Boolean(
     review.isLiked ||
-      review.hasLiked ||
-      review.is_liked ||
-      review.userLiked ||
-      review.payload?.isLiked ||
-      review.payload?.is_liked ||
-      (likedMediaKeys &&
-        ((reviewSubjectKey && likedMediaKeys.has(reviewSubjectKey)) ||
-          (review.subjectId &&
-            (likedMediaKeys.has(String(review.subjectId)) ||
-              likedMediaKeys.has(`list_${review.subjectId}`) ||
-              likedMediaKeys.has(`list:${review.subjectId}`))) ||
-          (review.subjectSlug && likedMediaKeys.has(String(review.subjectSlug))))),
+    review.hasLiked ||
+    review.is_liked ||
+    review.userLiked ||
+    review.payload?.isLiked ||
+    review.payload?.is_liked ||
+    (likedMediaKeys &&
+      ((reviewSubjectKey && likedMediaKeys.has(reviewSubjectKey)) ||
+        (review.subjectId &&
+          (likedMediaKeys.has(String(review.subjectId)) ||
+            likedMediaKeys.has(`list_${review.subjectId}`) ||
+            likedMediaKeys.has(`list:${review.subjectId}`))) ||
+        (review.subjectSlug && likedMediaKeys.has(String(review.subjectSlug))))),
   );
   const hasWatchedSubject = Boolean(
     !isListSubject && reviewSubjectKey && watchedMediaKeys?.has?.(reviewSubjectKey),

@@ -2,12 +2,8 @@
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  createMediaSnapshot,
-} from '@/domains/media/utils/media-key';
-import {
-  isTitleMediaType,
-} from '@/domains/media/utils/media-key';
+import { createMediaSnapshot } from '@/domains/media/utils/media-key';
+import { isTitleMediaType } from '@/domains/media/utils/media-key';
 
 export function getMediaReviewsSubscriptionKey(media) {
   return buildPollingSubscriptionKey('reviews:media', {

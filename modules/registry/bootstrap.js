@@ -5,7 +5,7 @@ import { useEffect, useId, useRef } from 'react';
 import { useRegistryActions } from './context';
 
 export function RegistryBootstrap({ entries = [] }) {
-  const { batch, register, unregister } = useRegistryActions();
+  const { batch } = useRegistryActions();
   const defaultId = useId();
   const instanceIdRef = useRef(`registry-bootstrap-${defaultId}`);
 
@@ -16,7 +16,7 @@ export function RegistryBootstrap({ entries = [] }) {
 
     if (normalizedEntries.length === 0) return undefined;
 
-    const registerEntry = (target, entry) => {
+    const registerEntry = (queue, entry) => {
       const source = entry.source || 'static';
       const options = {
         ...(entry.options || {}),
@@ -24,11 +24,11 @@ export function RegistryBootstrap({ entries = [] }) {
       };
 
       Object.entries(entry.items).forEach(([key, value]) => {
-        target.register(entry.type, key, value, source, options);
+        queue.register(entry.type, key, value, source, options);
       });
     };
 
-    const unregisterEntry = (target, entry) => {
+    const unregisterEntry = (queue, entry) => {
       const source = entry.source || 'static';
       const options = {
         ...(entry.options || {}),
@@ -36,29 +36,20 @@ export function RegistryBootstrap({ entries = [] }) {
       };
 
       Object.keys(entry.items).forEach((key) => {
-        target.unregister(entry.type, key, { ...options, source });
+        queue.unregister(entry.type, key, { ...options, source });
       });
     };
 
-    if (typeof batch === 'function') {
-      batch((queue) => {
-        normalizedEntries.forEach((entry) => registerEntry(queue, entry));
-      });
-    } else {
-      normalizedEntries.forEach((entry) => registerEntry({ register }, entry));
-    }
+    batch((queue) => {
+      normalizedEntries.forEach((entry) => registerEntry(queue, entry));
+    });
 
     return () => {
-      if (typeof batch === 'function') {
-        batch((queue) => {
-          normalizedEntries.forEach((entry) => unregisterEntry(queue, entry));
-        });
-        return;
-      }
-
-      normalizedEntries.forEach((entry) => unregisterEntry({ unregister }, entry));
+      batch((queue) => {
+        normalizedEntries.forEach((entry) => unregisterEntry(queue, entry));
+      });
     };
-  }, [batch, entries, register, unregister]);
+  }, [batch, entries]);
 
   return null;
 }

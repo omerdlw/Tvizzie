@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { normalizeFeedbackText } from '@/domains/shell/shared/utils';
+import { normalizeFeedbackText } from '@/shared/feedback';
 
 import { useNotificationActions, TOAST_TYPES } from './context';
 

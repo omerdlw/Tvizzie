@@ -1,10 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import MediaCard from '@/domains/shell/shared/components/media-card';
-import {
-  usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-preferences';
+import MediaCard from '@/ui/components/media-card';
+import { usePosterPreferenceVersion } from '@/domains/media/utils/poster-preferences';
 import { toAccountMediaCard } from '@/domains/account/utils/media-card';
 import {
   AccountInlineSectionState,

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import { AuthGate } from '@/modules/auth';
 import { useNavigationActions } from '@/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/domains/shell/navigation/surfaces/confirmation-surface';
@@ -17,11 +17,8 @@ import {
   parseReviewSortMode,
   sortReviewsByMode,
 } from '@/domains/reviews/utils/formatting';
-import {
-  REVIEW_SORT_MODE,
-  REVIEW_SORT_OPTIONS,
-} from '@/domains/reviews/utils/constants';
-import { GridCrosshair, GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS } from '@/domains/reviews/utils/constants';
+import { GridCrosshair, GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 
 export default function MediaReviews({
   entityId,

@@ -1,11 +1,11 @@
-import { createTitleReviewsRoute } from '@/domains/media/server/title-route.server';
+import { createTitleReviewsRoute } from '@/domains/media/server/title-route';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
 
-import Client from '@/app/(media)/movie/[id]/reviews/client';
+import MediaReviewsView from '@/domains/media/ui/pages/media-reviews';
 
 const route = createTitleReviewsRoute({
-  Client,
+  View: MediaReviewsView,
   fallbackTitle: 'Movie Reviews Not Found',
   getBase: getMovieBase,
   getSecondary: getMovieSecondary,

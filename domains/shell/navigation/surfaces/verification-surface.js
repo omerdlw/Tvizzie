@@ -3,24 +3,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { requestVerificationCode, verifyCodeRequest } from '@/domains/auth/client/requests';
-import {
-  PURPOSES,
-} from '@/domains/auth/utils/constants';
+import { PURPOSES } from '@/domains/auth/utils/constants';
 import {
   formatVerificationExpiry,
   normalizeEmail,
   resolveVerificationTimestamp,
 } from '@/domains/auth/utils/routes';
-import {
-  resolveVerificationErrorMessage,
-} from '@/domains/auth/utils/errors';
+import { resolveVerificationErrorMessage } from '@/domains/auth/utils/errors';
 import { resolveAuthVerificationHeader } from '@/modules/modal/header';
 import { useSurfaceHeader } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { Spinner } from '@/ui/feedback/spinner';
 
 function dismissSurface(close) {
   if (typeof close === 'function') {

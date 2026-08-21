@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/domains/account/ui/filters/filtering';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 
 import {
   DefaultMenuItem,
@@ -41,9 +41,7 @@ export function AccountMediaFilterBar({
     if (selectedOption) {
       return `${selectedOption.groupLabel}: ${selectedOption.label}`;
     }
-    return defaultSort === 'list_order'
-      ? 'Sort: List order'
-      : 'Release Date: Newest release first';
+    return defaultSort === 'list_order' ? 'Sort: List order' : 'Release Date: Newest release first';
   }, [filters?.sort, defaultSort]);
 
   useEffect(() => {

@@ -15,7 +15,7 @@ import {
 import { usePathname } from 'next/navigation';
 
 import { useRegistryActions } from './context';
-import { PLUGINS, createPluginRunner } from './plugins/index';
+import { applyRegistryConfig } from './apply-config';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -216,7 +216,7 @@ const deepCompare = (prev, next) => {
   return true;
 };
 
-export function useRegistry(config, { plugins = PLUGINS } = {}) {
+export function useRegistry(config) {
   const { batch, register, unregister } = useRegistryActions();
   const pathname = usePathname();
   const defaultId = useId();
@@ -290,9 +290,7 @@ export function useRegistry(config, { plugins = PLUGINS } = {}) {
   const stabilizedConfig = useStabilizedRegistryConfig(config);
   const stableConfig = useStableDiff(stabilizedConfig, deepCompare);
 
-  const runner = useMemo(() => createPluginRunner(plugins), [plugins]);
-
   useIsomorphicLayoutEffect(() => {
-    return runner.apply(stableConfig, context);
-  }, [stableConfig, runner, context]);
+    return applyRegistryConfig(stableConfig, context);
+  }, [stableConfig, context]);
 }

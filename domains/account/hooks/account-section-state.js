@@ -2,9 +2,7 @@
 
 import { createContext, useContext, useMemo } from 'react';
 
-import {
-  useAccountSectionPage,
-} from '@/domains/account/hooks/page.hooks';
+import { useAccountSectionPage } from '@/domains/account/hooks/section-page';
 const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
   isAuthenticated: false,
 });

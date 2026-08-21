@@ -9,13 +9,13 @@ import {
 } from '@/domains/home/utils/discover';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
 import { useRegistry } from '@/modules/registry';
-import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
+import SegmentedControl from '@/ui/components/segmented-control';
 import Icon from '@/ui/primitives/icon';
 import {
   HOME_SECTION_CONTENT_CLASS,
   HOME_SECTION_HEADER_CLASS,
 } from '@/domains/home/ui/layouts/home-section';
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 
 const MEDIA_TYPE_ITEMS = Object.freeze([
   { key: 'movie', label: 'Movies' },

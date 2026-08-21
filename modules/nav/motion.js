@@ -1,8 +1,10 @@
+import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared/motion';
+
 const NAV_EASINGS = Object.freeze({
-  CINEMATIC: [0.16, 1, 0.3, 1],
+  CINEMATIC: MOTION_EASINGS.CINEMATIC,
   EMPHASIZED: [0.2, 0.95, 0.3, 1],
   SOFT: [0.25, 0.85, 0.25, 1],
-  EXIT: [0.35, 0, 0.2, 1],
+  EXIT: MOTION_EASINGS.EXIT,
 });
 
 const NAV_TIERS = Object.freeze({
@@ -13,9 +15,9 @@ const NAV_TIERS = Object.freeze({
 });
 
 const NAV_SPRINGS = Object.freeze({
-  PRESS: Object.freeze({ type: 'spring', stiffness: 600, damping: 28, mass: 0.22 }),
-  BADGE: Object.freeze({ type: 'spring', stiffness: 460, damping: 18, mass: 0.32 }),
-  DECK: Object.freeze({ type: 'spring', stiffness: 280, damping: 28, mass: 0.6 }),
+  PRESS: MOTION_SPRINGS.PRESS,
+  BADGE: MOTION_SPRINGS.BADGE,
+  DECK: MOTION_SPRINGS.PANEL,
   PEEK: Object.freeze({ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }),
 });
 

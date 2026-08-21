@@ -7,10 +7,9 @@ import {
   buildUserMediaCollectionSubscriptionKey,
   fetchCollectionResource,
   fetchMediaCollectionStatus,
-} from '@/domains/account/client/collections.client';
-import {
-  scheduleAccountSummaryRefresh,
-} from '@/domains/account/client/profile.client';
+} from '@/domains/account/client/collections';
+import { fetchAccountProfile, saveAccountProfile } from '@/domains/account/client/account-api';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
 import {
   assertSupabaseResult,
   getSupabaseClient,
@@ -27,17 +26,9 @@ import {
   ensureUserId,
   normalizeMediaPayload,
 } from '@/domains/media/utils/media-payload';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-} from '@/domains/media/utils/media-key';
-import {
-  ACTIVITY_EVENT_TYPES,
-  fireActivityEvent,
-} from '@/domains/social/client/activity';
-import {
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils/constants';
+import { assertTitleMedia, buildMediaItemKey } from '@/domains/media/utils/media-key';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/domains/social/client/activity';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils/constants';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
@@ -137,16 +128,8 @@ export async function readFavoriteShowcase(userId) {
     return [];
   }
 
-  const client = getSupabaseClient();
-  const result = await client
-    .from('profiles')
-    .select('favorite_showcase')
-    .eq('id', userId)
-    .maybeSingle();
-
-  assertSupabaseResult(result, 'Favorite showcase could not be read');
-
-  const rawShowcase = result.data?.favorite_showcase;
+  const result = await fetchAccountProfile({ userId });
+  const rawShowcase = result?.profile?.favoriteShowcase;
   return Array.isArray(rawShowcase)
     ? rawShowcase.map(buildFavoriteShowcaseItem).filter(Boolean)
     : [];
@@ -154,75 +137,14 @@ export async function readFavoriteShowcase(userId) {
 
 export async function writeFavoriteShowcase(userId, items = []) {
   const showcaseItems = items.map(buildFavoriteShowcaseItem).filter(Boolean);
-  const client = getSupabaseClient();
-  const result = await client
-    .from('profiles')
-    .update({
-      favorite_showcase: showcaseItems,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  assertSupabaseResult(result, 'Favorite showcase could not be updated');
-
-  return showcaseItems;
-}
-
-export async function removeLikeFromShowcase(userId, mediaKeyOrMedia) {
-  if (!userId || !mediaKeyOrMedia) {
-    return null;
-  }
-
-  const showcase = await readFavoriteShowcase(userId);
-  if (!Array.isArray(showcase) || showcase.length === 0) {
-    return null;
-  }
-
-  const resolveTargetKey = (val) => {
-    if (!val) return '';
-    if (typeof val === 'string') {
-      const cleaned = val.trim();
-      return cleaned.includes('-') ? cleaned.replace('-', '_') : cleaned;
-    }
-    const rawType = val?.entityType || val?.media_type || val?.type || '';
-    const rawId = String(val?.entityId ?? val?.id ?? '').trim();
-    if (val?.mediaKey) {
-      const key = String(val.mediaKey).trim();
-      return key.includes('-') ? key.replace('-', '_') : key;
-    }
-    let entityId = rawId;
-    let resolvedType = rawType;
-    if (rawId.includes('-') || rawId.includes('_')) {
-      const parts = rawId.split(/[-_]/);
-      if (parts.length >= 2) {
-        if (!resolvedType) resolvedType = parts[0];
-        entityId = parts[parts.length - 1];
-      }
-    }
-    const normalizedType =
-      String(resolvedType).trim().toLowerCase() === 'tv' ||
-      String(resolvedType).trim().toLowerCase() === 'show'
-        ? 'tv'
-        : 'movie';
-    return `${normalizedType}_${entityId}`;
-  };
-
-  const targetKey = resolveTargetKey(mediaKeyOrMedia);
-  if (!targetKey) {
-    return null;
-  }
-
-  const nextShowcase = showcase.filter((item) => {
-    const itemKey = resolveTargetKey(item);
-    return itemKey !== targetKey;
+  const result = await saveAccountProfile({
+    action: 'update',
+    favoriteShowcase: showcaseItems,
   });
 
-  if (nextShowcase.length === showcase.length) {
-    return null;
-  }
-
-  const updatedShowcase = await writeFavoriteShowcase(userId, nextShowcase);
-  return updatedShowcase;
+  return Array.isArray(result?.profile?.favoriteShowcase)
+    ? result.profile.favoriteShowcase
+    : showcaseItems;
 }
 
 export function subscribeToLikeStatus({ media, userId }, callback, options = {}) {
@@ -281,30 +203,16 @@ export async function toggleUserLike({ media, userId }) {
   const rpcRow = await executeMediaCollectionRpc({
     client,
     fnName: 'collection_toggle_like',
-    params: createMediaCollectionToggleRpcParams({ row, userId }),
+    params: createMediaCollectionToggleRpcParams({ row }),
     fallbackMessage: 'Like could not be updated',
   });
   const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
-  let isLiked = resolvedRpcRow?.is_liked === true || resolvedRpcRow?.isLiked === true;
-
-  try {
-    const status = await fetchLikeStatus({ media, userId });
-    if (typeof status?.isLiked === 'boolean') {
-      isLiked = status.isLiked;
-    }
-  } catch {
-    // Preserve the RPC result if the follow-up read is temporarily unavailable.
-  }
+  const isLiked = resolvedRpcRow?.is_liked === true || resolvedRpcRow?.isLiked === true;
 
   if (!isLiked) {
-    const updatedShowcase = await removeLikeFromShowcase(userId, likeRef.id).catch(() => null);
-    if (updatedShowcase) {
-      primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), updatedShowcase);
-      invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
-        refetch: true,
-      });
-      scheduleAccountSummaryRefresh(userId);
-    }
+    invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+      refetch: true,
+    });
   } else {
     const subjectId = String(media?.entityId ?? media?.id ?? '').trim();
     const subjectType = media?.entityType || media?.media_type || 'movie';
@@ -334,6 +242,7 @@ export async function toggleUserLike({ media, userId }) {
   invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
     refetch: true,
   });
+  scheduleAccountSummaryRefresh(userId);
 
   return nextResult;
 }
@@ -347,21 +256,12 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
     fnName: 'collection_remove_like',
     params: {
       p_media_key: resolvedMediaKey,
-      p_user_id: userId,
     },
     fallbackMessage: 'Like could not be removed',
   });
 
-  const wasRemoved = rpcRow?.removed === true;
-
-  if (wasRemoved) {
-    const updatedShowcase = await removeLikeFromShowcase(userId, resolvedMediaKey).catch(
-      () => null,
-    );
-    if (updatedShowcase) {
-      primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), updatedShowcase);
-    }
-  }
+  const resolvedRpcRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  const wasRemoved = resolvedRpcRow?.removed === true;
 
   if (media) {
     invalidatePollingSubscription(getLikeStatusSubscriptionKey({ media, userId }), {

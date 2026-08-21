@@ -1,7 +1,7 @@
 'use client';
 
-import { normalizeValue } from '@/domains/shell/shared/utils';
-import { createAuthenticatedDataClient } from '@/infrastructure/supabase/supabase-client';
+import { normalizeValue } from '@/shared/normalize';
+import { createAuthenticatedDataClient } from '@/infrastructure/supabase/browser-client';
 
 export function getSupabaseClient() {
   return createAuthenticatedDataClient();

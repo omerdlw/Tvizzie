@@ -1,5 +1,5 @@
-import { getPasswordAccountStatus } from '../server/password-status.server.js';
-import { requestAuthJson } from './http.js';
+import { getPasswordAccountStatus } from '../server/password-status.js';
+import { requestAuthJson } from '@/modules/auth/http.client';
 
 const PASSWORD_STATUS_CACHE_TTL_MS = 4000;
 const passwordStatusCache = new Map();

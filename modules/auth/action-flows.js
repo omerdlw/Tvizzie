@@ -3,7 +3,7 @@ import {
   normalizeOAuthProvider,
   resolvePrimaryProvider,
 } from './provider-utils';
-import { EVENT_TYPES } from '@/domains/shell/shared/events';
+import { EVENT_TYPES } from '@/shared/events';
 
 import { AUTH_STATUS } from './config';
 import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';

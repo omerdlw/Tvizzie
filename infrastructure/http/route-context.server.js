@@ -5,12 +5,12 @@ import {
   normalizeErrorMessage,
   normalizeErrorStatus,
 } from '@/infrastructure/http/app-error';
+import { buildInternalRequestMeta } from '@/infrastructure/http/request-meta.server';
 import {
-  buildInternalRequestMeta,
   createApiErrorResponse,
   createApiSuccessResponse,
-} from '@/infrastructure/http/http-server';
-import { normalizeValue } from '@/domains/shell/shared/utils';
+} from '@/infrastructure/http/api-response.server';
+import { normalizeValue } from '@/shared/normalize';
 
 const UNAUTHORIZED_MESSAGE_PATTERNS = Object.freeze([
   'authentication session is required',

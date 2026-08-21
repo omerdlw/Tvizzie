@@ -1,8 +1,6 @@
-'use client';
-
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/domains/shell/shared/constants';
-import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
-import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
+import NavHeightSpacer from '@/modules/nav/nav-height-spacer';
+import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 
 export const LEGAL_PAGE_CONTENT_CLASS = `relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-20 sm:px-6`;
 
@@ -17,9 +15,7 @@ export function LegalSection({ children, title }) {
 
 export function LegalDocument({ children }) {
   return (
-    <article className="bg-primary space-y-8 border border-white/5 p-6 sm:p-8">
-      {children}
-    </article>
+    <article className="bg-primary space-y-8 border border-white/5 p-6 sm:p-8">{children}</article>
   );
 }
 

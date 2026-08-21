@@ -7,7 +7,7 @@ import {
   HOME_SECTION_TITLE_CLASS,
 } from '@/domains/home/ui/layouts/home-section';
 import { PosterRail } from '../components/poster-rail';
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 
 export function HomeRailSection({ fallbackMediaType, items = [], limit, showRank = false, title }) {
   const railItems = getUniqueDiscoverItems(items, limit);

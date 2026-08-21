@@ -4,9 +4,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 
 import MediaThumb from '@/domains/media/ui/components/media-thumb';
-import {
-  getTimelineCredits,
-} from '@/domains/media/utils/person-data';
+import { getTimelineCredits } from '@/domains/media/utils/person-data';
 
 function groupByYear(credits) {
   const grouped = {};

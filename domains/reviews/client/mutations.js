@@ -2,27 +2,12 @@
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-} from '@/domains/media/utils/media-key';
-import {
-  isListSubjectType,
-  isTitleMediaType,
-} from '@/domains/media/utils/media-key';
-import {
-  ACTIVITY_EVENT_TYPES,
-} from '@/domains/social/client/activity';
-import {
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils/constants';
-import {
-  buildCanonicalActivityDedupeKey,
-} from '@/domains/social/utils/formatting';
-import {
-  fireActivityEvent,
-  removeActivityEvents,
-} from '@/domains/social/client/activity';
+import { assertTitleMedia, buildMediaItemKey } from '@/domains/media/utils/media-key';
+import { isListSubjectType, isTitleMediaType } from '@/domains/media/utils/media-key';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/client/activity';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils/constants';
+import { buildCanonicalActivityDedupeKey } from '@/domains/social/utils/formatting';
+import { fireActivityEvent, removeActivityEvents } from '@/domains/social/client/activity';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
@@ -39,9 +24,7 @@ import {
   normalizeReviewContent,
   unwrapReviewWriteResult,
 } from '@/domains/reviews/utils/formatting';
-import {
-  getReviewValidationError,
-} from '@/domains/reviews/utils/validation';
+import { getReviewValidationError } from '@/domains/reviews/utils/validation';
 import {
   fireReviewLiveEvent,
   getListReviewsSubscriptionKey,

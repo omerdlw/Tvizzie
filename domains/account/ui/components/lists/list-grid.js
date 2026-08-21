@@ -7,9 +7,7 @@ import AccountSectionLayout, {
   AccountInlineSectionState,
   ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
-import {
-  ListCardsSkeletonGrid,
-} from '@/domains/account/ui/skeletons';
+import { ListCardsSkeletonGrid } from '@/domains/account/ui/skeletons';
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
 import {
   buildAccountCollectionPageHref,

@@ -1,6 +1,4 @@
-import {
-  FOLLOW_STATUSES,
-} from '@/domains/social/client/follows';
+import { FOLLOW_STATUSES } from '@/domains/social/client/follows';
 
 export function getMediaTitle(item = {}) {
   return item?.title || item?.name || item?.original_title || item?.original_name || 'Untitled';

@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/domains/shell/shared/utils.js';
+import { normalizeValue } from '@/shared/normalize';
 import { NextResponse } from 'next/server';
 
 import { normalizeErrorCode, normalizeErrorMessage } from './app-error.js';

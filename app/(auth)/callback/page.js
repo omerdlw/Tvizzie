@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 
-import Client from '@/app/(auth)/callback/client';
+import OAuthCallbackView from '@/domains/auth/ui/pages/oauth-callback';
 
 export default async function CallbackPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
 
-  return <Client initialProvider={resolvedSearchParams?.provider || null} />;
+  return <OAuthCallbackView initialProvider={resolvedSearchParams?.provider || null} />;
 }

@@ -18,5 +18,4 @@ export {
 } from './utils';
 
 export { createSupabaseAuthAdapter } from './adapters/supabase-adapter';
-export { createApiAuthAdapter } from './adapters/api';
 export { clearCanonicalSessionPayloadCache } from './session-client';

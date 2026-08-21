@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createSurfaceEntryDefinition } from '../surface-model';
 import { NAV_COMPACT_TO_SURFACE_DELAY_MS, NAV_SURFACE_EXIT_SETTLE_MS } from '../motion';
@@ -18,6 +18,47 @@ function createSurfaceState(surfaceStack = []) {
 
 const INITIAL_SURFACE_STATE = createSurfaceState([]);
 
+export function createPendingSurfaceScheduler({
+  clearTimer = clearTimeout,
+  scheduleTimer = setTimeout,
+} = {}) {
+  const timers = new Map();
+
+  const cancel = (surfaceId) => {
+    if (!timers.has(surfaceId)) {
+      return false;
+    }
+
+    clearTimer(timers.get(surfaceId));
+    timers.delete(surfaceId);
+    return true;
+  };
+
+  return {
+    cancel,
+    cancelAll() {
+      const surfaceIds = [...timers.keys()];
+      surfaceIds.forEach(cancel);
+      return surfaceIds;
+    },
+    getLatestId() {
+      const surfaceIds = [...timers.keys()];
+      return surfaceIds[surfaceIds.length - 1] || null;
+    },
+    schedule(surfaceId, callback, delayMs) {
+      cancel(surfaceId);
+      const timerId = scheduleTimer(() => {
+        timers.delete(surfaceId);
+        callback();
+      }, delayMs);
+      timers.set(surfaceId, timerId);
+    },
+    get size() {
+      return timers.size;
+    },
+  };
+}
+
 function createSurfaceError(code, message) {
   const error = new Error(message);
   error.code = code;
@@ -34,6 +75,12 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
   const surfaceIdRef = useRef(0);
   const isCompactRef = useRef(false);
   const wasCompactRef = useRef(false);
+  const compactUnlockTimerRef = useRef(null);
+  const pendingSurfaceSchedulerRef = useRef(null);
+
+  if (pendingSurfaceSchedulerRef.current === null) {
+    pendingSurfaceSchedulerRef.current = createPendingSurfaceScheduler();
+  }
 
   const setIsCompact = useCallback((compactVal) => {
     isCompactRef.current = compactVal;
@@ -73,7 +120,12 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
     }
 
     wasCompactRef.current = false;
-    setTimeout(() => {
+    if (compactUnlockTimerRef.current !== null) {
+      clearTimeout(compactUnlockTimerRef.current);
+    }
+
+    compactUnlockTimerRef.current = setTimeout(() => {
+      compactUnlockTimerRef.current = null;
       setCompactLock('surface-opening', false);
     }, NAV_SURFACE_EXIT_SETTLE_MS);
   }, [setCompactLock]);
@@ -81,14 +133,25 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
   const closeSurface = useCallback(
     (result = null, targetSurfaceId = null) => {
       const currentStack = surfaceStackRef.current;
+      const pendingScheduler = pendingSurfaceSchedulerRef.current;
+      const pendingSurfaceId = pendingScheduler.getLatestId();
+      const activeSurfaceId = currentStack[currentStack.length - 1]?.id || null;
+      const latestSurfaceId =
+        pendingSurfaceId && (!activeSurfaceId || pendingSurfaceId > activeSurfaceId)
+          ? pendingSurfaceId
+          : activeSurfaceId;
+      const surfaceId = targetSurfaceId || latestSurfaceId;
 
-      if (currentStack.length === 0) {
+      if (!surfaceId) {
         return;
       }
 
-      const surfaceId = targetSurfaceId || currentStack[currentStack.length - 1]?.id || null;
+      if (pendingScheduler.cancel(surfaceId)) {
+        finalizeSurfaceClose(surfaceId, result);
 
-      if (!surfaceId) {
+        if (currentStack.length === 0 && pendingScheduler.size === 0) {
+          unlockCompactAfterSurfaceClose();
+        }
         return;
       }
 
@@ -102,7 +165,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       syncSurfaceStack(nextStack);
       finalizeSurfaceClose(surfaceId, result);
 
-      if (nextStack.length === 0) {
+      if (nextStack.length === 0 && pendingScheduler.size === 0) {
         unlockCompactAfterSurfaceClose();
       }
     },
@@ -112,14 +175,21 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
   const closeAllSurfaces = useCallback(
     (result = null) => {
       const currentStack = [...surfaceStackRef.current];
+      const pendingSurfaceIds = pendingSurfaceSchedulerRef.current.cancelAll();
 
-      if (currentStack.length === 0) {
+      if (currentStack.length === 0 && pendingSurfaceIds.length === 0) {
         return;
       }
 
-      syncSurfaceStack([]);
+      if (currentStack.length > 0) {
+        syncSurfaceStack([]);
+      }
+
       currentStack.forEach((entry) => {
         finalizeSurfaceClose(entry.id, result);
+      });
+      pendingSurfaceIds.forEach((surfaceId) => {
+        finalizeSurfaceClose(surfaceId, result);
       });
 
       unlockCompactAfterSurfaceClose();
@@ -156,22 +226,70 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
         syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
       };
 
-      if (isCompactRef.current) {
-        wasCompactRef.current = true;
-        setCompactLock('surface-opening', true);
-        setTimeout(runOpen, NAV_COMPACT_TO_SURFACE_DELAY_MS);
-      } else {
-        wasCompactRef.current = false;
-        runOpen();
-      }
-
-      return new Promise((resolve) => {
+      const resultPromise = new Promise((resolve) => {
         surfaceResolveMapRef.current.set(surfaceId, resolve);
         surfaceOnCloseMapRef.current.set(surfaceId, definition.onClose || null);
       });
+
+      if (isCompactRef.current) {
+        if (compactUnlockTimerRef.current !== null) {
+          clearTimeout(compactUnlockTimerRef.current);
+          compactUnlockTimerRef.current = null;
+        }
+
+        wasCompactRef.current = true;
+        setCompactLock('surface-opening', true);
+        pendingSurfaceSchedulerRef.current.schedule(
+          surfaceId,
+          runOpen,
+          NAV_COMPACT_TO_SURFACE_DELAY_MS,
+        );
+      } else {
+        runOpen();
+      }
+
+      return resultPromise;
     },
     [setCompactLock, setExpanded, setSearchQuery, syncSurfaceStack],
   );
+
+  useEffect(() => {
+    const pendingScheduler = pendingSurfaceSchedulerRef.current;
+    const resolveMap = surfaceResolveMapRef.current;
+    const onCloseMap = surfaceOnCloseMapRef.current;
+
+    return () => {
+      if (compactUnlockTimerRef.current !== null) {
+        clearTimeout(compactUnlockTimerRef.current);
+        compactUnlockTimerRef.current = null;
+      }
+
+      const surfaceIds = [
+        ...surfaceStackRef.current.map((entry) => entry.id),
+        ...pendingScheduler.cancelAll(),
+      ];
+      const result = {
+        cancelled: true,
+        reason: 'unmount',
+        success: false,
+      };
+
+      surfaceIds.forEach((surfaceId) => {
+        const onClose = onCloseMap.get(surfaceId);
+        try {
+          onClose?.(result);
+        } catch (error) {
+          console.error('Nav surface onClose handler failed:', error);
+        }
+        onCloseMap.delete(surfaceId);
+
+        resolveMap.get(surfaceId)?.(result);
+        resolveMap.delete(surfaceId);
+      });
+
+      surfaceStackRef.current = [];
+    };
+  }, []);
 
   return {
     closeAllSurfaces,

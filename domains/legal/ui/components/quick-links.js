@@ -1,7 +1,4 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { POLICY_LINKS } from '../../utils/constants';
 
 const LINK_BASE_CLASS =
@@ -15,15 +12,13 @@ function getQuickLinkClass(isActive) {
   }`;
 }
 
-export default function LegalQuickLinks() {
-  const pathname = usePathname();
-
+export default function LegalQuickLinks({ activePath }) {
   return (
     <section aria-label="Legal page links" className="relative flex flex-col gap-2 py-6">
       <div className="flex flex-col gap-2 sm:flex-row">
         {POLICY_LINKS.map((link) => (
           <div className="flex flex-1" key={link.href}>
-            <Link href={link.href} className={getQuickLinkClass(pathname === link.href)}>
+            <Link href={link.href} className={getQuickLinkClass(activePath === link.href)}>
               {link.label}
             </Link>
           </div>

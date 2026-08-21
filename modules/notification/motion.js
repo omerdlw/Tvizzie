@@ -1,7 +1,9 @@
+import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared/motion';
+
 const NOTIFICATION_EASINGS = Object.freeze({
-  EMPHASIZED: [0.22, 1, 0.36, 1],
-  SOFT: [0.32, 0.72, 0, 1],
-  EXIT: [0.4, 0, 0.2, 1],
+  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
+  SOFT: MOTION_EASINGS.SOFT,
+  EXIT: MOTION_EASINGS.SOFT_EXIT,
 });
 
 const NOTIFICATION_TIERS = Object.freeze({
@@ -11,7 +13,7 @@ const NOTIFICATION_TIERS = Object.freeze({
 });
 
 const NOTIFICATION_SPRINGS = Object.freeze({
-  MICRO: Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
+  MICRO: MOTION_SPRINGS.FEEDBACK,
 });
 
 export const NOTIFICATION_MICRO_SPRING = NOTIFICATION_SPRINGS.MICRO;

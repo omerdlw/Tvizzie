@@ -88,6 +88,8 @@ export const LIST_ITEM_SELECT = [
   'user_id',
 ].join(',');
 
+export const LIST_ITEM_PREVIEW_SELECT = ['added_at', 'payload'].join(',');
+
 export const WATCHED_SELECT = [
   'backdrop_path',
   'created_at',

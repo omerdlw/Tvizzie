@@ -1,4 +1,4 @@
-import { normalizeLowerValue } from '@/domains/shell/shared/utils';
+import { normalizeLowerValue } from '@/shared/normalize';
 import {
   AUTH_DEFAULT_POST_LOGIN_PATH,
   getOAuthProviderLabel,

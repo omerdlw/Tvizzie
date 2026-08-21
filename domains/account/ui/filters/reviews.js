@@ -1,9 +1,5 @@
-import {
-  REVIEW_SORT_MODE,
-} from '@/domains/reviews/utils/constants';
-import {
-  sortReviewsByMode,
-} from '@/domains/reviews/utils/formatting';
+import { REVIEW_SORT_MODE } from '@/domains/reviews/utils/constants';
+import { sortReviewsByMode } from '@/domains/reviews/utils/formatting';
 
 import {
   isSameFilterState,

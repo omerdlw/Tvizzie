@@ -1,8 +1,6 @@
 'use client';
 
-import {
-  ACCOUNT_CLIENT,
-} from '@/domains/account/client/profile.client';
+import { ACCOUNT_CLIENT } from '@/domains/account/client/profile';
 import { getOAuthProviderLabel } from '@/domains/auth/utils/oauth';
 import {
   AUTH_ROUTE_NOTICE,
@@ -10,12 +8,8 @@ import {
   buildAuthHref,
   validateAllowedEmailDomain,
 } from '@/domains/auth/utils/routes';
-import {
-  createError,
-} from '@/domains/auth/utils/errors';
-import {
-  validatePassword,
-} from '@/domains/auth/utils/password';
+import { createError } from '@/domains/auth/utils/errors';
+import { validatePassword } from '@/domains/auth/utils/password';
 import { assertSignUpEmailAvailable, completeVerifiedSignUp } from './requests.js';
 
 export const SIGN_UP_FEEDBACK = Object.freeze({

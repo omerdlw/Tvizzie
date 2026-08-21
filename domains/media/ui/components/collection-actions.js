@@ -6,10 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import {
-  subscribeToLikeStatus,
-  toggleUserLike,
-} from '@/domains/media/client/likes';
+import { subscribeToLikeStatus, toggleUserLike } from '@/domains/media/client/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
@@ -19,19 +16,10 @@ import {
   subscribeToWatchlistStatus,
   toggleUserWatchlistItem,
 } from '@/domains/media/client/watchlist';
-import { cn } from '@/domains/shell/shared/utils';
-import {
-  getMediaDetailPath,
-  resolveExplicitMediaType,
-} from '@/domains/media/utils/media-key';
-import {
-  getMediaTitle,
-} from '@/domains/media/utils/media-data';
-import {
-  AUTH_ROUTES,
-  buildAuthHref,
-  getCurrentPathWithSearch,
-} from '@/domains/auth/utils/routes';
+import { cn } from '@/ui/class-names';
+import { getMediaDetailPath, resolveExplicitMediaType } from '@/domains/media/utils/media-key';
+import { getMediaTitle } from '@/domains/media/utils/media-data';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils/routes';
 import { useNavigationActions } from '@/modules/nav';
 import { createListPickerSurfaceEntry } from '@/domains/shell/navigation/surfaces/list-picker-surface';
 import WatchProvidersSurface from '@/domains/shell/navigation/surfaces/watch-providers-surface';
@@ -109,25 +97,23 @@ function getActionPalette(palette, active) {
   return 'border cursor-pointer border-white/10 bg-primary/60 hover:border-white/15 hover:bg-primary/80 text-white/70 hover:text-white';
 }
 
-function ActionButton({
-  active = false,
-  disabled = false,
-  icon,
-  label,
-  onClick,
-  palette,
-}) {
+function ActionButton({ active = false, disabled = false, icon, label, onClick, palette }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4 select-none',
+        'group center xs:text-xs h-11 w-full gap-1.5 px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-200 ease-out select-none active:scale-[0.98] disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >
-      <span className={cn('inline-flex shrink-0 transition-transform duration-200 ease-out', active ? 'scale-110' : 'group-hover:scale-105')}>
+      <span
+        className={cn(
+          'inline-flex shrink-0 transition-transform duration-200 ease-out',
+          active ? 'scale-110' : 'group-hover:scale-105',
+        )}
+      >
         <Icon icon={icon} size={16} />
       </span>
       <span className="truncate">{label}</span>
@@ -187,7 +173,13 @@ export default function CollectionActions({ additionalActions = [], media }) {
   const pendingStatusRef = useRef({ like: null, watched: null, watchlist: null });
 
   useEffect(() => {
-    if (!mediaSnapshot.entityId || !auth.isReady || !auth.isAuthenticated || !isSessionReady || !userId) {
+    if (
+      !mediaSnapshot.entityId ||
+      !auth.isReady ||
+      !auth.isAuthenticated ||
+      !isSessionReady ||
+      !userId
+    ) {
       return undefined;
     }
 

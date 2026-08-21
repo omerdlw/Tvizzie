@@ -1,21 +1,9 @@
-import {
-  ACCOUNT_CLIENT,
-} from '@/domains/account/client/profile.client';
+import { ACCOUNT_CLIENT } from '@/domains/account/client/profile';
 
-import {
-  normalizeString,
-} from '@/domains/search/utils/text';
-import {
-  SEARCH_LIMITS,
-  SEARCH_TYPES,
-} from '@/domains/search/utils/constants';
-import {
-  rankAllMediaResults,
-  resolvePreferredMediaType,
-} from '@/domains/search/utils/ranking';
-import {
-  normalizeResult,
-} from '@/domains/search/utils/result';
+import { normalizeString } from '@/domains/search/utils/text';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';
+import { rankAllMediaResults, resolvePreferredMediaType } from '@/domains/search/utils/ranking';
+import { normalizeResult } from '@/domains/search/utils/result';
 import { createSearchCacheKey, withClientSearchCache } from './search-cache';
 
 function emptyMediaPage(page = 1) {

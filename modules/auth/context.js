@@ -10,8 +10,8 @@ import {
   useRef,
 } from 'react';
 
-import { EVENT_TYPES, globalEvents } from '@/domains/shell/shared/events';
-import { normalizeLowerValue } from '@/domains/shell/shared/utils';
+import { EVENT_TYPES, globalEvents } from '@/shared/events';
+import { normalizeLowerValue } from '@/shared/normalize';
 
 import {
   runAuthInitialize,

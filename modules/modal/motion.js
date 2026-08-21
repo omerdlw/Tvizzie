@@ -1,8 +1,9 @@
+import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared/motion';
+
 const MODAL_EASINGS = Object.freeze({
-  // Aligned with nav CINEMATIC easing
-  CINEMATIC: [0.16, 1, 0.3, 1],
-  EMPHASIZED: [0.22, 1, 0.36, 1],
-  EXIT: [0.35, 0, 0.2, 1],
+  CINEMATIC: MOTION_EASINGS.CINEMATIC,
+  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
+  EXIT: MOTION_EASINGS.EXIT,
 });
 
 const MODAL_TIERS = Object.freeze({
@@ -21,12 +22,9 @@ const POSITIONS = Object.freeze({
 });
 
 const MODAL_SPRINGS = Object.freeze({
-  // Button tap: crisp, instant
-  MICRO: Object.freeze({ type: 'spring', stiffness: 600, damping: 28, mass: 0.22 }),
-  // Panel enter: organic feel aligned with nav DECK spring
-  PANEL: Object.freeze({ type: 'spring', stiffness: 280, damping: 28, mass: 0.6 }),
-  // Badge / counter
-  BADGE: Object.freeze({ type: 'spring', stiffness: 460, damping: 18, mass: 0.32 }),
+  MICRO: MOTION_SPRINGS.PRESS,
+  PANEL: MOTION_SPRINGS.PANEL,
+  BADGE: MOTION_SPRINGS.BADGE,
 });
 
 export const MODAL_MICRO_SPRING = MODAL_SPRINGS.MICRO;
@@ -166,7 +164,6 @@ const CENTER_VARIANTS = Object.freeze({
     transition: { duration: MODAL_TIERS.FAST.duration * 0.6, ease: MODAL_EASINGS.EXIT },
   },
 });
-
 
 const BOTTOM_VARIANTS = buildVariants('SURFACE', {
   axis: 'y',

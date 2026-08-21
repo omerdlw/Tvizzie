@@ -3,10 +3,11 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
+import { MOTION_EASINGS } from '@/shared/motion';
 
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
+import { TMDB_IMG } from '@/shared/constants';
 import { Container } from '@/modules/modal';
-import { Spinner } from '@/domains/shell/shared/components/feedback/spinner';
+import { Spinner } from '@/ui/feedback/spinner';
 
 function calculateAspectRatio(data) {
   const ratio = Number(data?.aspect_ratio);
@@ -48,7 +49,7 @@ export default function ImagePreviewModal({ close, data }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoaded ? 1 : 0 }}
-          transition={{ duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
+          transition={{ duration: 0.42, ease: MOTION_EASINGS.SOFT }}
           className="absolute inset-0 h-full w-full"
         >
           <Image
@@ -67,7 +68,7 @@ export default function ImagePreviewModal({ close, data }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.24, ease: MOTION_EASINGS.EMPHASIZED }}
               className="center absolute inset-0 bg-white/5"
             >
               <Spinner size={40} />

@@ -1,6 +1,4 @@
-import {
-  subscribeToUnreadCount,
-} from '@/domains/social/client/notifications';
+import { subscribeToUnreadCount } from '@/domains/social/client/notifications';
 
 export const NAV_CONFIG = {
   items: {

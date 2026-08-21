@@ -1,8 +1,6 @@
 import createBundleAnalyzer from '@next/bundle-analyzer';
 import os from 'node:os';
 
-import { CSP_ENFORCE } from './infrastructure/http/runtime-policy-constants.js';
-
 function getLocalDevOrigins() {
   const origins = new Set(['localhost', '127.0.0.1', '0.0.0.0', '192.168.1.214']);
   try {
@@ -28,8 +26,6 @@ const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   ? SUPABASE_ORIGIN.replace(/^https:\/\//i, 'wss://')
   : '';
 
-const CSP_HEADER_KEY =
-  CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
 const CSP_VALUE = [
   "default-src 'self'",
   [
@@ -44,20 +40,16 @@ const CSP_VALUE = [
     .join(' '),
   "style-src 'self' 'unsafe-inline'",
   [
-    "img-src 'self' data: blob:",
-    'https://image.tmdb.org',
-    'https://i.ytimg.com',
-    'https://img.youtube.com',
-    'https://m.media-amazon.com',
-    'https://lh3.googleusercontent.com',
-    'https://*.googleusercontent.com',
-    'https://api.dicebear.com',
+    "img-src 'self' data: blob: https:",
   ].join(' '),
   [
     "connect-src 'self'",
     'https://accounts.google.com',
     'https://apis.google.com',
     'https://www.googleapis.com',
+    'https://api.iconify.design',
+    'https://api.simplesvg.com',
+    'https://api.unisvg.com',
     SUPABASE_ORIGIN,
     SUPABASE_WS_ORIGIN,
     'https://*.googleapis.com',
@@ -66,16 +58,21 @@ const CSP_VALUE = [
     .filter(Boolean)
     .join(' '),
   "font-src 'self' data:",
-  "frame-src 'self' https://accounts.google.com",
+  "frame-src 'self' https://accounts.google.com https://www.youtube.com https://www.youtube-nocookie.com",
+  "media-src 'self' blob:",
+  "manifest-src 'self'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-].join('; ');
+  process.env.NODE_ENV === 'production' ? 'upgrade-insecure-requests' : '',
+]
+  .filter(Boolean)
+  .join('; ');
 
 const SECURITY_HEADERS = [
-  { key: CSP_HEADER_KEY, value: CSP_VALUE },
+  { key: 'Content-Security-Policy', value: CSP_VALUE },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -140,6 +137,22 @@ const NEXT_CONFIG = {
       },
       {
         protocol: 'https',
+        hostname: 'media.themoviedb.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.themoviedb.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'themoviedb.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.themoviedb.org',
+      },
+      {
+        protocol: 'https',
         hostname: 'i.ytimg.com',
       },
       {
@@ -157,11 +170,7 @@ const NEXT_CONFIG = {
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.googleusercontent.com',
+        hostname: '**',
       },
     ],
   },

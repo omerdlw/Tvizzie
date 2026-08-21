@@ -1,25 +1,23 @@
 'use client';
 
-import { GridShellCrosshairs } from '@/domains/shell/layout/grid-crosshair';
+import { GridShellCrosshairs } from '@/ui/layouts/grid-crosshair';
 import { createContext, useContext, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSelectedLayoutSegment } from 'next/navigation';
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 import AccountHero from '../sections/account-hero';
-import NavHeightSpacer from '@/domains/shell/layout/nav-height-spacer';
-import { PageGradientShell } from '@/domains/shell/layout/page-gradient-shell';
-import NotFoundTemplate from '@/domains/shell/layout/not-found-template';
-import { AccountSkeleton, renderAccountSectionSkeleton } from '@/app/(account)/account/loading';
+import NavHeightSpacer from '@/modules/nav/nav-height-spacer';
+import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
+import { PageGridFrame } from '@/ui/layouts/page-grid-frame';
+import NotFoundTemplate from '@/domains/shell/not-found-template';
+import { AccountSkeleton, renderAccountSectionSkeleton } from '@/domains/account/ui/skeletons';
 import AccountBackgroundRegistry from './account-background-registry';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/domains/shell/shared/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
 import { useRegistry } from '@/modules/registry';
-import {
-  getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
 import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
 import { AccountProfileShellProvider, useAccountProfileShell } from './account-profile-context';
-import AccountGridFrame from './account-grid-frame';
 // ─── Nav Transition Context ───────────────────────────────────────────────────
 
 const AccountNavTransitionContext = createContext({
@@ -324,7 +322,10 @@ function ProfileLayoutInner({
       <AccountProfileShellNav profile={profile} />
       <AccountBackgroundRegistry bannerUrl={profile?.bannerUrl} />
       <PageGradientShell className="overflow-hidden">
-        <AccountGridFrame />
+        <PageGridFrame
+          minHeightClassName="min-h-screen"
+          widthClassName={ACCOUNT_ROUTE_SHELL_CLASS}
+        />
         <div
           className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 pb-12 sm:gap-8`}
         >

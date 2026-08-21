@@ -1,6 +1,4 @@
-import {
-  isPersonMediaType,
-} from '@/domains/media/utils/media-key';
+import { isPersonMediaType } from '@/shared/media-type';
 
 import {
   SEARCH_PAGE_SIZE,

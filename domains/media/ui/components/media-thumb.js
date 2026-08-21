@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/domains/shell/shared/utils';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import { TMDB_IMG } from '@/shared/constants';
+import { canUseNextImageOptimization, resolveImageQuality } from '@/shared/image-policy';
+import { cn } from '@/ui/class-names';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 function resolvePosterSrc(poster) {

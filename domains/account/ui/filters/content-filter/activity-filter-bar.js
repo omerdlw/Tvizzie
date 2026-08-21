@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/domains/shell/shared/utils';
+import { cn } from '@/ui/class-names';
 
 import { ACTIVITY_SORT_OPTIONS } from './content-filter-options';
 import {

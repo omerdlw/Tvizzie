@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { TMDB_API_URL } from '@/domains/shell/shared/constants';
-import { getOrLoadCachedValue } from '@/infrastructure/http/http-server';
+import { TMDB_API_URL } from '@/shared/constants';
+import { getOrLoadCachedValue } from '@/infrastructure/http/memory-cache.server';
 import { TMDB_FETCH_TIMEOUT_MS, TMDB_HEADERS } from './tmdb-client-config';
 
 function resolveTmdbHeaders() {

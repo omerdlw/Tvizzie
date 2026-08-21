@@ -4,15 +4,13 @@ import {
   createMediaMetadata,
   delayMediaSkeletonPreview,
   loadMediaRouteData,
-} from '@/domains/media/server/title-route.server';
+} from '@/domains/media/server/title-route';
 import {
   getPersonBase,
   getPersonSecondary,
 } from '@/infrastructure/tmdb/clients/tmdb-server-client';
-import {
-  getPersonAwards,
-} from '@/domains/media/server/person-awards.server';
-import Client from '@/app/(media)/person/[id]/client';
+import { getPersonAwards } from '@/domains/media/server/person-awards';
+import PersonDetailView from '@/domains/media/ui/pages/person-detail';
 
 export async function generateMetadata({ params }) {
   const { media: person, response } = await loadMediaRouteData(params, getPersonBase);
@@ -57,7 +55,7 @@ export default async function PersonDetailPage({ params, searchParams }) {
   const awardsPromise = getPersonAwards(id).catch(() => null);
 
   return (
-    <Client
+    <PersonDetailView
       key={person.id}
       person={person}
       secondaryDataPromise={secondaryDataPromise}

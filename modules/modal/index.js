@@ -4,19 +4,19 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { Z_INDEX } from '@/domains/shell/shared/constants';
-import { cn } from '@/domains/shell/shared/utils';
+import { Z_INDEX } from '@/shared/constants';
+import { cn } from '@/ui/class-names';
 import { ModuleError } from '@/modules/error-boundary';
 import {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,
   MODAL_LABELS,
+  MODAL_POSITION_CLASSES,
   MODAL_POSITIONS,
 } from '@/modules/modal/config';
 import { useModal } from '@/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
-import { POSITION_CLASSES } from './utils';
 import {
   getModalPositionVariants,
   modalBackdropVariants,
@@ -201,7 +201,7 @@ function ModalLayer({
       style={{ zIndex: baseZIndex }}
       className={cn(
         'pointer-events-none fixed inset-0 flex flex-col',
-        POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
+        MODAL_POSITION_CLASSES[activePosition] || MODAL_POSITION_CLASSES[MODAL_POSITIONS.CENTER],
         activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport && 'px-3',
       )}
     >
@@ -214,9 +214,7 @@ function ModalLayer({
         transition={
           // Full-slide positions use tween (100% slide looks wrong with spring overshoot);
           // center modal uses spring so it lifts into place organically.
-          activePosition === MODAL_POSITIONS.CENTER
-            ? MODAL_PANEL_SPRING
-            : undefined
+          activePosition === MODAL_POSITIONS.CENTER ? MODAL_PANEL_SPRING : undefined
         }
         className={cn(
           'relative flex max-w-full flex-col',
@@ -271,8 +269,6 @@ function ModalLayer({
               ],
           )}
         >
-
-
           <ModuleError name={entry.modalType}>
             <SpecificModalComponent
               header={{

@@ -4,11 +4,12 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { MotionConfig } from 'framer-motion';
 
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
 import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
-import { pipe } from '@/domains/shell/shared/utils';
+import { composeProviders } from '@/app/_shell/compose-providers';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
 import { AuthProvider, createSupabaseAuthAdapter } from '@/modules/auth';
@@ -25,7 +26,7 @@ import {
 import {
   createClient as createSupabaseClient,
   terminateBrowserSession,
-} from '@/infrastructure/supabase/supabase-client';
+} from '@/infrastructure/supabase/browser-client';
 
 const Nav = dynamic(() => import('@/modules/nav'));
 const STATIC_NAV_ITEMS = Object.freeze(
@@ -67,8 +68,8 @@ function AppRegistryBootstrap({ children }) {
   );
 }
 
-const CoreShellProviders = pipe(
-  [RegistryProvider, { enableHistory: false }],
+const CoreShellProviders = composeProviders(
+  [RegistryProvider],
   [AppRegistryBootstrap],
   [BackgroundProvider],
   [NavigationProvider],
@@ -95,16 +96,22 @@ function AccountRouteNavGuard() {
 
 export const AppProviders = ({ children }) => {
   return (
-    <TooltipPrimitive.Provider delayDuration={150} skipDelayDuration={300} disableHoverableContent>
-      <CoreShellProviders>
-        <AccountRouteNavGuard />
-        <BackgroundOverlay />
-        <LoadingOverlay />
-        <Nav />
-        <SmoothScrollProvider>
-          <GlobalError>{children}</GlobalError>
-        </SmoothScrollProvider>
-      </CoreShellProviders>
-    </TooltipPrimitive.Provider>
+    <MotionConfig reducedMotion="user">
+      <TooltipPrimitive.Provider
+        delayDuration={150}
+        skipDelayDuration={300}
+        disableHoverableContent
+      >
+        <CoreShellProviders>
+          <AccountRouteNavGuard />
+          <BackgroundOverlay />
+          <LoadingOverlay />
+          <Nav />
+          <SmoothScrollProvider>
+            <GlobalError>{children}</GlobalError>
+          </SmoothScrollProvider>
+        </CoreShellProviders>
+      </TooltipPrimitive.Provider>
+    </MotionConfig>
   );
 };

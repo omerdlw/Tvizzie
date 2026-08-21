@@ -2,8 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { useDebounce } from '@/domains/shell/shared/hooks/use-debounce';
-import { cn } from '@/domains/shell/shared/utils';
+import { useDebounce } from '@/shared/hooks/use-debounce';
+import { cn } from '@/ui/class-names';
 import RatingRangeSelector from '@/domains/reviews/ui/components/rating-range-selector';
 import Icon from '@/ui/primitives/icon';
 export const UI = {

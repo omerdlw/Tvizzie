@@ -1,5 +1,5 @@
-import { TMDB_IMG } from '@/domains/shell/shared/constants';
-import { formatRuntime } from '@/domains/shell/shared/utils';
+import { TMDB_IMG } from '@/shared/constants';
+import { formatRuntime } from '@/shared/format';
 export function uniqueBy(items, key = 'id') {
   if (!Array.isArray(items)) return [];
   const getKey = typeof key === 'function' ? key : (item) => item?.[key];

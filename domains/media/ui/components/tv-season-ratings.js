@@ -3,7 +3,7 @@
 import { Fragment, use } from 'react';
 
 import Icon from '@/ui/primitives/icon';
-import { GridCrosshair } from '@/domains/shell/layout/grid-crosshair';
+import { GridCrosshair } from '@/ui/layouts/grid-crosshair';
 
 const RATING_LEGEND = [
   { label: 'Absolute Cinema', className: 'bg-[#259be8] text-black' },

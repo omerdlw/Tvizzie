@@ -1,12 +1,12 @@
-import { createTitleDetailRoute } from '@/domains/media/server/title-route.server';
+import { createTitleDetailRoute } from '@/domains/media/server/title-route';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
-import { getMovieAwards } from '@/domains/media/server/movie-awards.server';
+import { getMovieAwards } from '@/domains/media/server/movie-awards';
 
-import Client from '@/app/(media)/movie/[id]/client';
+import MediaDetailView from '@/domains/media/ui/pages/media-detail';
 
 const route = createTitleDetailRoute({
-  Client,
+  View: MediaDetailView,
   fallbackTitle: 'Movie Not Found',
   getAwards: getMovieAwards,
   getBase: getMovieBase,

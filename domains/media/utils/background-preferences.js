@@ -1,6 +1,5 @@
 'use client';
 
-
 const STORAGE_KEY = 'tvizzie.movie.background.preferences';
 const MAX_PREFERENCES = 200;
 const PREFERENCE_KIND = Object.freeze({

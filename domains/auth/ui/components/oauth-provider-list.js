@@ -3,12 +3,7 @@
 import { OAUTH_PROVIDER_KEYS } from '@/modules/auth/provider-utils';
 import OAuthProviderButton from './oauth-provider-button';
 
-export function OAuthProviderList({
-  activeProvider = null,
-  disabled = false,
-  mode,
-  onSelect,
-}) {
+export function OAuthProviderList({ activeProvider = null, disabled = false, mode, onSelect }) {
   return (
     <div className="flex items-center gap-3">
       {OAUTH_PROVIDER_KEYS.map((provider, index) => (

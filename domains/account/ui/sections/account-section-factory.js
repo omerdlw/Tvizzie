@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
-import SearchAction from '@/domains/shell/navigation/action/search-action';
+import SearchAction from '@/domains/shell/navigation/actions/search-action';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 import {
   AccountSectionStateProvider,
@@ -72,7 +72,7 @@ export function createAccountSectionRegistry({
               ? false
               : resolvedOverrides?.showToolbarFollowActionWithOverride,
           })
-        : null
+        : null,
     );
 
     return null;

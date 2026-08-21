@@ -1,9 +1,11 @@
 'use client';
 
-import { isBrowser } from '@/domains/shell/shared/utils';
+function canUseBrowserStorage() {
+  return typeof window !== 'undefined';
+}
 
 export function getStorageItem(key, defaultValue = null) {
-  if (!isBrowser()) {
+  if (!canUseBrowserStorage()) {
     return defaultValue;
   }
 
@@ -17,7 +19,7 @@ export function getStorageItem(key, defaultValue = null) {
 }
 
 export function setStorageItem(key, value) {
-  if (!isBrowser()) {
+  if (!canUseBrowserStorage()) {
     return false;
   }
 
@@ -31,7 +33,7 @@ export function setStorageItem(key, value) {
 }
 
 export function removeStorageItem(key) {
-  if (!isBrowser()) {
+  if (!canUseBrowserStorage()) {
     return false;
   }
 

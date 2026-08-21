@@ -26,14 +26,14 @@ import {
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
 } from '@/domains/account/utils/avatar';
-import { EmptyState } from '@/domains/shell/shared/components/feedback/empty-state';
-import SegmentedControl from '@/domains/shell/shared/components/segmented-control';
-import AdaptiveImage from '@/domains/shell/shared/components/adaptive-image';
+import { EmptyState } from '@/ui/feedback/empty-state';
+import SegmentedControl from '@/ui/components/segmented-control';
+import AdaptiveImage from '@/ui/components/adaptive-image';
 import {
   DESTRUCTIVE_ACTION_TONE_CLASS,
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,
-} from '@/domains/shell/shared/constants';
+} from '@/shared/constants';
 
 const TABS = Object.freeze({
   FOLLOWERS: 'followers',
@@ -185,7 +185,13 @@ const UserAction = memo(function UserAction({
         type="button"
         onClick={() => onFollow(user.id)}
         whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
-        className={isFollowAccepted ? ACTION_CLASSES.MUTED : isFollowPending ? ACTION_CLASSES.DEFAULT : ACTION_CLASSES.INFO}
+        className={
+          isFollowAccepted
+            ? ACTION_CLASSES.MUTED
+            : isFollowPending
+              ? ACTION_CLASSES.DEFAULT
+              : ACTION_CLASSES.INFO
+        }
         aria-label={`${followLabel} ${user.displayName}`}
       >
         {followLabel}
