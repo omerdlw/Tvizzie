@@ -1,0 +1,82 @@
+- generic [active] [ref=f5e1]:
+  - main [ref=f5e3]:
+    - generic [ref=f5e7]:
+      - generic [ref=f5e13]:
+        - generic [ref=f5e14]:
+          - img "Jale Aydın" [ref=f5e17]
+          - generic [ref=f5e18]:
+            - heading "Jale Aydın" [level=1] [ref=f5e20]
+            - paragraph [ref=f5e22]:
+              - text: Qui aute laborum qui irure incididunt veniam sit non dolor ex sint mollit exercitation consectetur esse. Cillum mollit laboris dolore anim ut. Pariatur velit dolor i…
+              - button "Read More" [ref=f5e23] [cursor=pointer]
+        - generic [ref=f5e24]:
+          - button "4 Followers" [ref=f5e26] [cursor=pointer]:
+            - generic [ref=f5e27]: "4"
+            - generic [ref=f5e28]: Followers
+          - button "5 Following" [ref=f5e30] [cursor=pointer]:
+            - generic [ref=f5e31]: "5"
+            - generic [ref=f5e32]: Following
+      - navigation "Account sections" [ref=f5e35]:
+        - link "Overview" [ref=f5e36] [cursor=pointer]:
+          - /url: /account/seed_jale
+        - link "Activity" [ref=f5e45] [cursor=pointer]:
+          - /url: /account/seed_jale/activity
+        - link "Diary" [ref=f5e50] [cursor=pointer]:
+          - /url: /account/seed_jale/diary
+        - link "Likes (0)" [ref=f5e57] [cursor=pointer]:
+          - /url: /account/seed_jale/likes
+        - link "Watched (0)" [ref=f5e62] [cursor=pointer]:
+          - /url: /account/seed_jale/watched
+        - link "Watchlist (0)" [ref=f5e69] [cursor=pointer]:
+          - /url: /account/seed_jale/watchlist
+        - link "Reviews (0)" [ref=f5e74] [cursor=pointer]:
+          - /url: /account/seed_jale/reviews
+        - link "Lists (0)" [ref=f5e79] [cursor=pointer]:
+          - /url: /account/seed_jale/lists
+      - main [ref=f5e84]:
+        - generic [ref=f5e85]: This profile is private
+  - button "Open Next.js Dev Tools" [ref=f5e99] [cursor=pointer]
+  - alert [ref=f5e103]
+  - generic [ref=f5e104]:
+    - group [ref=f5e105] [cursor=pointer]:
+      - generic [ref=f5e108]:
+        - generic [ref=f5e109]:
+          - button "Private profile" [ref=f5e121]
+          - generic [ref=f5e126]:
+            - generic [ref=f5e127]:
+              - generic [ref=f5e129]:
+                - heading "Account" [level=3] [ref=f5e130]
+                - heading "Jale Aydın" [level=3] [ref=f5e131]
+              - generic [ref=f5e132]:
+                - paragraph [ref=f5e133]: Your favorites, watched, watchlist, and lists
+                - paragraph [ref=f5e134]: Profile Overview
+            - generic [ref=f5e135]:
+              - button [ref=f5e137]
+              - button [ref=f5e144]
+        - button "Follow" [ref=f5e149]
+    - button "Tvizzie Account Discover titles Your favorites, watched, watchlist, and lists" [ref=f5e152] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                      - heading "Account" [level=3]
+                  - generic:
+                    - paragraph: Discover titles
+                    - paragraph: Your favorites, watched, watchlist, and lists
+    - button "Tvizzie Discover titles" [ref=f5e153] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                  - generic:
+                    - paragraph: Discover titles

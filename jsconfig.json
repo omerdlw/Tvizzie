@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "module": "esnext",
+    "target": "esnext",
+    "checkJs": false,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./*"],
+      "@/modules/*": ["./modules/*"],
+      "@/ui/*": ["./ui/*"],
+      "@/shared/*": ["./shared/*"],
+      "@/domains/*": ["./domains/*"],
+      "@/infrastructure/*": ["./infrastructure/*"]
+    }
+  }
+}

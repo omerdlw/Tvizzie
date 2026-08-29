@@ -1,0 +1,66 @@
+# Dependencies
+/node_modules/
+/.pnp
+.pnp.js
+
+# Next.js build outputs
+/.next/
+/.open-next/
+/out/
+
+# Cloudflare & Deployments
+/.wrangler/
+/.vercel/
+/.turbo/
+
+# Testing & Coverage
+/coverage/
+/tests/
+
+# Database & Local Tooling
+/supabase/
+/scripts/
+
+# Environment files
+.env*
+.dev.vars*
+!.env.example
+
+# OS & Temp files
+.DS_Store
+Thumbs.db
+*.pem
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+affected_files.txt
+
+# TypeScript
+*.tsbuildinfo
+cloudflare-env.d.ts
+
+# IDE, CI & AI Assistant metadata / memory / rules
+/.vscode/
+/.idea/
+/.agents/
+/.codex/
+/.cursorrules
+/.codebase-memory/
+/.github/
+/AGENTS.md
+/GEMINI.md
+
+# Formatter & Editor configs
+/.editorconfig
+/.gitattributes
+/.prettierrc*
+/.prettierignore
+
+# Internal Docs
+/ACCOUNT_ARCHITECTURE.md
+/DESIGN.md
+/FILE_STRUCTURE.md
+
+# Media
+/public/video.mp4

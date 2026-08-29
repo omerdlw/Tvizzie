@@ -1,0 +1,84 @@
+- generic [active] [ref=f2e1]:
+  - main [ref=f2e3]:
+    - generic [ref=f2e7]:
+      - generic [ref=f2e13]:
+        - generic [ref=f2e14]:
+          - img "Jale Aydın" [ref=f2e17]
+          - generic [ref=f2e18]:
+            - heading "Jale Aydın" [level=1] [ref=f2e20]
+            - paragraph [ref=f2e22]:
+              - text: Qui aute laborum qui irure incididunt veniam sit non dolor ex sint mollit exercitation consectetur esse. Cillum mollit laboris dolore anim ut. Pariatur velit dolor i…
+              - button "Read More" [ref=f2e23] [cursor=pointer]
+        - generic [ref=f2e24]:
+          - button "4 Followers" [ref=f2e26] [cursor=pointer]:
+            - generic [ref=f2e27]: "4"
+            - generic [ref=f2e28]: Followers
+          - button "5 Following" [ref=f2e30] [cursor=pointer]:
+            - generic [ref=f2e31]: "5"
+            - generic [ref=f2e32]: Following
+      - navigation "Account sections" [ref=f2e35]:
+        - link "Overview" [ref=f2e36] [cursor=pointer]:
+          - /url: /account/seed_jale
+        - link "Activity" [ref=f2e45] [cursor=pointer]:
+          - /url: /account/seed_jale/activity
+        - link "Diary" [ref=f2e50] [cursor=pointer]:
+          - /url: /account/seed_jale/diary
+        - link "Likes (0)" [ref=f2e57] [cursor=pointer]:
+          - /url: /account/seed_jale/likes
+        - link "Watched (0)" [ref=f2e62] [cursor=pointer]:
+          - /url: /account/seed_jale/watched
+        - link "Watchlist (0)" [ref=f2e69] [cursor=pointer]:
+          - /url: /account/seed_jale/watchlist
+        - link "Reviews (0)" [ref=f2e74] [cursor=pointer]:
+          - /url: /account/seed_jale/reviews
+        - link "Lists (0)" [ref=f2e79] [cursor=pointer]:
+          - /url: /account/seed_jale/lists
+      - main [ref=f2e84]:
+        - generic [ref=f2e148]:
+          - article [ref=f2e149]
+          - article [ref=f2e159]
+          - article [ref=f2e169]
+          - article [ref=f2e179]
+          - article [ref=f2e189]
+          - article [ref=f2e199]
+  - button "Open Next.js Dev Tools" [ref=f2e314] [cursor=pointer]
+  - alert [ref=f2e318]
+  - generic [ref=f2e319]:
+    - button [ref=f2e320] [cursor=pointer]:
+      - generic [ref=f2e324]:
+        - button "Private profile" [ref=f2e336]
+        - generic [ref=f2e341]:
+          - generic [ref=f2e342]:
+            - generic [ref=f2e344]:
+              - heading "Account" [level=3] [ref=f2e345]
+              - heading "Jale Aydın" [level=3] [ref=f2e346]
+            - generic [ref=f2e347]:
+              - paragraph [ref=f2e348]: Your favorites, watched, watchlist, and lists
+              - paragraph [ref=f2e349]: Profile Overview
+          - button [ref=f2e352]
+    - button "Tvizzie Account Discover titles Your favorites, watched, watchlist, and lists" [ref=f2e358] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                      - heading "Account" [level=3]
+                  - generic:
+                    - paragraph: Discover titles
+                    - paragraph: Your favorites, watched, watchlist, and lists
+    - button "Tvizzie Discover titles" [ref=f2e359] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                  - generic:
+                    - paragraph: Discover titles

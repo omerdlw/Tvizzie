@@ -1,0 +1,42 @@
+{
+  "keep_vars": true,
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "tvizzie",
+  "compatibility_date": "2026-04-24",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "secrets": {
+    "required": [
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "INFRA_INTERNAL_TOKEN",
+      "TMDB_API_KEY",
+      "BREVO_API_KEY",
+      "BREVO_SENDER_EMAIL",
+      "EMAIL_VERIFICATION_SECRET",
+      "LOGIN_VERIFICATION_SECRET",
+      "SIGN_UP_PROOF_SECRET",
+      "STEP_UP_SECRET",
+      "RECENT_REAUTH_SECRET",
+    ],
+  },
+  "build": {
+    "command": "npm run build:cloudflare",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "tvizzie",
+    },
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.25,
+  },
+  "images": {
+    "binding": "IMAGES",
+  },
+}

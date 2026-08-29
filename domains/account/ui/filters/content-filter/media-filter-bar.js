@@ -1,0 +1,123 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/domains/account/ui/filters/filtering';
+import { cn } from '@/ui/class-names';
+
+import {
+  DefaultMenuItem,
+  FilterPopover,
+  OptionSection,
+  ResetButton,
+  SearchChip,
+  UI,
+  VisibilityGroup,
+  resolveOptionLabel,
+} from './content-filter-controls';
+
+export function AccountMediaFilterBar({
+  action = null,
+  className = '',
+  decadeOptions = [],
+  defaultSort = 'release_desc',
+  defaultSortLabel = 'Default sort: Release date, newest first',
+  filters,
+  genreOptions = [],
+  onChange,
+  onReset,
+  visibilityOptions = [],
+}) {
+  const searchInputRef = useRef(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(Boolean(filters?.query));
+
+  const selectedEyeFlags = filters?.eyeFlags instanceof Set ? filters.eyeFlags : new Set();
+  const searchQuery = typeof filters?.query === 'string' ? filters.query : '';
+  const decadeLabel = resolveOptionLabel(decadeOptions, filters?.decade, 'Any decade');
+  const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
+
+  const isDefaultSort = filters?.sort === defaultSort;
+  const sortLabel = useMemo(() => {
+    const selectedOption = resolveMediaSortOption(filters?.sort);
+    if (selectedOption) {
+      return `${selectedOption.groupLabel}: ${selectedOption.label}`;
+    }
+    return defaultSort === 'list_order' ? 'Sort: List order' : 'Release Date: Newest release first';
+  }, [filters?.sort, defaultSort]);
+
+  useEffect(() => {
+    if (searchQuery) setIsSearchOpen(true);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (isSearchOpen) searchInputRef.current?.focus();
+  }, [isSearchOpen]);
+
+  return (
+    <div className={cn(UI.bar, className)}>
+      <SearchChip
+        value={searchQuery}
+        open={isSearchOpen}
+        onOpen={() => setIsSearchOpen(true)}
+        onClose={() => setIsSearchOpen(false)}
+        onChange={(query) => onChange({ query })}
+        inputRef={searchInputRef}
+      />
+
+      {!isSearchOpen && (
+        <>
+          <FilterPopover label={`Decade: ${decadeLabel}`} active={filters?.decade !== 'all'}>
+            <OptionSection
+              options={decadeOptions}
+              value={filters?.decade}
+              onChange={(value) => onChange({ decade: value })}
+            />
+          </FilterPopover>
+          <FilterPopover label={`Genre: ${genreLabel}`} active={filters?.genre !== 'all'}>
+            <OptionSection
+              options={genreOptions}
+              value={filters?.genre}
+              onChange={(value) => onChange({ genre: value })}
+            />
+          </FilterPopover>
+
+          <FilterPopover label={`${sortLabel}`} active={!isDefaultSort}>
+            <DefaultMenuItem
+              active={isDefaultSort}
+              label={defaultSortLabel}
+              onClick={() => onChange({ sort: defaultSort })}
+            />
+
+            {MEDIA_SORT_GROUPS.map((group) => (
+              <OptionSection
+                key={group.label}
+                title={group.label}
+                options={group.options}
+                value={filters?.sort}
+                onChange={(value) => onChange({ sort: value })}
+              />
+            ))}
+          </FilterPopover>
+
+          <FilterPopover label="Visibility" active={selectedEyeFlags.size > 0}>
+            <VisibilityGroup
+              options={visibilityOptions}
+              selectedFlags={selectedEyeFlags}
+              onToggle={(key) => {
+                const nextFlags = new Set(selectedEyeFlags);
+
+                if (nextFlags.has(key)) nextFlags.delete(key);
+                else nextFlags.add(key);
+
+                onChange({ eyeFlags: nextFlags });
+              }}
+            />
+          </FilterPopover>
+
+          {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+          {action}
+        </>
+      )}
+    </div>
+  );
+}

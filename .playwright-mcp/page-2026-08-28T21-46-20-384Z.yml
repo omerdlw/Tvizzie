@@ -1,0 +1,384 @@
+- generic [ref=f9e1]:
+  - main [ref=f9e3]:
+    - generic [ref=f9e7]:
+      - generic [ref=f9e11]:
+        - complementary [ref=f9e12]:
+          - generic [ref=f9e13]:
+            - img "Furious 7" [ref=f9e16]
+            - generic [ref=f9e17]:
+              - generic [ref=f9e18]:
+                - button "Mark watched" [ref=f9e19] [cursor=pointer]
+                - button "Watchlist" [ref=f9e27] [cursor=pointer]
+              - generic [ref=f9e34]:
+                - button "Log to diary" [ref=f9e35] [cursor=pointer]
+                - button "Add To List" [active] [ref=f9e43] [cursor=pointer]
+              - generic [ref=f9e49]:
+                - button "Where to Watch" [ref=f9e50] [cursor=pointer]
+                - button "Awards" [ref=f9e58] [cursor=pointer]
+            - generic [ref=f9e67]:
+              - paragraph [ref=f9e69]: GENRES / TAGS
+              - generic [ref=f9e70]:
+                - generic [ref=f9e71]:
+                  - generic [ref=f9e72]: Action
+                  - generic [ref=f9e73]: Crime
+                  - generic [ref=f9e74]: Thriller
+                - generic [ref=f9e75]:
+                  - generic [ref=f9e76]: "#car race"
+                  - generic [ref=f9e77]: "#speed"
+                  - generic [ref=f9e78]: "#sequel"
+                  - generic [ref=f9e79]: "#street race"
+                  - generic [ref=f9e80]: "#revenge"
+                  - generic [ref=f9e81]: "#race"
+                  - generic [ref=f9e82]: "#cars"
+                  - generic [ref=f9e83]: "#suspenseful"
+                  - generic [ref=f9e84]: "#admiring"
+                  - generic [ref=f9e85]: "#excited"
+            - generic [ref=f9e86]:
+              - generic [ref=f9e94]:
+                - text: Directed by
+                - link "James Wan" [ref=f9e95] [cursor=pointer]:
+                  - /url: /person/2127
+              - generic [ref=f9e104]:
+                - generic [ref=f9e105]: Written by
+                - generic [ref=f9e106]:
+                  - generic [ref=f9e107]:
+                    - link "Chris Morgan" [ref=f9e108] [cursor=pointer]:
+                      - /url: /person/58191
+                    - generic [ref=f9e109]: ","
+                  - link "Gary Scott Thompson" [ref=f9e111] [cursor=pointer]:
+                    - /url: /person/8162
+              - generic [ref=f9e112]: Rated PG-13
+              - generic [ref=f9e122]: "Original Language: English"
+              - generic [ref=f9e130]: "Status: Released"
+              - generic [ref=f9e136]: "Budget: $190,000,000"
+              - generic [ref=f9e145]: "Revenue: $1,515,400,000"
+        - generic [ref=f9e152]:
+          - generic [ref=f9e153]:
+            - heading "Furious 7" [level=1] [ref=f9e154]
+            - paragraph [ref=f9e155]: Vengeance hits home.
+            - paragraph [ref=f9e157]: Deckard Shaw seeks revenge against Dominic Toretto and his family for his comatose brother.
+          - generic [ref=f9e158]:
+            - generic [ref=f9e159]:
+              - generic [ref=f9e164]:
+                - button "Cast" [ref=f9e165] [cursor=pointer]
+                - button "Crew" [ref=f9e167] [cursor=pointer]
+              - generic [ref=f9e171]:
+                - generic [ref=f9e172]:
+                  - link "Vin Diesel Vin Diesel Dominic Toretto" [ref=f9e174] [cursor=pointer]:
+                    - /url: /person/12835
+                    - img "Vin Diesel" [ref=f9e177]
+                    - generic [ref=f9e178]:
+                      - generic [ref=f9e179]: Vin Diesel
+                      - generic [ref=f9e180]: Dominic Toretto
+                  - link "Paul Walker Paul Walker Brian O'Conner" [ref=f9e182] [cursor=pointer]:
+                    - /url: /person/8167
+                    - img "Paul Walker" [ref=f9e185]
+                    - generic [ref=f9e186]:
+                      - generic [ref=f9e187]: Paul Walker
+                      - generic [ref=f9e188]: Brian O'Conner
+                  - link "Dwayne Johnson Dwayne Johnson Luke Hobbs" [ref=f9e190] [cursor=pointer]:
+                    - /url: /person/18918
+                    - img "Dwayne Johnson" [ref=f9e193]
+                    - generic [ref=f9e194]:
+                      - generic [ref=f9e195]: Dwayne Johnson
+                      - generic [ref=f9e196]: Luke Hobbs
+                  - link "Michelle Rodriguez Michelle Rodriguez Letty Ortiz" [ref=f9e198] [cursor=pointer]:
+                    - /url: /person/17647
+                    - img "Michelle Rodriguez" [ref=f9e201]
+                    - generic [ref=f9e202]:
+                      - generic [ref=f9e203]: Michelle Rodriguez
+                      - generic [ref=f9e204]: Letty Ortiz
+                  - link "Tyrese Gibson Tyrese Gibson Roman Pearce" [ref=f9e206] [cursor=pointer]:
+                    - /url: /person/8169
+                    - img "Tyrese Gibson" [ref=f9e209]
+                    - generic [ref=f9e210]:
+                      - generic [ref=f9e211]: Tyrese Gibson
+                      - generic [ref=f9e212]: Roman Pearce
+                  - link "Ludacris Ludacris Tej Parker" [ref=f9e214] [cursor=pointer]:
+                    - /url: /person/8171
+                    - img "Ludacris" [ref=f9e217]
+                    - generic [ref=f9e218]:
+                      - generic [ref=f9e219]: Ludacris
+                      - generic [ref=f9e220]: Tej Parker
+                - generic [ref=f9e221]:
+                  - link "Jordana Brewster Jordana Brewster" [ref=f9e224] [cursor=pointer]:
+                    - /url: /person/22123
+                    - img "Jordana Brewster" [ref=f9e227]
+                    - generic [ref=f9e228]: Jordana Brewster
+                  - link "Jason Statham Jason Statham" [ref=f9e231] [cursor=pointer]:
+                    - /url: /person/976
+                    - img "Jason Statham" [ref=f9e234]
+                    - generic [ref=f9e235]: Jason Statham
+                  - link "Kurt Russell Kurt Russell" [ref=f9e238] [cursor=pointer]:
+                    - /url: /person/6856
+                    - img "Kurt Russell" [ref=f9e241]
+                    - generic [ref=f9e242]: Kurt Russell
+                  - button "Show full cast" [ref=f9e243] [cursor=pointer]
+            - generic [ref=f9e247]:
+              - generic [ref=f9e248]:
+                - heading "Gallery" [level=2] [ref=f9e257]
+                - generic [ref=f9e259]:
+                  - generic [ref=f9e260]:
+                    - button [ref=f9e264]:
+                      - img "Scene 1" [ref=f9e268]
+                    - button [ref=f9e272]:
+                      - img "Scene 2" [ref=f9e276]
+                    - button [ref=f9e280]:
+                      - img "Scene 3" [ref=f9e284]
+                    - button [ref=f9e288]:
+                      - img "Scene 4" [ref=f9e292]
+                    - button [ref=f9e296]:
+                      - img "Scene 5" [ref=f9e300]
+                    - button [ref=f9e304]:
+                      - img "Scene 6" [ref=f9e308]
+                    - button [ref=f9e312]:
+                      - img "Scene 7" [ref=f9e316]
+                    - button [ref=f9e320]:
+                      - img "Scene 8" [ref=f9e324]
+                    - button [ref=f9e328]:
+                      - img "Scene 9" [ref=f9e332]
+                    - button [ref=f9e336]:
+                      - img "Scene 10" [ref=f9e340]
+                    - button [ref=f9e344]:
+                      - img "Scene 11" [ref=f9e348]
+                    - button [ref=f9e352]:
+                      - img "Scene 12" [ref=f9e356]
+                    - button [ref=f9e360]:
+                      - img "Scene 13" [ref=f9e364]
+                    - button [ref=f9e368]:
+                      - img "Scene 14" [ref=f9e372]
+                    - button [ref=f9e376]:
+                      - img "Scene 15" [ref=f9e380]
+                    - button [ref=f9e384]:
+                      - img "Scene 16" [ref=f9e388]
+                    - button [ref=f9e392]:
+                      - img "Scene 17" [ref=f9e396]
+                    - button [ref=f9e400]:
+                      - img "Scene 18" [ref=f9e404]
+                    - button [ref=f9e408]:
+                      - img "Scene 19" [ref=f9e412]
+                    - button [ref=f9e416]:
+                      - img "Scene 20" [ref=f9e420]
+                  - button "Scroll right" [ref=f9e421] [cursor=pointer]
+              - generic [ref=f9e425]:
+                - generic [ref=f9e430]:
+                  - button "Backdrops" [ref=f9e431] [cursor=pointer]
+                  - button "Posters" [ref=f9e433] [cursor=pointer]
+                  - button "Logos" [ref=f9e435] [cursor=pointer]
+                - generic [ref=f9e438]:
+                  - generic [ref=f9e439]:
+                    - button [ref=f9e443]:
+                      - img "Backdrops 1" [ref=f9e447]
+                    - button [ref=f9e451]:
+                      - img "Backdrops 2" [ref=f9e455]
+                    - button [ref=f9e459]:
+                      - img "Backdrops 3" [ref=f9e463]
+                    - button [ref=f9e467]:
+                      - img "Backdrops 4" [ref=f9e471]
+                    - button [ref=f9e475]:
+                      - img "Backdrops 5" [ref=f9e479]
+                    - button [ref=f9e483]:
+                      - img "Backdrops 6" [ref=f9e487]
+                    - button [ref=f9e491]:
+                      - img "Backdrops 7" [ref=f9e495]
+                    - button [ref=f9e499]:
+                      - img "Backdrops 8" [ref=f9e503]
+                    - button [ref=f9e507]:
+                      - img "Backdrops 9" [ref=f9e511]
+                  - button "Scroll right" [ref=f9e512] [cursor=pointer]
+            - generic [ref=f9e516]:
+              - generic [ref=f9e518]:
+                - generic [ref=f9e523]:
+                  - button "Clips" [ref=f9e524] [cursor=pointer]
+                  - button "Trailers" [ref=f9e526] [cursor=pointer]
+                  - button "Featurettes" [ref=f9e528] [cursor=pointer]
+                - generic [ref=f9e531]:
+                  - generic [ref=f9e532]:
+                    - generic [ref=f9e535]:
+                      - button [ref=f9e536]:
+                        - img "Letty is Detected at the Party" [ref=f9e540]
+                      - generic:
+                        - generic:
+                          - heading "Letty is Detected at the Party" [level=3]
+                    - generic [ref=f9e543]:
+                      - button [ref=f9e544]:
+                        - img "The Last Ride" [ref=f9e548]
+                      - generic:
+                        - generic:
+                          - heading "The Last Ride" [level=3]
+                    - generic [ref=f9e551]:
+                      - button [ref=f9e552]:
+                        - img "Hobbs Destroys a Drone with an Ambulance" [ref=f9e556]
+                      - generic:
+                        - generic:
+                          - heading "Hobbs Destroys a Drone with an Ambulance" [level=3]
+                    - generic [ref=f9e559]:
+                      - button [ref=f9e560]:
+                        - img "The Rescue" [ref=f9e564]
+                      - generic:
+                        - generic:
+                          - heading "The Rescue" [level=3]
+                    - generic [ref=f9e567]:
+                      - button [ref=f9e924]
+                      - generic:
+                        - generic:
+                          - heading "\"Dom, cars don't fly!\" 4K HDR" [level=3]
+                    - generic [ref=f9e575]:
+                      - button [ref=f9e576]:
+                        - img "\"Thing about street fights? The street always wins.\" 4K HDR" [ref=f9e580]
+                      - generic:
+                        - generic:
+                          - heading "\"Thing about street fights? The street always wins.\" 4K HDR" [level=3]
+                    - generic [ref=f9e583]:
+                      - button [ref=f9e584]:
+                        - img "10 Minute Preview - Film Clip" [ref=f9e588]
+                      - generic:
+                        - generic:
+                          - heading "10 Minute Preview - Film Clip" [level=3]
+                  - button "Scroll right" [ref=f9e589] [cursor=pointer]
+              - generic [ref=f9e593]:
+                - heading "More like this" [level=2] [ref=f9e602]
+                - generic [ref=f9e604]:
+                  - generic [ref=f9e605]:
+                    - link [ref=f9e608] [cursor=pointer]:
+                      - /url: /movie/401478
+                      - 'img "Death Race: Beyond Anarchy" [ref=f9e612]'
+                    - link [ref=f9e615] [cursor=pointer]:
+                      - /url: /movie/156717
+                      - 'img "Death Race: Inferno" [ref=f9e619]'
+                    - link [ref=f9e622] [cursor=pointer]:
+                      - /url: /movie/51620
+                      - img "Death Race 2" [ref=f9e626]
+                    - link [ref=f9e629] [cursor=pointer]:
+                      - /url: /movie/337339
+                      - img "The Fate of the Furious" [ref=f9e633]
+                    - link [ref=f9e636] [cursor=pointer]:
+                      - /url: /movie/584
+                      - img "2 Fast 2 Furious" [ref=f9e640]
+                    - link [ref=f9e643] [cursor=pointer]:
+                      - /url: /movie/9679
+                      - img "Gone in Sixty Seconds" [ref=f9e647]
+                    - link [ref=f9e650] [cursor=pointer]:
+                      - /url: /movie/36884
+                      - 'img "No Retreat, No Surrender 3: Blood Brothers" [ref=f9e654]'
+                    - link [ref=f9e657] [cursor=pointer]:
+                      - /url: /movie/278924
+                      - 'img "Mechanic: Resurrection" [ref=f9e661]'
+                    - link [ref=f9e664] [cursor=pointer]:
+                      - /url: /movie/13387
+                      - img "Transporter 3" [ref=f9e668]
+                    - link [ref=f9e671] [cursor=pointer]:
+                      - /url: /movie/9615
+                      - 'img "The Fast and the Furious: Tokyo Drift" [ref=f9e675]'
+                    - link [ref=f9e678] [cursor=pointer]:
+                      - /url: /movie/351901
+                      - 'img "12 Rounds 3: Lockdown" [ref=f9e682]'
+                    - link [ref=f9e685] [cursor=pointer]:
+                      - /url: /movie/1211776
+                      - img "Violent Ends" [ref=f9e689]
+                    - link [ref=f9e692] [cursor=pointer]:
+                      - /url: /movie/1138749
+                      - img "The Island" [ref=f9e696]
+                    - link [ref=f9e699] [cursor=pointer]:
+                      - /url: /movie/894169
+                      - img "Vendetta" [ref=f9e703]
+                  - button "Scroll right" [ref=f9e704] [cursor=pointer]
+              - generic [ref=f9e708]:
+                - heading "Similar movies" [level=2] [ref=f9e717]
+                - generic [ref=f9e719]:
+                  - generic [ref=f9e720]:
+                    - link [ref=f9e723] [cursor=pointer]:
+                      - /url: /movie/955555
+                      - 'img "The Roundup: No Way Out" [ref=f9e727]'
+                    - link [ref=f9e730] [cursor=pointer]:
+                      - /url: /movie/16353
+                      - img "Ong Bak 2" [ref=f9e734]
+                    - link [ref=f9e737] [cursor=pointer]:
+                      - /url: /movie/256961
+                      - 'img "Paul Blart: Mall Cop 2" [ref=f9e741]'
+                    - link [ref=f9e744] [cursor=pointer]:
+                      - /url: /movie/16411
+                      - img "Initial D" [ref=f9e748]
+                    - link [ref=f9e751] [cursor=pointer]:
+                      - /url: /movie/565028
+                      - img "Candyman" [ref=f9e755]
+                    - link [ref=f9e758] [cursor=pointer]:
+                      - /url: /movie/16061
+                      - img "Tokyo Gore Police" [ref=f9e762]
+                    - link [ref=f9e765] [cursor=pointer]:
+                      - /url: /movie/16638
+                      - img "El Cid" [ref=f9e769]
+                    - link [ref=f9e772] [cursor=pointer]:
+                      - /url: /movie/16227
+                      - img "Dark Passage" [ref=f9e776]
+                    - link [ref=f9e779] [cursor=pointer]:
+                      - /url: /movie/16028
+                      - img "They" [ref=f9e783]
+                    - link [ref=f9e786] [cursor=pointer]:
+                      - /url: /movie/424592
+                      - img "A/K" [ref=f9e790]
+                    - link [ref=f9e793] [cursor=pointer]:
+                      - /url: /movie/612635
+                      - img "Bright Red" [ref=f9e797]
+                    - link [ref=f9e800] [cursor=pointer]:
+                      - /url: /movie/16271
+                      - img "Massacre at Central High" [ref=f9e804]
+                    - link [ref=f9e807] [cursor=pointer]:
+                      - /url: /movie/16693
+                      - img "The Tale of Zatoichi Continues" [ref=f9e811]
+                    - link [ref=f9e814] [cursor=pointer]:
+                      - /url: /movie/16045
+                      - 'img "The Lost Treasure of the Knights Templar III: The Mystery of the Snake Crown" [ref=f9e818]'
+                  - button "Scroll right" [ref=f9e819] [cursor=pointer]
+      - generic [ref=f9e824]:
+        - generic [ref=f9e826]:
+          - generic [ref=f9e827]:
+            - heading "Recent Reviews" [level=2] [ref=f9e832]
+            - generic [ref=f9e835]:
+              - strong [ref=f9e836]: "0"
+              - text: reviews
+          - button "Add review" [ref=f9e838] [cursor=pointer]
+        - generic [ref=f9e845]: No ratings or reviews yet
+  - button "Open Next.js Dev Tools" [ref=f9e899] [cursor=pointer]
+  - alert [ref=f9e903]
+  - generic [ref=f9e967] [cursor=pointer]
+  - generic [ref=f9e904]:
+    - group [ref=f9e905]:
+      - generic [ref=f9e970]:
+        - generic [ref=f9e972]:
+          - generic [ref=f9e983]:
+            - heading "Sign In" [level=3] [ref=f9e986]
+            - paragraph [ref=f9e988]: Choose how you want to sign in.
+          - generic [ref=f9e989]:
+            - button "Sign Up" [ref=f9e990] [cursor=pointer]
+            - button "Close surface" [ref=f9e991] [cursor=pointer]
+        - generic [ref=f9e997]:
+          - button "Continue with Passkey" [ref=f9e998] [cursor=pointer]
+          - button "Continue with Email" [ref=f9e1005] [cursor=pointer]
+          - button "Continue with GitHub" [ref=f9e1012] [cursor=pointer]
+          - button "Continue with Google" [ref=f9e1019] [cursor=pointer]
+          - button "Continue with X" [ref=f9e1029] [cursor=pointer]
+    - button "Account Your favorites, watched, watchlist, and lists" [ref=f9e922] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Account" [level=3]
+                  - generic:
+                    - paragraph: Your favorites, watched, watchlist, and lists
+    - button "Tvizzie Discover titles" [ref=f9e923] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                  - generic:
+                    - paragraph: Discover titles

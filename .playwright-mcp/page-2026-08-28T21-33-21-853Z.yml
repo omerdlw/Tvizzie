@@ -1,0 +1,34 @@
+- generic [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - main
+  - button "Open Next.js Dev Tools" [ref=f3e8] [cursor=pointer]
+  - alert [ref=f3e12]
+  - generic [ref=f3e13] [cursor=pointer]
+  - generic [ref=f3e14]:
+    - group [active] [ref=f3e15]:
+      - generic [ref=f3e35]:
+        - generic [ref=f3e37]:
+          - generic [ref=f3e48]:
+            - heading "Sign In" [level=3] [ref=f3e51]
+            - paragraph [ref=f3e53]: Choose how you want to sign in.
+          - generic [ref=f3e54]:
+            - button "Sign Up" [ref=f3e55] [cursor=pointer]
+            - button "Close surface" [ref=f3e56] [cursor=pointer]
+        - generic [ref=f3e62]:
+          - button "Continue with Passkey" [ref=f3e63] [cursor=pointer]
+          - button "Continue with Email" [ref=f3e70] [cursor=pointer]
+          - button "Continue with GitHub" [ref=f3e77] [cursor=pointer]
+          - button "Continue with Google" [ref=f3e84] [cursor=pointer]
+          - button "Continue with X" [ref=f3e94] [cursor=pointer]
+    - button "Tvizzie Discover titles" [ref=f3e32] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                  - generic:
+                    - paragraph: Discover titles

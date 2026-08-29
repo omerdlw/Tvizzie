@@ -1,0 +1,26 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e7]:
+      - region "Loading account profile" [ref=e9]
+      - navigation "Loading account sections" [ref=e27]
+      - main [ref=e52]
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]
+  - alert [ref=e110]
+  - generic [ref=e111] [cursor=pointer]
+  - generic [ref=e112]:
+    - button [ref=e113]:
+      - generic [ref=e124]:
+        - heading "Account" [level=3] [ref=e127]
+        - paragraph [ref=e129]: Your favorites, watched, watchlist, and lists
+    - button "Tvizzie Discover titles" [ref=e130] [cursor=pointer]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading "Tvizzie" [level=3]
+                  - generic:
+                    - paragraph: Discover titles
