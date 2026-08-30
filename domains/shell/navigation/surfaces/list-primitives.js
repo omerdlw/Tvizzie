@@ -220,10 +220,10 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
           }}
           aria-label={isAdded ? `Remove ${title} from list` : `Add ${title} to list`}
           className={cn(
-            'center absolute top-1.5 right-1.5 z-10 size-6 cursor-pointer rounded-full ring-1 ring-inset backdrop-blur-md transition-all duration-200',
+            'center absolute top-1.5 right-1.5 z-10 size-6 cursor-pointer rounded-full ring-1 ring-inset backdrop-blur-md',
             isAdded
-              ? 'ring-info/40 bg-info/40 text-info hover:ring-error/40 hover:bg-error/30 hover:text-error hover:scale-110'
-              : 'ring-white/15 bg-black/50 text-white/70 hover:scale-110 hover:ring-white/40 hover:bg-black/80 hover:text-white',
+              ? 'ring-info/40 bg-info/40 text-info hover:ring-error/40 hover:bg-error/30 hover:text-error'
+              : 'ring-white/15 bg-black/50 text-white/70 hover:ring-white/40 hover:bg-black/80 hover:text-white',
           )}
         >
           {isAdded ? (
@@ -306,7 +306,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
               onClick={() => onMoveUp(index)}
               disabled={index === 0}
               aria-label="Move item up"
-              className="center h-7 w-7 rounded-lg text-white/40 transition-all duration-300 ease-in-out hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="center h-7 w-7 rounded-lg text-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon="solar:arrow-up-linear" size={14} />
             </Button>
@@ -315,7 +315,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
               onClick={() => onMoveDown(index)}
               disabled={index === totalItems - 1}
               aria-label="Move item down"
-              className="center h-7 w-7 rounded-lg text-white/40 transition-all duration-300 ease-in-out hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="center h-7 w-7 rounded-lg text-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon="solar:arrow-down-linear" size={14} />
             </Button>
@@ -326,7 +326,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
           type="button"
           onClick={() => onRemove(item)}
           aria-label={`Remove ${title} from list`}
-          className="center hover:text-error h-7 w-7 rounded-lg text-white/40 transition-all duration-300 ease-in-out"
+          className="center hover:text-error h-7 w-7 rounded-lg text-white/40"
         >
           <Icon icon="solar:trash-bin-trash-bold" size={14} />
         </Button>

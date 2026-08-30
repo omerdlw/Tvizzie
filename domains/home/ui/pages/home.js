@@ -3,7 +3,6 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/shared';
 import { NavHeightSpacer } from '@/modules/nav';
 import HomeRegistry from '@/domains/home/ui/registry';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
 import { HomeRailSection } from '@/domains/home/ui/sections/home-rail-section';
 
@@ -39,7 +38,7 @@ function HomeContent({ homeData = {} }) {
     : [];
 
   return (
-    <PageGradientShell className="overflow-hidden">
+    <>
       <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]" />
       <div
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-8 sm:gap-10 md:gap-12 px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 pb-16`}
@@ -71,6 +70,6 @@ function HomeContent({ homeData = {} }) {
         />
       </div>
       <NavHeightSpacer className="w-full bg-black" />
-    </PageGradientShell>
+    </>
   );
 }

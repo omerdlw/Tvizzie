@@ -51,8 +51,6 @@ export const SelectionHud = memo(function SelectionHud({
               initial="hidden"
               animate="visible"
               custom={index}
-              whileTap={action.disabled ? undefined : { scale: NAV_TAP_SCALE }}
-              transition={NAV_BUTTON_TRANSITION}
             >
               <Tooltip text={action.tooltip || action.label}>
                 <Button
@@ -63,7 +61,7 @@ export const SelectionHud = memo(function SelectionHud({
                     action.onClick?.(event);
                   }}
                   className={cn(
-                    'center h-8 cursor-pointer gap-1.5 rounded-xl ring-1 ring-inset px-3 text-xs font-semibold transition-all duration-200',
+                    'center h-8 cursor-pointer gap-1.5 rounded-xl ring-1 ring-inset px-3 text-xs font-semibold',
                     isDestructive
                       ? DESTRUCTIVE_ACTION_TONE_CLASS
                       : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
@@ -85,8 +83,6 @@ export const SelectionHud = memo(function SelectionHud({
             initial="hidden"
             animate="visible"
             custom={actions.length}
-            whileTap={{ scale: NAV_TAP_SCALE }}
-            transition={NAV_BUTTON_TRANSITION}
           >
             <Tooltip text="Cancel selection">
               <Button
@@ -95,7 +91,7 @@ export const SelectionHud = memo(function SelectionHud({
                   event.stopPropagation();
                   onCancel();
                 }}
-                className="center h-8 w-8 cursor-pointer rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/40 transition-all duration-200 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                className="center h-8 w-8 cursor-pointer rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/40 hover:ring-white/10 hover:bg-white/10 hover:text-white"
                 aria-label="Cancel selection"
               >
                 <Icon icon="solar:close-circle-bold" size={16} />

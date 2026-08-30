@@ -41,7 +41,7 @@ export function navActionClass({ cn: classNamesFn, button = '', isActive = false
 }
 
 export const NAV_ACTION_STYLES = Object.freeze({
-  base:'center w-full rounded-[20px] gap-2.5 ring-1 ring-inset px-4 py-2.5 text-xs font-semibold uppercase transition-all duration-300 ease-in-out cursor-pointer',
+  base: 'center w-full rounded-[20px] gap-2.5 ring-1 ring-inset px-4 py-2.5 text-xs font-semibold uppercase cursor-pointer',
   muted: 'ring-white/5 bg-white/5 hover:bg-white/10 text-white/70',
   active: 'ring-white/10 bg-white/10 hover:bg-white/15 text-white',
   row: 'flex w-full gap-2.5',

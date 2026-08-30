@@ -20,7 +20,7 @@ export default function AccountActivityOverview({
   isOwner = false,
   isPrivateProfile = false,
   isViewerReady = false,
-  limit = 5,
+  limit = 6,
   revealDelay = 0,
   resolvedUserId = null,
   summaryLabel = '',

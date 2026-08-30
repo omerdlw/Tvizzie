@@ -251,7 +251,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 rounded-[14px] ring-1 ring-inset ring-white/5 bg-white/5 px-5 text-xs font-semibold text-white/70 uppercase shadow-sm transition-all duration-200 hover:ring-white/10 hover:bg-white/10 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-[14px] ring-1 ring-inset ring-white/5 bg-white/5 px-5 text-xs font-semibold text-white/70 uppercase shadow-sm hover:ring-white/10 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'} size={15} />
               {isLoadingMore ? 'Loading' : `Load more ${title.toLowerCase()}`}

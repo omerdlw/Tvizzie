@@ -240,7 +240,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       ) : !list ? (
         <AccountSectionState message="This list could not be found." />
       ) : (
-        <>
+        <div className="flex w-full flex-col gap-10 sm:gap-12">
           <AccountMediaGridPage
             currentPage={mediaPage}
             emptyMessage={
@@ -319,7 +319,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             revealDelay={0.1}
             summaryLabel={`${reviews.length} ${reviews.length === 1 ? 'Comment' : 'Comments'}`}
             title="Comments"
-            showHeader={false}
+            showHeader={true}
             toolbarPaddingClassName=""
             toolbar={
               !auth?.user || reviews.length > 0 ? (
@@ -361,7 +361,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
               userProfile={userProfile}
             />
           </AccountSectionLayout>
-        </>
+        </div>
       )}
     </AccountPageShell>
   );

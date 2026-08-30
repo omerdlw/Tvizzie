@@ -115,7 +115,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center xs:text-xs h-auto w-full gap-2.5 rounded-[20px] p-4 text-xs font-bold uppercase transition-[background-color,box-shadow,color,transform] duration-300 ease-out select-none active:scale-[0.96] disabled:cursor-not-allowed',
+        'group center xs:text-xs h-auto w-full gap-2.5 rounded-[20px] p-4 text-xs font-bold uppercase select-none disabled:cursor-not-allowed',
         getActionPalette(palette, active),
         className,
       )}

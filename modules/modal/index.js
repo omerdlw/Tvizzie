@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Z_INDEX, INFO_ACTION_TONE_CLASS } from '@/shared';
 import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
+import Button from '@/ui/primitives/button';
 import { ModuleError } from '@/modules/error-boundary';
 import { useModalRegistry } from '@/modules/registry';
 import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
@@ -384,10 +385,10 @@ export const MODAL_BACKDROP_VARIANTS = modalBackdropVariants;
 export const MODAL_POSITION_VARIANTS = getModalPositionVariants;
 
 export const CANCEL_BUTTON_CLASS =
-  'center h-9 shrink-0 cursor-pointer rounded-xl ring-1 ring-inset ring-white/10 px-4 text-xs font-semibold whitespace-nowrap uppercase text-white/70 transition-all duration-300 ease-in-out hover:ring-transparent hover:bg-white hover:text-black';
+  'center h-9 shrink-0 cursor-pointer rounded-xl ring-1 ring-inset ring-white/10 px-4 text-xs font-semibold whitespace-nowrap uppercase text-white/70 hover:ring-transparent hover:bg-white hover:text-black';
 
 export const ACTION_BUTTON_CLASS = cn(
-  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/40',
+  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/40',
   INFO_ACTION_TONE_CLASS,
 );
 
@@ -438,16 +439,14 @@ function CloseButton({ close, label = 'Close modal' }) {
   }
 
   return (
-    <motion.button
+    <Button
       type="button"
       aria-label={label}
-      whileTap={MODAL_MICRO_TAP}
-      transition={MODAL_MICRO_SPRING}
       onClick={close}
-      className="center inline-flex size-8 cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:ring-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+      className="center inline-flex size-8 cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </motion.button>
+    </Button>
   );
 }
 
@@ -755,12 +754,10 @@ function isVerticalEdgePosition(position) {
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
     <div className="center shrink-0 gap-2 border-t border-white/10 bg-white/5 p-2.5">
-      <motion.button
+      <Button
         type="button"
-        whileTap={MODAL_MICRO_TAP}
-        transition={MODAL_MICRO_SPRING}
         onClick={onSwitchToPrevious}
-        className="flex cursor-pointer items-center gap-1.5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase transition-all hover:bg-white hover:text-black"
+        className="flex cursor-pointer items-center gap-1.5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase hover:bg-white hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -772,7 +769,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
           />
         </svg>
         {getModalLabel(previousEntry.modalType)}
-      </motion.button>
+      </Button>
       <span className="text-xs text-white/15">/</span>
       <span className="rounded-xl ring-1 ring-inset ring-white/10 bg-white/10 px-2.5 py-1.5 text-xs font-bold uppercase">
         {getModalLabel(currentEntry.modalType)}

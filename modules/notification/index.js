@@ -25,6 +25,7 @@ import { normalizeFeedbackText } from '@/shared';
 import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
 import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
+import { Button } from '@/ui/primitives';
 import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
 
 function canUseBrowserStorage() {
@@ -587,29 +588,26 @@ export function NotificationOverlay({ notification, onDismiss }) {
         </div>
 
         {showCloseButton ? (
-          <motion.button
+          <Button
             type="button"
             aria-label="Bildirimi kapat"
-            whileTap={NOTIFICATION_CLOSE_TAP}
             onClick={(e) => {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2.5 right-2.5 z-10 size-8 cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:ring-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+            className="center absolute top-2.5 right-2.5 z-10 size-8 cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={16} />
-          </motion.button>
+          </Button>
         ) : null}
 
         {actions.length > 0 ? (
           <div className="flex w-full flex-wrap items-center gap-2.5">
             {actions.map((action, index) => (
-              <motion.button
+              <Button
                 key={action.label || index}
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
-                whileTap={NOTIFICATION_ACTION_TAP}
-                transition={NOTIFICATION_ACTION_TRANSITION}
                 onClick={(e) => {
                   e.stopPropagation();
                   action.onClick?.();
@@ -621,7 +619,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                 })}
               >
                 {action.label}
-              </motion.button>
+              </Button>
             ))}
           </div>
         ) : null}

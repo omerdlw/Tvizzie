@@ -17,7 +17,7 @@
 @layer base {
   :root {
     --white: #FCFCFB;
-    --black: #0B0B0B;
+    --black: #000;
     --primary: #fff;
   }
 
@@ -49,18 +49,7 @@
 }
 
 @layer utilities {
-  .page-gradient-backdrop {
-    background-image: linear-gradient(
-      to bottom in oklab,
-      color-mix(in srgb, var(--black) 60%, transparent) 0%,
-      color-mix(in srgb, var(--black) 70%, transparent) 15vh,
-      color-mix(in srgb, var(--black) 75%, transparent) 30vh,
-      color-mix(in srgb, var(--black) 90%, transparent) 45vh,
-      color-mix(in srgb, var(--black) 100%, transparent) 60vh,
-      var(--black) 75vh,
-      var(--black) 100%
-    );
-  }
+
 
   .center {
     display: flex;

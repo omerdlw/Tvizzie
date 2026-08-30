@@ -35,14 +35,14 @@ const TABS = Object.freeze({
 });
 
 const BUTTON_BASE_CLASS =
-  'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/5 disabled:text-white/40';
+  'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/5 disabled:text-white/40';
 
 const ACTION_BUTTON_CLASSES = Object.freeze({
   destructive: `${BUTTON_BASE_CLASS} ring-error/15 bg-error/10 text-error hover:bg-error hover:text-black`,
   success: `${BUTTON_BASE_CLASS} ring-success/15 bg-success/10 text-success hover:bg-success hover:text-black`,
   info: `${BUTTON_BASE_CLASS} ring-info/15 bg-info/10 text-info hover:bg-info hover:text-black`,
   muted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/70 hover:ring-error/15 hover:bg-error/10 hover:text-error`,
-  disabledMuted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/40 cursor-default active:scale-100`,
+  disabledMuted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/40 cursor-default`,
 });
 
 const SURFACE_LIST_VARIANTS = navFadeVariants;

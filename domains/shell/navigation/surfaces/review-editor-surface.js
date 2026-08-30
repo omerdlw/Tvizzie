@@ -181,7 +181,7 @@ export function createReviewEditorSurfaceEntry(data = {}, config = {}) {
     description: subjectTitle,
     props: { data },
     expandHorizontal: true,
-    width: 640,
+    width: 600,
     ...config,
   };
 }

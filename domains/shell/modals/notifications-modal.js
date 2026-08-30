@@ -27,7 +27,7 @@ import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared';
 import { NotificationListSkeleton } from '@/domains/shell/ui/skeletons';
 
-const TOOL_BUTTON_CLASS = 'size-7 center rounded-lg cursor-pointer transition-all duration-300 ease-in-out';
+const TOOL_BUTTON_CLASS = 'size-7 center rounded-lg cursor-pointer';
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';

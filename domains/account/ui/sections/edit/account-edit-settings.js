@@ -335,7 +335,7 @@ export function AccountEditSettings({
               type="button"
               disabled={Boolean(linkingProvider)}
               onClick={() => void handleLinkProvider?.(provider)}
-              className="flex h-11 w-full items-center justify-between rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 transition-all duration-200 hover:ring-white/10 hover:bg-white/10 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-11 w-full items-center justify-between rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="flex min-w-0 items-center gap-3">
                 {providerIcon ? (

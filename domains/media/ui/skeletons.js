@@ -3,7 +3,6 @@
 import { Fragment } from 'react';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared';
 import { NavHeightSpacer } from '@/modules/nav';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import { MEDIA_DETAIL_STACK_CLASS } from '@/domains/media/ui/layouts/media-detail-section';
 
 export function SegmentedControlSkeleton({
@@ -40,14 +39,11 @@ export function SegmentedControlSkeleton({
 
 export function MediaRouteSkeletonShell({ children }) {
   return (
-    <PageGradientShell className="overflow-hidden">
       <div
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 sm:px-6 lg:px-8 [overflow-anchor:none]`}
       >
         {children}
       </div>
-      <NavHeightSpacer />
-    </PageGradientShell>
   );
 }
 

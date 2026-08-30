@@ -15,9 +15,33 @@ const VIDEO_SOURCE = '/video.mp4';
 const VIDEO_TITLE = 'Featured Video Preview';
 const VIDEO_SUBTITLE = 'Ultra HD • Fullscreen Experience';
 
+const WIDTH_OPTIONS = [
+  { label: 'Full (100%)', value: '100%' },
+  { label: '85%', value: '85%' },
+  { label: '70%', value: '70%' },
+  { label: '1200px', value: '1200px' },
+];
+
+const CSS_OPTIONS = [
+  { label: 'bg-center bg-contain', value: 'bg-center bg-contain' },
+  { label: 'bg-center bg-cover', value: 'bg-center bg-cover' },
+  { label: 'object-contain', value: 'object-contain' },
+  { label: 'object-cover', value: 'object-cover' },
+];
+
+const FADE_OPTIONS = [
+  { label: 'Deep (32%)', value: 32 },
+  { label: 'Smooth (24%)', value: 24 },
+  { label: 'Subtle (15%)', value: 15 },
+  { label: 'Off', value: false },
+];
+
 export default function MediaDemoPage() {
   const [activeHudMode, setActiveHudMode] = useState(null); // 'selection' | 'progress' | 'actions' | null
   const [progressValue, setProgressValue] = useState(0);
+  const [selectedWidth, setSelectedWidth] = useState('85%');
+  const [selectedCss, setSelectedCss] = useState('bg-center bg-cover');
+  const [selectedFade, setSelectedFade] = useState(50);
 
   const { isPlaying, videoOptions } = useBackgroundState();
   const { toggleVideo, toggleMute } = useBackgroundActions();
@@ -27,15 +51,20 @@ export default function MediaDemoPage() {
   useRegistry({
     background: {
       video: VIDEO_SOURCE,
+      width: selectedWidth,
+      videoClassName: selectedCss,
+      leftGradient: 5,
+      rightGradient: 5,
       isPlaying: true,
-      rightGradient: 6,
-      leftGradient: 6,
       overlay: true,
-      overlayOpacity: 0.6,
+      overlayOpacity: 0.2,
+      noiseStyle: {
+        opacity: .5,
+      },
       videoOptions: {
         muted: false,
         loop: false,
-        autoplay: false,
+        autoplay: true,
       },
     },
     nav: {
@@ -127,90 +156,6 @@ export default function MediaDemoPage() {
   });
 
   return (
-    <main className="pointer-events-none relative flex min-h-screen w-full flex-col justify-between p-6 sm:p-10">
-      <div className="pointer-events-auto flex flex-wrap w-full items-center justify-between gap-4">
-        <div className="flex items-center gap-3 rounded-full ring-1 ring-inset ring-white/10 bg-black/50 px-4 py-2 backdrop-blur-xl">
-          <div className="size-2 flex animate-pulse rounded-full bg-emerald-400" />
-          <span className="text-xs font-semibold text-white">
-            {VIDEO_TITLE}
-          </span>
-          <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/70">
-            4K
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            onClick={() => setActiveHudMode((prev) => (prev === 'selection' ? null : 'selection'))}
-            className={cn(
-              'flex h-10 items-center gap-2 rounded-full ring-1 ring-inset px-4 text-xs font-medium backdrop-blur-xl transition-all',
-              activeHudMode === 'selection'
-                ? 'ring-white/20 bg-white/20 text-white'
-                : 'ring-white/10 bg-black/50 text-white/70 hover:ring-white/20 hover:bg-black/80 hover:text-white',
-            )}
-          >
-            <Icon icon="solar:check-square-bold" size={16} />
-            <span>Selection HUD</span>
-          </Button>
-
-          <Button
-            type="button"
-            onClick={() => setActiveHudMode((prev) => (prev === 'progress' ? null : 'progress'))}
-            className={cn(
-              'flex h-10 items-center gap-2 rounded-full ring-1 ring-inset px-4 text-xs font-medium backdrop-blur-xl transition-all',
-              activeHudMode === 'progress'
-                ? 'ring-white/20 bg-white/20 text-white'
-                : 'ring-white/10 bg-black/50 text-white/70 hover:ring-white/20 hover:bg-black/80 hover:text-white',
-            )}
-          >
-            <Icon icon="solar:cloud-upload-bold" size={16} />
-            <span>Progress HUD</span>
-          </Button>
-
-          <Button
-            type="button"
-            onClick={() => setActiveHudMode((prev) => (prev === 'actions' ? null : 'actions'))}
-            className={cn(
-              'flex h-10 items-center gap-2 rounded-full ring-1 ring-inset px-4 text-xs font-medium backdrop-blur-xl transition-all',
-              activeHudMode === 'actions'
-                ? 'ring-white/20 bg-white/20 text-white'
-                : 'ring-white/10 bg-black/50 text-white/70 hover:ring-white/20 hover:bg-black/80 hover:text-white',
-            )}
-          >
-            <Icon icon="solar:tuning-2-bold" size={16} />
-            <span>Actions HUD</span>
-          </Button>
-
-          <Button
-            type="button"
-            onClick={toggleVideo}
-            className="size-10 flex items-center justify-center rounded-full ring-1 ring-inset ring-white/10 bg-black/50 text-white backdrop-blur-xl transition-all hover:ring-white/20 hover:bg-black/80"
-            aria-label={isPlaying ? 'Pause video' : 'Play video'}
-          >
-            <Icon
-              icon={isPlaying ? 'solar:pause-bold' : 'solar:play-bold'}
-              size={18}
-            />
-          </Button>
-
-          <Button
-            type="button"
-            onClick={toggleMute}
-            className="size-10 flex items-center justify-center rounded-full ring-1 ring-inset ring-white/10 bg-black/50 text-white backdrop-blur-xl transition-all hover:ring-white/20 hover:bg-black/80"
-            aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-          >
-            <Icon
-              icon={isMuted ? 'solar:volume-cross-bold' : 'solar:volume-loud-bold'}
-              size={18}
-            />
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex flex-1" />
-
-      <div className="h-20" />
-    </main>
+ <></>
   );
 }

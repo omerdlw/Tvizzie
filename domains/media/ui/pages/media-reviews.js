@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { NavHeightSpacer } from '@/modules/nav';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import CollectionActions from '@/domains/media/ui/components/collection-actions';
 import Sidebar from '@/domains/media/ui/components/sidebar';
 import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
@@ -100,7 +99,7 @@ function View({
         year={year}
       />
 
-      <PageGradientShell>
+
         <div
           className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 sm:px-6 lg:px-8 pb-16 [overflow-anchor:none]`}
         >
@@ -158,7 +157,7 @@ function View({
           </div>
         </div>
         <NavHeightSpacer />
-      </PageGradientShell>
+
     </>
   );
 }

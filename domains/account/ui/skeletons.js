@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 
 import { cn } from '@/ui/class-names';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import { NavHeightSpacer } from '@/modules/nav';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared';
 
@@ -34,7 +33,7 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
     <nav
       aria-label="Loading account sections"
       aria-busy="true"
-      className="flex w-full max-w-full items-center overflow-hidden"
+      className="flex w-full max-w-full scrollbar-none items-center overflow-x-auto"
     >
       {SECTION_ITEMS.map((label, index) => {
         const isSelected = label.toLowerCase() === activeTab.toLowerCase();
@@ -43,8 +42,8 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
           <div
             key={label}
             className={cn(
-              'flex h-12 shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 sm:px-4',
-              isSelected && 'ring-white/70',
+              'inline-flex h-12 shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 text-xs font-semibold uppercase sm:min-w-0 sm:flex-1 sm:px-2',
+              isSelected ? 'border-white' : 'border-transparent',
             )}
           >
             <div className={cn('size-3.5 rounded-[5px]', isSelected ? S : SOFT)} />
@@ -62,25 +61,25 @@ export function AccountHeroSkeleton() {
       <div
         aria-hidden="true"
         className={cn(
-          'relative h-64 w-full overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32',
+          'relative h-64 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+4rem)] lg:-translate-x-8 xl:w-[calc(100%+8rem)] xl:-translate-x-16',
         )}
       />
       <section
         aria-busy="true"
         aria-label="Loading account profile"
-        className="relative z-10 -mt-24 grid items-end gap-6 sm:-mt-36 sm:gap-8 lg:-mt-52 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12"
+        className="relative z-10 -mt-24 grid items-center gap-6 sm:-mt-36 sm:gap-8 lg:-mt-52 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12"
       >
-        <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-4 gap-y-2 sm:flex sm:items-end sm:gap-5">
+        <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-5">
           <div className={cn('size-20 shrink-0 rounded-[30px] sm:size-24', S)} />
-          <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:gap-2">
-            <SkeletonLine className="h-12 w-3/5 max-w-md min-w-0 self-end rounded-[16px] sm:h-14 sm:self-auto" />
+          <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:justify-center sm:gap-2">
+            <SkeletonLine className="h-12 w-3/5 max-w-md min-w-0 rounded-[16px] sm:h-14" />
             <div className="col-span-2 flex w-full max-w-xl flex-col gap-2 sm:col-auto">
               <SkeletonLine className="w-full" soft />
               <SkeletonLine className="w-3/4" soft />
             </div>
           </div>
         </div>
-        <div className="flex items-start lg:mb-1">
+        <div className="flex items-center lg:mb-1">
           {[0, 1].map((index) => (
             <div
               key={index}
@@ -100,18 +99,18 @@ export function AccountHeroSkeleton() {
 
 export function AccountSkeletonLayout({ activeTab = 'overview', children }) {
   return (
-    <PageGradientShell>
+    <>
       <div
         className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
       >
         <AccountHeroSkeleton />
-        <div className="mt-8 border-b border-white/10 sm:mt-10">
+        <div className="mt-8 border-b border-white/5 sm:mt-10">
           <AccountSectionNavSkeleton activeTab={activeTab} />
         </div>
-        <main className="w-full pt-8 sm:pt-10">{children}</main>
+        <main className="w-full pt-6 sm:pt-8">{children}</main>
       </div>
       <NavHeightSpacer className="w-full bg-black" />
-    </PageGradientShell>
+    </>
   );
 }
 
@@ -209,10 +208,7 @@ export function PosterCardsSkeletonRow({ count = 6, wideGrid = true }) {
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        'grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4',
-        wideGrid ? 'md:grid-cols-6' : 'md:grid-cols-4 lg:grid-cols-6',
-      )}
+      className="grid w-full grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6"
     >
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className={cn('aspect-2/3 rounded-[20px]', S)} />
@@ -225,7 +221,7 @@ export function MediaCardsSkeletonGrid({ count = 12 }) {
   return (
     <div
       aria-hidden="true"
-      className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6"
+      className="grid w-full grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6"
     >
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className={cn('aspect-2/3 rounded-[20px]', S)} />
@@ -258,13 +254,16 @@ export function ActivityItemsSkeletonList({ count = 6 }) {
 
 function SingleListCardSkeleton() {
   return (
-    <article className="relative h-[232px] w-full overflow-hidden" aria-hidden="true">
+    <article
+      className="relative h-[232px] w-full overflow-hidden rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5"
+      aria-hidden="true"
+    >
       <div className="relative h-[172px] overflow-hidden">
         {[0, 1, 2, 3, 4].map((index) => (
           <div
             key={index}
             className={cn(
-              'absolute top-4 h-[132px] w-[84px] -translate-x-1/2',
+              'absolute top-4 h-[132px] w-[84px] -translate-x-1/2 rounded-[10px]',
               index === 0
                 ? 'left-[24%] rotate-[-10deg]'
                 : index === 1
@@ -299,10 +298,10 @@ export function ListCardsSkeletonGrid({ count = 6 }) {
 
 export function ReviewCardsSkeletonList({ count = 4 }) {
   return (
-    <div className="flex w-full flex-col gap-4" aria-hidden="true">
+    <div className="flex w-full flex-col" aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="flex gap-3 py-4 sm:gap-4">
-          <div className={cn('h-24 w-16 shrink-0 rounded-[20px] sm:h-28 sm:w-[72px]', S)} />
+        <div key={index} className="flex gap-3.5 py-4 border-b border-white/5 last:border-b-0">
+          <div className={cn('aspect-2/3 w-16 shrink-0 rounded-[12px] sm:w-[72px]', S)} />
           <div className="flex min-w-0 flex-1 flex-col gap-2.5 py-1">
             <div className="flex items-center justify-between gap-3">
               <SkeletonLine className={REVIEW_TITLE_WIDTHS[index % REVIEW_TITLE_WIDTHS.length]} />
@@ -322,24 +321,34 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
   );
 }
 
-export function FilterBarSkeleton({ count = 4 }) {
+export function FilterBarSkeleton({ count = 4, showAction = true }) {
   const widths = ['w-24', 'w-28', 'w-20', 'w-24', 'w-16'];
 
   return (
     <div className="flex w-full flex-wrap items-center gap-2" aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="flex h-9 items-center gap-2 rounded-xl px-3">
+        <div
+          key={index}
+          className="flex h-9 items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3"
+        >
           <div className={cn('size-3 rounded-full', SOFT)} />
           <SkeletonLine className={widths[index % widths.length]} soft />
         </div>
       ))}
+      {showAction ? (
+        <div className="ml-auto flex items-center gap-2">
+          <div className="flex h-9 w-20 items-center justify-center rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3">
+            <SkeletonLine className="w-12" soft />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 export function AccountMediaGridSkeleton() {
   return (
-    <div className="w-full pt-6 sm:pt-8">
+    <div className="w-full">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
         <MediaCardsSkeletonGrid />
       </SectionSkeleton>
@@ -349,8 +358,8 @@ export function AccountMediaGridSkeleton() {
 
 export function AccountActivitySkeleton() {
   return (
-    <div className="w-full pt-6 sm:pt-8">
-      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
+    <div className="w-full">
+      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={2} showAction={false} />}>
         <ActivityItemsSkeletonList count={8} />
       </SectionSkeleton>
     </div>
@@ -360,32 +369,40 @@ export function AccountActivitySkeleton() {
 export function DiaryLedgerSkeleton() {
   return (
     <>
-      <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
-        <div className="grid grid-cols-[1.2fr_.6fr_2fr_1fr_.7fr_.7fr] gap-4 px-4 py-3">
+      <div
+        className="hidden w-full flex-col overflow-hidden rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5 sm:flex"
+        aria-hidden="true"
+      >
+        <div className="grid grid-cols-[1.2fr_.6fr_2fr_1fr_.7fr_.7fr] gap-4 border-b border-white/5 px-4 py-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <SkeletonLine key={index} className={index === 2 ? 'w-20' : 'w-12'} soft />
           ))}
         </div>
-        {Array.from({ length: 7 }).map((_, row) => (
-          <div
-            key={row}
-            className="grid grid-cols-[1.2fr_.6fr_2fr_1fr_.7fr_.7fr] items-center gap-4 px-4 py-3"
-          >
-            <SkeletonLine className={row === 0 || row === 4 ? 'w-20' : 'w-12'} />
-            <SkeletonLine className="w-8" soft />
-            <div className="flex items-center gap-3">
-              <div className={cn('size-10 shrink-0 rounded-lg', S)} />
-              <SkeletonLine className="w-32" />
+        <div className="divide-y divide-white/5">
+          {Array.from({ length: 7 }).map((_, row) => (
+            <div
+              key={row}
+              className="grid grid-cols-[1.2fr_.6fr_2fr_1fr_.7fr_.7fr] items-center gap-4 px-4 py-3"
+            >
+              <SkeletonLine className={row === 0 || row === 4 ? 'w-20' : 'w-12'} />
+              <SkeletonLine className="w-8" soft />
+              <div className="flex items-center gap-3">
+                <div className={cn('size-10 shrink-0 rounded-lg', S)} />
+                <SkeletonLine className="w-32" />
+              </div>
+              <SkeletonLine className="w-16" soft />
+              <div className={cn('mx-auto size-3 rounded-full', SOFT)} />
+              <div className={cn('mx-auto size-3 rounded-full', SOFT)} />
             </div>
-            <SkeletonLine className="w-16" soft />
-            <div className={cn('mx-auto size-3 rounded-full', SOFT)} />
-            <div className={cn('mx-auto size-3 rounded-full', SOFT)} />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="flex flex-col gap-2 sm:hidden" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="flex items-center justify-between gap-3 rounded-2xl p-3.5">
+          <div
+            key={index}
+            className="flex items-center justify-between gap-3 rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5 p-3.5"
+          >
             <div className="flex min-w-0 items-center gap-2.5">
               <SkeletonLine className="w-6 shrink-0" soft />
               <div className={cn('size-10 shrink-0 rounded-lg', SOFT)} />
@@ -401,8 +418,8 @@ export function DiaryLedgerSkeleton() {
 
 export function AccountDiarySkeleton() {
   return (
-    <div className="w-full pt-6 sm:pt-8">
-      <SectionSkeleton titleWidth="w-16" summary={false}>
+    <div className="w-full">
+      <SectionSkeleton showHeader={false}>
         <DiaryLedgerSkeleton />
       </SectionSkeleton>
     </div>
@@ -411,8 +428,8 @@ export function AccountDiarySkeleton() {
 
 export function AccountReviewsSkeleton() {
   return (
-    <div className="w-full pt-6 sm:pt-8">
-      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
+    <div className="w-full">
+      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={3} showAction={false} />}>
         <ReviewCardsSkeletonList count={6} />
       </SectionSkeleton>
     </div>
@@ -421,8 +438,8 @@ export function AccountReviewsSkeleton() {
 
 export function AccountListsSkeleton() {
   return (
-    <div className="w-full pt-6 sm:pt-8">
-      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
+    <div className="w-full">
+      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={2} showAction={false} />}>
         <ListCardsSkeletonGrid count={6} />
       </SectionSkeleton>
     </div>
@@ -431,11 +448,11 @@ export function AccountListsSkeleton() {
 
 export function AccountListDetailSkeleton() {
   return (
-    <div className="flex w-full flex-col gap-10 pt-6 sm:gap-12 sm:pt-8">
-      <SectionSkeleton titleWidth="w-40" toolbar={<FilterBarSkeleton count={3} />}>
-        <MediaCardsSkeletonGrid />
+    <div className="flex w-full flex-col gap-10 sm:gap-12">
+      <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={4} />}>
+        <MediaCardsSkeletonGrid count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-24" toolbar={<FilterBarSkeleton count={2} />}>
+      <SectionSkeleton titleWidth="w-24" summary={false}>
         <ReviewCardsSkeletonList count={3} />
       </SectionSkeleton>
     </div>
@@ -444,9 +461,9 @@ export function AccountListDetailSkeleton() {
 
 export function AccountOverviewSkeleton() {
   return (
-    <div className="flex w-full flex-col gap-8 pt-6 sm:gap-10 sm:pt-8 md:gap-12">
+    <div className="flex w-full flex-col gap-8 sm:gap-10 lg:gap-12">
       <SectionSkeleton summary={false} titleWidth="w-20">
-        <PosterCardsSkeletonRow count={5} wideGrid={false} />
+        <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-24">
         <PosterCardsSkeletonRow count={6} />
@@ -455,13 +472,7 @@ export function AccountOverviewSkeleton() {
         <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-16">
-        <PosterCardsSkeletonRow count={6} />
-      </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-14">
         <ListCardsSkeletonGrid count={6} />
-      </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-28">
-        <ActivityItemsSkeletonList count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-24">
         <ReviewCardsSkeletonList count={4} />
@@ -472,8 +483,11 @@ export function AccountOverviewSkeleton() {
 
 function AccountEditSectionSkeleton({ children, titleWidth = 'w-32' }) {
   return (
-    <section className="w-full p-4 sm:p-6" aria-busy="true">
-      <div className="mb-6 flex items-center justify-between gap-4 pb-4">
+    <section
+      className="w-full rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5 p-4 sm:p-6"
+      aria-busy="true"
+    >
+      <div className="mb-6 flex items-center justify-between gap-4 pb-4 border-b border-white/5">
         <SkeletonLine className={titleWidth} />
         <SkeletonLine className="w-16" soft />
       </div>
@@ -508,7 +522,7 @@ function AccountEditMediaFieldSkeleton({ banner = false }) {
 
 export function AccountEditSkeleton() {
   return (
-    <div className="flex w-full flex-col gap-6 pt-6 sm:gap-8 sm:pt-8">
+    <div className="flex w-full flex-col gap-6 sm:gap-8">
       <AccountEditSectionSkeleton titleWidth="w-32">
         <div className="grid gap-4 sm:grid-cols-2">
           <AccountEditFieldSkeleton labelWidth="w-20" />

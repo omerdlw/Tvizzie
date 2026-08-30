@@ -52,6 +52,8 @@ function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft,
 
       <Button
         type="button"
+        whileHover={false}
+        whileTap={false}
         aria-label={`${starIndex - 0.5} stars`}
         className="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
         onMouseEnter={onHoverLeft}
@@ -60,6 +62,8 @@ function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft,
       />
       <Button
         type="button"
+        whileHover={false}
+        whileTap={false}
         aria-label={`${starIndex} stars`}
         className="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
         onMouseEnter={onHoverRight}

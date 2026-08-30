@@ -20,7 +20,6 @@ import {
   PersonDeferredContentSkeleton,
   PersonTimelineSkeleton,
 } from '@/domains/media/ui/skeletons';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import MediaRegistry from '@/domains/media/ui/registry';
 import { resolveImageQuality } from '@/shared';
 import AdaptiveImage from '@/ui/components/adaptive-image';
@@ -144,8 +143,6 @@ function PersonView({
         onResetPersonPoster={onResetPersonPoster}
         canResetPersonPoster={canResetPersonPoster}
       />
-
-      <PageGradientShell className="overflow-hidden">
         <div
           className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
         >
@@ -232,7 +229,6 @@ function PersonView({
           </div>
         </div>
         <NavHeightSpacer />
-      </PageGradientShell>
     </>
   );
 }

@@ -12,7 +12,6 @@ import { useRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
 import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
 import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared';
 import Icon from '@/ui/primitives/icon';
 import { cn } from '@/ui/class-names';
@@ -241,7 +240,7 @@ function NavViewItem({ item, isActive, href }) {
       href={href}
       onClick={handleClick}
       className={cn(
-        'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 border-b-2 px-2 text-xs font-semibold uppercase transition-colors select-none sm:px-3',
+        'inline-flex h-12 shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 text-xs font-semibold uppercase transition-colors select-none sm:min-w-0 sm:flex-1 sm:px-2',
         isActive
           ? 'border-white text-white'
           : 'border-transparent text-white/70 hover:bg-white/10 hover:text-white',
@@ -366,7 +365,7 @@ function ProfileLayoutInner({
   return (
     <AccountProfileShellProvider value={profileShell}>
       <AccountProfileShellNav profile={profile} username={profileHandle} />
-      <PageGradientShell>
+
         <div
           className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
         >
@@ -384,14 +383,14 @@ function ProfileLayoutInner({
             <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
           </AccountNavReveal>
 
-          <main className="w-full pt-8 sm:pt-10">
+          <main className="w-full pt-6 sm:pt-8">
             <AccountSectionScene sceneKey={pendingTab ? '' : pathname}>
               {mainContent}
             </AccountSectionScene>
           </main>
         </div>
         <NavHeightSpacer className="w-full bg-black" />
-      </PageGradientShell>
+
     </AccountProfileShellProvider>
   );
 }

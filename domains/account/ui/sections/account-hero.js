@@ -50,7 +50,7 @@ export function AccountBackdropHero({ image }) {
   return (
     <div
       aria-hidden="true"
-      className="relative isolate h-64 w-full overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32"
+      className="relative isolate h-64 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+4rem)] lg:-translate-x-8 xl:w-[calc(100%+8rem)] xl:-translate-x-16"
     >
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -283,11 +283,11 @@ export default function AccountHero({
 
       <section
         className={`relative z-10 ${
-          hasInlineBackdrop ? '-mt-24 sm:-mt-36 lg:-mt-52' : 'pt-24 sm:pt-32'
+          hasInlineBackdrop ? '-mt-24 sm:-mt-36 lg:-mt-52' : 'pt-8 sm:pt-12 lg:pt-14'
         }`}
       >
-        <div className="relative z-10 grid items-end gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
-          <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-x-4 gap-y-2 sm:flex sm:items-end sm:gap-5">
+        <div className="relative z-10 grid items-center gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+          <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-5">
             <div className="size-20 shrink-0 overflow-hidden rounded-[30px] ring-1 ring-inset ring-white/5 shadow-2xl sm:size-24">
               <AdaptiveImage
                 mode="img"
@@ -300,8 +300,8 @@ export default function AccountHero({
               />
             </div>
 
-            <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col">
-              <div className="min-w-0 self-end sm:self-auto">
+            <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:justify-center">
+              <div className="min-w-0">
                 <h1 className="font-zuume max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-6xl">
                   {heroDisplayName}
                 </h1>
@@ -317,7 +317,7 @@ export default function AccountHero({
             </div>
           </div>
 
-          <div className="flex items-start">
+          <div className="flex items-center">
             {socialMetrics.map((item, index) => (
               <div
                 key={`social-${item.label}-${index}`}

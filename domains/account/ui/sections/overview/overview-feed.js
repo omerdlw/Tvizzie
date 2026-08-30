@@ -11,7 +11,7 @@ import { AccountPageShell } from '@/domains/account/ui/layouts/account-layout';
 import { ProfileMediaActions } from '@/domains/account/ui/components/account-media-grid';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
 
-const LIMITS = { activity: 6, media: 6, favorites: 5, lists: 6 };
+const LIMITS = { activity: 6, media: 6, favorites: 6, lists: 6 };
 
 export default function AccountOverviewFeed({ overviewData = {}, RegistryComponent = null }) {
   const {
@@ -177,7 +177,7 @@ export default function AccountOverviewFeed({ overviewData = {}, RegistryCompone
       watchedCount={watchedCount}
       watchlistCount={watchlistCount}
     >
-      <div className="flex w-full flex-col gap-8 pt-6 sm:gap-10 sm:pt-8 md:gap-12">
+      <div className="flex w-full flex-col gap-8 sm:gap-10 lg:gap-12">
         {!canViewProfileCollections ? (
           <AccountSectionState message="This profile is private." />
         ) : isOverviewEmpty ? (

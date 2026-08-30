@@ -1,6 +1,5 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared';
 import { NavHeightSpacer } from '@/modules/nav';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 
 export const LEGAL_PAGE_CONTENT_CLASS = `relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-20 sm:px-6`;
 
@@ -21,7 +20,7 @@ export function LegalDocument({ children }) {
 
 export default function LegalPageShell({ children }) {
   return (
-    <PageGradientShell className="overflow-hidden">
+    <>
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute inset-y-0 left-1/2 z-0 w-full -translate-x-1/2 ${PAGE_SHELL_MAX_WIDTH_CLASS}`}
@@ -32,7 +31,7 @@ export default function LegalPageShell({ children }) {
 
       <div className="relative z-10">{children}</div>
       <NavHeightSpacer />
-    </PageGradientShell>
+    </>
   );
 }
 

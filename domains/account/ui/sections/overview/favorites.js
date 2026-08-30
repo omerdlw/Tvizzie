@@ -4,7 +4,7 @@ import AccountMediaOverviewSection from './media-overview-section';
 
 export default function AccountFavoritesOverview({
   baseDelay,
-  cardLimit = 5,
+  cardLimit = 6,
   emptyMessage = 'No favorites showcase yet',
   icon = 'solar:star-bold',
   isInitialSection = true,

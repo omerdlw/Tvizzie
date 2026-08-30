@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuthSessionReady } from '@/modules/auth';
 import { NavSurfaceHeaderButton, useNavigationActions } from '@/modules/nav';
-import { NAV_TAP_SCALE } from '@/modules/nav';
+import { NAV_BUTTON_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
 import {
   getUserListMemberships,
@@ -28,7 +28,7 @@ import {
 
 const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
   return (
-    <motion.button
+    <Button
       type="button"
       onClick={onToggle}
       variants={SURFACE_LIST_ITEM_VARIANTS}
@@ -36,7 +36,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
       initial="hidden"
       animate="visible"
       className={cn(
-        'group flex w-full items-center gap-2 rounded-[20px] ring-1 ring-inset p-2 text-left transition-all duration-300 ease-in-out',
+        'group flex w-full cursor-pointer items-center gap-2 rounded-[20px] ring-1 ring-inset p-2 text-left',
         isSelected
           ? 'ring-white/10 bg-white/10 text-white hover:bg-white/15'
           : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
@@ -61,7 +61,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
       >
         <Icon icon="material-symbols:check-rounded" size={16} />
       </span>
-    </motion.button>
+    </Button>
   );
 });
 

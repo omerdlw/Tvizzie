@@ -51,7 +51,7 @@ export function PaginationArrow({ direction, onClick }) {
       type="button"
       className={cn(
         SEARCH_STYLES.action.muted,
-        'center h-[38px] w-[38px] shrink-0 cursor-pointer rounded-[20px] p-0 transition-all duration-300 ease-in-out hover:text-white',
+        'center h-[38px] w-[38px] shrink-0 cursor-pointer rounded-[20px] p-0 hover:text-white',
       )}
       onClick={onClick}
       aria-label={isLeft ? 'Previous page' : 'Next page'}

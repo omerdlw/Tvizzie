@@ -238,7 +238,7 @@ export default function AccountMediaGridPage({
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
             {visibleCards.map((card, index) => {
               const cardKey = getListItemKey(card.item) || card.id;
               const isSelected =

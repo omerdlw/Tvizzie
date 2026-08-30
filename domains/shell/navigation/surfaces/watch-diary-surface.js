@@ -183,7 +183,7 @@ export default function WatchDiarySurface({ close, data }) {
         <Button
           type="submit"
           disabled={isSaving}
-          className="center h-11 w-full rounded-[20px] bg-white px-4 text-xs font-bold text-black uppercase transition-transform hover:bg-white/70 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          className="center h-11 w-full rounded-[20px] bg-white px-4 text-xs font-bold text-black uppercase hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? 'Saving' : 'Log to diary'}
         </Button>

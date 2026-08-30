@@ -78,7 +78,7 @@ export const ProgressHud = memo(function ProgressHud({
                       action.onClick?.(event);
                     }}
                     className={cn(
-                      'flex h-8 items-center gap-1.5 rounded-xl ring-1 ring-inset px-2.5 text-xs font-medium transition-transform active:scale-95',
+                      'flex h-8 items-center gap-1.5 rounded-xl ring-1 ring-inset px-2.5 text-xs font-medium',
                       isDestructive
                         ? 'ring-red-500/20 bg-red-500/20 text-red-300 hover:bg-red-500/30'
                         : 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
@@ -101,7 +101,7 @@ export const ProgressHud = memo(function ProgressHud({
                     event.stopPropagation();
                     onCancel(event);
                   }}
-                  className="flex size-8 items-center justify-center rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-transform hover:ring-white/10 hover:bg-white/10 hover:text-white active:scale-95"
+                  className="flex size-8 items-center justify-center rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white"
                   aria-label="Cancel upload"
                 >
                   <Icon icon="solar:close-circle-bold" size={16} />

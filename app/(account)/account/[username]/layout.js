@@ -1,6 +1,5 @@
 import ProfileLayout, { AccountNotFoundState } from '@/domains/account/ui/layouts/account-layout';
 import { getUsernameAccountSnapshot } from '@/domains/account/server/page-data';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 
 export default async function AccountUserLayout({ children, params }) {
   const resolvedParams = await params;
@@ -10,9 +9,9 @@ export default async function AccountUserLayout({ children, params }) {
 
   if (!snapshot?.initialResolvedUserId || !snapshot?.initialProfile) {
     return (
-      <PageGradientShell className="overflow-hidden">
+
         <AccountNotFoundState />
-      </PageGradientShell>
+
     );
   }
 

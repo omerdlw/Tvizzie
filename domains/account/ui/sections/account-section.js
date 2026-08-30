@@ -112,12 +112,21 @@ export function AccountSectionState({ message, isInitialSection = true }) {
     .includes('profile is private');
 
   return (
-    <section className="w-full py-10">
-      <div className="flex items-center justify-center gap-2 text-sm text-white/40">
-        {isPrivateMessage ? <Icon icon="solar:lock-keyhole-bold" size={16} /> : null}
-        <span>{normalizeFeedbackContent(message)}</span>
-      </div>
-    </section>
+    <div className={cn(ACCOUNT_EMPTY_SECTION_CLASS, 'py-12')}>
+      {isPrivateMessage ? (
+        <div className="mb-1 flex size-12 items-center justify-center rounded-2xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/70 shadow-lg">
+          <Icon icon="solar:lock-keyhole-bold" size={24} />
+        </div>
+      ) : null}
+      <p className="text-sm font-semibold text-white/70 sm:text-base">
+        {normalizeFeedbackContent(message)}
+      </p>
+      {isPrivateMessage ? (
+        <p className="max-w-xs text-xs text-white/40">
+          Follow this account to see their activity, reviews, and collections.
+        </p>
+      ) : null}
+    </div>
   );
 }
 

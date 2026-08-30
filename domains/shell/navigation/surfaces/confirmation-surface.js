@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/ui/class-names';
 import { Button } from '@/ui/primitives';
 import { NAV_SURFACE_RENDER_MODE, useSurfaceHeader } from '@/modules/nav';
-import { Description, Icon as BadgeIcon, Title } from '@/modules/nav';
+import { NavDescription, NavIcon as BadgeIcon, NavTitle } from '@/modules/nav';
 import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
 
 const BUTTON_TONES = Object.freeze({
@@ -22,7 +22,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer rounded-[20px] gap-2.5 px-4 py-2.5 text-xs font-semibold uppercase transition-all duration-300 ease-in-out',
+    'center w-full cursor-pointer rounded-[20px] gap-2.5 px-4 py-2.5 text-xs font-semibold uppercase',
     resolveButtonTone(tone),
     className,
   );

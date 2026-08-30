@@ -46,13 +46,7 @@ export default function AccountMediaOverviewSection({
       {isLoading && cards.length === 0 ? (
         <AccountInlineSectionLoading wideGrid={wideGrid} />
       ) : cards.length > 0 ? (
-        <div
-          className={
-            wideGrid
-              ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-6'
-              : 'grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6'
-          }
-        >
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
           {cards.slice(0, cardLimit).map((card, index) => {
             return (
               <div key={`${card.id}-${index}`}>

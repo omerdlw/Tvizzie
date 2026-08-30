@@ -114,8 +114,12 @@ export function AccountMediaFilterBar({
             />
           </FilterPopover>
 
-          {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
-          {action}
+          {(typeof onReset === 'function' || action) ? (
+            <div className="ml-auto flex items-center gap-2">
+              {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+              {action}
+            </div>
+          ) : null}
         </>
       )}
     </div>

@@ -1,11 +1,13 @@
 'use client';
 
 import { forwardRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import * as Toggle from '@radix-ui/react-toggle';
 import { cn, resolveSlotClasses } from './primitive-support';
 import {
   DESTRUCTIVE_ACTION_TONE_CLASS,
   INFO_ACTION_TONE_CLASS,
+  MOTION_SPRINGS,
   SUCCESS_ACTION_TONE_CLASS,
   WARNING_ACTION_TONE_CLASS,
 } from '@/shared';
@@ -17,6 +19,20 @@ const SEMANTIC_VARIANT_CLASSES = Object.freeze({
   success: SUCCESS_ACTION_TONE_CLASS,
   warning: WARNING_ACTION_TONE_CLASS,
 });
+
+const BUTTON_SPRING_TRANSITION = MOTION_SPRINGS.PRESS;
+
+function stripConflictingClasses(cls) {
+  if (!cls || typeof cls !== 'string') return cls;
+  return cls
+    .replace(/\bactive:scale-\S+/g, '')
+    .replace(/\btransition(-\S+)?\b/g, '')
+    .replace(/\bduration-\S+\b/g, '')
+    .replace(/\bease-\S+\b/g, '')
+    .replace(/\bmotion-reduce:transition-none\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 const Button = forwardRef(
   (
@@ -30,34 +46,84 @@ const Button = forwardRef(
       disabled = false,
       children,
       type = 'button',
+      whileHover: whileHoverProp,
+      whileTap: whileTapProp,
+      transition: transitionProp,
+      style,
       ...props
     },
     ref,
   ) => {
     const [isActive, setIsActive] = useState(defaultActive);
-    const classes = resolveSlotClasses(className, classNames);
+    const reduceMotion = useReducedMotion();
+    const canAnimate = !disabled && !reduceMotion;
+
+    const resolvedClassName = stripConflictingClasses(className);
+    const resolvedClassNames = classNames
+      ? {
+          ...classNames,
+          root: stripConflictingClasses(classNames.root),
+          default: stripConflictingClasses(classNames.default),
+        }
+      : classNames;
+
+    const classes = resolveSlotClasses(resolvedClassName, resolvedClassNames);
+
+    const isIconLike =
+      variant.endsWith('-icon') ||
+      variant === 'icon' ||
+      /\b(size-[0-9.]+|w-[0-9.]+\s+h-[0-9.]+|h-[0-9.]+\s+w-[0-9.]+)\b/.test(resolvedClassName || '');
+
+    const defaultHoverScale = isIconLike ? 1.06 : 1.02;
+    const defaultTapScale = isIconLike ? 0.94 : 0.98;
+
+    const motionProps = {
+      whileHover:
+        whileHoverProp !== undefined
+          ? whileHoverProp
+          : canAnimate
+            ? { scale: defaultHoverScale }
+            : undefined,
+      whileTap:
+        whileTapProp !== undefined
+          ? whileTapProp
+          : canAnimate
+            ? { scale: defaultTapScale }
+            : undefined,
+      transition: transitionProp !== undefined ? transitionProp : BUTTON_SPRING_TRANSITION,
+    };
+
+    const mergedStyle = {
+      transformOrigin: 'center center',
+      transitionProperty: 'background-color, color, border-color, box-shadow, opacity',
+      ...style,
+    };
     const baseClasses =
-      'flex cursor-pointer items-center justify-center disabled:cursor-not-allowed';
+      'flex cursor-pointer items-center justify-center disabled:cursor-not-allowed select-none transition-colors duration-150 ease-out motion-reduce:transition-none';
     const semanticIconVariantClasses =
       SEMANTIC_VARIANT_CLASSES[variant.replace(/-icon$/, '')] || null;
     const semanticVariantClasses = SEMANTIC_VARIANT_CLASSES[variant] || null;
+
     if (semanticIconVariantClasses) {
       return (
-        <button
+        <motion.button
           ref={ref}
           type={type}
           onClick={onClick}
           disabled={disabled}
           className={cn(baseClasses, semanticIconVariantClasses, 'size-9', classes.root)}
+          style={mergedStyle}
+          {...motionProps}
           {...props}
         >
           {children}
-        </button>
+        </motion.button>
       );
     }
+
     if (semanticVariantClasses) {
       return (
-        <button
+        <motion.button
           ref={ref}
           type={type}
           onClick={onClick}
@@ -68,12 +134,15 @@ const Button = forwardRef(
             'h-9 gap-2 px-4 text-xs font-bold uppercase',
             classes.root,
           )}
+          style={mergedStyle}
+          {...motionProps}
           {...props}
         >
           {children}
-        </button>
+        </motion.button>
       );
     }
+
     if (variant === 'toggle') {
       const handleToggleChange = (pressed) => {
         setIsActive(pressed);
@@ -81,32 +150,44 @@ const Button = forwardRef(
           onToggle(pressed);
         }
       };
+
       return (
         <Toggle.Root
           ref={ref}
+          asChild
           pressed={isActive}
           onPressedChange={handleToggleChange}
           disabled={disabled}
-          className={cn(classes.root, classes.default, isActive && classes.toggle)}
           {...props}
         >
-          {children}
+          <motion.button
+            type={type}
+            className={cn(classes.root, classes.default, isActive && classes.toggle)}
+            style={mergedStyle}
+            {...motionProps}
+          >
+            {children}
+          </motion.button>
         </Toggle.Root>
       );
     }
+
     return (
-      <button
+      <motion.button
         ref={ref}
         type={type}
         onClick={onClick}
         disabled={disabled}
         className={cn(baseClasses, classes.root, classes.default)}
+        style={mergedStyle}
+        {...motionProps}
         {...props}
       >
         {children}
-      </button>
+      </motion.button>
     );
   },
 );
+
 Button.displayName = 'Button';
 export default Button;

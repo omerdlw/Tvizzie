@@ -226,7 +226,7 @@ export default function SignInSurface({ close, data }) {
               onClick={() => setAuthMethod('methods')}
               aria-label="Back to sign-in methods"
               classNames={{
-                root: 'center size-11 shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-all duration-300 ease-in-out hover:ring-transparent hover:bg-white hover:text-black active:scale-95 cursor-pointer',
+                root: 'center size-11 shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-transparent hover:bg-white hover:text-black cursor-pointer',
               }}
             >
               <Icon icon="material-symbols:arrow-back-rounded" size={20} />

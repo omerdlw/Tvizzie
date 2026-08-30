@@ -19,7 +19,6 @@ import {
 import { Suspense, use } from 'react';
 import { NavHeightSpacer } from '@/modules/nav';
 import { useRegisterBreadcrumbOverride } from '@/modules/nav';
-import { PageGradientShell } from '@/ui/layouts/page-gradient-shell';
 import CastSection from '@/domains/media/ui/sections/cast-section';
 import CollectionActions from '@/domains/media/ui/components/collection-actions';
 import GallerySection from '@/domains/media/ui/sections/gallery-section';
@@ -562,7 +561,7 @@ function MovieView({
         year={year}
       />
 
-      <PageGradientShell>
+
         <div
           className={`relative z-10 mx-auto flex w-full flex-col px-4 sm:px-6 lg:px-8 pb-16 [overflow-anchor:none] ${PAGE_SHELL_MAX_WIDTH_CLASS}`}
         >
@@ -693,7 +692,7 @@ function MovieView({
           ) : null}
         </div>
         <NavHeightSpacer />
-      </PageGradientShell>
+
     </>
   );
 }

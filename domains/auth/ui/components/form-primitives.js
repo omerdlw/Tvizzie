@@ -13,12 +13,12 @@ export const AUTH_INPUT_CLASSNAMES = Object.freeze({
 
 export const AUTH_PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'center h-11 text-xs font-bold uppercase w-full cursor-pointer rounded-[20px] ring-1 ring-inset ring-transparent bg-white/70 px-4 text-black transition-all duration-300 ease-in-out hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
+    'center h-11 text-xs font-bold uppercase w-full cursor-pointer rounded-[20px] ring-1 ring-inset ring-transparent bg-white/70 px-4 text-black hover:bg-white disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export const AUTH_SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'center h-11 text-xs font-bold uppercase w-full cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 transition-all duration-300 ease-in-out hover:ring-white/10 hover:bg-white/10 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
+    'center h-11 text-xs font-bold uppercase w-full cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export function AuthField({ children, className = '', description = '', htmlFor, label }) {
@@ -40,7 +40,7 @@ export function AuthField({ children, className = '', description = '', htmlFor,
 
 const PROVIDER_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'group flex h-11 w-full cursor-pointer items-center justify-between rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 transition-all duration-300 ease-in-out hover:bg-white hover:text-black hover:ring-transparent active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
+    'group flex h-11 w-full cursor-pointer items-center justify-between rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-white/70 hover:bg-white hover:text-black hover:ring-transparent disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export function OAuthProviderButton({

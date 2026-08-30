@@ -134,7 +134,7 @@ export default function FileUploadSurface({ close, data }) {
             inputRef.current?.click();
           }}
           className={cn(
-            'inline-flex h-9 items-center justify-center rounded-xl ring-1 ring-inset px-4 text-xs font-bold uppercase transition-all duration-300 ease-in-out',
+            'inline-flex h-9 items-center justify-center rounded-xl ring-1 ring-inset px-4 text-xs font-bold uppercase',
             isDragActive
               ? 'ring-info/20 bg-info/10 text-info hover:bg-info/20'
               : 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',

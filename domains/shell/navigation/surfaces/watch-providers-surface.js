@@ -9,7 +9,7 @@ import {
   normalizeWatchRegion,
   resolveWatchRegionFromBrowser,
 } from '@/infrastructure/tmdb/client';
-import { navFadeVariants, navListItemVariants } from '@/modules/nav';
+import { NAV_BUTTON_TRANSITION, navFadeVariants, navListItemVariants } from '@/modules/nav';
 import { useSurfaceHeader } from '@/modules/nav';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Button, Select } from '@/ui/primitives';
@@ -505,14 +505,22 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                         });
 
                         return (
-                          <a
+                          <motion.a
                             key={type}
                             href={deepLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={NAV_BUTTON_TRANSITION}
+                            style={{
+                              transformOrigin: 'center center',
+                              transitionProperty:
+                                'background-color, color, border-color, box-shadow, opacity',
+                            }}
                             className={cn(
-                              'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase transition-all duration-200 active:scale-95',
+                              'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase',
                               config.buttonClass,
                             )}
                             title={`Open ${provider.name} (${config.label})`}
@@ -524,7 +532,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                               size={12}
                               className="text-white/70"
                             />
-                          </a>
+                          </motion.a>
                         );
                       })}
                     </div>
@@ -564,7 +572,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                     setResolvedRegion(code);
                     setActiveCategory('ALL');
                   }}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/70 transition-all hover:ring-white/10 hover:bg-white/10 hover:text-white active:scale-95"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white"
                 >
                   <span className="text-sm leading-none">{getRegionFlag(code)}</span>
                   <span>{getRegionDisplayName(code) || code}</span>
