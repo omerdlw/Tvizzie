@@ -2,11 +2,10 @@ import { isValidElement, memo, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import {
-  NAV_ATTENTION_KIND,
-  NAV_ATTENTION_PRIORITY,
   NAV_HUD_PRIORITY,
   NAV_HUD_RENDER_MODE,
   NAV_HUD_VARIANT,
+  NAVIGATION_OPERATION_STATUS,
 } from './constants';
 import {
   areShallowCollectionsEqual,
@@ -19,6 +18,8 @@ import { NAV_HUD_TRANSITION, navHudVariants } from './motion';
 import { cn } from '@/ui/class-names';
 import { Button, Tooltip } from '@/ui/primitives';
 import Iconify from '@/ui/primitives/icon';
+
+// ── HUD descriptor normalization ─────────────────────────────────────────────
 
 function normalizePriority(value) {
   const priority = Number(value);
@@ -59,6 +60,8 @@ export function isHudDescriptor(value) {
       'id' in value)
   );
 }
+
+// ── HUD registry and selection ───────────────────────────────────────────────
 
 /**
  * Normalizes component, node, or structured input into a HUD definition.
@@ -134,10 +137,6 @@ export function createHudDefinition(input, config = {}) {
   };
 }
 
-function createCandidate(kind, source, priority) {
-  return { kind, priority, source };
-}
-
 /**
  * Selects the highest-priority active HUD.
  * @param {Array<object>} hudEntries - Registered HUD definitions
@@ -151,53 +150,6 @@ export function resolveActiveHud(hudEntries) {
     }
     return activeHud;
   }, null);
-}
-
-/**
- * Resolves which surface, status, HUD, loading state, or route owns attention.
- * @param {object} [options] - Current surface, status, HUD, and loading state
- * @returns {object} Winning attention candidate
- */
-export function resolveNavigationAttention({
-  hud = null,
-  isPageLoading = false,
-  status = null,
-  surface = null,
-} = {}) {
-  const candidates = [
-    surface?.isSurfaceOpen
-      ? createCandidate(NAV_ATTENTION_KIND.SURFACE, surface, NAV_ATTENTION_PRIORITY.SURFACE)
-      : null,
-    status?.isOverlay
-      ? createCandidate(
-          NAV_ATTENTION_KIND.STATUS,
-          status,
-          NAV_ATTENTION_PRIORITY.STATUS_OVERLAY + normalizePriority(status.priority),
-        )
-      : null,
-    hud?.isActive
-      ? createCandidate(
-          NAV_ATTENTION_KIND.HUD,
-          hud,
-          NAV_ATTENTION_PRIORITY.HUD + normalizePriority(hud.priority),
-        )
-      : null,
-    isPageLoading
-      ? createCandidate(NAV_ATTENTION_KIND.LOADING, null, NAV_ATTENTION_PRIORITY.LOADING)
-      : null,
-    status
-      ? createCandidate(
-          NAV_ATTENTION_KIND.STATUS,
-          status,
-          NAV_ATTENTION_PRIORITY.STATUS + normalizePriority(status.priority),
-        )
-      : null,
-    createCandidate(NAV_ATTENTION_KIND.ROUTE, null, NAV_ATTENTION_PRIORITY.ROUTE),
-  ].filter(Boolean);
-
-  return candidates.reduce((activeCandidate, candidate) =>
-    candidate.priority > activeCandidate.priority ? candidate : activeCandidate,
-  );
 }
 
 /** Compares HUD definitions without treating recreated collections as state changes. */
@@ -267,7 +219,36 @@ export function areSelectionModeStatesEqual(currentState, nextState) {
 export function getActiveNavigationHud(hudEntries, selectionModeState) {
   return resolveActiveHud([...Object.values(hudEntries), selectionModeState]);
 }
-+function HudActionButton({ action, expanded = false }) {
+
+/**
+ * Projects the active operation-center entry onto the normal HUD contract.
+ * @param {object|null} operation - Pending navigation operation
+ * @param {object} [options] - Cancellation and aggregation configuration
+ * @returns {object|null} Renderable HUD definition, or null when inactive
+ */
+export function createNavigationOperationHud(operation, { onCancel = null, pendingCount = 1 } = {}) {
+  if (!operation?.id || operation.status !== NAVIGATION_OPERATION_STATUS.PENDING) return null;
+
+  const progress = operation.progress == null ? null : operation.progress * 100;
+  const canCancel = operation.cancellable !== false && typeof onCancel === 'function';
+  return createHudDefinition({
+    description: operation.description || null,
+    dismissOnEscape: false,
+    dismissOnNavigate: false,
+    icon: operation.icon || null,
+    id: `navigation-operation:${operation.id}`,
+    isActive: true,
+    isIndeterminate: progress == null,
+    onCancel: canCancel ? () => onCancel(operation.id) : null,
+    priority: NAV_HUD_PRIORITY.TASK_PROGRESS,
+    progress,
+    title: operation.label,
+    variant: NAV_HUD_VARIANT.PROGRESS,
+    ...(pendingCount > 1 ? { badge: pendingCount } : {}),
+  });
+}
+
+function HudActionButton({ action, expanded = false }) {
   const isDestructive = Boolean(action.isDestructive);
   const button = (
     <Button

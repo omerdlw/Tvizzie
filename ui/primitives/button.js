@@ -74,8 +74,15 @@ const Button = forwardRef(
       variant === 'icon' ||
       /\b(size-[0-9.]+|w-[0-9.]+\s+h-[0-9.]+|h-[0-9.]+\s+w-[0-9.]+)\b/.test(resolvedClassName || '');
 
-    const defaultHoverScale = isIconLike ? 1.06 : 1.02;
-    const defaultTapScale = isIconLike ? 0.94 : 0.98;
+    const isNavAction =
+      variant === 'nav-action' ||
+      (Boolean(resolvedClassName) &&
+        resolvedClassName.includes('rounded-[20px]') &&
+        resolvedClassName.includes('uppercase') &&
+        (resolvedClassName.includes('w-full') || resolvedClassName.includes('flex-1')));
+
+    const defaultHoverScale = isIconLike ? 1.06 : isNavAction ? 1.008 : 1.02;
+    const defaultTapScale = isIconLike ? 0.94 : isNavAction ? 0.99 : 0.98;
 
     const motionProps = {
       whileHover:

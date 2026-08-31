@@ -1,0 +1,2080 @@
+'use client';
+
+import {
+  createContext,
+  createElement,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+
+import { globalEvents } from '@/shared';
+import {
+  MAX_VISIBLE_STACKED_CARDS,
+  NAV_ATTENTION_KIND,
+  NAV_ATTENTION_PRIORITY,
+  NAV_ATTENTION_PRIORITY_OFFSET_MAX,
+  NAVIGATION_DIAGNOSTIC_EVENTS,
+  NAVIGATION_DIAGNOSTIC_MAX_ENTRIES,
+  NAVIGATION_INSPECTOR_MAX_RECENT_EVENTS,
+  NAVIGATION_OPERATION_EVENTS,
+  NAVIGATION_OPERATION_MAX_ENTRIES,
+  NAVIGATION_OPERATION_STATUS,
+  NAV_EVENTS,
+  NAV_HUD_PRIORITY,
+  NAVIGATION_EVENTS,
+} from './constants';
+import {
+  blurActiveElement,
+  isPathPrefix,
+  isSameItem,
+  isSamePath,
+  normalizePath,
+  toArray,
+  toSearchableText,
+} from './utils';
+import {
+  applySurfaceToNavItem,
+  createInlineSurfaceEntry,
+  createSurfaceLifecycleState,
+  SurfaceFlowProvider,
+  surfaceLifecycleReducer,
+  useSurfaceStack,
+} from './surface';
+import {
+  areSelectionModeStatesEqual,
+  createHudDefinition,
+  createNavigationOperationHud,
+  createSelectionModeState,
+  getActiveNavigationHud,
+  removeHudEntries,
+  upsertHudEntry,
+  NavHudView,
+  useNavHudLifecycle,
+} from './hud';
+import { applyStatusOverlay, useNavigationStatus } from './status';
+import { useNavigationCompact, useNavigationRouteReset } from './behavior';
+import { applyMediaAction } from './media';
+import { BreadcrumbProvider } from './breadcrumbs';
+import { useNavCommandRegistry } from './commands';
+import {
+  createNavigationTopology,
+  resolveNavigationRoutePolicy,
+  useNavigationContinuity,
+  useNavigationTransactions,
+} from './routing';
+
+import { useBackgroundActions, useBackgroundState } from '@/modules/background';
+import { useLoadingActions, useLoadingState } from '@/modules/loading';
+import { useNavRegistry, useNavRuntimeRegistry } from '@/modules/registry';
+
+// ── Navigation runtime ──────────────────────────────────────────────────────
+
+function useRequiredContext(context, hookName, providerName) {
+  const value = useContext(context);
+  if (value === null) {
+    throw new Error(`${hookName} must be used within ${providerName}`);
+  }
+  return value;
+}
+
+function isNavigationDiagnosticsEnabled() {
+  return process.env.NODE_ENV !== 'production';
+}
+
+function createNavigationDiagnosticEntry(type, details = {}, timestamp = Date.now()) {
+  return {
+    ...details,
+    timestamp,
+    type,
+  };
+}
+
+/**
+ * Creates a bounded, subscribable in-memory navigation diagnostic store.
+ * This intentionally stores only local development diagnostics and never transmits data.
+ * @param {object} [options] - Store capacity and clock configuration
+ * @returns {{clear: Function, getSnapshot: Function, record: Function, subscribe: Function}} Diagnostic store
+ */
+export function createNavigationDiagnosticStore({
+  maxEntries = NAVIGATION_DIAGNOSTIC_MAX_ENTRIES,
+  now = Date.now,
+} = {}) {
+  const safeMaxEntries = Math.max(1, Number(maxEntries) || NAVIGATION_DIAGNOSTIC_MAX_ENTRIES);
+  const listeners = new Set();
+  let entries = [];
+
+  const notify = () => listeners.forEach((listener) => listener());
+
+  return {
+    clear() {
+      if (entries.length === 0) return;
+      entries = [];
+      notify();
+    },
+    getSnapshot() {
+      return entries;
+    },
+    record(type, details = {}) {
+      const entry = createNavigationDiagnosticEntry(type, details, now());
+      entries = [...entries.slice(-(safeMaxEntries - 1)), entry];
+      notify();
+      return entry;
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+const navigationDiagnosticStore = createNavigationDiagnosticStore();
+
+/** Returns a chronological snapshot of local development navigation diagnostics. */
+export function getNavigationDiagnostics() {
+  return navigationDiagnosticStore.getSnapshot();
+}
+
+/** Clears all locally retained development navigation diagnostics. */
+export function clearNavigationDiagnostics() {
+  navigationDiagnosticStore.clear();
+}
+
+function recordNavigationDiagnostic(type, details) {
+  if (!isNavigationDiagnosticsEnabled()) return;
+  navigationDiagnosticStore.record(type, details);
+}
+
+let navigationInspectorSnapshot = null;
+
+/**
+ * Creates a serializable, privacy-preserving snapshot of current navigation health.
+ * @param {object} [state] - Navigation state to inspect
+ * @returns {object} Stable inspector snapshot
+ */
+export function createNavigationInspectorSnapshot(state = {}) {
+  const operations = Array.isArray(state.operations) ? state.operations : [];
+  const surfaces = Array.isArray(state.surfaceStack) ? state.surfaceStack : [];
+  const diagnostics = getNavigationDiagnostics();
+
+  return {
+    activeOperationId: state.activeOperation?.id || null,
+    compactLocked: Boolean(state.compactLocked),
+    diagnosticEvents: diagnostics.slice(-NAVIGATION_INSPECTOR_MAX_RECENT_EVENTS),
+    expanded: Boolean(state.expanded),
+    navHeight: Number(state.navHeight) || 0,
+    operationCount: operations.length,
+    pathname: normalizePath(state.pathname || ''),
+    surfaceCount: surfaces.length,
+    timestamp: Date.now(),
+  };
+}
+
+/** Returns the most recent local navigation inspector snapshot. */
+export function getNavigationInspectorSnapshot() {
+  return navigationInspectorSnapshot;
+}
+
+function updateNavigationInspectorSnapshot(state) {
+  if (!isNavigationDiagnosticsEnabled()) return;
+  navigationInspectorSnapshot = createNavigationInspectorSnapshot(state);
+}
+
+/** Creates the operation center's empty state. */
+export function createNavigationOperationState() {
+  return { entries: [] };
+}
+
+/**
+ * Creates one tracked navigation operation.
+ * @param {object} [input] - Operation metadata
+ * @returns {object|null} Normalized pending operation
+ */
+export function createNavigationOperation({
+  cancellable = true,
+  description = null,
+  id,
+  icon = null,
+  label = 'Working',
+  metadata = null,
+  onCancel = null,
+  priority = 0,
+  progress = null,
+  startedAt = Date.now(),
+} = {}) {
+  const normalizedId = typeof id === 'string' || typeof id === 'number' ? String(id) : '';
+  if (!normalizedId) return null;
+
+  const numericPriority = Number(priority);
+  const numericProgress = Number(progress);
+  return {
+    cancellable: Boolean(cancellable),
+    description: typeof description === 'string' && description.trim() ? description.trim() : null,
+    id: normalizedId,
+    icon: icon ?? null,
+    label: typeof label === 'string' && label.trim() ? label.trim() : 'Working',
+    metadata:
+      metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? { ...metadata } : {},
+    priority: Number.isFinite(numericPriority) ? numericPriority : 0,
+    progress: Number.isFinite(numericProgress) ? Math.min(1, Math.max(0, numericProgress)) : null,
+    startedAt: Number.isFinite(Number(startedAt)) ? Number(startedAt) : Date.now(),
+    status: NAVIGATION_OPERATION_STATUS.PENDING,
+    onCancel: typeof onCancel === 'function' ? onCancel : null,
+  };
+}
+
+function settleNavigationOperation(operation, status, action) {
+  return {
+    ...operation,
+    endedAt: action.endedAt ?? Date.now(),
+    result: action.result ?? null,
+    status,
+  };
+}
+
+/**
+ * Applies operation lifecycle events while retaining a bounded history.
+ * @param {{entries: Array<object>}} state - Current operation state
+ * @param {object} action - Operation event
+ * @returns {{entries: Array<object>}} Next operation state
+ */
+export function navigationOperationReducer(state, action) {
+  const currentState = state || createNavigationOperationState();
+  if (action?.type === NAVIGATION_OPERATION_EVENTS.CLEAR) {
+    if (action.id == null)
+      return currentState.entries.length ? createNavigationOperationState() : currentState;
+    const entries = currentState.entries.filter((entry) => entry.id !== String(action.id));
+    return entries.length === currentState.entries.length ? currentState : { entries };
+  }
+
+  if (action?.type === NAVIGATION_OPERATION_EVENTS.START) {
+    const operation = action.operation;
+    if (!operation?.id) return currentState;
+    const maxEntries = Math.max(1, Number(action.maxEntries) || NAVIGATION_OPERATION_MAX_ENTRIES);
+    return {
+      entries: [
+        ...currentState.entries.filter((entry) => entry.id !== operation.id),
+        operation,
+      ].slice(-maxEntries),
+    };
+  }
+
+  const id = action?.id == null ? '' : String(action.id);
+  const operation = currentState.entries.find((entry) => entry.id === id);
+  if (!operation) return currentState;
+
+  if (action.type === NAVIGATION_OPERATION_EVENTS.UPDATE) {
+    if (operation.status !== NAVIGATION_OPERATION_STATUS.PENDING) return currentState;
+    const updatedOperation = createNavigationOperation({ ...operation, ...action.patch });
+    if (!updatedOperation) return currentState;
+    return {
+      entries: currentState.entries.map((entry) =>
+        entry.id === id ? { ...updatedOperation, startedAt: operation.startedAt } : entry,
+      ),
+    };
+  }
+
+  const status =
+    action.type === NAVIGATION_OPERATION_EVENTS.COMPLETE
+      ? NAVIGATION_OPERATION_STATUS.COMPLETED
+      : action.type === NAVIGATION_OPERATION_EVENTS.CANCEL
+        ? NAVIGATION_OPERATION_STATUS.CANCELLED
+        : null;
+  if (!status || operation.status !== NAVIGATION_OPERATION_STATUS.PENDING) return currentState;
+
+  return {
+    entries: currentState.entries.map((entry) =>
+      entry.id === id ? settleNavigationOperation(entry, status, action) : entry,
+    ),
+  };
+}
+
+/**
+ * Resolves the most important pending operation using stable priority ordering.
+ * @param {{entries: Array<object>}} state - Operation state
+ * @returns {object|null} Active operation
+ */
+export function resolveActiveNavigationOperation(state) {
+  return (
+    state?.entries
+      ?.filter((entry) => entry.status === NAVIGATION_OPERATION_STATUS.PENDING)
+      .sort(
+        (left, right) => right.priority - left.priority || left.startedAt - right.startedAt,
+      )[0] || null
+  );
+}
+
+// ── Events and navigation guards ──────────────────────────────────────────────
+
+function emitNavigationEvent(eventType, data = {}) {
+  return globalEvents.emit(eventType, {
+    timestamp: Date.now(),
+    type: eventType,
+    ...data,
+  });
+}
+
+const guardRegistry = new Map();
+let guardIdCounter = 0;
+
+/**
+ * Removes every registered navigation guard and resets guard identifiers.
+ * @returns {void}
+ */
+export function clearNavigationGuards() {
+  guardRegistry.clear();
+  guardIdCounter = 0;
+}
+
+/**
+ * Returns the number of currently registered navigation guards.
+ * @returns {number} Registered guard count
+ */
+export function getNavigationGuardCount() {
+  return guardRegistry.size;
+}
+
+/**
+ * Registers a navigation guard and returns its cleanup callback.
+ * @param {object} guard - Guard predicate and optional block metadata
+ * @returns {() => boolean} Guard cleanup callback
+ */
+export function registerGuard(guard) {
+  const id = ++guardIdCounter;
+  guardRegistry.set(id, guard);
+  return () => guardRegistry.delete(id);
+}
+
+/**
+ * Evaluates navigation guards in registration order and returns the first block.
+ * @param {string} to - Destination path
+ * @param {string} from - Current path
+ * @returns {Promise<{blocked: boolean, message?: string, guardId?: number}>} Guard result
+ */
+export async function checkGuards(to, from) {
+  for (const [id, guard] of guardRegistry) {
+    let shouldBlock = false;
+    try {
+      const guardResult = typeof guard.when === 'function' ? guard.when(to, from) : guard.when;
+      shouldBlock = await Promise.resolve(guardResult);
+    } catch (error) {
+      console.error('[Navigation Guard] Guard evaluation failed:', error);
+    }
+
+    if (shouldBlock) {
+      const message = guard.message || 'Are you sure you want to leave this page?';
+      try {
+        guard.onBlock?.({ to, from, guardId: id, message });
+      } catch (error) {
+        console.error('[Navigation Guard] Block handler failed:', error);
+      }
+      return { message, blocked: true, guardId: id };
+    }
+  }
+  return { blocked: false };
+}
+
+/**
+ * Registers a component-scoped navigation guard and before-unload protection.
+ * @param {object} [options] - Guard predicate, message, and callback
+ * @returns {{isActive: *, setGuard: Function, clearGuard: Function}} Guard controls
+ */
+export function useNavigationGuard(options = {}) {
+  const {
+    message = 'You have unsaved changes. Are you sure you want to leave?',
+    when = false,
+    onBlock,
+  } = options;
+
+  const whenRef = useRef(when);
+  const [isActive, setIsActive] = useState(Boolean(when));
+
+  useEffect(() => {
+    whenRef.current = when;
+    setIsActive(Boolean(when));
+  }, [when]);
+
+  useEffect(() => {
+    const unregister = registerGuard({
+      when: () => whenRef.current,
+      message,
+      onBlock,
+    });
+
+    return () => {
+      unregister();
+    };
+  }, [message, onBlock]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (whenRef.current) {
+        event.preventDefault();
+        event.returnValue = message;
+        return message;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [message]);
+
+  const setGuard = useCallback((active) => {
+    whenRef.current = active;
+    setIsActive(Boolean(active));
+  }, []);
+
+  const clearGuard = useCallback(() => {
+    whenRef.current = false;
+    setIsActive(false);
+  }, []);
+
+  return {
+    isActive,
+    clearGuard,
+    setGuard,
+  };
+}
+
+// ── Surface, HUD, and status presentation ─────────────────────────────────────
+
+export {
+  NavSurfaceHeader,
+  NavSurfaceHeaderButton,
+  NavSurfaceShell,
+  useSurfaceHeader,
+} from './surface';
+
+export { NavHudShell } from './hud';
+
+/** Connects the self-contained HUD view to navigation provider state. */
+export const NavHud = memo(function NavHud() {
+  const { hud } = useNavigationState();
+  const { clearHud } = useNavigationActions();
+  return <NavHudView clearHud={clearHud} hud={hud} pathname={usePathname()} />;
+});
+
+/**
+ * Reserves layout space for the fixed navigation stack.
+ * @param {object} props - Component properties
+ * @returns {React.ReactElement|null} Rendered navigation UI
+ */
+export function NavHeightSpacer({ className = '' }) {
+  const { navHeight } = useNavHeight();
+
+  return (
+    <div aria-hidden="true" className={className} style={{ flexShrink: 0, height: navHeight }} />
+  );
+}
+
+// ── Route resolution and display model ────────────────────────────────────────
+
+function useNavigationCore() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { clearPreparedRouteReset, closeSurface, continuity, openSurface, prepareRouteReset } =
+    useNavigationActions();
+  const { startLoading, stopLoading } = useLoadingActions();
+  const { createGuardSurface } = useNavRuntimeRegistry();
+  const previousPathRef = useRef(pathname);
+  const handleTransactionEvent = useCallback(({ transaction, type }) => {
+    recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.ROUTE_TRANSACTION, {
+      from: transaction.from,
+      reason: transaction.reason,
+      source: transaction.source,
+      status: transaction.status,
+      to: transaction.to,
+      transactionId: transaction.id,
+      transactionType: type,
+    });
+  }, []);
+  const handleTransactionTimeout = useCallback(() => {
+    clearPreparedRouteReset();
+    stopLoading();
+  }, [clearPreparedRouteReset, stopLoading]);
+  const {
+    activeTransaction,
+    beginTransaction,
+    cancelActiveTransaction,
+    cancelTransaction,
+    completeTransactionForPath,
+    failTransaction,
+    isTransactionCurrent,
+    lastTransaction,
+  } = useNavigationTransactions({
+    onTimeout: handleTransactionTimeout,
+    onTransactionEvent: handleTransactionEvent,
+  });
+
+  const cancelNavigation = useCallback(
+    (reason = 'guard') => {
+      cancelActiveTransaction(reason);
+      clearPreparedRouteReset();
+      closeSurface({
+        cancelled: true,
+        reason,
+        success: false,
+      });
+    },
+    [cancelActiveTransaction, clearPreparedRouteReset, closeSurface],
+  );
+
+  const commitNavigation = useCallback(
+    ({ from, href, routePolicy, source = 'navigation', transaction = null }) => {
+      const activeRouteTransaction = transaction || beginTransaction({ from, source, to: href });
+
+      if (!isTransactionCurrent(activeRouteTransaction.id)) {
+        return false;
+      }
+
+      try {
+        continuity?.remember?.(from);
+        blurActiveElement();
+        startLoading({ showOverlay: false });
+        prepareRouteReset(routePolicy);
+        recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.ROUTE_STARTED, {
+          from,
+          source,
+          to: href,
+          transactionId: activeRouteTransaction.id,
+        });
+        emitNavigationEvent(NAV_EVENTS.NAVIGATE_START, { from, to: href });
+        router.push(href);
+        emitNavigationEvent(NAV_EVENTS.NAVIGATE, { from, item: undefined, to: href });
+        return true;
+      } catch (error) {
+        clearPreparedRouteReset();
+        failTransaction(activeRouteTransaction.id, error);
+        stopLoading();
+        console.error('[Navigation] Route transition failed:', error);
+        return false;
+      }
+    },
+    [
+      beginTransaction,
+      clearPreparedRouteReset,
+      continuity,
+      failTransaction,
+      isTransactionCurrent,
+      prepareRouteReset,
+      router,
+      startLoading,
+      stopLoading,
+    ],
+  );
+
+  const openGuardConfirmation = useCallback(
+    ({ href, from, message, routePolicy }) => {
+      const confirmNavigation = () =>
+        commitNavigation({ from, href, routePolicy, source: 'guard-confirmation' });
+      const cancelNavigation = () =>
+        closeSurface({ cancelled: true, reason: 'guard', success: false });
+
+      const surface = createGuardSurface?.({
+        to: href,
+        from,
+        message: message || 'You have unsaved changes. Are you sure you want to leave this page?',
+        onCancel: cancelNavigation,
+        onConfirm: confirmNavigation,
+      });
+
+      if (surface) {
+        openSurface(surface);
+        return;
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          '[Navigation] Missing NAV_RUNTIME createGuardSurface; using browser confirmation.',
+        );
+      }
+
+      if (
+        typeof window !== 'undefined' &&
+        window.confirm(message || 'Are you sure you want to leave this page?')
+      ) {
+        confirmNavigation();
+      } else {
+        cancelNavigation();
+      }
+    },
+    [closeSurface, commitNavigation, createGuardSurface, openSurface],
+  );
+
+  const navigate = useCallback(
+    async (href, { force = false, item = null, source = 'navigation' } = {}) => {
+      const from = pathname;
+      const routePolicy = resolveNavigationRoutePolicy({ href, item });
+
+      if (!routePolicy.canNavigate) {
+        recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.ROUTE_REJECTED, {
+          from,
+          source,
+          to: String(href || ''),
+        });
+        console.error('[Navigation] Refused unsafe or invalid destination:', href);
+        return false;
+      }
+
+      if (isSamePath(href, from)) {
+        return false;
+      }
+
+      const transaction = beginTransaction({ from, source, to: href });
+
+      try {
+        if (!force) {
+          const guardResult = await checkGuards(href, from);
+
+          if (!isTransactionCurrent(transaction.id)) {
+            return false;
+          }
+
+          if (guardResult.blocked) {
+            cancelTransaction(transaction.id, 'guard');
+            blurActiveElement();
+            openGuardConfirmation({ href, from, message: guardResult.message, routePolicy });
+            return false;
+          }
+        }
+
+        return commitNavigation({ from, href, routePolicy, source, transaction });
+      } catch (error) {
+        failTransaction(transaction.id, error);
+        stopLoading();
+        console.error('[Navigation] Navigation guard failed:', error);
+        return false;
+      }
+    },
+    [
+      beginTransaction,
+      cancelTransaction,
+      commitNavigation,
+      failTransaction,
+      isTransactionCurrent,
+      openGuardConfirmation,
+      pathname,
+      stopLoading,
+    ],
+  );
+
+  useEffect(() => {
+    if (previousPathRef.current === pathname) {
+      return;
+    }
+
+    emitNavigationEvent(NAV_EVENTS.NAVIGATE_END, {
+      duration: undefined,
+      from: previousPathRef.current,
+      to: pathname,
+    });
+    completeTransactionForPath(pathname);
+    previousPathRef.current = pathname;
+    stopLoading();
+  }, [completeTransactionForPath, pathname, stopLoading]);
+
+  return {
+    activeTransaction,
+    cancelNavigation,
+    lastTransaction,
+    navigate,
+    pathname,
+  };
+}
+
+function isNotFoundItem(item) {
+  return item?.isNotFound || item?.path === 'not-found' || item?.type === 'NOT_FOUND';
+}
+
+function flattenNavigationItems(items) {
+  return items.map((item) => ({
+    ...item,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isExpanded: false,
+    isParent: false,
+  }));
+}
+
+function filterNavigationItems(items, searchQuery) {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    return (
+      toSearchableText(item.name).toLowerCase().includes(normalizedQuery) ||
+      toSearchableText(item.title).toLowerCase().includes(normalizedQuery) ||
+      toSearchableText(item.description).toLowerCase().includes(normalizedQuery)
+    );
+  });
+}
+
+function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage }) {
+  const baseItems = isNotFoundPage
+    ? rawItems.filter((item) => item.path === '/' || isNotFoundItem(item))
+    : rawItems;
+
+  const flattenedItems = flattenNavigationItems(baseItems);
+
+  if (expanded && searchQuery) {
+    return filterNavigationItems(flattenedItems, searchQuery);
+  }
+
+  return flattenedItems;
+}
+
+function findNavigationItemIndex(navigationItems, activeItem, pathname) {
+  const normalizedPathname = normalizePath(pathname);
+  const selectedDataSourceIndex = navigationItems.findIndex(
+    (item) => item.isDataSource && item.isSelected,
+  );
+
+  if (selectedDataSourceIndex !== -1) {
+    return selectedDataSourceIndex;
+  }
+
+  if (activeItem) {
+    const matchedActiveIndex = navigationItems.findIndex(
+      (item) =>
+        (item.path && isSamePath(item.path, activeItem.path)) ||
+        (item.name && item.name === activeItem.name),
+    );
+
+    if (matchedActiveIndex !== -1) {
+      return matchedActiveIndex;
+    }
+  }
+
+  const matchedIndex = navigationItems.findIndex((item) =>
+    isSamePath(item.path, normalizedPathname),
+  );
+  return matchedIndex;
+}
+
+function resolveActiveIndex({ navigationItems, activeItem, pathname }) {
+  return Math.max(0, findNavigationItemIndex(navigationItems, activeItem, pathname));
+}
+
+function resolveBaseActiveItem({ rawItems, navigationItems, pathname, isNotFoundPage }) {
+  const normalizedPathname = normalizePath(pathname);
+  const selectedDataSource = navigationItems.find((item) => item.isDataSource && item.isSelected);
+
+  if (selectedDataSource) {
+    return selectedDataSource;
+  }
+
+  if (isNotFoundPage) {
+    return rawItems.find((item) => isNotFoundItem(item)) || rawItems[0] || null;
+  }
+
+  const matchedNavigationItem = navigationItems.find((item) =>
+    isSamePath(item.path, normalizedPathname),
+  );
+
+  if (matchedNavigationItem) {
+    return matchedNavigationItem;
+  }
+
+  const matchedRawItem = rawItems.find((item) => isSamePath(item.path, normalizedPathname));
+
+  if (matchedRawItem) {
+    return matchedRawItem;
+  }
+
+  let prefixMatchedRawItem = null;
+  let longestPrefixLength = -1;
+  for (const item of rawItems) {
+    const candidatePath = normalizePath(item?.path);
+    if (
+      candidatePath.length > longestPrefixLength &&
+      isPathPrefix(candidatePath, normalizedPathname)
+    ) {
+      prefixMatchedRawItem = item;
+      longestPrefixLength = candidatePath.length;
+    }
+  }
+
+  if (prefixMatchedRawItem) {
+    return (
+      navigationItems.find(
+        (entry) =>
+          isSamePath(entry?.path, prefixMatchedRawItem.path) ||
+          (entry?.name && entry.name === prefixMatchedRawItem.name),
+      ) || prefixMatchedRawItem
+    );
+  }
+
+  return rawItems[0] || null;
+}
+
+// ── Display attention policy ─────────────────────────────────────────────────
+
+function createAttentionCandidate(kind, source, priority) {
+  return { kind, priority, source };
+}
+
+function normalizeAttentionPriority(value) {
+  const priority = Number(value);
+  if (!Number.isFinite(priority)) return NAV_HUD_PRIORITY.DEFAULT;
+  return Math.min(NAV_ATTENTION_PRIORITY_OFFSET_MAX, Math.max(0, priority));
+}
+
+/**
+ * Resolves whether the current surface, status, HUD, loading state, or route owns attention.
+ * @param {object} [options] - Current surface, status, HUD, and loading state
+ * @returns {object} Winning attention candidate
+ */
+export function resolveNavigationAttention({
+  hud = null,
+  isPageLoading = false,
+  operation = null,
+  status = null,
+  surface = null,
+} = {}) {
+  const candidates = [
+    surface?.isSurfaceOpen
+      ? createAttentionCandidate(
+          NAV_ATTENTION_KIND.SURFACE,
+          surface,
+          NAV_ATTENTION_PRIORITY.SURFACE,
+        )
+      : null,
+    status?.isOverlay
+      ? createAttentionCandidate(
+          NAV_ATTENTION_KIND.STATUS,
+          status,
+          NAV_ATTENTION_PRIORITY.STATUS_OVERLAY + normalizeAttentionPriority(status.priority),
+        )
+      : null,
+    operation?.status === NAVIGATION_OPERATION_STATUS.PENDING
+      ? createAttentionCandidate(
+          NAV_ATTENTION_KIND.OPERATION,
+          operation,
+          NAV_ATTENTION_PRIORITY.OPERATION + normalizeAttentionPriority(operation.priority),
+        )
+      : null,
+    hud?.isActive
+      ? createAttentionCandidate(
+          NAV_ATTENTION_KIND.HUD,
+          hud,
+          NAV_ATTENTION_PRIORITY.HUD + normalizeAttentionPriority(hud.priority),
+        )
+      : null,
+    isPageLoading
+      ? createAttentionCandidate(NAV_ATTENTION_KIND.LOADING, null, NAV_ATTENTION_PRIORITY.LOADING)
+      : null,
+    status
+      ? createAttentionCandidate(
+          NAV_ATTENTION_KIND.STATUS,
+          status,
+          NAV_ATTENTION_PRIORITY.STATUS + normalizeAttentionPriority(status.priority),
+        )
+      : null,
+    createAttentionCandidate(NAV_ATTENTION_KIND.ROUTE, null, NAV_ATTENTION_PRIORITY.ROUTE),
+  ].filter(Boolean);
+
+  return candidates.reduce((activeCandidate, candidate) =>
+    candidate.priority > activeCandidate.priority ? candidate : activeCandidate,
+  );
+}
+
+function resolveActiveItem({
+  rawItems,
+  navigationItems,
+  pathname,
+  isNotFoundPage,
+  surfaceState,
+  statusState,
+  isVideo,
+  toggleBackgroundVideo,
+  mediaAction,
+  surfaceActions,
+  isPageLoading,
+  attention,
+}) {
+  const baseActiveItem = resolveBaseActiveItem({
+    rawItems,
+    navigationItems,
+    pathname,
+    isNotFoundPage,
+  });
+
+  if (!baseActiveItem) {
+    return null;
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.SURFACE) {
+    return applySurfaceToNavItem(baseActiveItem, surfaceState.activeSurfaceEntry, {
+      ...surfaceActions,
+      closeSurface: (result) => surfaceActions.closeSurface(result, surfaceState.activeSurfaceId),
+    });
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.STATUS && statusState?.isOverlay) {
+    return applyStatusOverlay(baseActiveItem, statusState);
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.HUD) {
+    return baseActiveItem;
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.OPERATION) {
+    return baseActiveItem;
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.LOADING && isPageLoading) {
+    return {
+      ...baseActiveItem,
+      isLoading: true,
+    };
+  }
+
+  if (attention?.kind === NAV_ATTENTION_KIND.STATUS && statusState) {
+    return applyStatusOverlay(baseActiveItem, statusState);
+  }
+
+  const itemWithMediaAction = applyMediaAction(
+    baseActiveItem,
+    isVideo,
+    toggleBackgroundVideo,
+    mediaAction,
+  );
+
+  const inlineSurface = createInlineSurfaceEntry(itemWithMediaAction?.surface);
+
+  if (inlineSurface) {
+    return applySurfaceToNavItem(itemWithMediaAction, inlineSurface, surfaceActions);
+  }
+
+  return itemWithMediaAction;
+}
+
+function useNavigationDisplay() {
+  const pathname = usePathname();
+  const loadingState = useLoadingState();
+  const isPageLoading = Boolean(loadingState?.isLoading);
+
+  const { rawItems } = useNavigationItems();
+  const {
+    closeAllSurfaces,
+    goBackSurface,
+    closeSurface,
+    pushStep,
+    popStep,
+    goToStep,
+    getSurfaceFlow,
+    handleSurfaceAnimationComplete,
+  } = useNavigationActions();
+  const {
+    expanded,
+    searchQuery,
+    activeSurfaceId,
+    activeSurfaceEntry,
+    activeOperation,
+    hud,
+    isSurfaceOpen,
+    surfaceStack,
+  } = useNavigationState();
+  const surfaceState = useMemo(
+    () => ({
+      activeSurfaceId,
+      activeSurfaceEntry,
+      isSurfaceOpen,
+      surfaceStack,
+    }),
+    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen, surfaceStack],
+  );
+  const statusState = useNavigationStatus();
+  const { mediaAction } = useNavRuntimeRegistry();
+  const { isVideo } = useBackgroundState();
+  const { toggleVideo: toggleBackgroundVideo } = useBackgroundActions();
+
+  const attention = useMemo(
+    () =>
+      resolveNavigationAttention({
+        hud,
+        isPageLoading,
+        operation: activeOperation,
+        status: statusState,
+        surface: surfaceState,
+      }),
+    [activeOperation, hud, isPageLoading, statusState, surfaceState],
+  );
+
+  const isNotFoundPage = useMemo(() => {
+    return rawItems.some((item) => isNotFoundItem(item));
+  }, [rawItems]);
+
+  const navigationItems = useMemo(() => {
+    return buildNavigationItems({
+      rawItems,
+      expanded,
+      searchQuery,
+      isNotFoundPage,
+    });
+  }, [rawItems, expanded, searchQuery, isNotFoundPage]);
+
+  const rawActiveItem = useMemo(() => {
+    return resolveActiveItem({
+      rawItems,
+      navigationItems,
+      pathname,
+      isNotFoundPage,
+      surfaceState,
+      statusState,
+      isVideo,
+      toggleBackgroundVideo,
+      mediaAction,
+      surfaceActions: {
+        closeSurface,
+        closeAllSurfaces,
+        goBackSurface,
+        pushStep,
+        popStep,
+        goToStep,
+        getSurfaceFlow,
+        handleSurfaceAnimationComplete,
+        surfaceStack,
+      },
+      isPageLoading,
+      attention,
+    });
+  }, [
+    rawItems,
+    navigationItems,
+    pathname,
+    isNotFoundPage,
+    surfaceState,
+    statusState,
+    isVideo,
+    toggleBackgroundVideo,
+    mediaAction,
+    closeSurface,
+    closeAllSurfaces,
+    goBackSurface,
+    pushStep,
+    popStep,
+    goToStep,
+    getSurfaceFlow,
+    handleSurfaceAnimationComplete,
+    surfaceStack,
+    isPageLoading,
+    attention,
+  ]);
+
+  const activeItem = rawActiveItem;
+
+  const activeIndex = useMemo(() => {
+    return resolveActiveIndex({
+      navigationItems,
+      activeItem,
+      pathname,
+    });
+  }, [navigationItems, activeItem, pathname]);
+  const topology = useMemo(
+    () => createNavigationTopology(navigationItems, { pathname }),
+    [navigationItems, pathname],
+  );
+
+  return useMemo(
+    () => ({ navigationItems, activeItem, activeIndex, statusState, attention, topology }),
+    [navigationItems, activeItem, activeIndex, statusState, attention, topology],
+  );
+}
+
+function stripChildrenSystemFields(item) {
+  if (!item || typeof item !== 'object') {
+    return item;
+  }
+
+  return {
+    ...item,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isChild: false,
+    isExpanded: false,
+    isParent: false,
+    parentName: null,
+    parentPath: null,
+  };
+}
+
+function useNavigationItems() {
+  const { getAll } = useNavRegistry();
+
+  const rawItems = useMemo(() => {
+    return Object.values(getAll()).map(stripChildrenSystemFields);
+  }, [getAll]);
+
+  return { rawItems };
+}
+
+function shouldKeepAncestorItem(item, activePath) {
+  const policy = item?.keepWhenDescendant;
+  if (typeof policy === 'function') {
+    try {
+      return Boolean(policy(activePath, item));
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[Navigation] Ancestor visibility policy failed:', error);
+      }
+      return false;
+    }
+  }
+  return policy === true;
+}
+
+function isAncestorPath(item, activePath) {
+  const candidatePath = item?.path;
+  if (!candidatePath || candidatePath === '/' || candidatePath === activePath) {
+    return false;
+  }
+
+  return isPathPrefix(candidatePath, activePath) && !shouldKeepAncestorItem(item, activePath);
+}
+
+function removeAncestorDuplicates(items = []) {
+  if (!Array.isArray(items) || items.length <= 1) {
+    return items;
+  }
+
+  const activePath = items[0]?.path;
+
+  if (!activePath) {
+    return items;
+  }
+
+  return items.filter((item, index) => {
+    if (index === 0) {
+      return true;
+    }
+
+    return !isAncestorPath(item, activePath);
+  });
+}
+
+function replaceActiveItem(items, activeIndex, activeItem) {
+  if (activeIndex === -1 || !activeItem) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  nextItems[activeIndex] = activeItem;
+  return nextItems;
+}
+
+function removeInactiveLoadingItems(items = [], activeItem = null) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    if (!item?.isLoading) {
+      return true;
+    }
+
+    return isSameItem(item, activeItem);
+  });
+}
+
+function reorderItemsWithActiveFirst(items, activeIndex) {
+  if (activeIndex === -1) {
+    return items;
+  }
+
+  const active = items[activeIndex];
+  const rest = [...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
+
+  rest.sort((a, b) => {
+    if (a.path === '/') return 1;
+    if (b.path === '/') return -1;
+    return 0;
+  });
+
+  return [active, ...rest];
+}
+
+function useNavigationLayout({ navigationItems, activeItem } = {}) {
+  const pathname = usePathname();
+
+  const { displayItems, displayActiveIndex } = useMemo(() => {
+    const activeIndex = findNavigationItemIndex(navigationItems, activeItem, pathname);
+
+    const itemsWithActiveItem = replaceActiveItem(navigationItems, activeIndex, activeItem);
+
+    if (activeItem?.isLoading) {
+      return {
+        displayItems: activeItem ? [activeItem] : [],
+        displayActiveIndex: activeItem ? 0 : -1,
+      };
+    }
+
+    const reorderedItems = reorderItemsWithActiveFirst(itemsWithActiveItem, activeIndex);
+
+    const filteredItems = removeInactiveLoadingItems(reorderedItems, activeItem);
+
+    const deduplicatedItems = removeAncestorDuplicates(filteredItems);
+
+    const activeIndexForDisplay = deduplicatedItems.findIndex((item) =>
+      isSameItem(item, activeItem),
+    );
+
+    return {
+      displayItems: deduplicatedItems,
+      displayActiveIndex:
+        activeIndexForDisplay !== -1 ? activeIndexForDisplay : reorderedItems.length > 0 ? 0 : -1,
+    };
+  }, [pathname, navigationItems, activeItem]);
+
+  return {
+    displayItems,
+    activeIndex: displayActiveIndex,
+    MAX_VISIBLE_STACKED_CARDS,
+  };
+}
+
+// ── Navigation provider and public hooks ──────────────────────────────────────
+
+const NavigationActionsContext = createContext(null);
+const NavigationStateContext = createContext(null);
+
+/**
+ * Creates the navigation provider's complete state-machine snapshot.
+ * Surface lifecycle state is delegated to the surface module.
+ * @returns {NavigationMachineState} Initial navigation state
+ */
+export function createNavigationMachineState() {
+  return {
+    expanded: false,
+    ...createSurfaceLifecycleState(),
+  };
+}
+
+/**
+ * Applies a navigation provider state transition.
+ * Surface event semantics are delegated to surfaceLifecycleReducer.
+ * @param {NavigationMachineState} state - Current navigation state
+ * @param {object} action - Navigation event and payload
+ * @returns {NavigationMachineState} Next navigation state
+ */
+export function navigationStateReducer(state, action) {
+  switch (action?.type) {
+    case NAVIGATION_EVENTS.COLLAPSE:
+      return state.expanded ? { ...state, expanded: false } : state;
+    case NAVIGATION_EVENTS.EXPAND:
+      return state.expanded ? state : { ...state, expanded: true };
+    case NAVIGATION_EVENTS.SET_EXPANDED: {
+      const value =
+        typeof action.value === 'function' ? action.value(state.expanded) : action.value;
+      return state.expanded === Boolean(value) ? state : { ...state, expanded: Boolean(value) };
+    }
+    case NAVIGATION_EVENTS.TOGGLE:
+      return { ...state, expanded: !state.expanded };
+    case NAVIGATION_EVENTS.OPEN_SURFACE: {
+      const nextState = surfaceLifecycleReducer(state, action);
+      return nextState === state ? state : { ...nextState, expanded: false };
+    }
+    default:
+      return surfaceLifecycleReducer(state, action);
+  }
+}
+
+/** Applies one compact-lock ownership change without mutating the current map. */
+function updateCompactLocks(compactLocks, lockId, isLocked) {
+  if (!lockId) return compactLocks;
+  const hasLock = Boolean(compactLocks[lockId]);
+  if (isLocked) return hasLock ? compactLocks : { ...compactLocks, [lockId]: true };
+  if (!hasLock) return compactLocks;
+  const nextLocks = { ...compactLocks };
+  delete nextLocks[lockId];
+  return nextLocks;
+}
+
+/** Returns whether one or more navigation features prevent compact mode. */
+function hasCompactLocks(compactLocks) {
+  return Object.keys(compactLocks).length > 0;
+}
+/**
+ * Provides navigation state, actions, surfaces, HUDs, and breadcrumbs.
+ * @param {object} props - Component properties
+ * @returns {React.ReactElement|null} Rendered navigation UI
+ */
+export function NavigationProvider({ breadcrumbConfig = null, children }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [compactLocks, setCompactLocks] = useState({});
+  const [operationState, dispatchOperation] = useReducer(
+    navigationOperationReducer,
+    undefined,
+    createNavigationOperationState,
+  );
+  const [navigationMachine, dispatchNavigation] = useReducer(
+    navigationStateReducer,
+    undefined,
+    createNavigationMachineState,
+  );
+  const [navHeight, setNavHeightState] = useState(0);
+  const navHeightRef = useRef(0);
+  const operationIdRef = useRef(0);
+  const operationStateRef = useRef(operationState);
+  const pendingSurfaceReturnRef = useRef(null);
+  const pendingRouteResetPolicyRef = useRef(null);
+  const previousSurfaceIdsRef = useRef(new Set());
+  const setNavHeight = useCallback((nextHeight) => {
+    const numericHeight = Number(nextHeight);
+    const height = Number.isFinite(numericHeight) ? Math.max(0, numericHeight) : 0;
+    if (navHeightRef.current === height) return;
+    navHeightRef.current = height;
+    recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.HEIGHT_CHANGED, { height });
+    setNavHeightState(height);
+  }, []);
+  const {
+    clearCommands: clearContextActions,
+    contextCommands: contextActions,
+    registerCommand: registerContextAction,
+    setCommands: setContextActions,
+    unregisterCommand: unregisterContextAction,
+  } = useNavCommandRegistry();
+  const [selectionModeState, setSelectionModeState] = useState(null);
+  const [hudEntries, setHudEntries] = useState({});
+  const navigationContinuity = useNavigationContinuity();
+  operationStateRef.current = operationState;
+  const activeOperation = useMemo(
+    () => resolveActiveNavigationOperation(operationState),
+    [operationState],
+  );
+
+  const setExpanded = useCallback((nextValue) => {
+    dispatchNavigation({
+      type: NAVIGATION_EVENTS.SET_EXPANDED,
+      value: nextValue,
+    });
+  }, []);
+  const collapse = useCallback(() => dispatchNavigation({ type: NAVIGATION_EVENTS.COLLAPSE }), []);
+  const expand = useCallback(() => dispatchNavigation({ type: NAVIGATION_EVENTS.EXPAND }), []);
+  const toggle = useCallback(() => {
+    dispatchNavigation({ type: NAVIGATION_EVENTS.TOGGLE });
+  }, []);
+  const setIsCompact = useCallback((value) => {
+    dispatchNavigation({ type: NAVIGATION_EVENTS.SET_COMPACT, value });
+  }, []);
+
+  const setCompactLock = useCallback((lockId, isLocked) => {
+    if (!lockId) return;
+
+    setCompactLocks((previousLocks) => {
+      return updateCompactLocks(previousLocks, lockId, isLocked);
+    });
+  }, []);
+
+  const setHud = useCallback((descriptor) => {
+    const definition = createHudDefinition(descriptor);
+    setHudEntries((previousEntries) => {
+      if (!definition) return previousEntries;
+      return upsertHudEntry(previousEntries, definition);
+    });
+  }, []);
+
+  const clearHud = useCallback((targetId) => {
+    setHudEntries((previousEntries) => {
+      return removeHudEntries(previousEntries, targetId);
+    });
+  }, []);
+
+  const setSelectionMode = useCallback((config) => {
+    setSelectionModeState((currentSelection) => {
+      const nextSelection = createSelectionModeState(config);
+      return areSelectionModeStatesEqual(currentSelection, nextSelection)
+        ? currentSelection
+        : nextSelection;
+    });
+  }, []);
+
+  const clearSelectionMode = useCallback(() => {
+    setSelectionModeState((currentSelection) =>
+      currentSelection === null ? currentSelection : null,
+    );
+  }, []);
+
+  const prepareRouteReset = useCallback((routePolicy) => {
+    pendingRouteResetPolicyRef.current = routePolicy || null;
+  }, []);
+  const clearPreparedRouteReset = useCallback(() => {
+    pendingRouteResetPolicyRef.current = null;
+  }, []);
+
+  const startNavigationOperation = useCallback((input = {}) => {
+    const operation = createNavigationOperation({
+      ...input,
+      id: input.id ?? `navigation-operation-${++operationIdRef.current}`,
+    });
+    if (!operation) return null;
+    dispatchOperation({
+      maxEntries: NAVIGATION_OPERATION_MAX_ENTRIES,
+      operation,
+      type: NAVIGATION_OPERATION_EVENTS.START,
+    });
+    recordNavigationDiagnostic('operation-started', { operationId: operation.id });
+    return operation;
+  }, []);
+
+  const updateNavigationOperation = useCallback((id, patch = {}) => {
+    if (id == null) return false;
+    dispatchOperation({ id, patch, type: NAVIGATION_OPERATION_EVENTS.UPDATE });
+    recordNavigationDiagnostic('operation-updated', { operationId: String(id) });
+    return true;
+  }, []);
+
+  const completeNavigationOperation = useCallback((id, result = null) => {
+    if (id == null) return false;
+    dispatchOperation({ id, result, type: NAVIGATION_OPERATION_EVENTS.COMPLETE });
+    recordNavigationDiagnostic('operation-completed', { operationId: String(id) });
+    return true;
+  }, []);
+
+  const cancelNavigationOperation = useCallback((id, result = null) => {
+    if (id == null) return false;
+    const operation = operationStateRef.current.entries.find(
+      (entry) => entry.id === String(id) && entry.status === NAVIGATION_OPERATION_STATUS.PENDING,
+    );
+    if (!operation) return false;
+    if (typeof operation.onCancel === 'function') {
+      Promise.resolve(operation.onCancel(result)).catch((error) => {
+        console.error('Nav operation cancellation handler failed:', error);
+      });
+    }
+    dispatchOperation({ id, result, type: NAVIGATION_OPERATION_EVENTS.CANCEL });
+    recordNavigationDiagnostic('operation-cancelled', { operationId: String(id) });
+    return true;
+  }, []);
+
+  const clearNavigationOperations = useCallback((id = null) => {
+    dispatchOperation({ id, type: NAVIGATION_OPERATION_EVENTS.CLEAR });
+  }, []);
+
+  const handleSurfaceFlowSettlement = useCallback(
+    ({ flow, result }) => {
+      const handshake = flow?.returnHandshake;
+      const isCompleted = result?.success === true;
+      const isNavigationCancellation = ['browser-back', 'navigation', 'unmount'].includes(
+        result?.reason,
+      );
+      if (
+        !handshake?.pathname ||
+        isNavigationCancellation ||
+        (!isCompleted && !handshake.returnOnCancel)
+      ) {
+        return false;
+      }
+
+      const handoff = navigationContinuity.deliverReturn(handshake.pathname, {
+        data: result?.data ?? null,
+        flowId: flow.flowId,
+        status: isCompleted ? 'completed' : 'cancelled',
+      });
+      if (!handoff) return false;
+
+      pendingSurfaceReturnRef.current = handshake;
+      if (isSamePath(pathname, handshake.pathname)) {
+        pendingSurfaceReturnRef.current = null;
+        navigationContinuity.restore(handshake.pathname, handshake);
+      } else {
+        router.push(handshake.pathname);
+      }
+      return true;
+    },
+    [navigationContinuity, pathname, router],
+  );
+
+  const {
+    closeAllSurfaces,
+    cancelSurfaceFlow,
+    closeSurface,
+    completeSurfaceFlow,
+    goBackSurface,
+    goToStep,
+    getSurfaceFlow,
+    handleSurfaceAnimationComplete,
+    openSurface,
+    openSurfaceFlow,
+    popStep,
+    pushStep,
+    restoreSurfaceFlow,
+    surfaceState,
+    updateSurfaceFlow,
+  } = useSurfaceStack({
+    onSurfaceFlowSettled: handleSurfaceFlowSettlement,
+    setCompactLock,
+    setExpanded,
+    setSearchQuery,
+  });
+
+  useEffect(() => {
+    const currentSurfaceIds = new Set(surfaceState.surfaceStack.map((surface) => surface.id));
+    currentSurfaceIds.forEach((surfaceId) => {
+      if (!previousSurfaceIdsRef.current.has(surfaceId)) {
+        recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.SURFACE_OPENED, { surfaceId });
+      }
+    });
+    previousSurfaceIdsRef.current.forEach((surfaceId) => {
+      if (!currentSurfaceIds.has(surfaceId)) {
+        recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.SURFACE_CLOSED, { surfaceId });
+      }
+    });
+    previousSurfaceIdsRef.current = currentSurfaceIds;
+  }, [surfaceState.surfaceStack]);
+
+  useEffect(() => {
+    const handshake = pendingSurfaceReturnRef.current;
+    if (!handshake || !isSamePath(pathname, handshake.pathname)) return;
+    pendingSurfaceReturnRef.current = null;
+    navigationContinuity.restore(handshake.pathname, handshake);
+  }, [navigationContinuity, pathname]);
+
+  const handleRouteChange = useCallback(() => {
+    const routePolicy = pendingRouteResetPolicyRef.current;
+    pendingRouteResetPolicyRef.current = null;
+
+    if (routePolicy?.dismissSurfaces !== false) {
+      closeAllSurfaces({
+        success: false,
+        cancelled: true,
+        reason: 'navigation',
+      });
+    }
+    if (routePolicy?.clearTransientState !== false) {
+      clearContextActions();
+      setSelectionModeState(null);
+      setHudEntries({});
+    }
+  }, [clearContextActions, closeAllSurfaces]);
+
+  useNavigationRouteReset(pathname, handleRouteChange);
+
+  const compactLocked = hasCompactLocks(compactLocks);
+  const registeredHud = useMemo(
+    () => getActiveNavigationHud(hudEntries, selectionModeState),
+    [hudEntries, selectionModeState],
+  );
+  const pendingOperationCount = useMemo(
+    () =>
+      operationState.entries.filter(
+        (operation) => operation.status === NAVIGATION_OPERATION_STATUS.PENDING,
+      ).length,
+    [operationState.entries],
+  );
+  const operationHud = useMemo(
+    () =>
+      createNavigationOperationHud(activeOperation, {
+        onCancel: cancelNavigationOperation,
+        pendingCount: pendingOperationCount,
+      }),
+    [activeOperation, cancelNavigationOperation, pendingOperationCount],
+  );
+  const activeHud = operationHud || registeredHud;
+  const activeSelectionMode = selectionModeState;
+  const isHudActive = Boolean(activeHud?.isActive);
+
+  useEffect(() => {
+    updateNavigationInspectorSnapshot({
+      activeOperation,
+      compactLocked,
+      expanded: navigationMachine.expanded,
+      navHeight,
+      operations: operationState.entries,
+      pathname,
+      surfaceStack: surfaceState.surfaceStack,
+    });
+  }, [
+    activeOperation,
+    compactLocked,
+    navHeight,
+    navigationMachine.expanded,
+    operationState.entries,
+    pathname,
+    surfaceState.surfaceStack,
+  ]);
+
+  const stateValue = useMemo(
+    () => ({
+      ...surfaceState,
+      activeOperation,
+      contextActions,
+      hud: activeHud,
+      hudEntries: Object.values(hudEntries),
+      isHudActive,
+      navigationContinuity: navigationContinuity.entries,
+      navigationReturnHandoffs: navigationContinuity.returnHandoffs,
+      operations: operationState.entries,
+      selectionMode: activeSelectionMode,
+      searchQuery,
+      compactLocked,
+      navHeight,
+      expanded: navigationMachine.expanded,
+      isCompact: navigationMachine.isCompact,
+    }),
+    [
+      surfaceState,
+      activeOperation,
+      contextActions,
+      activeHud,
+      hudEntries,
+      isHudActive,
+      navigationContinuity.entries,
+      navigationContinuity.returnHandoffs,
+      operationState.entries,
+      activeSelectionMode,
+      searchQuery,
+      compactLocked,
+      navHeight,
+      navigationMachine.expanded,
+      navigationMachine.isCompact,
+    ],
+  );
+  const operationActions = useMemo(
+    () => ({
+      cancel: cancelNavigationOperation,
+      clear: clearNavigationOperations,
+      complete: completeNavigationOperation,
+      start: startNavigationOperation,
+      update: updateNavigationOperation,
+    }),
+    [
+      cancelNavigationOperation,
+      clearNavigationOperations,
+      completeNavigationOperation,
+      startNavigationOperation,
+      updateNavigationOperation,
+    ],
+  );
+  const continuityActions = useMemo(
+    () => ({
+      clear: navigationContinuity.clear,
+      consumeReturn: navigationContinuity.consumeReturn,
+      deliverReturn: navigationContinuity.deliverReturn,
+      get: navigationContinuity.get,
+      getReturns: navigationContinuity.getReturns,
+      remember: navigationContinuity.remember,
+      remove: navigationContinuity.remove,
+      restore: navigationContinuity.restore,
+    }),
+    [
+      navigationContinuity.clear,
+      navigationContinuity.consumeReturn,
+      navigationContinuity.deliverReturn,
+      navigationContinuity.get,
+      navigationContinuity.getReturns,
+      navigationContinuity.remember,
+      navigationContinuity.remove,
+      navigationContinuity.restore,
+    ],
+  );
+
+  const actionsValue = useMemo(
+    () => ({
+      clearContextActions,
+      clearPreparedRouteReset,
+      clearHud,
+      clearSelectionMode,
+      continuity: continuityActions,
+      closeAllSurfaces,
+      cancelSurfaceFlow,
+      closeSurface,
+      completeSurfaceFlow,
+      goBackSurface,
+      goToStep,
+      getSurfaceFlow,
+      handleSurfaceAnimationComplete,
+      openSurface,
+      openSurfaceFlow,
+      operations: operationActions,
+      popStep,
+      prepareRouteReset,
+      pushStep,
+      registerContextAction,
+      setCompactLock,
+      setContextActions,
+      setExpanded,
+      setHud,
+      setIsCompact,
+      setNavHeight,
+      setSearchQuery,
+      setSelectionMode,
+      unregisterContextAction,
+      restoreSurfaceFlow,
+      updateSurfaceFlow,
+      collapse,
+      expand,
+      toggle,
+    }),
+    [
+      clearContextActions,
+      clearPreparedRouteReset,
+      clearHud,
+      clearSelectionMode,
+      continuityActions,
+      closeAllSurfaces,
+      cancelSurfaceFlow,
+      closeSurface,
+      completeSurfaceFlow,
+      goBackSurface,
+      goToStep,
+      getSurfaceFlow,
+      handleSurfaceAnimationComplete,
+      openSurface,
+      openSurfaceFlow,
+      operationActions,
+      popStep,
+      prepareRouteReset,
+      pushStep,
+      registerContextAction,
+      setCompactLock,
+      setContextActions,
+      setExpanded,
+      setHud,
+      setIsCompact,
+      setNavHeight,
+      setSearchQuery,
+      setSelectionMode,
+      unregisterContextAction,
+      restoreSurfaceFlow,
+      updateSurfaceFlow,
+      collapse,
+      expand,
+      toggle,
+    ],
+  );
+  const surfaceFlowValue = useMemo(
+    () => ({
+      cancelSurfaceFlow,
+      completeSurfaceFlow,
+      openSurfaceFlow,
+      restoreSurfaceFlow,
+      surfaceState,
+      updateSurfaceFlow,
+    }),
+    [
+      cancelSurfaceFlow,
+      completeSurfaceFlow,
+      openSurfaceFlow,
+      restoreSurfaceFlow,
+      surfaceState,
+      updateSurfaceFlow,
+    ],
+  );
+
+  return createElement(
+    NavigationActionsContext.Provider,
+    { value: actionsValue },
+    createElement(
+      NavigationStateContext.Provider,
+      { value: stateValue },
+      createElement(
+        SurfaceFlowProvider,
+        { value: surfaceFlowValue },
+        createElement(BreadcrumbProvider, { config: breadcrumbConfig }, children),
+      ),
+    ),
+  );
+}
+
+/**
+ * Returns navigation render state from the nearest provider.
+ * @returns {object} Navigation state
+ */
+export function useNavigationState() {
+  return useRequiredContext(NavigationStateContext, 'useNavigationState', 'NavigationProvider');
+}
+
+/**
+ * Returns navigation mutation actions from the nearest provider.
+ * @returns {object} Navigation actions
+ */
+export function useNavigationActions() {
+  return useRequiredContext(NavigationActionsContext, 'useNavigationActions', 'NavigationProvider');
+}
+
+/**
+ * Returns the combined navigation state and action facade.
+ * @returns {object} Combined navigation context
+ */
+export function useNavigationContext() {
+  const actions = useNavigationActions();
+  const state = useNavigationState();
+  return useMemo(() => ({ ...state, ...actions }), [state, actions]);
+}
+
+/**
+ * Registers route-scoped toolbar actions for a component lifetime.
+ * @param {object|Array<object>|null} actions - Contextual toolbar actions
+ * @returns {void}
+ */
+export function useNavContextActions(actions) {
+  const { registerContextAction, unregisterContextAction } = useNavigationActions();
+  const registeredKeysRef = useRef(new Set());
+
+  useEffect(() => {
+    const currentKeys = new Set();
+
+    toArray(actions).forEach((action, index) => {
+      if (!action) return;
+      const key = action.key || `ctx-action-${index}`;
+      currentKeys.add(key);
+      registerContextAction({
+        key,
+        ...action,
+      });
+    });
+
+    registeredKeysRef.current.forEach((prevKey) => {
+      if (!currentKeys.has(prevKey)) {
+        unregisterContextAction(prevKey);
+      }
+    });
+
+    registeredKeysRef.current = currentKeys;
+  }, [actions, registerContextAction, unregisterContextAction]);
+
+  useEffect(() => {
+    return () => {
+      registeredKeysRef.current.forEach((key) => {
+        unregisterContextAction(key);
+      });
+      registeredKeysRef.current.clear();
+    };
+  }, [unregisterContextAction]);
+}
+
+/**
+ * Returns the current navigation height and a matching padding style.
+ * @returns {{navHeight: number, padding: object}} Height and padding values
+ */
+export function useNavHeight() {
+  const { navHeight } = useNavigationState();
+  return { navHeight, padding: { paddingBottom: `${navHeight}px` } };
+}
+
+/**
+ * Registers a HUD descriptor for a component lifetime.
+ * @param {object|null} descriptor - HUD definition to register
+ * @returns {void}
+ */
+export function useNavHud(descriptor) {
+  const { setHud, clearHud } = useNavigationActions();
+  return useNavHudLifecycle({ clearHud, descriptor, setHud });
+}
+
+/**
+ * Returns the bounded operation center and its lifecycle controls.
+ * @returns {{active: object|null, cancel: Function, clear: Function, complete: Function, entries: Array<object>, start: Function, update: Function}} Operation facade
+ */
+export function useNavigationOperations() {
+  const { activeOperation, operations: entries } = useNavigationState();
+  const { operations } = useNavigationActions();
+  return useMemo(
+    () => ({ active: activeOperation, entries, ...operations }),
+    [activeOperation, entries, operations],
+  );
+}
+
+/**
+ * Returns the route continuity store and explicit capture/restore controls.
+ * @returns {{entries: Array<object>, remember: Function, restore: Function}} Continuity facade
+ */
+export function useNavigationContinuityState() {
+  const { navigationContinuity: entries, navigationReturnHandoffs: returnHandoffs } =
+    useNavigationState();
+  const { continuity } = useNavigationActions();
+  return useMemo(
+    () => ({ entries, returnHandoffs, ...continuity }),
+    [continuity, entries, returnHandoffs],
+  );
+}
+
+/**
+ * Provides one-time surface-flow result delivery for the current route.
+ * @returns {{consume: Function, entries: Array<object>, peek: Function}} Current-route return facade
+ */
+export function useSurfaceReturn() {
+  const pathname = usePathname();
+  const { continuity } = useNavigationActions();
+  const { navigationReturnHandoffs } = useNavigationState();
+  const entries = useMemo(
+    () => navigationReturnHandoffs.filter((handoff) => isSamePath(handoff.path, pathname)),
+    [navigationReturnHandoffs, pathname],
+  );
+  const consume = useCallback(
+    (handoffId = null) => continuity.consumeReturn(pathname, handoffId),
+    [continuity, pathname],
+  );
+  return useMemo(
+    () => ({ consume, entries, peek: () => entries[0] || null }),
+    [consume, entries],
+  );
+}
+
+/**
+ * Returns the composed navigation display, interaction, and routing facade.
+ * @returns {object} Navigation facade
+ */
+export function useNavigation() {
+  const {
+    closeSurface,
+    setCompactLock,
+    setExpanded: setExpandedState,
+    setIsCompact,
+    setNavHeight,
+    setSearchQuery,
+  } = useNavigationActions();
+  const { compactLocked, expanded: isExpanded, searchQuery } = useNavigationState();
+
+  const [isHovered, setIsHovered] = useState(false);
+
+  const core = useNavigationCore();
+  const display = useNavigationDisplay();
+  const {
+    activeTransaction,
+    cancelNavigation,
+    lastTransaction,
+    navigate: navigateWithGuards,
+    pathname,
+  } = core;
+
+  const { navigationItems, activeItem, statusState, attention, topology } = display;
+  const { isPlaying: isVideoPlaying } = useBackgroundState();
+  const isHudModeActive =
+    attention?.kind === NAV_ATTENTION_KIND.HUD || attention?.kind === NAV_ATTENTION_KIND.OPERATION;
+  const isSurfaceActive = Boolean(activeItem?.isSurface);
+
+  const activeItemHasAction = Boolean(activeItem?.action);
+
+  const compact = useNavigationCompact({
+    activeItem,
+    expanded: isExpanded,
+    isHudActive: isHudModeActive,
+    pathname,
+    searchQuery,
+    compactLocked,
+    isVideoPlaying,
+  });
+
+  useEffect(() => {
+    setIsCompact(compact);
+  }, [compact, setIsCompact]);
+
+  const clearHoverState = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
+  const setExpanded = useCallback(
+    (nextValue) => {
+      setExpandedState((previousValue) => {
+        const resolvedValue =
+          typeof nextValue === 'function' ? nextValue(previousValue) : nextValue;
+
+        if (isSurfaceActive && resolvedValue) {
+          return previousValue;
+        }
+
+        return resolvedValue;
+      });
+    },
+    [isSurfaceActive, setExpandedState],
+  );
+
+  const wasSurfaceActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (isSurfaceActive) {
+      wasSurfaceActiveRef.current = true;
+      return;
+    }
+
+    if (wasSurfaceActiveRef.current) {
+      wasSurfaceActiveRef.current = false;
+      clearHoverState();
+    }
+  }, [clearHoverState, isSurfaceActive]);
+
+  useEffect(() => {
+    if (!isSurfaceActive || !isExpanded) {
+      return;
+    }
+
+    setExpandedState(false);
+  }, [isExpanded, isSurfaceActive, setExpandedState]);
+
+  const navigate = useCallback(
+    async (href, options) => {
+      if (!href) {
+        return false;
+      }
+
+      const didNavigate = await navigateWithGuards(href, options);
+
+      if (!didNavigate) {
+        return didNavigate;
+      }
+
+      setExpanded(false);
+      setSearchQuery('');
+      clearHoverState();
+
+      return didNavigate;
+    },
+    [clearHoverState, navigateWithGuards, setExpanded, setSearchQuery],
+  );
+
+  const { displayItems, activeIndex: layoutActiveIndex } = useNavigationLayout({
+    navigationItems,
+    activeItem,
+  });
+
+  useNavigationRouteReset(pathname, () => {
+    setExpanded(false);
+    setSearchQuery('');
+    setIsHovered(false);
+  });
+
+  return {
+    navigationItems: displayItems,
+    activeItem,
+    activeIndex: layoutActiveIndex,
+    statusState,
+    attention,
+    topology,
+    navigationTransaction: activeTransaction,
+    lastNavigationTransaction: lastTransaction,
+
+    navigate,
+    pathname,
+    cancelNavigation,
+    closeSurface,
+
+    expanded: isExpanded,
+    setExpanded,
+    setNavHeight,
+    setSearchQuery,
+    setCompactLock,
+
+    isHovered,
+    setIsHovered,
+    searchQuery,
+    activeItemHasAction,
+    compactLocked,
+    compact,
+    isHudActive: isHudModeActive,
+  };
+}

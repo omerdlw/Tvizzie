@@ -19,7 +19,7 @@ import { Z_INDEX } from '@/shared';
 import { toFiniteNumber } from '@/shared';
 import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
 import Icon from '@/ui/primitives/icon';
-import { useContextMenuRegistry, useNavRegistry } from '@/modules/registry';
+import { REGISTRY_KEYS, useContextMenuRegistry, useNavRegistry } from '@/modules/registry';
 
 const ContextMenuContext = createContext(null);
 
@@ -238,7 +238,7 @@ export const CONTEXT_MENU_POP_VARIANTS = menuPopVariants;
 export const CONTEXT_MENU_CONTENT_VARIANTS = menuContentVariants;
 export const CONTEXT_MENU_ITEM_VARIANTS = menuItemVariants;
 
-const CURRENT_PAGE_KEY = 'current-page';
+const CURRENT_PAGE_KEY = REGISTRY_KEYS.CONTEXT_MENU_CURRENT;
 const GLOBAL_MENU_KEY = '*';
 
 function toArray(value) {
@@ -834,7 +834,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   if (item.type === 'separator') {
     return (
       <div
-        className={joinClassNames('my-1.5 h-px bg-white/10 mx-1', classNames.separator)}
+        className={joinClassNames('mx-1 my-1.5 h-px bg-white/10', classNames.separator)}
         role="separator"
       />
     );
@@ -844,7 +844,8 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
     'group flex h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-medium text-white/70 transition-all duration-200 ease-in-out hover:bg-white/10 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/10 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-50',
     classNames.item,
     item.className,
-    item.danger && 'text-error hover:bg-error/15 hover:text-error data-[active=true]:bg-error/15 data-[active=true]:text-error',
+    item.danger &&
+      'text-error hover:bg-error/15 hover:text-error data-[active=true]:bg-error/15 data-[active=true]:text-error',
     item.danger && classNames.itemDanger,
   );
 
@@ -874,7 +875,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
       {item.shortcut ? (
         <span
           className={joinClassNames(
-            'ml-2 shrink-0 rounded-md ring-1 ring-inset ring-white/10 bg-white/5 px-1.5 py-0.5 text-xs text-white/40 uppercase',
+            'ml-2 shrink-0 rounded-md bg-white/5 px-1.5 py-0.5 text-xs text-white/40 uppercase ring-1 ring-white/10 ring-inset',
             classNames.itemShortcut,
           )}
         >
@@ -1055,7 +1056,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         animate="visible"
         exit="exit"
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden rounded-[24px] ring-1 ring-inset ring-white/10 bg-black/80 shadow-[0_18px_56px_rgba(0,0,0,0.50)] backdrop-blur-xl',
+          'max-w-sm min-w-64 overflow-hidden rounded-[24px] bg-black/80 shadow-[0_18px_56px_rgba(0,0,0,0.50)] ring-1 ring-white/10 backdrop-blur-xl ring-inset',
           classNames.content,
         )}
         role="menu"

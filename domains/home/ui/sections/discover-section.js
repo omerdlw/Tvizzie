@@ -8,7 +8,7 @@ import {
   getUniqueDiscoverItems,
 } from '@/domains/home/utils/discover';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import SegmentedControl from '@/ui/components/segmented-control';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
@@ -43,7 +43,7 @@ export function DiscoverSection({
     sectionsLoaded * batchSize,
   );
 
-  useRegistry(
+  usePageRegistry(
     useMemo(
       () => ({
         nav: {
@@ -196,17 +196,15 @@ export function DiscoverSection({
     <section className="relative w-full">
       <div className={HOME_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 flex-col justify-center">
-          <p className="text-xs font-semibold text-white/40 uppercase">
-            Discover
-          </p>
-          <h1 className="text-base sm:text-lg font-bold text-white">{title}</h1>
+          <p className="text-xs font-semibold text-white/40 uppercase">Discover</p>
+          <h1 className="text-base font-bold text-white sm:text-lg">{title}</h1>
         </div>
         <SegmentedControl
           ariaLabel="Choose media type"
           items={MEDIA_TYPE_ITEMS}
           value={mediaType}
           onChange={handleMediaTypeChange}
-          className="shrink-0 self-start sm:self-auto ring-1 ring-inset ring-white/10 bg-white/5 p-0.5"
+          className="shrink-0 self-start bg-white/5 p-0.5 ring-1 ring-white/10 ring-inset sm:self-auto"
         />
       </div>
 
@@ -227,20 +225,20 @@ export function DiscoverSection({
             ? Array.from({ length: batchSize }, (_, index) => (
                 <div
                   key={`loading-${index}`}
-                  className="skeleton-block-soft aspect-2/3 w-full rounded-[20px] ring-1 ring-inset ring-white/5"
+                  className="skeleton-block-soft aspect-2/3 w-full rounded-[20px] ring-1 ring-white/5 ring-inset"
                 />
               ))
             : null}
         </div>
 
         {gridError ? (
-          <div className="mt-4 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center text-sm text-white/40">
+          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/40 ring-1 ring-white/10 ring-inset">
             {gridError}
           </div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
-          <div className="mt-4 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center text-sm text-white/40">
+          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/40 ring-1 ring-white/10 ring-inset">
             No {title.toLowerCase()} are available right now.
           </div>
         ) : null}
@@ -251,7 +249,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 rounded-[14px] ring-1 ring-inset ring-white/5 bg-white/5 px-5 text-xs font-semibold text-white/70 uppercase shadow-sm hover:ring-white/10 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-[14px] bg-white/5 px-5 text-xs font-semibold text-white/70 uppercase shadow-sm ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'} size={15} />
               {isLoadingMore ? 'Loading' : `Load more ${title.toLowerCase()}`}

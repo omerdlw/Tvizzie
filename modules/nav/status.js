@@ -9,7 +9,6 @@ import {
   globalEvents,
   SEMANTIC_SURFACE_CLASSES,
 } from '@/shared';
-import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import {
   API_ERROR_BATCH_DELAY,
@@ -25,6 +24,16 @@ import { normalizeLower, normalizeUpper } from './utils';
 import { Spinner } from '@/ui/feedback/spinner';
 import { Button } from '@/ui/primitives';
 
+function getStatusActionClass(className = '') {
+  return [
+    'center relative h-8 cursor-pointer rounded-xl px-3 text-xs font-bold whitespace-nowrap ring-1 ring-inset transition-colors',
+    'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
 function ErrorActions({ onRetry, onRefresh }) {
   return (
     <div className="flex w-full items-center gap-2.5">
@@ -34,10 +43,7 @@ function ErrorActions({ onRetry, onRefresh }) {
           event.stopPropagation();
           onRetry();
         }}
-        className={getNavActionClass({
-          isActive: false,
-          className: DESTRUCTIVE_ACTION_TONE_CLASS,
-        })}
+        className={getStatusActionClass(DESTRUCTIVE_ACTION_TONE_CLASS)}
       >
         Retry
       </Button>
@@ -47,10 +53,7 @@ function ErrorActions({ onRetry, onRefresh }) {
           event.stopPropagation();
           onRefresh();
         }}
-        className={getNavActionClass({
-          isActive: false,
-          className: DESTRUCTIVE_ACTION_TONE_CLASS,
-        })}
+        className={getStatusActionClass(DESTRUCTIVE_ACTION_TONE_CLASS)}
       >
         Refresh
       </Button>

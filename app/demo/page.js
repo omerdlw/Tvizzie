@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 import { useBackgroundActions, useBackgroundState } from '@/modules/background';
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import { useSelectionHud } from '@/domains/shell/navigation/huds/selection-hud';
 import { useProgressHud } from '@/domains/shell/navigation/huds/progress-hud';
 import { useContextActionHud } from '@/domains/shell/navigation/huds/context-action-hud';
@@ -48,7 +48,7 @@ export default function MediaDemoPage() {
   const isMuted = Boolean(videoOptions?.muted);
 
   // Register background video and nav dock metadata
-  useRegistry({
+  usePageRegistry({
     background: {
       video: VIDEO_SOURCE,
       width: selectedWidth,
@@ -59,7 +59,7 @@ export default function MediaDemoPage() {
       overlay: true,
       overlayOpacity: 0.2,
       noiseStyle: {
-        opacity: .5,
+        opacity: 0.5,
       },
       videoOptions: {
         muted: false,
@@ -155,7 +155,5 @@ export default function MediaDemoPage() {
     onCancel: () => setActiveHudMode(null),
   });
 
-  return (
- <></>
-  );
+  return <></>;
 }

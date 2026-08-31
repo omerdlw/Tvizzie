@@ -30,7 +30,7 @@ import { parseReviewSortMode } from '@/domains/reviews/utils/formatting';
 import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
 import { TMDB_IMG } from '@/shared';
 import { getPreferredMoviePosterSrc } from '@/domains/media/utils/poster-preferences';
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import { useNavigationActions, useNavigationState } from '@/modules/nav';
 import { useAuth } from '@/modules/auth';
 import { Button } from '@/ui/primitives';
@@ -144,7 +144,7 @@ export default function MediaRegistry({
     const isAwardsView = activeView === 'awards';
     const isTimelineOrAwards = activeView === 'timeline' || isAwardsView;
 
-    useRegistry({
+    usePageRegistry({
       nav: {
         title,
         description: isLoading ? undefined : description,
@@ -368,7 +368,7 @@ export default function MediaRegistry({
     </div>
   );
 
-  useRegistry({
+  usePageRegistry({
     nav: {
       action: navAction,
       actions: [

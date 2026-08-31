@@ -11,7 +11,7 @@ import {
   useState,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { REGISTRY_TYPES, useRegistryValue } from '@/modules/registry';
+import { useBackgroundValue } from '@/modules/registry';
 import { cn } from '@/ui/class-names';
 import { Z_INDEX } from '@/shared';
 
@@ -176,14 +176,11 @@ function generateSmoothstepStops(percent, direction = 'in') {
   ];
 
   if (direction === 'in') {
-    return steps.map(
-      ({ t, s }) => `rgba(0,0,0,${s}) ${(t * percent).toFixed(1)}%`,
-    );
+    return steps.map(({ t, s }) => `rgba(0,0,0,${s}) ${(t * percent).toFixed(1)}%`);
   }
 
   return steps.map(
-    ({ t, s }) =>
-      `rgba(0,0,0,${(1 - s).toFixed(2)}) ${(100 - percent + t * percent).toFixed(1)}%`,
+    ({ t, s }) => `rgba(0,0,0,${(1 - s).toFixed(2)}) ${(100 - percent + t * percent).toFixed(1)}%`,
   );
 }
 
@@ -193,14 +190,10 @@ function getEdgeFadeMask({ leftPercent = 0, rightPercent = 0 }) {
   }
 
   const leftStops =
-    leftPercent > 0
-      ? generateSmoothstepStops(leftPercent, 'in')
-      : ['rgba(0,0,0,1) 0%'];
+    leftPercent > 0 ? generateSmoothstepStops(leftPercent, 'in') : ['rgba(0,0,0,1) 0%'];
 
   const rightStops =
-    rightPercent > 0
-      ? generateSmoothstepStops(rightPercent, 'out')
-      : ['rgba(0,0,0,1) 100%'];
+    rightPercent > 0 ? generateSmoothstepStops(rightPercent, 'out') : ['rgba(0,0,0,1) 100%'];
 
   return `linear-gradient(to right, ${leftStops.join(', ')}, ${rightStops.join(', ')})`;
 }
@@ -252,7 +245,7 @@ function mergeBackgroundState(baseState, patch = {}) {
 export function BackgroundProvider({ children }) {
   const [background, setBackgroundState] = useState(DEFAULT_BACKGROUND);
 
-  const registryBackground = useRegistryValue(REGISTRY_TYPES.BACKGROUND, 'page-background');
+  const registryBackground = useBackgroundValue();
 
   const setBackground = useCallback((nextBackground) => {
     setBackgroundState((prevState) => mergeBackgroundState(prevState, nextBackground));
@@ -375,7 +368,15 @@ export function BackgroundProvider({ children }) {
       toggleMute,
       toggleLoop,
     }),
-    [setVideoPlaying, setVideoElement, resetBackground, setBackground, toggleVideo, toggleMute, toggleLoop],
+    [
+      setVideoPlaying,
+      setVideoElement,
+      resetBackground,
+      setBackground,
+      toggleVideo,
+      toggleMute,
+      toggleLoop,
+    ],
   );
 
   return (
@@ -557,10 +558,7 @@ export function BackgroundOverlay() {
     baseStyle,
     leftGradient: styleLeftGradient,
     rightGradient: styleRightGradient,
-  } = useMemo(
-    () => getVisualStyle(currentStyle),
-    [currentStyle],
-  );
+  } = useMemo(() => getVisualStyle(currentStyle), [currentStyle]);
   const leftGradient = configuredLeftGradient ?? styleLeftGradient;
   const rightGradient = configuredRightGradient ?? styleRightGradient;
   const {
@@ -649,12 +647,7 @@ export function BackgroundOverlay() {
         ? 'right-0 mr-0 ml-auto'
         : 'inset-x-0 mx-auto';
 
-  const videoClasses = cn(
-    'h-full w-full object-cover',
-    fitClass,
-    mappedClasses,
-    nonWidthClasses,
-  );
+  const videoClasses = cn('h-full w-full object-cover', fitClass, mappedClasses, nonWidthClasses);
 
   const resolvedObjectPosition =
     baseStyle?.objectPosition || (typeof position === 'string' && position ? position : undefined);
@@ -742,7 +735,7 @@ export function BackgroundOverlay() {
           {isVideo ? (
             <div
               className={cn(
-                'absolute inset-y-0 pointer-events-none overflow-hidden',
+                'pointer-events-none absolute inset-y-0 overflow-hidden',
                 wrapperPositionClass,
                 widthClasses || (resolvedWidth ? '' : 'w-full'),
               )}

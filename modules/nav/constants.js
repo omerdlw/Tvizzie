@@ -13,6 +13,12 @@ export const NAV_CONFIG_FIELD_TYPES = Object.freeze({
   name: 'string',
 });
 
+export const NAVIGATION_POLICY_FIELD_TYPES = Object.freeze({
+  clearTransientState: 'boolean',
+  dismissSurfaces: 'boolean',
+  prefetch: 'boolean',
+});
+
 export const NAV_RENDERABLE_FIELDS = Object.freeze(['title', 'description']);
 export const NAV_STYLE_SECTIONS = Object.freeze(['card', 'icon', 'title', 'description']);
 
@@ -62,6 +68,7 @@ export const NAV_HUD_PRIORITY = Object.freeze({
 
 export const NAV_ATTENTION_KIND = Object.freeze({
   SURFACE: 'surface',
+  OPERATION: 'operation',
   LOADING: 'loading',
   STATUS: 'status',
   ROUTE: 'route',
@@ -71,15 +78,25 @@ export const NAV_ATTENTION_KIND = Object.freeze({
 export const NAV_ATTENTION_PRIORITY = Object.freeze({
   STATUS_OVERLAY: 300,
   SURFACE: 400,
+  OPERATION: 250,
   LOADING: 100,
   STATUS: 75,
   ROUTE: 0,
   HUD: 200,
 });
 
+export const NAV_ATTENTION_PRIORITY_OFFSET_MAX = 99;
+
 export const NAV_SURFACE_RENDER_MODE = Object.freeze({
   COMPONENT: 'component',
   NODE: 'node',
+});
+
+/** Lifecycle states for resumable surface flows. */
+export const NAV_SURFACE_FLOW_STATUS = Object.freeze({
+  OPEN: 'open',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
 });
 
 export const COMPACT_CARD_HORIZONTAL_PADDING = 56;
@@ -125,6 +142,79 @@ export const NAVIGATION_EVENTS = Object.freeze({
   EXPAND: 'EXPAND',
   TOGGLE: 'TOGGLE',
 });
+
+export const NAVIGATION_TRANSACTION_EVENTS = Object.freeze({
+  START: 'START',
+  COMPLETE: 'COMPLETE',
+  CANCEL: 'CANCEL',
+  FAIL: 'FAIL',
+  TIME_OUT: 'TIME_OUT',
+});
+
+export const NAVIGATION_TRANSACTION_STATUS = Object.freeze({
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  FAILED: 'failed',
+  TIMED_OUT: 'timed-out',
+});
+
+export const NAVIGATION_TRANSACTION_REASON = Object.freeze({
+  GUARD: 'guard',
+  SUPERSEDED: 'superseded',
+  TIME_OUT: 'time-out',
+});
+
+export const NAVIGATION_TRANSACTION_TIMEOUT_MS = 15_000;
+export const NAVIGATION_PREFETCH_INTENT_DELAY_MS = 90;
+
+export const NAVIGATION_CONTINUITY_EVENTS = Object.freeze({
+  CLEAR: 'CLEAR',
+  CONSUME_RETURN: 'CONSUME_RETURN',
+  DELIVER_RETURN: 'DELIVER_RETURN',
+  RECORD: 'RECORD',
+  REMOVE: 'REMOVE',
+});
+
+export const NAVIGATION_CONTINUITY_MAX_ENTRIES = 32;
+export const NAVIGATION_SURFACE_RETURN_MAX_ENTRIES = 16;
+
+export const NAVIGATION_OPERATION_EVENTS = Object.freeze({
+  CANCEL: 'CANCEL',
+  CLEAR: 'CLEAR',
+  COMPLETE: 'COMPLETE',
+  START: 'START',
+  UPDATE: 'UPDATE',
+});
+
+export const NAVIGATION_OPERATION_STATUS = Object.freeze({
+  CANCELLED: 'cancelled',
+  COMPLETED: 'completed',
+  PENDING: 'pending',
+});
+
+export const NAVIGATION_OPERATION_MAX_ENTRIES = 24;
+
+export const NAVIGATION_DIAGNOSTIC_EVENTS = Object.freeze({
+  ROUTE_REJECTED: 'route-rejected',
+  ROUTE_STARTED: 'route-started',
+  ROUTE_TRANSACTION: 'route-transaction',
+  SURFACE_CLOSED: 'surface-closed',
+  SURFACE_OPENED: 'surface-opened',
+  HEIGHT_CHANGED: 'height-changed',
+});
+
+export const NAVIGATION_DIAGNOSTIC_MAX_ENTRIES = 60;
+export const NAVIGATION_INSPECTOR_MAX_RECENT_EVENTS = 12;
+
+export const NAVIGATION_FOCUSABLE_SELECTOR =
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+export const NAVIGATION_FOCUS_RESTORE_BLOCKED_REASONS = Object.freeze([
+  'browser-back',
+  'navigation',
+  'unmount',
+]);
 
 export const NAVIGATION_LIFECYCLE = Object.freeze({
   CLOSING: 'closing',

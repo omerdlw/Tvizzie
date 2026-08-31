@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
 import SearchAction from '@/domains/shell/navigation/actions/search-action';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
@@ -39,7 +39,7 @@ export function createAccountSectionRegistry({
       : sectionState;
     const resolvedOverrides = resolveOverrides ? resolveOverrides(stableSectionState, props) : null;
 
-    useRegistry(
+    usePageRegistry(
       typeof buildState === 'function'
         ? buildState(stableSectionState, {
             isPageLoading: props.isPageLoading ?? stableSectionState.isPageLoading,

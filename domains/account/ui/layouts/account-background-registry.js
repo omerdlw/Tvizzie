@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import { resolveVersionedImageUrl } from '@/shared';
 
 export default function AccountBackgroundRegistry({ bannerUrl = null }) {
@@ -25,7 +25,7 @@ export default function AccountBackgroundRegistry({ bannerUrl = null }) {
     [heroBannerSrc],
   );
 
-  useRegistry({ background: backgroundConfig });
+  usePageRegistry({ background: backgroundConfig });
 
   return null;
 }

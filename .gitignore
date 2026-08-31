@@ -20,6 +20,7 @@
 # Database & Local Tooling
 /supabase/
 /scripts/
+/graphify-out/
 
 # Environment files
 .env*

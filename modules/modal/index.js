@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  createContext,
   isValidElement,
   useCallback,
   useContext,
@@ -14,145 +13,50 @@ import {
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { Z_INDEX, INFO_ACTION_TONE_CLASS } from '@/shared';
+import { INFO_ACTION_TONE_CLASS, MOTION_EASINGS, MOTION_SPRINGS, Z_INDEX } from '@/shared';
 import { cn } from '@/ui/class-names';
-import Icon from '@/ui/primitives/icon';
-import Button from '@/ui/primitives/button';
+import { Button, Icon } from '@/ui/primitives';
 import { ModuleError } from '@/modules/error-boundary';
 import { useModalRegistry } from '@/modules/registry';
-import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
+import {
+  MODAL_BREAKPOINTS,
+  MODAL_CHROME,
+  MODAL_POSITION_CLASSES,
+  MODAL_POSITIONS,
+  MODAL_PRESETS,
+  resolveModalHeader,
+} from './config';
+import {
+  INITIAL_MODAL_STATE,
+  ModalActionsContext,
+  ModalStateContext,
+  SMOOTH_SCROLL_LOCK_EVENT,
+  createModalState,
+  finalizeModalClose,
+  getFocusableElements,
+  getModalLabel,
+  getViewportIsMobile,
+  isSidePosition,
+  isVerticalEdgePosition,
+  normalizePositionConfig,
+  resolveActivePosition,
+  trapFocus,
+} from './runtime';
 
-export const MODAL_POSITIONS = Object.freeze({
-  CENTER: 'center',
-  BOTTOM: 'bottom',
-  RIGHT: 'right',
-  LEFT: 'left',
-  TOP: 'top',
-});
+export {
+  MODAL_BREAKPOINTS,
+  MODAL_CHROME,
+  MODAL_LABELS,
+  MODAL_POSITION_CLASSES,
+  MODAL_POSITIONS,
+  MODAL_PRESETS,
+  resolveAuthVerificationHeader,
+  resolveModalHeader,
+} from './config';
 
-export const MODAL_POSITION_CLASSES = Object.freeze({
-  [MODAL_POSITIONS.CENTER]: 'items-center justify-center',
-  [MODAL_POSITIONS.TOP]: 'items-center justify-start',
-  [MODAL_POSITIONS.BOTTOM]: 'items-center justify-end',
-  [MODAL_POSITIONS.LEFT]: 'items-start justify-start',
-  [MODAL_POSITIONS.RIGHT]: 'items-end justify-start',
-});
-
-export const MODAL_CHROME = Object.freeze({
-  PANEL: 'panel',
-  BARE: 'bare',
-});
-
-export const MODAL_BREAKPOINTS = Object.freeze({
-  MOBILE_MAX_WIDTH: 639,
-});
-
-export const MODAL_PRESETS = Object.freeze({
-  PREVIEW_MODAL: {
-    chrome: MODAL_CHROME.BARE,
-  },
-  VIDEO_PREVIEW_MODAL: {
-    chrome: MODAL_CHROME.BARE,
-  },
-});
-
-export const MODAL_LABELS = Object.freeze({
-  ACCOUNT_SOCIAL_MODAL: 'Social',
-  CAST_MODAL: 'Cast',
-  LIST_EDITOR_MODAL: 'Edit List',
-  MEDIA_SOCIAL_PROOF_MODAL: 'Social Proof',
-  NOTIFICATIONS_MODAL: 'Notifications',
-  PREVIEW_MODAL: 'Preview',
-  VIDEO_PREVIEW_MODAL: 'Video',
-});
-
-const AUTH_VERIFICATION_TITLES = Object.freeze({
-  'account-delete': 'Delete Account Verification',
-  'email-change': 'Email Verification',
-  'sign-in': 'Login Verification',
-});
-
-const FOLLOW_LIST_TITLES = Object.freeze({
-  following: 'Following',
-  requests: 'Inbox',
-});
-
-export function resolveAuthVerificationHeader(config = {}) {
-  const purpose = String(config?.data?.purpose || '')
-    .trim()
-    .toLowerCase();
-
-  return {
-    title: AUTH_VERIFICATION_TITLES[purpose] || 'Email Verification',
-  };
-}
-
-function resolveFollowListHeader(config = {}) {
-  const type = String(config?.data?.type || '')
-    .trim()
-    .toLowerCase();
-
-  return {
-    title: FOLLOW_LIST_TITLES[type] || 'Followers',
-  };
-}
-
-function resolveListEditorHeader(config = {}) {
-  const isEditing = Boolean(config?.data?.initialData?.id);
-
-  return {
-    title: isEditing ? 'Edit List' : 'Create List',
-  };
-}
-
-function resolveNotificationsHeader() {
-  return {
-    title: 'Notifications',
-  };
-}
-
-function isListReviewConfig(config = {}) {
-  const data = config?.data || {};
-
-  return (
-    data?.review?.subjectType === 'list' || Boolean(data?.listId || data?.ownerId || data?.list)
-  );
-}
-
-function resolveReviewEditorHeader(config = {}) {
-  const hasExistingReview = Boolean(config?.data?.review);
-  const isListReview = isListReviewConfig(config);
-  const actionLabel = hasExistingReview ? 'Edit' : 'Write';
-  const subjectLabel = isListReview ? 'comment' : 'review';
-
-  return {
-    title: `${actionLabel} ${subjectLabel}`,
-  };
-}
-
-const DEFAULT_MODAL_HEADERS = {
-  AUTH_VERIFICATION_MODAL: resolveAuthVerificationHeader,
-  FOLLOW_LIST_MODAL: resolveFollowListHeader,
-  LIST_EDITOR_MODAL: resolveListEditorHeader,
-  NOTIFICATIONS_MODAL: resolveNotificationsHeader,
-  MEDIA_SOCIAL_PROOF_MODAL: () => ({
-    title: 'Social Activity',
-  }),
-  REVIEW_EDITOR_MODAL: resolveReviewEditorHeader,
-};
-
-export function resolveModalHeader(modalType, config = {}) {
-  const header = config?.header && typeof config.header === 'object' ? config.header : {};
-  const fallbackResolver = DEFAULT_MODAL_HEADERS[modalType];
-  const fallbackHeader = typeof fallbackResolver === 'function' ? fallbackResolver(config) : {};
-
-  return {
-    title: header.title ?? config?.title ?? fallbackHeader.title ?? null,
-    actions: header.actions ?? config?.actions ?? fallbackHeader.actions ?? null,
-    showClose: header.showClose ?? config?.showClose ?? fallbackHeader.showClose,
-  };
-}
-
+// ── Motion contract ─────────────────────────────────────────────────────────
+// Modal motion is intentionally exported from the facade so feature modules
+// can reuse the same choreography without reaching into implementation files.
 const MODAL_EASINGS = Object.freeze({
   CINEMATIC: MOTION_EASINGS.CINEMATIC,
   EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
@@ -392,6 +296,18 @@ export const ACTION_BUTTON_CLASS = cn(
   INFO_ACTION_TONE_CLASS,
 );
 
+function dispatchSmoothScrollLock(locked) {
+  window.dispatchEvent(
+    new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
+      detail: {
+        locked,
+        source: 'modal',
+      },
+    }),
+  );
+}
+
+// ── Layout primitives ──────────────────────────────────────────────────────
 const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
 
 function hasHeightConstraint(className) {
@@ -414,7 +330,10 @@ function getContainerClassName({ className, position }) {
 }
 
 function getBodyClassName(bodyClassName) {
-  return cn('min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body rounded-[20px]', bodyClassName);
+  return cn(
+    'min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body rounded-[20px]',
+    bodyClassName,
+  );
 }
 
 function resolveHeaderActions(actions, close) {
@@ -443,7 +362,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="center inline-flex size-8 cursor-pointer rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
+      className="center inline-flex size-8 cursor-pointer rounded-[20px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white hover:text-black hover:ring-transparent focus-visible:ring-2 focus-visible:ring-white/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
     </Button>
@@ -569,195 +488,13 @@ export function Container({
 
 export const ModalContainer = Container;
 
-const FALLBACK_MODAL_STATE = Object.freeze({
-  position: MODAL_POSITIONS.CENTER,
-  responsivePosition: null,
-  modalType: null,
-  activeModalId: null,
-  isOpen: false,
-  chrome: MODAL_CHROME.PANEL,
-  title: null,
-  headerActions: null,
-  showClose: true,
-  props: {},
-  modalStack: [],
-});
-
-const FALLBACK_MODAL_ACTIONS = Object.freeze({
-  openModal: async () => null,
-  closeModal: () => {},
-  closeAllModals: () => {},
-});
-
-const ModalActionsContext = createContext(FALLBACK_MODAL_ACTIONS);
-const ModalStateContext = createContext(FALLBACK_MODAL_STATE);
-
-function isPlainObject(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function getResponsivePosition(position, responsivePosition) {
-  if (!isPlainObject(responsivePosition) || typeof window === 'undefined') {
-    return position;
-  }
-
-  const isMobileViewport = window.matchMedia(
-    `(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`,
-  ).matches;
-
-  if (isMobileViewport && responsivePosition.mobile) {
-    return responsivePosition.mobile;
-  }
-
-  if (!isMobileViewport && responsivePosition.desktop) {
-    return responsivePosition.desktop;
-  }
-
-  return position;
-}
-
-function normalizePositionConfig(positionInput, config = {}) {
-  const basePosition = typeof positionInput === 'string' ? positionInput : MODAL_POSITIONS.CENTER;
-
-  const responsivePosition =
-    (isPlainObject(config.responsivePosition) && config.responsivePosition) ||
-    (isPlainObject(positionInput) && positionInput) ||
-    null;
-
-  return {
-    position: getResponsivePosition(basePosition, responsivePosition),
-    responsivePosition,
-  };
-}
-
-function createModalState(modalStack = []) {
-  const activeModal = modalStack[modalStack.length - 1] || null;
-
-  return {
-    position: activeModal?.position || MODAL_POSITIONS.CENTER,
-    responsivePosition: activeModal?.responsivePosition || null,
-    modalType: activeModal?.modalType || null,
-    activeModalId: activeModal?.id || null,
-    isOpen: modalStack.length > 0,
-    chrome: activeModal?.chrome || MODAL_CHROME.PANEL,
-    title: activeModal?.title || null,
-    headerActions: activeModal?.headerActions || null,
-    showClose: activeModal?.showClose ?? true,
-    props: activeModal?.props || {},
-    modalStack,
-  };
-}
-
-function finalizeModalClose(
-  modalId,
-  result,
-  { onCloseMapRef, resolveMapRef, logCloseErrors = false },
-) {
-  const onClose = onCloseMapRef.current.get(modalId);
-
-  if (typeof onClose === 'function') {
-    try {
-      onClose(result);
-    } catch (error) {
-      if (logCloseErrors) {
-        console.error('[Modal] onClose handler failed:', error);
-      }
-    }
-  }
-
-  onCloseMapRef.current.delete(modalId);
-
-  const resolve = resolveMapRef.current.get(modalId);
-  if (typeof resolve === 'function') {
-    resolve(result);
-  }
-  resolveMapRef.current.delete(modalId);
-}
-
-const INITIAL_STATE = createModalState([]);
-
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
-
-function resolveActivePosition(position, responsivePosition, isMobileViewport) {
-  if (!responsivePosition || typeof responsivePosition !== 'object') {
-    return position;
-  }
-
-  if (isMobileViewport && responsivePosition.mobile) {
-    return responsivePosition.mobile;
-  }
-
-  if (!isMobileViewport && responsivePosition.desktop) {
-    return responsivePosition.desktop;
-  }
-
-  return position;
-}
-
-function getViewportIsMobile() {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  return window.matchMedia(`(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`).matches;
-}
-
-function getFocusableElements(container) {
-  if (!container) {
-    return [];
-  }
-
-  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR));
-}
-
-function trapFocus(event, container) {
-  if (event.key !== 'Tab' || !container) {
-    return;
-  }
-
-  const elements = getFocusableElements(container);
-  if (elements.length === 0) {
-    return;
-  }
-
-  const firstElement = elements[0];
-  const lastElement = elements[elements.length - 1];
-
-  if (event.shiftKey) {
-    if (document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement?.focus();
-    }
-    return;
-  }
-
-  if (document.activeElement === lastElement) {
-    event.preventDefault();
-    firstElement?.focus();
-  }
-}
-
-function getModalLabel(modalType) {
-  return MODAL_LABELS[modalType] || modalType || 'Modal';
-}
-
-function isSidePosition(position) {
-  return position === MODAL_POSITIONS.LEFT || position === MODAL_POSITIONS.RIGHT;
-}
-
-function isVerticalEdgePosition(position) {
-  return position === MODAL_POSITIONS.TOP || position === MODAL_POSITIONS.BOTTOM;
-}
-
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
     <div className="center shrink-0 gap-2 border-t border-white/10 bg-white/5 p-2.5">
       <Button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex cursor-pointer items-center gap-1.5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase hover:bg-white hover:text-black"
+        className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -771,13 +508,14 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         {getModalLabel(previousEntry.modalType)}
       </Button>
       <span className="text-xs text-white/15">/</span>
-      <span className="rounded-xl ring-1 ring-inset ring-white/10 bg-white/10 px-2.5 py-1.5 text-xs font-bold uppercase">
+      <span className="rounded-xl bg-white/10 px-2.5 py-1.5 text-xs font-bold uppercase ring-1 ring-white/10 ring-inset">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </div>
   );
 }
 
+// ── Portal and stacked modal presentation ──────────────────────────────────
 function ModalLayer({
   entry,
   stackIndex,
@@ -811,6 +549,7 @@ function ModalLayer({
   useEffect(() => {
     if (!isTopModal || !modalRef.current) return;
 
+    const previouslyFocusedElement = document.activeElement;
     const initialElements = getFocusableElements(modalRef.current);
     if (initialElements.length > 0) {
       initialElements[0].focus();
@@ -825,7 +564,12 @@ function ModalLayer({
     }
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (previouslyFocusedElement?.isConnected) {
+        previouslyFocusedElement.focus();
+      }
+    };
   }, [closeModal, entry.id, isTopModal]);
 
   if (!SpecificModalComponent) {
@@ -868,8 +612,8 @@ function ModalLayer({
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden ring-1 ring-inset ring-white/10 bg-black/50 shadow-[0_18px_56px_rgba(0,0,0,0.50)] backdrop-blur-xl'
-              : 'overflow-visible ring-1 ring-inset ring-transparent bg-transparent',
+              ? 'overflow-hidden bg-black/50 shadow-[0_18px_56px_rgba(0,0,0,0.50)] ring-1 ring-white/10 backdrop-blur-xl ring-inset'
+              : 'overflow-visible bg-transparent ring-1 ring-transparent ring-inset',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER
                 ? 'rounded-[30px]'
@@ -892,14 +636,14 @@ function ModalLayer({
               isVerticalEdgeModal &&
               isMobileViewport &&
               (isTopModalPosition
-                ? 'w-full border-t-0 border-r-0 border-l-0 rounded-b-[30px]'
-                : 'w-full border-r-0 border-b-0 border-l-0 rounded-t-[30px]'),
+                ? 'w-full rounded-b-[30px] border-t-0 border-r-0 border-l-0'
+                : 'w-full rounded-t-[30px] border-r-0 border-b-0 border-l-0'),
             isPanelChrome &&
               isSideModal && [
                 isMobileViewport
                   ? isLeftModal
-                    ? 'h-screen max-h-screen w-full self-stretch border-0 rounded-none'
-                    : 'h-screen max-h-screen w-full self-stretch border-0 rounded-none'
+                    ? 'h-screen max-h-screen w-full self-stretch rounded-none border-0'
+                    : 'h-screen max-h-screen w-full self-stretch rounded-none border-0'
                   : 'h-screen max-h-screen w-full',
                 !isMobileViewport && (isLeftModal ? 'border-l-0' : 'border-r-0'),
               ],
@@ -960,6 +704,7 @@ export function Modal() {
   const [isMobileViewport, setIsMobileViewport] = useState(getViewportIsMobile);
   const [isTopExitSettling, setIsTopExitSettling] = useState(false);
   const previousTopModalIdRef = useRef(null);
+  const bodyOverflowRef = useRef(null);
 
   useLayoutEffect(() => {
     const currentTopModalId = topModalEntry?.id || null;
@@ -984,6 +729,10 @@ export function Modal() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+
     const mediaQuery = window.matchMedia(`(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`);
 
     function handleViewportChange() {
@@ -991,41 +740,43 @@ export function Modal() {
     }
 
     handleViewportChange();
-    mediaQuery.addEventListener('change', handleViewportChange);
+    const subscribe =
+      typeof mediaQuery.addEventListener === 'function'
+        ? () => mediaQuery.addEventListener('change', handleViewportChange)
+        : () => mediaQuery.addListener?.(handleViewportChange);
+    const unsubscribe =
+      typeof mediaQuery.removeEventListener === 'function'
+        ? () => mediaQuery.removeEventListener('change', handleViewportChange)
+        : () => mediaQuery.removeListener?.(handleViewportChange);
 
-    return () => {
-      mediaQuery.removeEventListener('change', handleViewportChange);
-    };
+    subscribe();
+
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
     if (isModalVisible) {
+      if (bodyOverflowRef.current === null) {
+        bodyOverflowRef.current = document.body.style.overflow;
+      }
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    } else if (bodyOverflowRef.current !== null) {
+      document.body.style.overflow = bodyOverflowRef.current;
+      bodyOverflowRef.current = null;
     }
 
-    window.dispatchEvent(
-      new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
-        detail: {
-          locked: isModalVisible,
-          source: 'modal',
-        },
-      }),
-    );
-
-    return () => {
-      document.body.style.overflow = '';
-      window.dispatchEvent(
-        new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
-          detail: {
-            locked: false,
-            source: 'modal',
-          },
-        }),
-      );
-    };
+    dispatchSmoothScrollLock(isModalVisible);
   }, [isModalVisible]);
+
+  useEffect(() => {
+    return () => {
+      if (bodyOverflowRef.current !== null) {
+        document.body.style.overflow = bodyOverflowRef.current;
+        bodyOverflowRef.current = null;
+      }
+      dispatchSmoothScrollLock(false);
+    };
+  }, []);
 
   if (!mounted) {
     return null;
@@ -1073,8 +824,9 @@ export function Modal() {
 
 export default Modal;
 
+// ── Provider and public hooks ───────────────────────────────────────────────
 export function ModalProvider({ children }) {
-  const [modalState, setModalState] = useState(INITIAL_STATE);
+  const [modalState, setModalState] = useState(INITIAL_MODAL_STATE);
 
   const modalStackRef = useRef([]);
   const resolveMapRef = useRef(new Map());
@@ -1128,12 +880,14 @@ export function ModalProvider({ children }) {
         props: resolvedConfig.data ?? resolvedConfig,
       };
 
-      syncModalStack([...filteredStack, modalEntry]);
-
-      return new Promise((resolve) => {
+      const modalPromise = new Promise((resolve) => {
         resolveMapRef.current.set(modalId, resolve);
         onCloseMapRef.current.set(modalId, resolvedConfig.onClose || null);
       });
+
+      syncModalStack([...filteredStack, modalEntry]);
+
+      return modalPromise;
     },
     [syncModalStack],
   );

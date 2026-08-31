@@ -48,6 +48,11 @@ export const NAV_ACTION_STYLES = Object.freeze({
   icon: 16,
 });
 
+export const NAV_ACTION_MOTION_PROPS = Object.freeze({
+  whileHover: { scale: 1.008 },
+  whileTap: { scale: 0.99 },
+});
+
 export function getNavActionClass({ className, isActive = false, variant } = {}) {
   return cn(
     variant || (isActive ? NAV_ACTION_STYLES.active : NAV_ACTION_STYLES.muted),

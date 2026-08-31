@@ -9,7 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useRegistryValue, REGISTRY_TYPES } from '@/modules/registry';
+import { useLoadingValue } from '@/modules/registry';
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 import { Spinner } from '@/ui/feedback/spinner';
 
@@ -36,7 +36,7 @@ export function LoadingProvider({ children }) {
   const minDurationRef = useRef(0);
   const stopTimerRef = useRef(null);
 
-  const registryLoading = useRegistryValue(REGISTRY_TYPES.LOADING, 'page-loading');
+  const registryLoading = useLoadingValue();
 
   const clearStopTimer = useCallback(() => {
     if (!stopTimerRef.current) return;

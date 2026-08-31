@@ -8,7 +8,7 @@ import { NavHeightSpacer } from '@/modules/nav';
 import NotFoundTemplate from '@/domains/shell/not-found-template';
 import { AccountSkeleton, renderAccountSectionSkeleton } from '@/domains/account/ui/skeletons';
 import { useNavigationActions } from '@/modules/nav';
-import { useRegistry } from '@/modules/registry';
+import { usePageRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
 import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
 import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
@@ -124,7 +124,7 @@ function AccountProfileShellNav({ profile, username }) {
       ? `/account/${username || profile?.username}`
       : '/account';
 
-  useRegistry({
+  usePageRegistry({
     nav: {
       path: targetPath,
       title: accountTitle,
@@ -249,9 +249,7 @@ function NavViewItem({ item, isActive, href }) {
       {item.icon ? (
         <Icon icon={item.icon} size={14} className={isActive ? 'text-white' : 'text-white/40'} />
       ) : null}
-      <span>
-        {item.label}
-      </span>
+      <span>{item.label}</span>
     </Link>
   );
 }
@@ -366,31 +364,30 @@ function ProfileLayoutInner({
     <AccountProfileShellProvider value={profileShell}>
       <AccountProfileShellNav profile={profile} username={profileHandle} />
 
-        <div
-          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
-        >
-          <AccountHeroReveal>
-            <AccountHero
-              profile={profile}
-              followerCount={followerCount}
-              followingCount={followingCount}
-              onOpenFollowList={onOpenFollowList}
-              onReadMore={handleReadMore}
-            />
-          </AccountHeroReveal>
+      <div
+        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
+      >
+        <AccountHeroReveal>
+          <AccountHero
+            profile={profile}
+            followerCount={followerCount}
+            followingCount={followingCount}
+            onOpenFollowList={onOpenFollowList}
+            onReadMore={handleReadMore}
+          />
+        </AccountHeroReveal>
 
-          <AccountNavReveal className="mt-8 sm:mt-10">
-            <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
-          </AccountNavReveal>
+        <AccountNavReveal className="mt-8 sm:mt-10">
+          <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
+        </AccountNavReveal>
 
-          <main className="w-full pt-6 sm:pt-8">
-            <AccountSectionScene sceneKey={pendingTab ? '' : pathname}>
-              {mainContent}
-            </AccountSectionScene>
-          </main>
-        </div>
-        <NavHeightSpacer className="w-full bg-black" />
-
+        <main className="w-full pt-6 sm:pt-8">
+          <AccountSectionScene sceneKey={pendingTab ? '' : pathname}>
+            {mainContent}
+          </AccountSectionScene>
+        </main>
+      </div>
+      <NavHeightSpacer className="w-full bg-black" />
     </AccountProfileShellProvider>
   );
 }

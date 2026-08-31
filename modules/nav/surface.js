@@ -13,8 +13,23 @@ import {
 } from 'react';
 import { motion } from 'framer-motion';
 
-import { NAVIGATION_EVENTS, NAVIGATION_LIFECYCLE, NAV_SURFACE_RENDER_MODE } from './constants';
-import { isValidComponentType, resolveComponentType, resolveRenderableContent } from './utils';
+import {
+  NAVIGATION_EVENTS,
+  NAVIGATION_LIFECYCLE,
+  NAV_SURFACE_FLOW_STATUS,
+  NAV_SURFACE_RENDER_MODE,
+} from './constants';
+import {
+  focusNavigationElement,
+  shouldRestoreNavigationFocus,
+  useNavigationFocusTrap,
+} from './behavior';
+import {
+  isSafeInternalHref,
+  isValidComponentType,
+  resolveComponentType,
+  resolveRenderableContent,
+} from './utils';
 import { NAV_COMPACT_TO_SURFACE_DELAY_MS, NAV_SURFACE_EXIT_SETTLE_MS } from './motion';
 import {
   NAV_SURFACE_DRAG_CONSTRAINTS,
@@ -34,6 +49,182 @@ import Iconify from '@/ui/primitives/icon';
 export function isSurfaceDescriptor(value) {
   return (
     value != null && typeof value === 'object' && !Array.isArray(value) && !isValidElement(value)
+  );
+}
+
+function normalizeSurfaceFlowSnapshot(value) {
+  if (value == null) return null;
+  if (typeof value !== 'object' || Array.isArray(value)) return null;
+  return { ...value };
+}
+
+/**
+ * Normalizes the optional route handoff performed when a surface flow settles.
+ * @param {object|string|null} input - Return target and restoration preferences
+ * @returns {object|null} Serializable return handshake
+ */
+export function createSurfaceReturnHandshake(input) {
+  const source = typeof input === 'string' ? { pathname: input } : input;
+  const pathname = typeof source?.pathname === 'string' ? source.pathname.trim() : '';
+  if (!isSafeInternalHref(pathname)) return null;
+
+  return {
+    focusKey:
+      typeof source.focusKey === 'string' && source.focusKey.trim() ? source.focusKey.trim() : null,
+    pathname,
+    restoreScroll: source.restoreScroll !== false,
+    returnOnCancel: source.returnOnCancel === true,
+  };
+}
+
+function resolveSurfaceFlowReturnHandshake(definition, input) {
+  const inputHandshake =
+    input?.returnHandshake ??
+    (input?.returnTo
+      ? {
+          focusKey: input.returnFocusKey,
+          pathname: input.returnTo,
+          restoreScroll: input.restoreReturnScroll,
+          returnOnCancel: input.returnOnCancel,
+        }
+      : null);
+  const baseHandshake = definition?.returnHandshake;
+  if (!baseHandshake && !inputHandshake) return null;
+  return createSurfaceReturnHandshake({ ...baseHandshake, ...inputHandshake });
+}
+
+/**
+ * Validates a reusable surface-flow definition.
+ *
+ * A flow owns one user task across one or more surface steps. Its renderer is
+ * deliberately the only application-specific seam; the Nav layer owns
+ * deduplication, snapshot delivery, close results, and optional URL recovery.
+ * @param {object} input - Candidate flow definition
+ * @returns {object|null} Normalized flow definition, or null when invalid
+ */
+export function createSurfaceFlowDefinition(input) {
+  const id = typeof input?.id === 'string' ? input.id.trim() : '';
+  if (!id || typeof input?.createSurface !== 'function') return null;
+
+  return {
+    createSurface: input.createSurface,
+    id,
+    initialSnapshot: normalizeSurfaceFlowSnapshot(input.initialSnapshot),
+    returnHandshake: createSurfaceReturnHandshake(input.returnHandshake ?? input.returnTo),
+    restoreFromUrl: input.restoreFromUrl !== false,
+    singleton: input.singleton !== false,
+  };
+}
+
+/**
+ * Creates the serializable runtime state for one opened surface flow.
+ * @param {object} definition - Normalized flow definition
+ * @param {object} [options] - Flow input and optional snapshot override
+ * @returns {object|null} Open flow state, or null for invalid definitions
+ */
+export function createSurfaceFlowSession(definition, { input = null, snapshot } = {}) {
+  if (!definition?.id) return null;
+  const nextSnapshot =
+    snapshot === undefined ? definition.initialSnapshot : normalizeSurfaceFlowSnapshot(snapshot);
+
+  return {
+    flowId: definition.id,
+    input,
+    returnHandshake: resolveSurfaceFlowReturnHandshake(definition, input),
+    snapshot: nextSnapshot,
+    status: NAV_SURFACE_FLOW_STATUS.OPEN,
+  };
+}
+
+/**
+ * Updates a flow session without leaking caller-owned snapshot references.
+ * @param {object} session - Current flow session
+ * @param {object|null} snapshot - Next serializable flow snapshot
+ * @returns {object|null} Updated flow session
+ */
+export function updateSurfaceFlowSession(session, snapshot) {
+  if (!session?.flowId) return null;
+  return {
+    ...session,
+    snapshot: normalizeSurfaceFlowSnapshot(snapshot),
+  };
+}
+
+const SurfaceFlowContext = createContext(null);
+
+/**
+ * Provides surface-flow operations to descendants of NavigationProvider.
+ * @param {object} props - Provider properties
+ * @returns {React.ReactElement} Surface-flow context provider
+ */
+export function SurfaceFlowProvider({ children, value }) {
+  return <SurfaceFlowContext.Provider value={value}>{children}</SurfaceFlowContext.Provider>;
+}
+
+/**
+ * Binds a declarative surface flow to the nearest navigation provider.
+ *
+ * `open` resolves with the normal surface close result. The flow's component
+ * receives a `surfaceFlow` prop containing its snapshot plus `update`,
+ * `complete`, and `cancel` callbacks.
+ * @param {object} input - Flow definition created with createSurfaceFlowDefinition
+ * @returns {object} Flow lifecycle controls and current state
+ */
+export function useSurfaceFlow(input) {
+  const context = useContext(SurfaceFlowContext);
+  const definition = useMemo(() => createSurfaceFlowDefinition(input), [input]);
+  const restoredFlowIdsRef = useRef(new Set());
+  const flowId = definition?.id ?? null;
+  const activeFlow = useMemo(() => {
+    if (!flowId) return null;
+    return (
+      context?.surfaceState?.surfaceStack
+        ?.map((surface) => surface.flow)
+        .find((flow) => flow?.flowId === flowId) ?? null
+    );
+  }, [context?.surfaceState?.surfaceStack, flowId]);
+
+  useEffect(() => {
+    if (
+      !definition ||
+      !context?.restoreSurfaceFlow ||
+      restoredFlowIdsRef.current.has(definition.id)
+    ) {
+      return;
+    }
+
+    restoredFlowIdsRef.current.add(definition.id);
+    void context.restoreSurfaceFlow(definition);
+  }, [context, definition]);
+
+  const open = useCallback(
+    (flowInput = null) => {
+      if (!definition || !context?.openSurfaceFlow) {
+        return Promise.resolve({
+          success: false,
+          error: createSurfaceError(
+            'NAV_SURFACE_FLOW_UNAVAILABLE',
+            'Nav surface flow is unavailable',
+          ),
+        });
+      }
+      return context.openSurfaceFlow(definition, flowInput);
+    },
+    [context, definition],
+  );
+
+  return useMemo(
+    () => ({
+      activeFlow,
+      cancel: (result = null) => context?.cancelSurfaceFlow?.(flowId, result),
+      complete: (result = null) => context?.completeSurfaceFlow?.(flowId, result),
+      flowId,
+      isOpen: activeFlow?.status === NAV_SURFACE_FLOW_STATUS.OPEN,
+      open,
+      snapshot: activeFlow?.snapshot ?? definition?.initialSnapshot ?? null,
+      update: (snapshot) => context?.updateSurfaceFlow?.(flowId, snapshot),
+    }),
+    [activeFlow, context, definition?.initialSnapshot, flowId, open],
   );
 }
 
@@ -211,6 +402,86 @@ export function resolveActiveStepDefinition(surfaceEntry) {
 }
 
 /**
+ * Applies a resolved surface definition to the active navigation item.
+ * @param {object} item - Active navigation item
+ * @param {object} rawSurfaceEntry - Surface definition
+ * @param {object} [actions] - Surface lifecycle actions
+ * @returns {object} Surface-backed navigation item
+ */
+export function applySurfaceToNavItem(
+  item,
+  rawSurfaceEntry,
+  {
+    closeSurface,
+    closeAllSurfaces,
+    goBackSurface,
+    pushStep,
+    popStep,
+    goToStep,
+    handleSurfaceAnimationComplete,
+    getSurfaceFlow,
+    surfaceStack = [],
+  } = {},
+) {
+  const surfaceEntry = resolveActiveStepDefinition(rawSurfaceEntry);
+  const surfaceComponent = surfaceEntry?.component ?? null;
+  const surfaceContent = surfaceEntry?.content ?? null;
+
+  if (!item || (!surfaceComponent && surfaceContent == null)) {
+    return item;
+  }
+
+  const surfaceId = surfaceEntry.id ?? null;
+  const canGoBack = Boolean(surfaceEntry.canGoBack) || surfaceStack.length > 1;
+  const onBack = canGoBack ? goBackSurface : null;
+  const surfaceFlow =
+    typeof getSurfaceFlow === 'function' ? getSurfaceFlow(surfaceEntry.flow?.flowId) : null;
+
+  return {
+    ...item,
+    isSurface: true,
+    isOverlay: true,
+    surfaceId,
+    dismissible: surfaceEntry.dismissible !== false,
+    allowSwipeDismiss: surfaceEntry.allowSwipeDismiss !== false,
+    surfaceComponent,
+    surfaceContent,
+    surfaceProps: surfaceFlow
+      ? { ...(surfaceEntry.props || {}), surfaceFlow }
+      : surfaceEntry.props || {},
+    closeSurface:
+      typeof closeSurface === 'function'
+        ? closeSurface
+        : (result = null) => {
+            surfaceEntry?.onClose?.(result);
+          },
+    closeAllSurfaces: typeof closeAllSurfaces === 'function' ? closeAllSurfaces : null,
+    pushStep: typeof pushStep === 'function' ? (step) => pushStep(step, surfaceId) : null,
+    popStep: typeof popStep === 'function' ? () => popStep(surfaceId) : null,
+    goToStep: typeof goToStep === 'function' ? (index) => goToStep(index, surfaceId) : null,
+    canGoBack,
+    onBack,
+    onAnimationComplete: handleSurfaceAnimationComplete,
+    stepIndex: surfaceEntry.stepIndex ?? 0,
+    totalSteps: surfaceEntry.totalSteps ?? 1,
+    isFirstStep: surfaceEntry.isFirstStep ?? true,
+    isLastStep: surfaceEntry.isLastStep ?? true,
+    badge: surfaceEntry.badge ?? null,
+    actions: null,
+    action: resolveSurfaceAction(item, surfaceEntry),
+    surfaceIcon: surfaceEntry.icon ?? null,
+    surfaceTitle: surfaceEntry.title ?? null,
+    surfaceDescription: surfaceEntry.description ?? null,
+    surfaceDescriptionMaxLines: surfaceEntry.descriptionMaxLines ?? 2,
+    surfaceTrailing: surfaceEntry.trailing ?? null,
+    surfaceHeaderAction: surfaceEntry.headerAction ?? null,
+    surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
+    expandHorizontal: surfaceEntry.expandHorizontal ?? false,
+    width: surfaceEntry.width ?? null,
+  };
+}
+
+/**
  * Creates a cancellable scheduler for delayed surface openings.
  * @param {object} [options] - Injectable timer functions
  * @returns {object} Pending-surface scheduler
@@ -253,30 +524,27 @@ export function createPendingSurfaceScheduler({
   };
 }
 
-/** Creates the shared navigation/surface lifecycle state. */
-export function createNavigationMachineState() {
+/**
+ * Creates the initial lifecycle state for one surface stack.
+ * @returns {{isCompact: boolean, surfaceIds: Array<number|string>, surfaceLifecycle: string}}
+ * Surface lifecycle snapshot
+ */
+export function createSurfaceLifecycleState() {
   return {
-    expanded: false,
     isCompact: false,
     surfaceIds: [],
     surfaceLifecycle: NAVIGATION_LIFECYCLE.IDLE,
   };
 }
 
-/** Applies a navigation or surface lifecycle transition. */
-export function navigationStateReducer(state, action) {
+/**
+ * Applies transitions that belong exclusively to the surface stack.
+ * @param {object} state - Current surface lifecycle state
+ * @param {object} action - Surface lifecycle event
+ * @returns {object} Next lifecycle state
+ */
+export function surfaceLifecycleReducer(state, action) {
   switch (action?.type) {
-    case NAVIGATION_EVENTS.COLLAPSE:
-      return state.expanded ? { ...state, expanded: false } : state;
-    case NAVIGATION_EVENTS.EXPAND:
-      return state.expanded ? state : { ...state, expanded: true };
-    case NAVIGATION_EVENTS.SET_EXPANDED: {
-      const value =
-        typeof action.value === 'function' ? action.value(state.expanded) : action.value;
-      return state.expanded === Boolean(value) ? state : { ...state, expanded: Boolean(value) };
-    }
-    case NAVIGATION_EVENTS.TOGGLE:
-      return { ...state, expanded: !state.expanded };
     case NAVIGATION_EVENTS.SET_COMPACT:
       return state.isCompact === Boolean(action.value)
         ? state
@@ -285,7 +553,6 @@ export function navigationStateReducer(state, action) {
       if (action.surfaceId == null || state.surfaceIds.includes(action.surfaceId)) return state;
       return {
         ...state,
-        expanded: false,
         surfaceIds: [...state.surfaceIds, action.surfaceId],
         surfaceLifecycle: NAVIGATION_LIFECYCLE.OPENING,
       };
@@ -340,6 +607,52 @@ function getSurfaceUrlValue(surfaceEntry) {
     : surfaceEntry?.urlKey || 'open';
 }
 
+function createSurfaceHistoryState(surfaceEntry) {
+  const value = getSurfaceUrlValue(surfaceEntry);
+  const flow = surfaceEntry?.flow;
+  return {
+    value,
+    ...(flow
+      ? {
+          flow: {
+            id: flow.flowId,
+            snapshot: flow.snapshot,
+          },
+        }
+      : {}),
+  };
+}
+
+function toSurfaceFlowState(session) {
+  if (!session?.flowId) return null;
+  return {
+    flowId: session.flowId,
+    returnHandshake: session.returnHandshake,
+    snapshot: session.snapshot,
+    status: session.status,
+  };
+}
+
+function getRestorableSurfaceFlowSnapshot(definition) {
+  if (typeof window === 'undefined' || !definition?.restoreFromUrl || !definition?.id) {
+    return undefined;
+  }
+
+  const navSurface = window.history.state?.navSurface;
+  const flow = navSurface?.flow;
+  const currentSurfaceValue = new URL(window.location.href).searchParams.get('surface');
+  if (
+    !flow ||
+    flow.id !== definition.id ||
+    !navSurface.value ||
+    currentSurfaceValue !== navSurface.value
+  ) {
+    return undefined;
+  }
+
+  return normalizeSurfaceFlowSnapshot(flow.snapshot);
+}
+
 function syncSurfaceUrl(surfaceEntry, isOpening, urlState = null) {
   if (typeof window === 'undefined' || (!surfaceEntry?.syncWithUrl && !surfaceEntry?.urlKey))
     return;
@@ -350,7 +663,7 @@ function syncSurfaceUrl(surfaceEntry, isOpening, urlState = null) {
       if (urlState) urlState.previousValue = url.searchParams.get('surface');
       url.searchParams.set('surface', value);
       window.history.pushState(
-        { ...window.history.state, navSurface: { value } },
+        { ...window.history.state, navSurface: createSurfaceHistoryState(surfaceEntry) },
         '',
         url.toString(),
       );
@@ -368,6 +681,27 @@ function syncSurfaceUrl(surfaceEntry, isOpening, urlState = null) {
   }
 }
 
+function syncSurfaceFlowUrlState(surfaceEntry, urlState = null) {
+  if (typeof window === 'undefined' || (!surfaceEntry?.syncWithUrl && !surfaceEntry?.urlKey)) {
+    return;
+  }
+
+  try {
+    const url = new URL(window.location.href);
+    const value = getSurfaceUrlValue(surfaceEntry);
+    if (url.searchParams.get('surface') !== value || urlState?.value !== value) return;
+    window.history.replaceState(
+      { ...window.history.state, navSurface: createSurfaceHistoryState(surfaceEntry) },
+      '',
+      url.toString(),
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Navigation] Surface flow URL synchronization failed:', error);
+    }
+  }
+}
+
 function getTargetSurfaceId(surfaceStack, targetSurfaceId = null) {
   return targetSurfaceId || surfaceStack[surfaceStack.length - 1]?.id || null;
 }
@@ -380,7 +714,7 @@ function updateSurfaceStackEntry(surfaceStack, surfaceId, updateEntry) {
   return surfaceStack.map((entry) => (entry.id === surfaceId ? updateEntry(entry) : entry));
 }
 
-function createSurfaceRuntimeEntry(surfaceId, definition) {
+function createSurfaceRuntimeEntry(surfaceId, definition, flowSession = null) {
   const {
     onClose,
     component,
@@ -414,7 +748,12 @@ function createSurfaceRuntimeEntry(surfaceId, definition) {
       closeLabel,
       onClose,
     },
-    surfaceEntry: { id: surfaceId, payloadId, ...surfaceMetadata },
+    surfaceEntry: {
+      id: surfaceId,
+      payloadId,
+      ...(flowSession ? { flow: toSurfaceFlowState(flowSession) } : {}),
+      ...surfaceMetadata,
+    },
   };
 }
 
@@ -424,6 +763,9 @@ function releaseSurfaceResources({
   surfaceId,
   surfaceOnCloseMap,
   surfacePayloadMap,
+  surfaceFlowSessionMap,
+  surfaceFlowToSurfaceIdMap,
+  surfacePromiseMap,
   surfaceResolveMap,
   surfaceUrlStateMap,
 }) {
@@ -434,6 +776,12 @@ function releaseSurfaceResources({
   }
   surfaceEntryMap.delete(surfaceId);
   surfaceUrlStateMap.delete(surfaceId);
+  const flowSession = surfaceFlowSessionMap.get(surfaceId);
+  if (flowSession && surfaceFlowToSurfaceIdMap.get(flowSession.flowId) === surfaceId) {
+    surfaceFlowToSurfaceIdMap.delete(flowSession.flowId);
+  }
+  surfaceFlowSessionMap.delete(surfaceId);
+  surfacePromiseMap.delete(surfaceId);
   const onClose = surfaceOnCloseMap.get(surfaceId);
   if (typeof onClose === 'function') {
     try {
@@ -446,28 +794,41 @@ function releaseSurfaceResources({
   const resolve = surfaceResolveMap.get(surfaceId);
   if (typeof resolve === 'function') resolve(result);
   surfaceResolveMap.delete(surfaceId);
+  return flowSession || null;
 }
 const initialSurfaceState = createSurfaceState([]);
 
-export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery }) {
+export function useSurfaceStack({
+  onSurfaceFlowSettled = null,
+  setCompactLock,
+  setExpanded,
+  setSearchQuery,
+}) {
   const [surfaceState, setSurfaceState] = useState(initialSurfaceState);
-  const [navigationMachine, dispatchNavigation] = useReducer(
-    navigationStateReducer,
+  const [surfaceLifecycleState, dispatchSurfaceLifecycle] = useReducer(
+    surfaceLifecycleReducer,
     undefined,
-    createNavigationMachineState,
+    createSurfaceLifecycleState,
   );
 
   const surfaceStackRef = useRef([]);
   const surfacePayloadMapRef = useRef(new Map());
   const surfaceEntryMapRef = useRef(new Map());
+  const surfaceFlowSessionMapRef = useRef(new Map());
+  const surfaceFlowToSurfaceIdMapRef = useRef(new Map());
+  const surfacePromiseMapRef = useRef(new Map());
   const surfaceResolveMapRef = useRef(new Map());
   const surfaceOnCloseMapRef = useRef(new Map());
   const surfaceUrlStateMapRef = useRef(new Map());
+  const surfaceFocusOriginMapRef = useRef(new Map());
   const surfaceIdRef = useRef(0);
   const isCompactRef = useRef(false);
   const wasCompactRef = useRef(false);
   const compactUnlockTimerRef = useRef(null);
   const pendingSurfaceSchedulerRef = useRef(null);
+  const focusRestoreFrameRef = useRef(null);
+  const onSurfaceFlowSettledRef = useRef(onSurfaceFlowSettled);
+  onSurfaceFlowSettledRef.current = onSurfaceFlowSettled;
 
   if (pendingSurfaceSchedulerRef.current === null) {
     pendingSurfaceSchedulerRef.current = createPendingSurfaceScheduler();
@@ -475,7 +836,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
 
   const setIsCompact = useCallback((compactVal) => {
     isCompactRef.current = compactVal;
-    dispatchNavigation({ type: NAVIGATION_EVENTS.SET_COMPACT, value: compactVal });
+    dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SET_COMPACT, value: compactVal });
   }, []);
 
   const syncSurfaceStack = useCallback((nextStack) => {
@@ -483,18 +844,44 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
     setSurfaceState(createSurfaceState(nextStack, surfacePayloadMapRef.current));
   }, []);
 
-  const finalizeSurfaceClose = useCallback((surfaceId, result) => {
-    releaseSurfaceResources({
-      result,
-      surfaceEntryMap: surfaceEntryMapRef.current,
-      surfaceId,
-      surfaceOnCloseMap: surfaceOnCloseMapRef.current,
-      surfacePayloadMap: surfacePayloadMapRef.current,
-      surfaceResolveMap: surfaceResolveMapRef.current,
-      surfaceUrlStateMap: surfaceUrlStateMapRef.current,
+  const restoreSurfaceFocus = useCallback((surfaceId, result, nextStack = []) => {
+    const focusOrigin = surfaceFocusOriginMapRef.current.get(surfaceId);
+    surfaceFocusOriginMapRef.current.delete(surfaceId);
+
+    if (!focusOrigin || nextStack.length > 0 || !shouldRestoreNavigationFocus(result)) return;
+
+    if (focusRestoreFrameRef.current !== null) {
+      cancelAnimationFrame(focusRestoreFrameRef.current);
+    }
+
+    focusRestoreFrameRef.current = requestAnimationFrame(() => {
+      focusRestoreFrameRef.current = null;
+      focusNavigationElement(focusOrigin);
     });
-    dispatchNavigation({ type: NAVIGATION_EVENTS.CLOSE_SURFACE, surfaceId });
   }, []);
+
+  const finalizeSurfaceClose = useCallback(
+    (surfaceId, result, nextStack = []) => {
+      const flowSession = releaseSurfaceResources({
+        result,
+        surfaceEntryMap: surfaceEntryMapRef.current,
+        surfaceId,
+        surfaceOnCloseMap: surfaceOnCloseMapRef.current,
+        surfacePayloadMap: surfacePayloadMapRef.current,
+        surfaceFlowSessionMap: surfaceFlowSessionMapRef.current,
+        surfaceFlowToSurfaceIdMap: surfaceFlowToSurfaceIdMapRef.current,
+        surfacePromiseMap: surfacePromiseMapRef.current,
+        surfaceResolveMap: surfaceResolveMapRef.current,
+        surfaceUrlStateMap: surfaceUrlStateMapRef.current,
+      });
+      const isReturnHandshakeHandled = Boolean(
+        flowSession && onSurfaceFlowSettledRef.current?.({ flow: flowSession, result }),
+      );
+      if (!isReturnHandshakeHandled) restoreSurfaceFocus(surfaceId, result, nextStack);
+      dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_SURFACE, surfaceId });
+    },
+    [restoreSurfaceFocus],
+  );
 
   const unlockCompactAfterSurfaceClose = useCallback(() => {
     if (!wasCompactRef.current) {
@@ -638,7 +1025,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       }
 
       if (pendingScheduler.cancel(surfaceId)) {
-        finalizeSurfaceClose(surfaceId, result);
+        finalizeSurfaceClose(surfaceId, result, currentStack);
 
         if (currentStack.length === 0 && pendingScheduler.size === 0) {
           unlockCompactAfterSurfaceClose();
@@ -653,7 +1040,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       }
 
       const nextStack = currentStack.filter((entry) => entry.id !== surfaceId);
-      finalizeSurfaceClose(surfaceId, result);
+      finalizeSurfaceClose(surfaceId, result, nextStack);
       syncSurfaceStack(nextStack);
 
       if (nextStack.length === 0 && pendingScheduler.size === 0) {
@@ -695,7 +1082,7 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
         finalizeSurfaceClose(surfaceId, result);
       });
 
-      dispatchNavigation({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
+      dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
 
       if (currentStack.length > 0) {
         syncSurfaceStack([]);
@@ -708,7 +1095,8 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
 
   const openSurface = useCallback(
     (input, config = {}) => {
-      const definition = createSurfaceEntryDefinition(input, config);
+      const { flowSession: providedFlowSession, preserveUrl = false, ...surfaceConfig } = config;
+      const definition = createSurfaceEntryDefinition(input, surfaceConfig);
 
       if (!definition) {
         const error = createSurfaceError(
@@ -723,9 +1111,22 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       }
 
       const surfaceId = ++surfaceIdRef.current;
-      const { payload, surfaceEntry } = createSurfaceRuntimeEntry(surfaceId, definition);
+      const flowSession = providedFlowSession ? { ...providedFlowSession, surfaceId } : null;
+      const { payload, surfaceEntry } = createSurfaceRuntimeEntry(
+        surfaceId,
+        definition,
+        flowSession,
+      );
       surfacePayloadMapRef.current.set(surfaceEntry.payloadId, payload);
       surfaceEntryMapRef.current.set(surfaceId, surfaceEntry);
+      if (flowSession) {
+        surfaceFlowSessionMapRef.current.set(surfaceId, flowSession);
+        surfaceFlowToSurfaceIdMapRef.current.set(flowSession.flowId, surfaceId);
+      }
+
+      if (typeof document !== 'undefined' && document.activeElement) {
+        surfaceFocusOriginMapRef.current.set(surfaceId, document.activeElement);
+      }
 
       setExpanded(false);
       setSearchQuery('');
@@ -733,16 +1134,19 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       const runOpen = () => {
         const urlState = { value: getSurfaceUrlValue(surfaceEntry), previousValue: null };
         surfaceUrlStateMapRef.current.set(surfaceId, urlState);
-        syncSurfaceUrl(surfaceEntry, true, urlState);
-        dispatchNavigation({ type: NAVIGATION_EVENTS.OPEN_SURFACE, surfaceId });
+        if (!preserveUrl) {
+          syncSurfaceUrl(surfaceEntry, true, urlState);
+        }
+        dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.OPEN_SURFACE, surfaceId });
         syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
-        dispatchNavigation({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
+        dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
       };
 
       const resultPromise = new Promise((resolve) => {
         surfaceResolveMapRef.current.set(surfaceId, resolve);
         surfaceOnCloseMapRef.current.set(surfaceId, payload.onClose || null);
       });
+      surfacePromiseMapRef.current.set(surfaceId, resultPromise);
 
       if (isCompactRef.current) {
         if (compactUnlockTimerRef.current !== null) {
@@ -764,6 +1168,134 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       return resultPromise;
     },
     [setCompactLock, setExpanded, setSearchQuery, syncSurfaceStack],
+  );
+
+  const updateSurfaceFlow = useCallback(
+    (flowId, snapshot) => {
+      const surfaceId = surfaceFlowToSurfaceIdMapRef.current.get(flowId);
+      if (!surfaceId) return false;
+
+      const session = surfaceFlowSessionMapRef.current.get(surfaceId);
+      const surfaceEntry = surfaceEntryMapRef.current.get(surfaceId);
+      if (!session || !surfaceEntry) return false;
+
+      const nextSession = updateSurfaceFlowSession(session, snapshot);
+      if (!nextSession) return false;
+
+      const nextSurfaceEntry = { ...surfaceEntry, flow: toSurfaceFlowState(nextSession) };
+      surfaceFlowSessionMapRef.current.set(surfaceId, nextSession);
+      surfaceEntryMapRef.current.set(surfaceId, nextSurfaceEntry);
+      syncSurfaceFlowUrlState(nextSurfaceEntry, surfaceUrlStateMapRef.current.get(surfaceId));
+      syncSurfaceStack(
+        updateSurfaceStackEntry(surfaceStackRef.current, surfaceId, () => nextSurfaceEntry),
+      );
+      return true;
+    },
+    [syncSurfaceStack],
+  );
+
+  const completeSurfaceFlow = useCallback(
+    (flowId, data = null) => {
+      const surfaceId = surfaceFlowToSurfaceIdMapRef.current.get(flowId);
+      if (!surfaceId) return false;
+      const session = surfaceFlowSessionMapRef.current.get(surfaceId);
+      if (session) {
+        surfaceFlowSessionMapRef.current.set(surfaceId, {
+          ...session,
+          status: NAV_SURFACE_FLOW_STATUS.COMPLETED,
+        });
+      }
+      closeSurface({ data, success: true }, surfaceId);
+      return true;
+    },
+    [closeSurface],
+  );
+
+  const cancelSurfaceFlow = useCallback(
+    (flowId, data = null) => {
+      const surfaceId = surfaceFlowToSurfaceIdMapRef.current.get(flowId);
+      if (!surfaceId) return false;
+      const session = surfaceFlowSessionMapRef.current.get(surfaceId);
+      if (session) {
+        surfaceFlowSessionMapRef.current.set(surfaceId, {
+          ...session,
+          status: NAV_SURFACE_FLOW_STATUS.CANCELLED,
+        });
+      }
+      closeSurface({ cancelled: true, data, reason: 'flow-cancelled', success: false }, surfaceId);
+      return true;
+    },
+    [closeSurface],
+  );
+
+  const getSurfaceFlow = useCallback(
+    (flowId) => {
+      const surfaceId = surfaceFlowToSurfaceIdMapRef.current.get(flowId);
+      const session = surfaceId ? surfaceFlowSessionMapRef.current.get(surfaceId) : null;
+      if (!session) return null;
+
+      return {
+        cancel: (data = null) => cancelSurfaceFlow(flowId, data),
+        complete: (data = null) => completeSurfaceFlow(flowId, data),
+        flowId,
+        isOpen: session.status === NAV_SURFACE_FLOW_STATUS.OPEN,
+        snapshot: session.snapshot,
+        status: session.status,
+        update: (snapshot) => updateSurfaceFlow(flowId, snapshot),
+      };
+    },
+    [cancelSurfaceFlow, completeSurfaceFlow, updateSurfaceFlow],
+  );
+
+  const openSurfaceFlow = useCallback(
+    (input, flowInput = null, { preserveUrl = false, snapshot } = {}) => {
+      const definition = createSurfaceFlowDefinition(input);
+      if (!definition) {
+        const error = createSurfaceError(
+          'NAV_SURFACE_FLOW_INVALID_DEFINITION',
+          'Nav surface flow definition is invalid',
+        );
+        console.error(error);
+        return Promise.resolve({ success: false, error });
+      }
+
+      const existingSurfaceId = surfaceFlowToSurfaceIdMapRef.current.get(definition.id);
+      if (definition.singleton && existingSurfaceId) {
+        return (
+          surfacePromiseMapRef.current.get(existingSurfaceId) ??
+          Promise.resolve({
+            success: false,
+            error: createSurfaceError('NAV_SURFACE_FLOW_ORPHANED', 'Nav surface flow is orphaned'),
+          })
+        );
+      }
+
+      const flowSession = createSurfaceFlowSession(definition, { input: flowInput, snapshot });
+      let surfaceInput;
+      try {
+        surfaceInput = definition.createSurface({
+          flowId: definition.id,
+          input: flowInput,
+          snapshot: flowSession.snapshot,
+        });
+      } catch (error) {
+        console.error('Nav surface flow factory failed:', error);
+        return Promise.resolve({ success: false, error });
+      }
+
+      return openSurface(surfaceInput, { flowSession, preserveUrl });
+    },
+    [openSurface],
+  );
+
+  const restoreSurfaceFlow = useCallback(
+    (input) => {
+      const definition = createSurfaceFlowDefinition(input);
+      const snapshot = getRestorableSurfaceFlowSnapshot(definition);
+      if (!definition || snapshot === undefined) return Promise.resolve(null);
+      return openSurfaceFlow(definition, null, { preserveUrl: true, snapshot });
+    },
+    [openSurfaceFlow],
   );
 
   useEffect(() => {
@@ -791,6 +1323,9 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
     const resolveMap = surfaceResolveMapRef.current;
     const payloadMap = surfacePayloadMapRef.current;
     const entryMap = surfaceEntryMapRef.current;
+    const flowSessionMap = surfaceFlowSessionMapRef.current;
+    const flowToSurfaceIdMap = surfaceFlowToSurfaceIdMapRef.current;
+    const promiseMap = surfacePromiseMapRef.current;
     const onCloseMap = surfaceOnCloseMapRef.current;
     const urlStateMap = surfaceUrlStateMapRef.current;
 
@@ -798,6 +1333,11 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
       if (compactUnlockTimerRef.current !== null) {
         clearTimeout(compactUnlockTimerRef.current);
         compactUnlockTimerRef.current = null;
+      }
+
+      if (focusRestoreFrameRef.current !== null) {
+        cancelAnimationFrame(focusRestoreFrameRef.current);
+        focusRestoreFrameRef.current = null;
       }
 
       const surfaceIds = [
@@ -817,14 +1357,21 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
           surfaceId,
           surfaceOnCloseMap: onCloseMap,
           surfacePayloadMap: payloadMap,
+          surfaceFlowSessionMap: flowSessionMap,
+          surfaceFlowToSurfaceIdMap: flowToSurfaceIdMap,
+          surfacePromiseMap: promiseMap,
           surfaceResolveMap: resolveMap,
           surfaceUrlStateMap: urlStateMap,
         });
       });
 
       surfaceStackRef.current = [];
+      surfaceFocusOriginMapRef.current.clear();
       payloadMap.clear();
       entryMap.clear();
+      flowSessionMap.clear();
+      flowToSurfaceIdMap.clear();
+      promiseMap.clear();
     };
   }, []);
 
@@ -834,15 +1381,21 @@ export function useSurfaceStack({ setCompactLock, setExpanded, setSearchQuery })
     goBackSurface,
     goToStep,
     handleSurfaceAnimationComplete,
-    isCompact: navigationMachine.isCompact,
+    isCompact: surfaceLifecycleState.isCompact,
+    cancelSurfaceFlow,
+    completeSurfaceFlow,
+    getSurfaceFlow,
     openSurface,
+    openSurfaceFlow,
     popStep,
     pushStep,
     setIsCompact,
+    restoreSurfaceFlow,
     surfaceState: {
       ...surfaceState,
-      surfaceLifecycle: navigationMachine.surfaceLifecycle,
+      surfaceLifecycle: surfaceLifecycleState.surfaceLifecycle,
     },
+    updateSurfaceFlow,
   };
 }
 const SurfaceHeaderContext = createContext(null);
@@ -1043,6 +1596,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
   },
   ref,
 ) {
+  const surfaceElementRef = useRef(null);
   const [headerState, setHeaderState] = useState({
     icon,
     title,
@@ -1070,6 +1624,25 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     }));
   }, [badge, description, headerAction, icon, onBack, stepIndex, title, totalSteps, trailing]);
 
+  const setSurfaceElementRef = useCallback(
+    (node) => {
+      surfaceElementRef.current = node;
+
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref],
+  );
+
+  useNavigationFocusTrap({
+    containerRef: surfaceElementRef,
+    enabled: true,
+    onDismiss: typeof onClose === 'function' ? onClose : null,
+  });
+
   const handleDragEnd = (_event, info) => {
     if (!allowSwipeDismiss || typeof onClose !== 'function') return;
     if (info.offset.y > 65 || info.velocity.y > 400) {
@@ -1080,7 +1653,10 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
   return (
     <SurfaceHeaderContext.Provider value={setHeaderState}>
       <motion.section
-        ref={ref}
+        ref={setSurfaceElementRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
         className={cn('relative flex flex-col gap-2.5 overflow-visible', className)}
         variants={slideFadeVariants}
         initial={false}

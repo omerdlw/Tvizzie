@@ -6,6 +6,7 @@ import {
   COMPACT_CARD_MIN_WIDTH,
   NAV_ACTION_KEYS,
   NAV_CONFIG_FIELD_TYPES,
+  NAVIGATION_POLICY_FIELD_TYPES,
   NAV_RENDERABLE_FIELDS,
   NAV_STYLE_SECTIONS,
 } from './constants';
@@ -89,6 +90,18 @@ export function validateNavConfig(config) {
   }
   if (config.style !== undefined && !isObjectLike(config.style)) {
     issues.push('NAV.style must be an object');
+  }
+  if (config.navigationPolicy !== undefined) {
+    if (!isObjectLike(config.navigationPolicy)) {
+      issues.push('NAV.navigationPolicy must be an object');
+    } else {
+      Object.entries(NAVIGATION_POLICY_FIELD_TYPES).forEach(([field, expectedType]) => {
+        const value = config.navigationPolicy[field];
+        if (value !== undefined && typeof value !== expectedType) {
+          issues.push(`NAV.navigationPolicy.${field} must be a ${expectedType}`);
+        }
+      });
+    }
   }
 
   return { valid: issues.length === 0, issues };
