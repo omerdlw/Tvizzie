@@ -2,7 +2,7 @@
 
 import { isValidElement, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import { Z_INDEX } from '@/shared';
 import { cn } from '@/ui/class-names';

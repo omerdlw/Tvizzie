@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { requestJson } from '@/shared';
 import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, TMDB_IMG, WARNING_ACTION_TONE_CLASS } from '@/shared';
 import {
@@ -511,7 +511,6 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             transition={NAV_BUTTON_TRANSITION}
                             style={{

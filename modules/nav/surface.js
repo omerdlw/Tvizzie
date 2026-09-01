@@ -11,12 +11,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'motion/react';
 
 import {
   NAVIGATION_EVENTS,
   NAVIGATION_LIFECYCLE,
+  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
   NAV_SURFACE_FLOW_STATUS,
+  NAV_SURFACE_PHASE,
   NAV_SURFACE_RENDER_MODE,
 } from './constants';
 import {
@@ -33,10 +35,15 @@ import {
 } from './utils';
 import {
   NAV_COMPACT_TO_SURFACE_DELAY_MS,
+  NAV_HEADER_SWAP_TRANSITION,
+  NAV_SURFACE_BODY_ENTER_TRANSITION,
+  NAV_SURFACE_BODY_EXIT_TRANSITION,
   NAV_SURFACE_DRAG_CONSTRAINTS,
   NAV_SURFACE_DRAG_ELASTIC,
   NAV_SURFACE_EXIT_SETTLE_MS,
-  NAV_SURFACE_TRANSITION,
+  navHeaderSwapVariants,
+  navSurfaceControlsVariants,
+  navSurfaceBodyVariants,
   slideFadeVariants,
 } from './motion';
 import { cn } from '@/ui/class-names';
@@ -423,6 +430,7 @@ export function applySurfaceToNavItem(
     handleSurfaceAnimationComplete,
     getSurfaceFlow,
     surfaceStack = [],
+    surfacePhase = NAV_SURFACE_PHASE.OPEN,
   } = {},
 ) {
   const surfaceEntry = resolveActiveStepDefinition(rawSurfaceEntry);
@@ -443,6 +451,7 @@ export function applySurfaceToNavItem(
     ...item,
     isSurface: true,
     isOverlay: true,
+    surfacePhase,
     surfaceId,
     dismissible: surfaceEntry.dismissible !== false,
     allowSwipeDismiss: surfaceEntry.allowSwipeDismiss !== false,
@@ -798,7 +807,7 @@ function releaseSurfaceResources({
   surfaceResolveMap.delete(surfaceId);
   return flowSession || null;
 }
-const initialSurfaceState = createSurfaceState([]);
+const initialSurfaceState = createSurfaceState([], null, NAV_SURFACE_PHASE.IDLE);
 
 export function useSurfaceStack({
   onSurfaceFlowSettled = null,
@@ -812,6 +821,7 @@ export function useSurfaceStack({
     undefined,
     createSurfaceLifecycleState,
   );
+  const [surfacePhase, setSurfacePhase] = useState(NAV_SURFACE_PHASE.IDLE);
 
   const surfaceStackRef = useRef([]);
   const surfacePayloadMapRef = useRef(new Map());
@@ -829,6 +839,7 @@ export function useSurfaceStack({
   const compactUnlockTimerRef = useRef(null);
   const pendingSurfaceSchedulerRef = useRef(null);
   const focusRestoreFrameRef = useRef(null);
+  const choreographyTimersRef = useRef([]);
   const onSurfaceFlowSettledRef = useRef(onSurfaceFlowSettled);
   onSurfaceFlowSettledRef.current = onSurfaceFlowSettled;
 
@@ -836,14 +847,32 @@ export function useSurfaceStack({
     pendingSurfaceSchedulerRef.current = createPendingSurfaceScheduler();
   }
 
+  const clearChoreographyTimers = useCallback(() => {
+    choreographyTimersRef.current.forEach((timerId) => clearTimeout(timerId));
+    choreographyTimersRef.current = [];
+  }, []);
+
   const setIsCompact = useCallback((compactVal) => {
     isCompactRef.current = compactVal;
     dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SET_COMPACT, value: compactVal });
   }, []);
 
-  const syncSurfaceStack = useCallback((nextStack) => {
+  const updatePhase = useCallback((nextPhase) => {
+    setSurfacePhase(nextPhase);
+    setSurfaceState((prevState) => ({
+      ...prevState,
+      surfacePhase: nextPhase,
+    }));
+  }, []);
+
+  const syncSurfaceStack = useCallback((nextStack, nextPhase = null) => {
     surfaceStackRef.current = nextStack;
-    setSurfaceState(createSurfaceState(nextStack, surfacePayloadMapRef.current));
+    const effectivePhase =
+      nextPhase ?? (nextStack.length > 0 ? NAV_SURFACE_PHASE.OPEN : NAV_SURFACE_PHASE.IDLE);
+    setSurfacePhase(effectivePhase);
+    setSurfaceState(
+      createSurfaceState(nextStack, surfacePayloadMapRef.current, effectivePhase),
+    );
   }, []);
 
   const restoreSurfaceFocus = useCallback((surfaceId, result, nextStack = []) => {
@@ -951,7 +980,7 @@ export function useSurfaceStack({
         };
       });
 
-      syncSurfaceStack(nextStack);
+      syncSurfaceStack(nextStack, NAV_SURFACE_PHASE.OPEN);
     },
     [syncSurfaceStack],
   );
@@ -975,7 +1004,7 @@ export function useSurfaceStack({
         };
       });
 
-      syncSurfaceStack(nextStack);
+      syncSurfaceStack(nextStack, NAV_SURFACE_PHASE.OPEN);
     },
     [syncSurfaceStack],
   );
@@ -1005,7 +1034,7 @@ export function useSurfaceStack({
         };
       });
 
-      syncSurfaceStack(nextStack);
+      syncSurfaceStack(nextStack, NAV_SURFACE_PHASE.OPEN);
     },
     [syncSurfaceStack],
   );
@@ -1042,14 +1071,52 @@ export function useSurfaceStack({
       }
 
       const nextStack = currentStack.filter((entry) => entry.id !== surfaceId);
-      finalizeSurfaceClose(surfaceId, result, nextStack);
-      syncSurfaceStack(nextStack);
+      const isReturningToPreviousSurface = nextStack.length > 0;
 
-      if (nextStack.length === 0 && pendingScheduler.size === 0) {
-        unlockCompactAfterSurfaceClose();
+      if (isReturningToPreviousSurface) {
+        clearChoreographyTimers();
+        finalizeSurfaceClose(surfaceId, result, nextStack);
+        surfaceStackRef.current = nextStack;
+        updatePhase(NAV_SURFACE_PHASE.OPEN);
+        setSurfaceState(
+          createSurfaceState(nextStack, surfacePayloadMapRef.current, NAV_SURFACE_PHASE.OPEN),
+        );
+        return;
       }
+
+      clearChoreographyTimers();
+
+      // Kapanış Koreografisi:
+      // Adım 1: COLLAPSING_BODY (Surface Body aşağı kayarak kaybolur, kart alçalır, Header görünür kalır)
+      updatePhase(NAV_SURFACE_PHASE.COLLAPSING_BODY);
+
+      // Adım 2: RESTORING_HEADER (Surface Body tamamen yok oldu; delayer sonrası Surface Header yerini Nav Header'a bırakır)
+      const t1 = setTimeout(() => {
+        updatePhase(NAV_SURFACE_PHASE.RESTORING_HEADER);
+
+        // Adım 3 & 4: Geçiş tamamlandı, yalnızca Nav Header kalır, kaynaklar temizlenir
+        const t2 = setTimeout(() => {
+          updatePhase(NAV_SURFACE_PHASE.IDLE);
+          finalizeSurfaceClose(surfaceId, result, []);
+          surfaceStackRef.current = [];
+          setSurfaceState(
+            createSurfaceState([], surfacePayloadMapRef.current, NAV_SURFACE_PHASE.IDLE),
+          );
+
+          if (pendingScheduler.size === 0) {
+            unlockCompactAfterSurfaceClose();
+          }
+        }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.RESTORE_SETTLE_MS);
+        choreographyTimersRef.current.push(t2);
+      }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_EXIT_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_COLLAPSE_SETTLE_MS);
+      choreographyTimersRef.current.push(t1);
     },
-    [finalizeSurfaceClose, syncSurfaceStack, unlockCompactAfterSurfaceClose],
+    [
+      clearChoreographyTimers,
+      finalizeSurfaceClose,
+      unlockCompactAfterSurfaceClose,
+      updatePhase,
+    ],
   );
 
   const goBackSurface = useCallback(() => {
@@ -1077,22 +1144,43 @@ export function useSurfaceStack({
         return;
       }
 
-      currentStack.forEach((entry) => {
-        finalizeSurfaceClose(entry.id, result);
-      });
       pendingSurfaceIds.forEach((surfaceId) => {
         finalizeSurfaceClose(surfaceId, result);
       });
 
-      dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
-
-      if (currentStack.length > 0) {
-        syncSurfaceStack([]);
+      if (currentStack.length === 0) {
+        unlockCompactAfterSurfaceClose();
+        return;
       }
 
-      unlockCompactAfterSurfaceClose();
+      clearChoreographyTimers();
+      updatePhase(NAV_SURFACE_PHASE.COLLAPSING_BODY);
+
+      const t1 = setTimeout(() => {
+        updatePhase(NAV_SURFACE_PHASE.RESTORING_HEADER);
+
+        const t2 = setTimeout(() => {
+          updatePhase(NAV_SURFACE_PHASE.IDLE);
+          currentStack.forEach((entry) => {
+            finalizeSurfaceClose(entry.id, result);
+          });
+          dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
+          surfaceStackRef.current = [];
+          setSurfaceState(
+            createSurfaceState([], surfacePayloadMapRef.current, NAV_SURFACE_PHASE.IDLE),
+          );
+          unlockCompactAfterSurfaceClose();
+        }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.RESTORE_SETTLE_MS);
+        choreographyTimersRef.current.push(t2);
+      }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_EXIT_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_COLLAPSE_SETTLE_MS);
+      choreographyTimersRef.current.push(t1);
     },
-    [finalizeSurfaceClose, syncSurfaceStack, unlockCompactAfterSurfaceClose],
+    [
+      clearChoreographyTimers,
+      finalizeSurfaceClose,
+      unlockCompactAfterSurfaceClose,
+      updatePhase,
+    ],
   );
 
   const openSurface = useCallback(
@@ -1140,8 +1228,53 @@ export function useSurfaceStack({
           syncSurfaceUrl(surfaceEntry, true, urlState);
         }
         dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.OPEN_SURFACE, surfaceId });
-        syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
-        dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
+
+        const isInitialSurface = surfaceStackRef.current.length === 0;
+        clearChoreographyTimers();
+        surfaceStackRef.current = [...surfaceStackRef.current, surfaceEntry];
+
+        if (!isInitialSurface) {
+          updatePhase(NAV_SURFACE_PHASE.OPEN);
+          setSurfaceState(
+            createSurfaceState(
+              surfaceStackRef.current,
+              surfacePayloadMapRef.current,
+              NAV_SURFACE_PHASE.OPEN,
+            ),
+          );
+          dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
+          return;
+        }
+
+        setSurfaceState(
+          createSurfaceState(
+            surfaceStackRef.current,
+            surfacePayloadMapRef.current,
+            NAV_SURFACE_PHASE.DISMISSING_ACTION,
+          ),
+        );
+        setSurfacePhase(NAV_SURFACE_PHASE.DISMISSING_ACTION);
+
+        // Açılış Koreografisi:
+        // Adım 1: DISMISSING_ACTION (Action Component kaybolur; kartta yalnızca Nav Header kalır)
+        const t1 = setTimeout(() => {
+          // Adım 2: SWAPPING_HEADER (Nav Header, yerini Surface Header'a bırakır)
+          updatePhase(NAV_SURFACE_PHASE.SWAPPING_HEADER);
+
+          const t2 = setTimeout(() => {
+            // Adım 3: EXPANDING_BODY (Kart yukarı yükselir ve Surface Body görünür hale gelir)
+            updatePhase(NAV_SURFACE_PHASE.EXPANDING_BODY);
+            dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
+
+            const t3 = setTimeout(() => {
+              // Adım 4: Açılış tamamlandı
+              updatePhase(NAV_SURFACE_PHASE.OPEN);
+            }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_ENTER_MS);
+            choreographyTimersRef.current.push(t3);
+          }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_SWAP_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_SWAP_SETTLE_MS);
+          choreographyTimersRef.current.push(t2);
+        }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.ACTION_DISMISS_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.ACTION_DISMISS_SETTLE_MS);
+        choreographyTimersRef.current.push(t1);
       };
 
       const resultPromise = new Promise((resolve) => {
@@ -1169,7 +1302,12 @@ export function useSurfaceStack({
 
       return resultPromise;
     },
-    [setCompactLock, setExpanded, setSearchQuery, syncSurfaceStack],
+    [
+      clearChoreographyTimers,
+      setCompactLock,
+      setExpanded,
+      setSearchQuery,
+    ],
   );
 
   const updateSurfaceFlow = useCallback(
@@ -1337,6 +1475,8 @@ export function useSurfaceStack({
         compactUnlockTimerRef.current = null;
       }
 
+      clearChoreographyTimers();
+
       if (focusRestoreFrameRef.current !== null) {
         cancelAnimationFrame(focusRestoreFrameRef.current);
         focusRestoreFrameRef.current = null;
@@ -1375,7 +1515,7 @@ export function useSurfaceStack({
       flowToSurfaceIdMap.clear();
       promiseMap.clear();
     };
-  }, []);
+  }, [clearChoreographyTimers]);
 
   return {
     closeAllSurfaces,
@@ -1393,8 +1533,10 @@ export function useSurfaceStack({
     pushStep,
     setIsCompact,
     restoreSurfaceFlow,
+    surfacePhase,
     surfaceState: {
       ...surfaceState,
+      surfacePhase,
       surfaceLifecycle: surfaceLifecycleState.surfaceLifecycle,
     },
     updateSurfaceFlow,
@@ -1491,11 +1633,11 @@ export function NavSurfaceHeader({
           <div className="relative size-12 shrink-0">
             {isImageIconSource(icon) ? (
               <div
-                className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat transition-all duration-300 ease-in-out"
+                className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${icon})` }}
               />
             ) : (
-              <div className="center size-12 rounded-[20px] bg-white/5 text-white transition-all duration-300 ease-in-out">
+              <div className="center size-12 rounded-[20px] bg-white/5 text-white">
                 {typeof icon === 'string' ? <Iconify icon={icon} size={24} /> : icon}
               </div>
             )}
@@ -1533,47 +1675,73 @@ export function NavSurfaceHeader({
       </div>
 
       {controlCount ? (
-        <div
+        <motion.div
+          key="nav-surface-header-controls"
+          variants={navSurfaceControlsVariants}
+          custom={0}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className={cn(
             'flex shrink-0 items-center self-start',
             controlCount > 1 ? 'gap-[1px]' : 'gap-1',
           )}
         >
-          {renderedHeaderAction}
-          {hasBack ? (
-            <Button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onBack();
-              }}
-              className={cn(
-                'center relative size-8 shrink-0 cursor-pointer bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:z-10 hover:bg-white hover:text-black hover:ring-transparent focus-visible:z-10',
-                hasClose ? 'rounded-l-[20px] rounded-r-none' : 'rounded-[20px]',
-                hasHeaderAction ? 'rounded-l-none' : '',
-              )}
-              aria-label={backLabel}
+          {renderedHeaderAction ? (
+            <motion.div
+              key="surface-header-action"
+              variants={navSurfaceControlsVariants}
+              custom={0}
             >
-              <Iconify icon="solar:alt-arrow-left-bold" size={16} />
-            </Button>
+              {renderedHeaderAction}
+            </motion.div>
+          ) : null}
+          {hasBack ? (
+            <motion.div
+              key="surface-header-back"
+              variants={navSurfaceControlsVariants}
+              custom={1}
+            >
+              <Button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onBack();
+                }}
+                className={cn(
+                  'center relative size-8 shrink-0 cursor-pointer bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:z-10 hover:bg-white hover:text-black hover:ring-transparent focus-visible:z-10',
+                  hasClose ? 'rounded-l-[20px] rounded-r-none' : 'rounded-[20px]',
+                  hasHeaderAction ? 'rounded-l-none' : '',
+                )}
+                aria-label={backLabel}
+              >
+                <Iconify icon="solar:alt-arrow-left-bold" size={16} />
+              </Button>
+            </motion.div>
           ) : null}
           {hasClose ? (
-            <Button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onClose();
-              }}
-              className={cn(
-                'center relative size-8 shrink-0 cursor-pointer bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:z-10 hover:bg-white hover:text-black hover:ring-transparent focus-visible:z-10',
-                controlCount > 1 ? 'rounded-l-none rounded-r-[20px]' : 'rounded-[20px]',
-              )}
-              aria-label={closeLabel}
+            <motion.div
+              key="surface-header-close"
+              variants={navSurfaceControlsVariants}
+              custom={2}
             >
-              <Iconify icon="material-symbols:close-rounded" size={16} />
-            </Button>
+              <Button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onClose();
+                }}
+                className={cn(
+                  'center relative size-8 shrink-0 cursor-pointer bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:z-10 hover:bg-white hover:text-black hover:ring-transparent focus-visible:z-10',
+                  controlCount > 1 ? 'rounded-l-none rounded-r-[20px]' : 'rounded-[20px]',
+                )}
+                aria-label={closeLabel}
+              >
+                <Iconify icon="material-symbols:close-rounded" size={16} />
+              </Button>
+            </motion.div>
           ) : null}
-        </div>
+        </motion.div>
       ) : null}
     </div>
   );
@@ -1604,6 +1772,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     contentClassName = '',
     children,
     onAnimationComplete = null,
+    surfacePhase = NAV_SURFACE_PHASE.OPEN,
   },
   ref,
 ) {
@@ -1648,18 +1817,31 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     [ref],
   );
 
+  const isFullyOpen = surfacePhase === NAV_SURFACE_PHASE.OPEN;
+  const dragY = useMotionValue(0);
+  const dragOpacity = useTransform(dragY, [0, 180], [1, 0.75]);
+  const dragScale = useTransform(dragY, [0, 180], [1, 0.96]);
+
   useNavigationFocusTrap({
     containerRef: surfaceElementRef,
-    enabled: true,
+    enabled: isFullyOpen,
     onDismiss: typeof onClose === 'function' ? onClose : null,
   });
 
   const handleDragEnd = (_event, info) => {
-    if (!allowSwipeDismiss || typeof onClose !== 'function') return;
+    if (!allowSwipeDismiss || typeof onClose !== 'function' || !isFullyOpen) return;
     if (info.offset.y > 65 || info.velocity.y > 400) {
       onClose();
     }
   };
+
+  const isBodyVisible =
+    surfacePhase === NAV_SURFACE_PHASE.EXPANDING_BODY ||
+    surfacePhase === NAV_SURFACE_PHASE.OPEN;
+
+  const isHeaderVisible =
+    surfacePhase !== NAV_SURFACE_PHASE.DISMISSING_ACTION &&
+    surfacePhase !== NAV_SURFACE_PHASE.IDLE;
 
   return (
     <SurfaceHeaderContext.Provider value={setHeaderState}>
@@ -1669,12 +1851,15 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
         aria-modal="true"
         tabIndex={-1}
         className={cn('relative flex flex-col gap-2.5 overflow-visible', className)}
-        variants={slideFadeVariants}
-        initial={false}
-        animate="visible"
-        exit="exit"
-        transition={NAV_SURFACE_TRANSITION}
-        drag={allowSwipeDismiss && typeof onClose === 'function' ? 'y' : false}
+        style={{
+          y: dragY,
+          opacity: dragOpacity,
+          scale: dragScale,
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitFontSmoothing: 'antialiased',
+        }}
+        drag={allowSwipeDismiss && typeof onClose === 'function' && isFullyOpen ? 'y' : false}
         dragConstraints={NAV_SURFACE_DRAG_CONSTRAINTS}
         dragElastic={NAV_SURFACE_DRAG_ELASTIC}
         onDragEnd={handleDragEnd}
@@ -1697,7 +1882,31 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
             onClose={onClose}
           />
         </div>
-        <div className={cn('w-full overflow-visible', contentClassName)}>{children}</div>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {isBodyVisible && (
+            <motion.div
+              key="surface-body-motion"
+              variants={navSurfaceBodyVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={
+                surfacePhase === NAV_SURFACE_PHASE.COLLAPSING_BODY
+                  ? NAV_SURFACE_BODY_EXIT_TRANSITION
+                  : NAV_SURFACE_BODY_ENTER_TRANSITION
+              }
+              style={{
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+                WebkitFontSmoothing: 'antialiased',
+              }}
+              className={cn('w-full overflow-visible', contentClassName)}
+            >
+              {children}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.section>
     </SurfaceHeaderContext.Provider>
   );

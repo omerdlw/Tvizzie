@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
 import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';

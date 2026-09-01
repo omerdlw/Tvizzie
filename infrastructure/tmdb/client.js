@@ -2303,7 +2303,7 @@ export function buildPersonAuthorityFallbackItems(items = [], options = {}) {
   return rankResolvedPersonSearchItems(items, options.query, options);
 }
 
-const MINIMUM_SEARCH_QUERY_LENGTH = 2;
+const MINIMUM_SEARCH_QUERY_LENGTH = 1;
 
 export function createSearchQueryPolicy(query = '') {
   const normalizedQuery = normalizeSearchQuery(query);

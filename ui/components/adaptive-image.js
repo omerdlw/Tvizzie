@@ -73,7 +73,7 @@ export default function AdaptiveImage({
   return (
     <div
       className={cn(
-        'relative h-full w-full overflow-hidden bg-white/5',
+        'relative h-full w-full overflow-hidden bg-white/5 select-none',
         skeletonClassName,
         wrapperClassName,
       )}
@@ -84,6 +84,8 @@ export default function AdaptiveImage({
           ref={imageRef}
           src={resolvedSrc}
           alt={alt}
+          draggable={false}
+          onDragStart={(event) => event.preventDefault()}
           className={imageClassName}
           onLoad={handleLoad}
           onError={handleError}
@@ -100,6 +102,8 @@ export default function AdaptiveImage({
           alt={alt}
           fill={resolvedFill}
           preload={preload}
+          draggable={false}
+          onDragStart={(event) => event.preventDefault()}
           loading={resolvedLoading}
           fetchPriority={resolvedFetchPriority}
           decoding={decoding}

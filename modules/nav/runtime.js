@@ -917,6 +917,7 @@ function resolveActiveItem({
     return applySurfaceToNavItem(baseActiveItem, surfaceState.activeSurfaceEntry, {
       ...surfaceActions,
       closeSurface: (result) => surfaceActions.closeSurface(result, surfaceState.activeSurfaceId),
+      surfacePhase: surfaceState.surfacePhase,
     });
   }
 
@@ -984,6 +985,7 @@ function useNavigationDisplay() {
     hud,
     isSurfaceOpen,
     surfaceStack,
+    surfacePhase,
   } = useNavigationState();
   const surfaceState = useMemo(
     () => ({
@@ -991,8 +993,9 @@ function useNavigationDisplay() {
       activeSurfaceEntry,
       isSurfaceOpen,
       surfaceStack,
+      surfacePhase,
     }),
-    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen, surfaceStack],
+    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen, surfaceStack, surfacePhase],
   );
   const statusState = useNavigationStatus();
   const { mediaAction } = useNavRuntimeRegistry();

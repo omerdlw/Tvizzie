@@ -10,7 +10,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -267,7 +267,7 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
     >
       <nav
         aria-label="Breadcrumbs"
-        className="flex scrollbar-none items-center gap-2 overflow-x-auto"
+        className="flex scrollbar-none items-center gap-1.5 overflow-x-auto"
       >
         {itemsToRender.map((crumb, index) => {
           const isLast = index === itemsToRender.length - 1;
@@ -281,34 +281,32 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
           }
 
           return (
-            <div key={crumb.id || crumb.path} className="flex items-center gap-2">
+            <motion.div
+              layout="position"
+              key={crumb.id || crumb.path}
+              className="flex items-center gap-1.5"
+            >
               {isLast ? (
-                <span className="flex items-center gap-1.5 font-medium text-white">
-                  {crumb.icon && (
-                    <Iconify icon={crumb.icon} size={14} className="shrink-0 text-white/70" />
-                  )}
-                  <span className="max-w-[160px] truncate">{crumb.title}</span>
+                <span className="max-w-[180px] truncate font-medium text-white">
+                  {crumb.title}
                 </span>
               ) : (
                 <Link
                   href={crumb.path}
-                  className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white"
+                  className="max-w-[140px] truncate text-white/60 hover:text-white"
                 >
-                  {crumb.icon && (
-                    <Iconify icon={crumb.icon} size={14} className="shrink-0 text-white/40" />
-                  )}
-                  <span className="max-w-[120px] truncate">{crumb.title}</span>
+                  {crumb.title}
                 </Link>
               )}
 
               {!isLast && (
                 <Iconify
                   icon="solar:alt-arrow-right-linear"
-                  size={12}
-                  className="shrink-0 text-white/40"
+                  size={10}
+                  className="shrink-0 text-white/30"
                 />
               )}
-            </div>
+            </motion.div>
           );
         })}
       </nav>

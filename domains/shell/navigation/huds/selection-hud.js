@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import { NAV_HUD_PRIORITY, useNavHud } from '@/modules/nav';
 import {

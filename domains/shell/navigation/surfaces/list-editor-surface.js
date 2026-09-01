@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useState, useTransition, useCallback, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuth } from '@/modules/auth';
 import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';

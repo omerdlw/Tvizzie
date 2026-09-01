@@ -10,11 +10,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { globalEvents } from '@/shared';
-import { NAV_EVENTS } from './constants';
+import { NAV_EVENTS, NAV_SURFACE_PHASE } from './constants';
 import {
   getImageIconStyle,
   getItemMeasurementKey,
@@ -27,17 +27,26 @@ import {
   splitStyle,
 } from './utils';
 import {
+  NAV_ACTION_DISMISS_TRANSITION,
   NAV_BADGE_TRANSITION,
   NAV_FADE_TRANSITION,
+  NAV_HEADER_SWAP_TRANSITION,
   NAV_ICON_TRANSITION,
+  NAV_SURFACE_BODY_ENTER_TRANSITION,
+  NAV_SURFACE_BODY_EXIT_TRANSITION,
   NAV_TEXT_ENTER_TRANSITION,
   getNavCardContentAnimateProps,
   getNavCardDelay,
   getNavDescriptionVariants,
   getNavItemAnimateValues,
   getNavItemTransition,
+  navActionDismissVariants,
   navBadgeVariants,
   navFadeVariants,
+  navIconVariants,
+  navHeaderSwapVariants,
+  navHeaderRestoreVariants,
+  navSurfaceBodyVariants,
   textCrossfadeVariants,
 } from './motion';
 import { getNavItemCardProps, useElementHeight } from './layout';
@@ -113,7 +122,7 @@ const NavIconOverlay = memo(function NavIconOverlay({ overlay }) {
   );
 
   const sharedClassName = cn(
-    'absolute -right-1 -bottom-1 z-20 flex size-6 items-center justify-center overflow-hidden rounded-full bg-black ring ring-black transition-[background-color,color,box-shadow] duration-150 ease-out',
+    'absolute -right-1 -bottom-1 z-20 flex size-6 items-center justify-center overflow-hidden rounded-full bg-black ring ring-black',
     isInteractive ? 'cursor-pointer' : 'cursor-default',
   );
 
@@ -179,7 +188,7 @@ export const NavIcon = memo(function NavIcon({
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={iconKey}
-        variants={navFadeVariants}
+        variants={navIconVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
@@ -189,7 +198,7 @@ export const NavIcon = memo(function NavIcon({
         {isImageSource ? (
           <div
             className={cn(
-              'size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat transition-all duration-300 ease-in-out',
+              'size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat',
               className,
             )}
             style={{
@@ -199,7 +208,7 @@ export const NavIcon = memo(function NavIcon({
         ) : (
           <div
             className={cn(
-              'center size-12 rounded-[20px] bg-white/5 text-white transition-all duration-300 ease-in-out',
+              'center size-12 rounded-[20px] bg-white/5 text-white',
               className,
             )}
             style={iconStyle}
@@ -385,6 +394,7 @@ function SurfaceItemContent({ link }) {
           closeLabel={closeLabel}
           descriptionMaxLines={link.surfaceDescriptionMaxLines ?? 2}
           onAnimationComplete={link.onAnimationComplete}
+          surfacePhase={link.surfacePhase}
           contentClassName="w-full"
         >
           {isValidComponentType(SurfaceComponent) ? (
@@ -497,10 +507,7 @@ function StandardItemContent({
       </div>
 
       {footerNode ? (
-        <div
-          key="nav-surface-footer"
-          className="relative z-10 w-full overflow-visible transition-opacity duration-200 ease-in-out"
-        >
+        <div key="nav-surface-footer" className="relative z-10 w-full overflow-visible">
           {footerNode}
         </div>
       ) : null}
@@ -660,19 +667,35 @@ export const NavCardItem = memo(
           footerNode={
             renderedActionNode ? (
               <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                  key="nav-action-component"
-                  variants={textCrossfadeVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  transition={NAV_FADE_TRANSITION}
-                  className="flow-root overflow-visible"
-                  style={{ overflow: 'visible' }}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <Suspense>{renderedActionNode}</Suspense>
-                </motion.div>
+                {link.surfacePhase === NAV_SURFACE_PHASE.DISMISSING_ACTION ? (
+                  <motion.div
+                    key="nav-action-component-dismiss"
+                    variants={navActionDismissVariants}
+                    initial="visible"
+                    animate="exit"
+                    exit="exit"
+                    transition={NAV_ACTION_DISMISS_TRANSITION}
+                    className="flow-root overflow-visible"
+                    style={{ overflow: 'visible' }}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <Suspense>{renderedActionNode}</Suspense>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="nav-action-component"
+                    variants={textCrossfadeVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    transition={NAV_FADE_TRANSITION}
+                    className="flow-root overflow-visible"
+                    style={{ overflow: 'visible' }}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <Suspense>{renderedActionNode}</Suspense>
+                  </motion.div>
+                )}
               </AnimatePresence>
             ) : null
           }
@@ -777,17 +800,44 @@ export const NavCardItem = memo(
             pointerEvents: compact || (!expanded && position > 0) ? 'none' : 'auto',
           }}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            {link.isSurface ? (
-              <SurfaceItemContent key={contentKey} link={link} />
-            ) : (
+          <AnimatePresence mode="popLayout" initial={false}>
+            {link.isSurface &&
+            link.surfacePhase !== NAV_SURFACE_PHASE.DISMISSING_ACTION &&
+            link.surfacePhase !== NAV_SURFACE_PHASE.RESTORING_HEADER ? (
               <motion.div
-                key={contentKey}
-                variants={navFadeVariants}
+                key="surface-content-layer"
+                variants={navHeaderSwapVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                transition={NAV_FADE_TRANSITION}
+                transition={NAV_HEADER_SWAP_TRANSITION}
+                style={{
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  WebkitFontSmoothing: 'antialiased',
+                }}
+                className="w-full"
+              >
+                <SurfaceItemContent link={link} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="standard-content-layer"
+                variants={navHeaderRestoreVariants}
+                initial={
+                  link.surfacePhase === NAV_SURFACE_PHASE.RESTORING_HEADER
+                    ? 'hidden'
+                    : 'visible'
+                }
+                animate="visible"
+                exit="exit"
+                transition={NAV_HEADER_SWAP_TRANSITION}
+                style={{
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  WebkitFontSmoothing: 'antialiased',
+                }}
+                className="w-full"
               >
                 {renderContent()}
               </motion.div>

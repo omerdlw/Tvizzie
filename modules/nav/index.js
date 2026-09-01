@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import { useClickOutside, Z_INDEX } from '@/shared';
 import {
@@ -17,10 +17,16 @@ import { NavCardItem } from './cards';
 import { useNavHeightController, useNavViewport } from './layout';
 import {
   NAV_BACKDROP_TRANSITION,
+  NAV_CARD_HEIGHT_CLOSE_TRANSITION,
+  NAV_CARD_HEIGHT_OPEN_TRANSITION,
   NAV_STACK_TRANSITION,
   getNavStackAnimateProps,
   navBackdropVariants,
 } from './motion';
+import {
+  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
+  NAV_SURFACE_PHASE,
+} from './constants';
 import { useNavigation, useNavigationActions, useNavigationState } from './runtime';
 
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
@@ -29,17 +35,33 @@ export {
   NAV_TAP_SCALE,
   NAV_BUTTON_TRANSITION,
   NAV_CARD_SPRING,
+  NAV_CARD_TRANSITION,
+  NAV_CARD_EXPAND_TRANSITION,
+  NAV_CARD_COLLAPSE_TRANSITION,
   NAV_FADE_TRANSITION,
   NAV_MICRO_TRANSITION,
   NAV_RESULTS_TRANSITION,
   NAV_RESULTS_EXIT_TRANSITION,
   NAV_RESULTS_STAGGER_DELAY,
+  NAV_CARD_HEIGHT_OPEN_TRANSITION,
+  NAV_CARD_HEIGHT_CLOSE_TRANSITION,
+  NAV_ACTION_DISMISS_TRANSITION,
+  NAV_HEADER_SWAP_TRANSITION,
+  NAV_SURFACE_BODY_ENTER_TRANSITION,
+  NAV_SURFACE_BODY_EXIT_TRANSITION,
+  navActionDismissVariants,
+  navHeaderSwapVariants,
+  navHeaderRestoreVariants,
+  navSurfaceControlsVariants,
+  navCommandBarSwapVariants,
+  navSurfaceBodyVariants,
   navActionVariants,
   slideFadeVariants,
   textCrossfadeVariants,
   staggerItemVariants,
   navListItemVariants,
   navFadeVariants,
+  navIconVariants,
   navBadgeVariants,
   navBackdropVariants,
   navBreadcrumbsVariants,
@@ -68,7 +90,9 @@ export {
   NAV_HUD_PRIORITY,
   NAV_HUD_RENDER_MODE,
   NAV_HUD_VARIANT,
+  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
   NAV_SURFACE_FLOW_STATUS,
+  NAV_SURFACE_PHASE,
   NAV_SURFACE_RENDER_MODE,
   NAVIGATION_CONTINUITY_EVENTS,
   NAVIGATION_SURFACE_RETURN_MAX_ENTRIES,
@@ -99,6 +123,7 @@ export {
   resolveActiveHud,
 } from './hud';
 export {
+  applySurfaceToNavItem,
   createInlineSurfaceEntry,
   createPendingSurfaceScheduler,
   createSurfaceEntryDefinition,
@@ -292,6 +317,7 @@ export default function Nav() {
     contentKey,
     isHud: isHudActive,
     setNavHeight,
+    surfacePhase: activeItem?.surfacePhase,
   });
 
   const handleOutsideDismiss = useCallback(() => {
@@ -412,6 +438,22 @@ export default function Nav() {
     );
   });
 
+  const navStackTransition = useMemo(() => {
+    if (
+      activeItem?.surfacePhase === NAV_SURFACE_PHASE.EXPANDING_BODY ||
+      activeItem?.surfacePhase === NAV_SURFACE_PHASE.OPEN
+    ) {
+      return NAV_CARD_HEIGHT_OPEN_TRANSITION;
+    }
+    if (
+      activeItem?.surfacePhase === NAV_SURFACE_PHASE.COLLAPSING_BODY ||
+      activeItem?.surfacePhase === NAV_SURFACE_PHASE.RESTORING_HEADER
+    ) {
+      return NAV_CARD_HEIGHT_CLOSE_TRANSITION;
+    }
+    return NAV_STACK_TRANSITION;
+  }, [activeItem?.surfacePhase]);
+
   const navContent = (
     <>
       <AnimatePresence>
@@ -445,7 +487,7 @@ export default function Nav() {
           isBreadcrumbsVisible: isBreadcrumbsCardVisible,
           isFullscreen: isFullscreenStateActive,
         })}
-        transition={NAV_STACK_TRANSITION}
+        transition={navStackTransition}
       >
         <AnimatePresence>{isBreadcrumbsCardVisible && <NavBreadcrumbsCard />}</AnimatePresence>
         {renderedNavItems}

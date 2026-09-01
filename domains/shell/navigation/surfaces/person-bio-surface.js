@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
+import { motion } from 'motion/react';
+import { navListItemVariants } from '@/modules/nav';
 
 export function createPersonBioSurfaceEntry(data = {}, config = {}) {
   return {
@@ -28,10 +28,10 @@ export default function PersonBioSurface({
 
   return (
     <motion.div
-      variants={textCrossfadeVariants}
+      variants={navListItemVariants}
+      custom={0}
       initial="hidden"
       animate="visible"
-      transition={NAV_FADE_TRANSITION}
       className="max-h-[min(50dvh,24rem)] w-full overflow-y-auto rounded-[20px] bg-white/5 px-4 py-3"
     >
       {normalizedBiography ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import SegmentedControl from '@/ui/components/segmented-control';

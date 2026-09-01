@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { REVIEW_SORT_OPTIONS } from '@/domains/reviews/utils/constants';
 import { getNavActionClass, NAV_ACTION_STYLES } from './constants';
 import { Button, Select } from '@/ui/primitives';
@@ -57,20 +57,17 @@ export default function MovieAction({
     );
   }
 
-  const defaultIcon = isAuthenticated ? 'solar:pen-new-square-bold' : 'solar:tv-bold';
-  const defaultLabel = isAuthenticated
+  const icon = isAuthenticated ? 'solar:pen-new-square-bold' : 'solar:tv-bold';
+  const label = isAuthenticated
     ? hasExistingReview
       ? 'Edit Review'
       : 'Add Review'
     : 'Where to watch?';
 
-  const icon = isActive ? 'solar:arrow-left-bold' : defaultIcon;
-  const label = isActive ? 'Back' : defaultLabel;
-
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={`${isActive ? 'active' : 'idle'}-${label}`}
+        key={`movie-action-${label}`}
         variants={textCrossfadeVariants}
         initial="hidden"
         animate="visible"

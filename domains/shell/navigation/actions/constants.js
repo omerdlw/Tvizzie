@@ -49,8 +49,7 @@ export const NAV_ACTION_STYLES = Object.freeze({
 });
 
 export const NAV_ACTION_MOTION_PROPS = Object.freeze({
-  whileHover: { scale: 1.008 },
-  whileTap: { scale: 0.99 },
+  whileTap: { scale: 0.98 },
 });
 
 export function getNavActionClass({ className, isActive = false, variant } = {}) {

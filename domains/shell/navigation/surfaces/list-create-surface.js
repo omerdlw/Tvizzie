@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useEffect, useState, useTransition, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuth } from '@/modules/auth';
 import { NavSurfaceHeaderButton, useNavigationActions, useSurfaceHeader } from '@/modules/nav';

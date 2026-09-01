@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared';

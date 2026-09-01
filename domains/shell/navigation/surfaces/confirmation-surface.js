@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/ui/class-names';
 import { Button } from '@/ui/primitives';

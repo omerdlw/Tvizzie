@@ -110,6 +110,42 @@ const NAV_SURFACE_TRANSITION = Object.freeze({
   ease: NAV_EASINGS.CINEMATIC,
 });
 
+const NAV_ACTION_DISMISS_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.26,
+  ease: NAV_EASINGS.EXIT,
+});
+
+const NAV_HEADER_SWAP_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.48,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
+const NAV_SURFACE_BODY_ENTER_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.84,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
+const NAV_SURFACE_BODY_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.62,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
+const NAV_CARD_HEIGHT_OPEN_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.84,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
+const NAV_CARD_HEIGHT_CLOSE_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.62,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
 const NAV_BACKDROP_TRANSITION = Object.freeze({
   type: 'tween',
   duration: 0.66,
@@ -236,7 +272,7 @@ const navActionVariants = Object.freeze({
     transform: toGpuTransform(0, 1),
   },
   hover: {
-    transform: toGpuTransform(0, 1.02),
+    transform: toGpuTransform(0, 1),
   },
   tap: {
     transform: toGpuTransform(0, NAV_TAP_SCALE),
@@ -249,25 +285,22 @@ function getNavActionMotionProps({ disabled = false, reduceMotion = false } = {}
   return {
     initial: false,
     animate: 'idle',
-    whileHover: canMove ? 'hover' : undefined,
     whileTap: canMove ? 'tap' : undefined,
     variants: navActionVariants,
     transition: NAV_BUTTON_TRANSITION,
   };
 }
 
-function buildVariants(tierName, { distanceScale = 0, blur = 0 } = {}) {
+function buildVariants(tierName, { distanceScale = 0 } = {}) {
   const tier = NAV_TIERS[tierName];
-  const distance = tier.distance * distanceScale;
+  const distance = Math.round(tier.distance * distanceScale);
 
   const hidden = {
     opacity: 0,
-    ...(blur > 0 ? { filter: `blur(${blur}px)` } : {}),
   };
 
   const visible = {
     opacity: 1,
-    ...(blur > 0 ? { filter: 'blur(0px)' } : {}),
     transition: {
       duration: tier.duration,
       ease: tier.ease,
@@ -276,7 +309,6 @@ function buildVariants(tierName, { distanceScale = 0, blur = 0 } = {}) {
 
   const exit = {
     opacity: 0,
-    ...(blur > 0 ? { filter: `blur(${Math.max(blur * 0.6, 3)}px)` } : {}),
     transition: {
       duration: tier.duration * 0.72,
       ease: NAV_EASINGS.EXIT,
@@ -285,10 +317,8 @@ function buildVariants(tierName, { distanceScale = 0, blur = 0 } = {}) {
 
   if (distance) {
     hidden.transform = toGpuTransform(distance, 1 - tier.scaleDelta);
-
     visible.transform = toGpuTransform(0);
-
-    exit.transform = toGpuTransform(distance * 0.72, 1 - tier.scaleDelta * 0.6);
+    exit.transform = toGpuTransform(Math.round(distance * 0.72), 1 - tier.scaleDelta * 0.6);
   }
 
   return Object.freeze({
@@ -304,7 +334,6 @@ function buildVariants(tierName, { distanceScale = 0, blur = 0 } = {}) {
  */
 const slideFadeVariants = buildVariants('SURFACE', {
   distanceScale: 0,
-  blur: 8,
 });
 
 /**
@@ -313,12 +342,151 @@ const slideFadeVariants = buildVariants('SURFACE', {
  */
 const textCrossfadeVariants = buildVariants('STANDARD', {
   distanceScale: 0.42,
-  blur: 5,
 });
 
 const staggerItemVariants = buildVariants('FAST', {
   distanceScale: 0.75,
-  blur: 6,
+});
+
+const navHeaderSwapVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(10, 0.98),
+  },
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0),
+    transition: {
+      duration: 0.48,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(-10, 0.98),
+    transition: {
+      duration: 0.48,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+});
+
+const navHeaderRestoreVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(-10, 0.98),
+  },
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0),
+    transition: {
+      duration: 0.48,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(10, 0.98),
+    transition: {
+      duration: 0.48,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+});
+
+const navSurfaceControlsVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: 'translate3d(14px, 0, 0) scale(0.85)',
+  },
+  visible: (customIndex = 0) => ({
+    opacity: 1,
+    transform: 'translate3d(0px, 0, 0) scale(1)',
+    transition: {
+      duration: 0.44,
+      delay: (Number(customIndex) || 0) * 0.04 + 0.06,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  }),
+  exit: {
+    opacity: 0,
+    transform: 'translate3d(12px, 0, 0) scale(0.88)',
+    transition: {
+      duration: 0.32,
+      ease: NAV_EASINGS.EXIT,
+    },
+  },
+});
+
+const navCommandBarSwapVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: 'translate3d(12px, 0, 0) scale(0.88)',
+  },
+  visible: (customIndex = 0) => ({
+    opacity: 1,
+    transform: 'translate3d(0px, 0, 0) scale(1)',
+    transition: {
+      duration: 0.44,
+      delay: (Number(customIndex) || 0) * 0.04 + 0.06,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  }),
+  exit: (customIndex = 0) => ({
+    opacity: 0,
+    transform: 'translate3d(12px, 0, 0) scale(0.85)',
+    transition: {
+      duration: 0.32,
+      delay: (Number(customIndex) || 0) * 0.02,
+      ease: NAV_EASINGS.EXIT,
+    },
+  }),
+});
+
+const navSurfaceBodyVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(20, 0.98),
+  },
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0),
+    transition: {
+      duration: 0.84,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(16, 0.98),
+    transition: {
+      duration: 0.62,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+});
+
+const navActionDismissVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(10, 0.98),
+  },
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0),
+    transition: {
+      duration: 0.26,
+      ease: NAV_EASINGS.SOFT,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(-8, 0.98),
+    transition: {
+      duration: 0.26,
+      ease: NAV_EASINGS.EXIT,
+    },
+  },
 });
 
 /**
@@ -352,20 +520,42 @@ const navListItemVariants = Object.freeze({
 const navFadeVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    transform: toGpuTransform(12, 0.978),
-    filter: 'blur(5px)',
+    transform: toGpuTransform(12, 0.98),
   },
 
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
-    filter: 'blur(0px)',
   },
 
   exit: {
     opacity: 0,
-    transform: toGpuTransform(8, 0.988),
-    filter: 'blur(4px)',
+    transform: toGpuTransform(8, 0.99),
+  },
+});
+
+const navIconVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(0, 0.88),
+  },
+
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0, 1),
+    transition: {
+      duration: 0.22,
+      ease: NAV_EASINGS.SOFT,
+    },
+  },
+
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(0, 0.88),
+    transition: {
+      duration: 0.16,
+      ease: NAV_EASINGS.EXIT,
+    },
   },
 });
 
@@ -373,19 +563,16 @@ const navBadgeVariants = Object.freeze({
   hidden: {
     opacity: 0,
     transform: toGpuTransform(0, 0.78),
-    filter: 'blur(4px)',
   },
 
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
-    filter: 'blur(0px)',
   },
 
   exit: {
     opacity: 0,
     transform: toGpuTransform(0, 0.82),
-    filter: 'blur(3px)',
   },
 });
 
@@ -407,39 +594,33 @@ const navBreadcrumbsVariants = Object.freeze({
   hidden: {
     opacity: 0,
     transform: toGpuTransform(-10, 0.96),
-    filter: 'blur(5px)',
   },
 
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
-    filter: 'blur(0px)',
   },
 
   exit: {
     opacity: 0,
     transform: toGpuTransform(-6, 0.98),
-    filter: 'blur(4px)',
   },
 });
 
 const navHudVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    transform: toGpuTransform(10, 0.975),
-    filter: 'blur(5px)',
+    transform: toGpuTransform(10, 0.98),
   },
 
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
-    filter: 'blur(0px)',
   },
 
   exit: {
     opacity: 0,
-    transform: toGpuTransform(8, 0.985),
-    filter: 'blur(4px)',
+    transform: toGpuTransform(8, 0.99),
   },
 });
 
@@ -448,13 +629,11 @@ function getNavDescriptionVariants(targetOpacity = 0.7) {
     hidden: {
       opacity: 0,
       transform: toGpuTransform(8, 0.99),
-      filter: 'blur(4px)',
     },
 
     visible: {
       opacity: targetOpacity,
       transform: toGpuTransform(0),
-      filter: 'blur(0px)',
       transition: {
         duration: 0.62,
         ease: NAV_EASINGS.EMPHASIZED,
@@ -464,7 +643,6 @@ function getNavDescriptionVariants(targetOpacity = 0.7) {
     exit: {
       opacity: 0,
       transform: toGpuTransform(5, 0.99),
-      filter: 'blur(3px)',
       transition: {
         duration: 0.38,
         ease: NAV_EASINGS.EXIT,
@@ -644,6 +822,12 @@ export {
   NAV_CARD_COLLAPSE_TRANSITION,
   NAV_PEEK_SPRING,
   NAV_SURFACE_TRANSITION,
+  NAV_ACTION_DISMISS_TRANSITION,
+  NAV_HEADER_SWAP_TRANSITION,
+  NAV_SURFACE_BODY_ENTER_TRANSITION,
+  NAV_SURFACE_BODY_EXIT_TRANSITION,
+  NAV_CARD_HEIGHT_OPEN_TRANSITION,
+  NAV_CARD_HEIGHT_CLOSE_TRANSITION,
   NAV_BACKDROP_TRANSITION,
   NAV_FADE_TRANSITION,
   NAV_TEXT_ENTER_TRANSITION,
@@ -667,8 +851,15 @@ export {
   slideFadeVariants,
   textCrossfadeVariants,
   staggerItemVariants,
+  navHeaderSwapVariants,
+  navHeaderRestoreVariants,
+  navSurfaceControlsVariants,
+  navCommandBarSwapVariants,
+  navSurfaceBodyVariants,
+  navActionDismissVariants,
   navListItemVariants,
   navFadeVariants,
+  navIconVariants,
   navBadgeVariants,
   navBackdropVariants,
   navBreadcrumbsVariants,

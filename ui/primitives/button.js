@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'motion/react';
 import * as Toggle from '@radix-ui/react-toggle';
 import { cn, resolveSlotClasses } from './primitive-support';
 import {
@@ -81,16 +81,10 @@ const Button = forwardRef(
         resolvedClassName.includes('uppercase') &&
         (resolvedClassName.includes('w-full') || resolvedClassName.includes('flex-1')));
 
-    const defaultHoverScale = isIconLike ? 1.06 : isNavAction ? 1.008 : 1.02;
     const defaultTapScale = isIconLike ? 0.94 : isNavAction ? 0.99 : 0.98;
 
     const motionProps = {
-      whileHover:
-        whileHoverProp !== undefined
-          ? whileHoverProp
-          : canAnimate
-            ? { scale: defaultHoverScale }
-            : undefined,
+      whileHover: whileHoverProp !== undefined ? whileHoverProp : undefined,
       whileTap:
         whileTapProp !== undefined
           ? whileTapProp

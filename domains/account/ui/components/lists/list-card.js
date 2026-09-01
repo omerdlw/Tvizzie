@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { MOTION_EASINGS } from '@/shared';
 import { TMDB_IMG } from '@/shared';
 import {

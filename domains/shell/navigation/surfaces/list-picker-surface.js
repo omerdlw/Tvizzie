@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuthSessionReady } from '@/modules/auth';
 import { NavSurfaceHeaderButton, useNavigationActions } from '@/modules/nav';
@@ -28,40 +28,45 @@ import {
 
 const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
   return (
-    <Button
-      type="button"
-      onClick={onToggle}
+    <motion.div
       variants={SURFACE_LIST_ITEM_VARIANTS}
       custom={index}
       initial="hidden"
       animate="visible"
-      className={cn(
-        'group flex w-full cursor-pointer items-center gap-2 rounded-[20px] ring-1 ring-inset p-2 text-left',
-        isSelected
-          ? 'ring-white/10 bg-white/10 text-white hover:bg-white/15'
-          : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
-      )}
+      exit="exit"
+      className="w-full"
     >
-      <ListPreviewStack list={list} />
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-semibold text-white">{list.title}</p>
-        {list.description && (
-          <p className="line-clamp-2 text-sm leading-snug text-white/70">{list.description}</p>
-        )}
-      </div>
-
-      <span
+      <Button
+        type="button"
+        onClick={onToggle}
         className={cn(
-          'flex size-[22px] shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
+          'group flex w-full cursor-pointer items-center gap-2 rounded-[20px] ring-1 ring-inset p-2 text-left',
           isSelected
-            ? 'ring-info bg-info text-primary'
-            : 'ring-white/5 text-white/40 group-hover:ring-white/40 group-hover:text-white/70',
+            ? 'ring-white/10 bg-white/10 text-white hover:bg-white/15'
+            : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
         )}
       >
-        <Icon icon="material-symbols:check-rounded" size={16} />
-      </span>
-    </Button>
+        <ListPreviewStack list={list} />
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-base font-semibold text-white">{list.title}</p>
+          {list.description && (
+            <p className="line-clamp-2 text-sm leading-snug text-white/70">{list.description}</p>
+          )}
+        </div>
+
+        <span
+          className={cn(
+            'flex size-[22px] shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
+            isSelected
+              ? 'ring-info bg-info text-primary'
+              : 'ring-white/5 text-white/40 group-hover:ring-white/40 group-hover:text-white/70',
+          )}
+        >
+          <Icon icon="material-symbols:check-rounded" size={16} />
+        </span>
+      </Button>
+    </motion.div>
   );
 });
 

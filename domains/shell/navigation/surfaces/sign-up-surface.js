@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { AUTH_PURPOSE, INITIAL_SIGN_UP_FORM } from '@/domains/auth/utils/constants';
 import {
   AUTH_ROUTE_NOTICE,

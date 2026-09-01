@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { TMDB_IMG } from '@/shared';
 import { NAV_TAP_SCALE, navFadeVariants, navListItemVariants } from '@/modules/nav';
 import { cn } from '@/ui/class-names';
@@ -181,6 +181,8 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
       <div
         role="button"
         tabIndex={0}
+        draggable={false}
+        onDragStart={(e) => e.preventDefault()}
         onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -190,7 +192,7 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
           }
         }}
         className={cn(
-          'group/poster relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-[20px] ring-1 ring-inset transition-all duration-300 ease-in-out',
+          'group/poster relative aspect-[2/3] w-full cursor-pointer select-none overflow-hidden rounded-[20px] ring-1 ring-inset transition-all duration-300 ease-in-out',
           isAdded
             ? 'ring-info/40 ring-info/30 bg-white/10 ring-1'
             : 'ring-white/5 bg-white/5 hover:ring-white/40',
@@ -202,8 +204,8 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
             src={posterSrc}
             alt={title}
             sizes="(max-width: 640px) 25vw, 120px"
-            className="rounded-[20px] object-cover transition-transform duration-300 ease-out group-hover/poster:scale-105"
-            wrapperClassName="h-full w-full rounded-[20px]"
+            className="rounded-[20px] object-cover transition-transform duration-300 ease-out group-hover/poster:scale-105 select-none pointer-events-none"
+            wrapperClassName="h-full w-full rounded-[20px] select-none pointer-events-none"
           />
         ) : (
           <div className="center text-error h-full w-full">

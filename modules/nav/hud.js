@@ -1,5 +1,5 @@
 import { isValidElement, memo, useCallback, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import {
   NAV_HUD_PRIORITY,
@@ -254,28 +254,30 @@ export function createNavigationOperationHud(
 function HudActionButton({ action, expanded = false }) {
   const isDestructive = Boolean(action.isDestructive);
   const button = (
-    <Button
-      type="button"
-      disabled={action.disabled}
-      onClick={(event) => {
-        event.stopPropagation();
-        action.onClick?.(event);
-      }}
-      className={cn(
-        'flex h-8 items-center gap-1.5 rounded-xl text-xs font-medium ring-1 ring-inset',
-        expanded ? 'px-3' : 'px-2.5',
-        isDestructive
-          ? 'bg-red-500/20 text-red-300 ring-red-500/20 hover:bg-red-500/30'
-          : expanded
-            ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15'
-            : 'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white',
-        action.disabled && 'pointer-events-none opacity-40',
-      )}
-      aria-label={action.label}
-    >
-      {action.icon && <Iconify icon={action.icon} size={15} />}
-      {action.label && <span>{action.label}</span>}
-    </Button>
+    <motion.div layout="position">
+      <Button
+        type="button"
+        disabled={action.disabled}
+        onClick={(event) => {
+          event.stopPropagation();
+          action.onClick?.(event);
+        }}
+        className={cn(
+          'flex h-8 items-center gap-1.5 rounded-xl text-xs font-medium ring-1 ring-inset',
+          expanded ? 'px-3' : 'px-2.5',
+          isDestructive
+            ? 'bg-red-500/20 text-red-300 ring-red-500/20 hover:bg-red-500/30'
+            : expanded
+              ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15'
+              : 'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white',
+          action.disabled && 'pointer-events-none opacity-40',
+        )}
+        aria-label={action.label}
+      >
+        {action.icon && <Iconify icon={action.icon} size={15} />}
+        {action.label && <span>{action.label}</span>}
+      </Button>
+    </motion.div>
   );
 
   if (expanded) return button;
@@ -384,7 +386,7 @@ export const NavHudShell = memo(function NavHudShell({
                   <div className="h-full w-1/3 animate-pulse rounded-full bg-white/70" />
                 ) : (
                   <div
-                    className="h-full w-full origin-left rounded-full bg-white/70 transition-transform duration-150"
+                    className="h-full w-full origin-left rounded-full bg-white/70"
                     style={{ transform: `scaleX(${Math.max(0, Math.min(100, progress)) / 100})` }}
                   />
                 )}

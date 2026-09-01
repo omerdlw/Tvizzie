@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig } from 'motion/react';
 
 import { isReservedAccountSegment } from '@/shared';
 

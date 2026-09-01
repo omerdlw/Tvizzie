@@ -36,7 +36,7 @@ import AccountMediaGridPage, {
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountReviewsFeed from '../feeds/reviews';
-import { Reorder } from 'framer-motion';
+import { Reorder } from 'motion/react';
 import MediaCard from '@/ui/components/media-card';
 import { toAccountMediaCard, getCanonicalMediaKey } from '@/domains/account/utils/media-card';
 const LIKES_VISIBILITY_OPTIONS = Object.freeze([

@@ -28,7 +28,7 @@ import { Button } from '@/ui/primitives';
 
 function getStatusActionClass(className = '') {
   return [
-    'center relative h-8 cursor-pointer rounded-xl px-3 text-xs font-bold whitespace-nowrap ring-1 ring-inset transition-colors',
+    'center relative h-8 cursor-pointer rounded-xl px-3 text-xs font-bold whitespace-nowrap ring-1 ring-inset',
     'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10',
     className,
   ]

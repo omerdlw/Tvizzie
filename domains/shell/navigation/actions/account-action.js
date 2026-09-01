@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useEffect } from 'react';
 import { getCurrentPathWithSearch } from '@/domains/auth/utils/routes';
 import { usePathname, useSearchParams } from 'next/navigation';

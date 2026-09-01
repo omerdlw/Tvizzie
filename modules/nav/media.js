@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'motion/react';
 
 import { PLAYBACK_RATES } from './constants';
 import {
@@ -371,11 +371,10 @@ export const NavMediaControls = memo(function NavMediaControls({ className = '' 
 
       <div className="flex items-center gap-1.5">
         <motion.div
-          whileHover={{ scale: 1.02 }}
           whileTap={!isDraggingVolume ? { scale: 0.98 } : undefined}
           transition={NAV_BUTTON_TRANSITION}
           className={cn(
-            'group flex h-8 items-center gap-1.5 rounded-full px-2.5 ring-1 transition-colors duration-150 select-none ring-inset',
+            'group flex h-8 items-center gap-1.5 rounded-full px-2.5 ring-1 select-none ring-inset',
             isDraggingVolume
               ? 'bg-white/10 ring-white/10'
               : 'bg-white/5 ring-white/5 hover:bg-white/10 hover:ring-white/10',
@@ -434,7 +433,7 @@ export const NavMediaControls = memo(function NavMediaControls({ className = '' 
             <motion.div
               ref={volumeThumbRef}
               className={cn(
-                'pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md ring-2 ring-black transition-opacity duration-150 ease-out',
+                'pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md ring-2 ring-black',
                 isDraggingVolume ? 'opacity-100' : 'opacity-0 group-hover/track:opacity-100',
               )}
               animate={{
@@ -502,8 +501,10 @@ export const NavMediaScrubber = memo(function NavMediaScrubber({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [hoverPosition, setHoverPosition] = useState(0);
   const [hoverTime, setHoverTime] = useState(0);
+
+  const hoverX = useMotionValue(0);
+  const smoothHoverX = useSpring(hoverX, { damping: 28, stiffness: 350 });
 
   const scrubberRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -606,10 +607,10 @@ export const NavMediaScrubber = memo(function NavMediaScrubber({
       const clientX = event.clientX ?? 0;
       const offsetX = Math.max(0, Math.min(clientX - rect.left, rect.width));
       const percentage = rect.width > 0 ? offsetX / rect.width : 0;
-      setHoverPosition(offsetX);
+      hoverX.set(offsetX);
       setHoverTime(percentage * duration);
     },
-    [duration],
+    [duration, hoverX],
   );
 
   if (!isVideo || !videoElement) {
@@ -639,10 +640,10 @@ export const NavMediaScrubber = memo(function NavMediaScrubber({
         handleSeek(event);
       }}
     >
-      <div className="absolute inset-x-0 top-0 h-[2.5px] w-full bg-white/10 transition-all duration-200 group-hover:h-1">
+      <div className="absolute inset-x-0 top-0 h-[2.5px] w-full bg-white/10 group-hover:h-1">
         <div
           ref={progressBarRef}
-          className="h-full w-full origin-left bg-white/70 transition-colors duration-150 group-hover:bg-white"
+          className="h-full w-full origin-left bg-white/70 group-hover:bg-white"
           style={{ transform: 'scaleX(0)' }}
         />
       </div>
@@ -656,7 +657,7 @@ export const NavMediaScrubber = memo(function NavMediaScrubber({
             exit="exit"
             transition={NAV_SCRUBBER_TOOLTIP_TRANSITION}
             className="pointer-events-none absolute top-3 -translate-x-1/2 rounded-md bg-black/80 px-1.5 py-0.5 text-xs text-white ring-1 ring-white/10 ring-inset"
-            style={{ left: hoverPosition }}
+            style={{ left: smoothHoverX }}
           >
             {formatMediaTime(hoverTime)}
           </motion.div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useState } from 'react';
 
 import { useToast } from '@/modules/notification';
@@ -12,7 +12,7 @@ import { getNavActionClass, NAV_ACTION_STYLES } from '@/domains/shell/navigation
 import { Button, Textarea } from '@/ui/primitives';
 import { cn } from '@/ui/class-names';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
-import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
+import { NAV_FADE_TRANSITION, navListItemVariants, textCrossfadeVariants } from '@/modules/nav';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
 const FORM_ID = 'review-editor-surface-form';
@@ -290,11 +290,23 @@ export default function ReviewEditorSurface({ close, data }) {
       className="flex w-full flex-col gap-2.5"
     >
       {!isListSubject && (
-        <div className="flex w-full items-center justify-center pb-2">
+        <motion.div
+          variants={navListItemVariants}
+          custom={0}
+          initial="hidden"
+          animate="visible"
+          className="flex w-full items-center justify-center pb-2"
+        >
           <RatingSelector value={rating} onChange={setRating} />
-        </div>
+        </motion.div>
       )}
-      <div className="relative w-full">
+      <motion.div
+        variants={navListItemVariants}
+        custom={isListSubject ? 0 : 1}
+        initial="hidden"
+        animate="visible"
+        className="relative w-full"
+      >
         <Textarea
           maxLength={REVIEW_MAX_LENGTH}
           value={reviewText}
@@ -318,9 +330,15 @@ export default function ReviewEditorSurface({ close, data }) {
             <span>{trimmedTextLength} chars</span>
           ) : null}
         </div>
-      </div>
+      </motion.div>
 
-      <div className={cn(NAV_ACTION_STYLES.row, 'mt-0')}>
+      <motion.div
+        variants={navListItemVariants}
+        custom={isListSubject ? 1 : 2}
+        initial="hidden"
+        animate="visible"
+        className={cn(NAV_ACTION_STYLES.row, 'mt-0')}
+      >
         {!isListSubject && (
           <Button
             type="button"
@@ -362,7 +380,7 @@ export default function ReviewEditorSurface({ close, data }) {
                 })}
           </span>
         </Button>
-      </div>
+      </motion.div>
     </motion.form>
   );
 }

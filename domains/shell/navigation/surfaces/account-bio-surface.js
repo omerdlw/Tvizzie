@@ -1,8 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
-import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
+import { navListItemVariants } from '@/modules/nav';
 
 function formatFollowCount(value) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(
@@ -37,10 +37,10 @@ export default function AccountBioSurface({ description = '' }) {
 
   return (
     <motion.div
-      variants={textCrossfadeVariants}
+      variants={navListItemVariants}
+      custom={0}
       initial="hidden"
       animate="visible"
-      transition={NAV_FADE_TRANSITION}
       className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-[20px] bg-white/5 px-4 py-2"
     >
       {normalizedDescription ? (

@@ -645,11 +645,14 @@ export async function searchAccountProfiles({ limitCount = 10, searchTerm }) {
   const normalizedLimit = Math.min(50, Math.max(1, Number(limitCount) || 10));
   const admin = createAdminClient();
   const comparableSearchTerm = normalizedSearchTerm.toLowerCase();
+  const isShortQuery = comparableSearchTerm.length < 3;
+  const pattern = isShortQuery ? `${comparableSearchTerm}%` : `%${comparableSearchTerm}%`;
+
   const result = await admin
     .from('profiles')
     .select('id, username, display_name, avatar_url, is_private')
     .or(
-      `username_lower.ilike.%${comparableSearchTerm}%,display_name_lower.ilike.%${comparableSearchTerm}%`,
+      `username_lower.ilike.${pattern},display_name_lower.ilike.${pattern}`,
     )
     .limit(normalizedLimit);
 
@@ -658,11 +661,40 @@ export async function searchAccountProfiles({ limitCount = 10, searchTerm }) {
     throw new Error('Search failed');
   }
 
-  return (result.data || []).map((row) => ({
-    avatarUrl: row.avatar_url || null,
-    displayName: row.display_name || 'Anonymous User',
-    id: row.id,
-    isPrivate: Boolean(row.is_private),
-    username: row.username,
-  }));
+  const rows = result.data || [];
+
+  const scoredRows = rows.map((row) => {
+    const usernameLower = String(row.username || '').toLowerCase();
+    const displayNameLower = String(row.display_name || '').toLowerCase();
+    let score = 0;
+
+    if (usernameLower === comparableSearchTerm) {
+      score += 100;
+    } else if (usernameLower.startsWith(comparableSearchTerm)) {
+      score += 80;
+    } else if (usernameLower.includes(comparableSearchTerm)) {
+      score += 30;
+    }
+
+    if (displayNameLower === comparableSearchTerm) {
+      score += 60;
+    } else if (displayNameLower.startsWith(comparableSearchTerm)) {
+      score += 40;
+    } else if (displayNameLower.includes(comparableSearchTerm)) {
+      score += 20;
+    }
+
+    return {
+      avatarUrl: row.avatar_url || null,
+      displayName: row.display_name || 'Anonymous User',
+      id: row.id,
+      isPrivate: Boolean(row.is_private),
+      score,
+      username: row.username,
+    };
+  });
+
+  return scoredRows
+    .sort((left, right) => right.score - left.score)
+    .map(({ score, ...profile }) => profile);
 }

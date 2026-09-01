@@ -1,7 +1,9 @@
 'use client';
 
+import { motion } from 'motion/react';
 import { OAUTH_PROVIDER_KEYS } from '@/modules/auth';
 import { getOAuthProviderIcon } from '@/domains/auth/utils/oauth';
+import { navListItemVariants } from '@/modules/nav';
 import Button from '@/ui/primitives/button';
 import Icon from '@/ui/primitives/icon';
 
@@ -100,15 +102,24 @@ export function OAuthProviderList({
 
   return (
     <div className="flex w-full flex-col gap-2.5">
-      {providers.map((provider) => (
-        <OAuthProviderButton
+      {providers.map((provider, index) => (
+        <motion.div
           key={provider}
-          provider={provider}
-          mode={mode}
-          isBusy={activeProvider === provider}
-          disabled={disabled || Boolean(activeProvider)}
-          onClick={() => onSelect(provider)}
-        />
+          variants={navListItemVariants}
+          custom={index}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          className="w-full"
+        >
+          <OAuthProviderButton
+            provider={provider}
+            mode={mode}
+            isBusy={activeProvider === provider}
+            disabled={disabled || Boolean(activeProvider)}
+            onClick={() => onSelect(provider)}
+          />
+        </motion.div>
       ))}
     </div>
   );

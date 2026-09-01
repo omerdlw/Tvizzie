@@ -82,6 +82,29 @@ export const NAV_SURFACE_FLOW_STATUS = Object.freeze({
   CANCELLED: 'cancelled',
 });
 
+/** Fine-grained animation choreography phases for nav surface open/close lifecycle. */
+export const NAV_SURFACE_PHASE = Object.freeze({
+  IDLE: 'idle',
+  DISMISSING_ACTION: 'dismissing_action',
+  SWAPPING_HEADER: 'swapping_header',
+  EXPANDING_BODY: 'expanding_body',
+  OPEN: 'open',
+  COLLAPSING_BODY: 'collapsing_body',
+  RESTORING_HEADER: 'restoring_header',
+});
+
+export const NAV_SURFACE_CHOREOGRAPHY_TIMINGS = Object.freeze({
+  ACTION_DISMISS_MS: 260,
+  ACTION_DISMISS_SETTLE_MS: 100,
+  HEADER_SWAP_MS: 480,
+  HEADER_SWAP_SETTLE_MS: 140,
+  BODY_ENTER_MS: 840,
+  BODY_EXIT_MS: 620,
+  BODY_COLLAPSE_SETTLE_MS: 140,
+  HEADER_RESTORE_MS: 480,
+  RESTORE_SETTLE_MS: 100,
+});
+
 export const COMPACT_CARD_HORIZONTAL_PADDING = 56;
 export const COMPACT_CARD_MIN_WIDTH = 148;
 export const COMPACT_CARD_MAX_OFFSET = 72;

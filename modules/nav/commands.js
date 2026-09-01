@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 
 import { NAV_ACTION_KEYS, NAV_ACTION_ORDER } from './constants';
@@ -18,6 +18,7 @@ import {
   getNavActionStaggerTransition,
   NAV_BADGE_TRANSITION,
   navBadgeVariants,
+  navCommandBarSwapVariants,
   staggerItemVariants,
 } from './motion';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
@@ -264,6 +265,7 @@ const NavCommand = memo(function NavCommand({ action }) {
         <AnimatePresence mode="popLayout">
           {action.badge && (
             <motion.span
+              layout
               key={action.badge}
               variants={navBadgeVariants}
               initial="hidden"
@@ -284,20 +286,26 @@ const NavCommand = memo(function NavCommand({ action }) {
 /** Renders the current card's resolved navigation commands. */
 export const NavCommandBar = memo(function NavCommandBar({ activeItem, contextCommands = [] }) {
   const actions = useNavCommands({ activeItem, contextCommands });
+  const itemScope = activeItem?.path || activeItem?.name || activeItem?.id || 'root';
+  const actionsSignature = useMemo(
+    () => actions.map((a) => a.key || a.icon || '').join(':'),
+    [actions],
+  );
 
   if (!actions.length) return null;
 
   return (
     <div className="mr-1 flex shrink-0 items-center">
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="popLayout" initial={false}>
         {actions.map((action, index) => (
           <motion.div
-            key={action.key || action.icon || `nav-action-${index}`}
-            variants={staggerItemVariants}
+            layout="position"
+            key={`${itemScope}-${actionsSignature}-${action.key || action.icon || `nav-action-${index}`}`}
+            variants={navCommandBarSwapVariants}
+            custom={index}
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={getNavActionStaggerTransition(index)}
           >
             <NavCommand action={action} />
           </motion.div>

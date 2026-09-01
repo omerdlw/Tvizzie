@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Button } from '@/ui/primitives';
 import { getNavActionClass, NAV_ACTION_STYLES } from './constants';
 import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';

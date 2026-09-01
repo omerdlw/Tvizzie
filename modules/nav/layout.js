@@ -7,6 +7,7 @@ import {
   NAV_CARD_LAYOUT,
   NAV_HEIGHT_BUFFER,
   NAV_SPACER_BOTTOM_LOCK_DISTANCE,
+  NAV_SURFACE_PHASE,
   VIEWPORT_MARGIN,
 } from './constants';
 import { NAV_SURFACE_HEADER_REVEAL_DELAY_MS } from './motion';
@@ -48,7 +49,7 @@ export function getNavItemCardProps({
 
   return {
     className: cn(
-      'absolute h-auto w-full ring-1 ring-inset ring-white/10 bg-black/50 rounded-[30px] p-2.5 transition-[background-color,box-shadow] duration-300 ease-out transform-gpu isolate',
+      'absolute h-auto w-full ring-1 ring-inset ring-white/10 bg-black/50 rounded-[30px] p-2.5 transform-gpu isolate',
       isHeavyBlur ? 'backdrop-blur-xl' : 'backdrop-blur-sm',
       isTop ? 'inset-0 h-full' : isAnchoredToBottom ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
@@ -65,7 +66,8 @@ export function getNavItemCardProps({
       zIndex: 10 - position,
       WebkitBackfaceVisibility: 'hidden',
       backfaceVisibility: 'hidden',
-      WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+      WebkitFontSmoothing: 'antialiased',
+      contain: 'paint',
       ...(isTop ? { height: '100%' } : {}),
       pointerEvents: expanded || position < visibleCount ? undefined : 'none',
     },
@@ -82,7 +84,7 @@ function getViewportMaxHeight() {
   return window.innerHeight - VIEWPORT_MARGIN;
 }
 
-function getContainerHeight({ cardContentHeight, compact, isHud = false }) {
+export function getContainerHeight({ cardContentHeight, compact, isHud = false }) {
   const chromeHeight = NAV_CARD_LAYOUT.chromeHeight;
   const minCardHeight = compact
     ? NAV_CARD_LAYOUT.compactHeight
@@ -268,6 +270,7 @@ export function useNavHeightController({
   contentKey = null,
   isHud = false,
   setNavHeight,
+  surfacePhase = NAV_SURFACE_PHASE.IDLE,
 }) {
   const [containerHeight, setContainerHeight] = useState(
     isHud ? NAV_CARD_LAYOUT.hudHeight : NAV_CARD_LAYOUT.baseHeight,
@@ -277,6 +280,7 @@ export function useNavHeightController({
   const rafRef = useRef(null);
   const compactRef = useRef(compact);
   const isHudRef = useRef(isHud);
+  const surfacePhaseRef = useRef(surfacePhase);
   const lastAppliedContainerHeightRef = useRef(
     isHud ? NAV_CARD_LAYOUT.hudHeight : NAV_CARD_LAYOUT.baseHeight,
   );
@@ -286,6 +290,7 @@ export function useNavHeightController({
 
   compactRef.current = compact;
   isHudRef.current = isHud;
+  surfacePhaseRef.current = surfacePhase;
 
   const applyHeight = useCallback(() => {
     if (rafRef.current !== null) {
@@ -294,8 +299,17 @@ export function useNavHeightController({
     }
 
     const { content } = heightRef.current;
+    const currentPhase = surfacePhaseRef.current;
+    const isLockedToBaseHeight =
+      currentPhase === NAV_SURFACE_PHASE.DISMISSING_ACTION ||
+      currentPhase === NAV_SURFACE_PHASE.SWAPPING_HEADER ||
+      currentPhase === NAV_SURFACE_PHASE.COLLAPSING_BODY ||
+      currentPhase === NAV_SURFACE_PHASE.RESTORING_HEADER;
+
+    const computedContentHeight = isLockedToBaseHeight ? 0 : content;
+
     const height = getContainerHeight({
-      cardContentHeight: content,
+      cardContentHeight: computedContentHeight,
       compact: compactRef.current,
       isHud: isHudRef.current,
     });
@@ -335,9 +349,12 @@ export function useNavHeightController({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    heightRef.current.content = 0;
     applyHeight();
   }, [applyHeight, contentKey]);
+
+  useIsomorphicLayoutEffect(() => {
+    applyHeight();
+  }, [applyHeight, surfacePhase]);
 
   useIsomorphicLayoutEffect(() => {
     if (compact) {

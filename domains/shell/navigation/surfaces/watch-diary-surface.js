@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { NavSurfaceHeaderButton, useSurfaceHeader } from '@/modules/nav';
@@ -49,12 +49,22 @@ function getEpisodeLabel(episode, seasonNumber) {
 }
 
 export function createWatchDiarySurfaceEntry(data = {}, config = {}) {
+  const media = data?.media || null;
+  const episode = data?.episode || null;
+  const seasonNumber =
+    data?.seasonNumber ?? episode?.seasonNumber ?? episode?.season_number ?? null;
+  const title = media?.title || media?.name || 'this title';
+  const episodeLabel = getEpisodeLabel(episode, seasonNumber);
+  const description = media
+    ? `Record ${episodeLabel ? `${title} · ${episodeLabel}` : title} in your diary`
+    : 'A dated record of what you watched';
+
   return {
     component: WatchDiarySurface,
-    description: 'A dated record of what you watched',
+    description,
     icon: 'solar:calendar-add-bold',
     props: { data },
-    title: 'Watch Diary',
+    title: 'Log to diary',
     ...config,
   };
 }
@@ -91,7 +101,7 @@ export default function WatchDiarySurface({ close, data }) {
       title: 'Log to diary',
       trailing: null,
     });
-  }, [close, entries, isSaving, setHeader, subtitle]);
+  }, [setHeader, subtitle]);
 
   useEffect(() => {
     if (!userId || !media) {
@@ -154,39 +164,63 @@ export default function WatchDiarySurface({ close, data }) {
       className="flex w-full flex-col gap-2.5"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 border-b border-white/10 pb-4">
-        <label className="flex flex-col gap-1.5 text-xs font-semibold text-white/70 uppercase">
-          <Input
-            type="date"
-            value={watchedOn}
-            min={latestWatchedOn || undefined}
-            max={today}
-            onChange={(event) => setWatchedOn(event.target.value)}
+        <motion.div
+          variants={navListItemVariants}
+          custom={0}
+          initial="hidden"
+          animate="visible"
+          className="w-full"
+        >
+          <label className="flex flex-col gap-1.5 text-xs font-semibold text-white/70 uppercase">
+            <Input
+              type="date"
+              value={watchedOn}
+              min={latestWatchedOn || undefined}
+              max={today}
+              onChange={(event) => setWatchedOn(event.target.value)}
+              classNames={{
+                input:
+                  'h-11 w-full rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-sm font-medium text-white transition-colors outline-none focus:ring-white/40 focus-visible:ring-2 focus-visible:ring-white/40',
+              }}
+            />
+          </label>
+        </motion.div>
+        <motion.div
+          variants={navListItemVariants}
+          custom={1}
+          initial="hidden"
+          animate="visible"
+          className="w-full"
+        >
+          <Checkbox
+            checked={hasWatchedBefore}
+            onCheckedChange={(checked) => setHasWatchedBefore(Boolean(checked))}
             classNames={{
-              input:
-                'h-11 w-full rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-sm font-medium text-white transition-colors outline-none focus:ring-white/40 focus-visible:ring-2 focus-visible:ring-white/40',
+              wrapper:
+                'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 transition-colors hover:ring-white/15',
+              box: 'size-4 shrink-0 rounded-full ring-1 ring-inset ring-white/15 bg-white/5 focus-visible:ring-2 focus-visible:ring-white/40 data-[state=checked]:bg-white data-[state=checked]:text-black',
+              indicator: 'size-full text-black',
+              label: 'text-sm font-medium text-white',
             }}
-          />
-        </label>
-        <Checkbox
-          checked={hasWatchedBefore}
-          onCheckedChange={(checked) => setHasWatchedBefore(Boolean(checked))}
-          classNames={{
-            wrapper:
-              'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 transition-colors hover:ring-white/15',
-            box: 'size-4 shrink-0 rounded-full ring-1 ring-inset ring-white/15 bg-white/5 focus-visible:ring-2 focus-visible:ring-white/40 data-[state=checked]:bg-white data-[state=checked]:text-black',
-            indicator: 'size-full text-black',
-            label: 'text-sm font-medium text-white',
-          }}
+          >
+            I have watched this before
+          </Checkbox>
+        </motion.div>
+        <motion.div
+          variants={navListItemVariants}
+          custom={2}
+          initial="hidden"
+          animate="visible"
+          className="w-full"
         >
-          I have watched this before
-        </Checkbox>
-        <Button
-          type="submit"
-          disabled={isSaving}
-          className="center h-11 w-full rounded-[20px] bg-white px-4 text-xs font-bold text-black uppercase hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isSaving ? 'Saving' : 'Log to diary'}
-        </Button>
+          <Button
+            type="submit"
+            disabled={isSaving}
+            className="center h-11 w-full rounded-[20px] bg-white px-4 text-xs font-bold text-black uppercase hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSaving ? 'Saving' : 'Log to diary'}
+          </Button>
+        </motion.div>
       </form>
 
       <div className="flex min-h-0 flex-col gap-2.5" aria-busy={isLoading} aria-live="polite">
@@ -204,11 +238,10 @@ export default function WatchDiarySurface({ close, data }) {
             {Array.from({ length: 2 }).map((_, index) => (
               <motion.div
                 key={index}
-                  variants={navListItemVariants}
+                variants={navListItemVariants}
                 initial="hidden"
                 animate="visible"
-                custom={index}
-                transition={NAV_MICRO_TRANSITION}
+                custom={index + 3}
                 className="flex animate-pulse flex-col gap-2.5 px-3 py-3"
               >
                 <div className="skeleton-block h-3 w-24 rounded-full" />
@@ -248,8 +281,7 @@ export default function WatchDiarySurface({ close, data }) {
                 variants={navListItemVariants}
                 initial="hidden"
                 animate="visible"
-                custom={index}
-                transition={NAV_MICRO_TRANSITION}
+                custom={index + 3}
                 className="flex flex-col gap-1.5 px-3 py-3"
               >
                 <time className="text-xs font-bold text-white/40 uppercase">

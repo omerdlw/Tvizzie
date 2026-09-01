@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { cn } from '@/ui/class-names';
 import { Button, Input } from '@/ui/primitives';

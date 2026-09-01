@@ -35,7 +35,7 @@ export { useToast } from './toast';
 
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import {
   EVENT_TYPES,

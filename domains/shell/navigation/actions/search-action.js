@@ -2,7 +2,7 @@
 
 import { useState, startTransition, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import { TMDB_IMG } from '@/shared';
 import {
@@ -554,7 +554,10 @@ export function useSearchActionController({
   const isGridMode =
     searchType === SEARCH_TYPES.MOVIE ||
     searchType === SEARCH_TYPES.TV ||
-    searchType === SEARCH_TYPES.ALL;
+    (searchType === SEARCH_TYPES.ALL &&
+      results.some(
+        (item) => item?.media_type === SEARCH_TYPES.MOVIE || item?.media_type === SEARCH_TYPES.TV,
+      ));
   const perPage = isGridMode ? SEARCH_LIMITS.GRID_RESULTS_PER_PAGE : SEARCH_LIMITS.RESULTS_PER_PAGE;
   const totalPages = Math.max(1, Math.ceil(results.length / perPage));
   const safePage = Math.min(currentPage, totalPages - 1);

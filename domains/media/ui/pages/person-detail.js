@@ -13,7 +13,7 @@ import PersonAwards from '@/domains/media/ui/sections/awards-section';
 import PersonBio from '@/domains/media/ui/components/person-bio';
 import PersonFilmographySection from '@/domains/media/ui/sections/filmography-section';
 import PersonGallery from '@/domains/media/ui/sections/gallery-section';
-import { NavHeightSpacer } from '@/modules/nav';
+import { NavHeightSpacer, useRegisterBreadcrumbOverride } from '@/modules/nav';
 import PersonTimeline from '@/domains/media/ui/sections/timeline-section';
 import {
   PersonAwardsSkeleton,
@@ -33,6 +33,12 @@ export default function PersonDetailView({ person, secondaryDataPromise, awardsP
   const [awardsViewMode, setAwardsViewMode] = useState('projects');
   const [posterFilePath, setPosterFilePath] = useState(fallbackPosterFilePath);
   const [canResetPersonPoster, setCanResetPersonPoster] = useState(false);
+
+  const personPath = personId ? `/person/${personId}` : null;
+  useRegisterBreadcrumbOverride({
+    path: personPath,
+    title: person?.name || null,
+  });
   const age = useMemo(
     () => calculateAge(person?.birthday, person?.deathday),
     [person?.birthday, person?.deathday],

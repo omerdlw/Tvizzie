@@ -20,6 +20,7 @@ function isSearchableMediaType(type) {
 }
 
 function isExactUserMatch(item, normalizedQuery) {
+  const cleanQuery = normalizedQuery.replace(/^@/, '').trim();
   const displayName = String(item?.displayName || '')
     .trim()
     .toLowerCase();
@@ -27,7 +28,11 @@ function isExactUserMatch(item, normalizedQuery) {
     .trim()
     .toLowerCase();
 
-  return displayName === normalizedQuery || username === normalizedQuery;
+  return (
+    (cleanQuery && (displayName === cleanQuery || username === cleanQuery)) ||
+    displayName === normalizedQuery ||
+    username === normalizedQuery
+  );
 }
 
 function normalizeComparableTitle(value) {
@@ -87,6 +92,11 @@ function resolvePreferredTitleType({ movieResults = [], normalizedQuery = '', tv
 
 export function inferSearchType({ normalizedQuery, userResults = [], mediaResults = [] }) {
   const resolvedQuery = normalizeString(normalizedQuery).toLowerCase();
+
+  if (resolvedQuery.startsWith('@')) {
+    return SEARCH_TYPES.USER;
+  }
+
   const exactUserMatch = userResults.find((item) => isExactUserMatch(item, resolvedQuery));
 
   if (exactUserMatch) {
@@ -94,7 +104,7 @@ export function inferSearchType({ normalizedQuery, userResults = [], mediaResult
   }
 
   if (!mediaResults.length) {
-    return SEARCH_TYPES.ALL;
+    return userResults.length ? SEARCH_TYPES.USER : SEARCH_TYPES.ALL;
   }
 
   const movieResults = mediaResults.filter((item) => item?.media_type === SEARCH_TYPES.MOVIE);
@@ -201,7 +211,7 @@ export async function fetchAllMedia(query, page = 1, options = {}) {
 }
 
 export function mergeAllResults(userResults, mediaResults, maxResults = SEARCH_LIMITS.MAX_RESULTS) {
-  const merged = [...userResults, ...mediaResults];
+  const merged = [...mediaResults, ...userResults];
 
   if (Number.isFinite(maxResults) && maxResults > 0) {
     return merged.slice(0, maxResults);
