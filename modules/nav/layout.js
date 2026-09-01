@@ -9,6 +9,7 @@ import {
   NAV_SPACER_BOTTOM_LOCK_DISTANCE,
   VIEWPORT_MARGIN,
 } from './constants';
+import { NAV_SURFACE_HEADER_REVEAL_DELAY_MS } from './motion';
 import { getDistanceToBottom } from './utils';
 import { cn } from '@/ui/class-names';
 

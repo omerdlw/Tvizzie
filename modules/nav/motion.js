@@ -303,8 +303,8 @@ function buildVariants(tierName, { distanceScale = 0, blur = 0 } = {}) {
  * @type {Readonly<object>}
  */
 const slideFadeVariants = buildVariants('SURFACE', {
-  distanceScale: 1,
-  blur: 10,
+  distanceScale: 0,
+  blur: 8,
 });
 
 /**
@@ -626,6 +626,7 @@ const NAV_SCRUBBER_TOOLTIP_TRANSITION = Object.freeze({
   ease: NAV_EASINGS.EMPHASIZED,
 });
 const NAV_COMPACT_TO_SURFACE_DELAY_MS = 380;
+const NAV_SURFACE_HEADER_REVEAL_DELAY_MS = 220;
 const NAV_SURFACE_EXIT_SETTLE_MS = 520;
 
 export {
@@ -684,5 +685,6 @@ export {
   navScrubberTooltipVariants,
   NAV_SCRUBBER_TOOLTIP_TRANSITION,
   NAV_COMPACT_TO_SURFACE_DELAY_MS,
+  NAV_SURFACE_HEADER_REVEAL_DELAY_MS,
   NAV_SURFACE_EXIT_SETTLE_MS,
 };

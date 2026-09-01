@@ -182,15 +182,20 @@ export default function AccountReviewsFeed({
       )}
 
       {!enablePagination && hasMore && onLoadMore && (
-        <div>
-          <Button type="button" onClick={onLoadMore} disabled={isLoadingMore}>
-            {isLoadingMore ? 'Loading' : 'Load More'}
+        <div className="mt-8 flex justify-center">
+          <Button
+            type="button"
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-4 text-xs font-semibold uppercase text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            {isLoadingMore ? 'Loading...' : 'Load More'}
           </Button>
         </div>
       )}
 
       {enablePagination && filteredReviews.length > 0 && (
-        <div>
+        <div className="mt-8 flex justify-center">
           <AccountPagination
             currentPage={resolvedPage}
             onPageChange={(page) =>

@@ -109,7 +109,7 @@ export default function AccountActivityFeed({
       )}
 
       {listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && onPageChange && (
-        <div>
+        <div className="mt-8 flex justify-center">
           <AccountPagination
             currentPage={activePage}
             onPageChange={onPageChange}

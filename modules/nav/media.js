@@ -11,7 +11,7 @@ import {
   navSoundwaveBarVariants,
 } from './motion';
 import { clamp, formatMediaTime } from './utils';
-import { useBackgroundActions, useBackgroundState } from '@/modules/background';
+import { useBackgroundActions, useBackgroundState } from '../background';
 import { cn } from '@/ui/class-names';
 import { Button } from '@/ui/primitives';
 import Iconify from '@/ui/primitives/icon';

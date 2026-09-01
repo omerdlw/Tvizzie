@@ -1,16 +1,21 @@
-# Error Boundary
+# Module: Error Boundary
 
-`modules/error-boundary`, React render hatalarını, tarayıcı çalışma zamanı
-hatalarını ve raporlama hedeflerini tek bir hata akışı altında birleştirir.
-Modülün amacı yalnızca fallback göstermek değildir; hatayı güvenli biçimde
-yakalamak, uygulama içi hata bildirimini yayınlamak, gözlemlenebilirlik
-handler'larına aktarmak ve kullanıcıya toparlanma yolu sunmaktır.
+> React render, browser runtime ve reporting hatalarını tek bir güvenli capture, fallback ve recovery akışında yönetir.
+
+## 1. Genel bakış
+
+Error Boundary iki giriş kaynağını aynı reporter pipeline'ında birleştirir:
+React boundary hataları ve browser global error event'leri. Fallback, reporting
+ve uygulama içi error event'i birbirinden izole edilir; bir katmandaki failure
+diğer katmanın çalışmasını durdurmaz. `modules/error-boundary`, hatayı güvenli
+biçimde yakalar, uygulama içi hata bildirimini yayınlar, gözlemlenebilirlik
+handler'larına aktarır ve kullanıcıya toparlanma yolu sunar.
 
 Bu belge mevcut davranış ve public API sözleşmesine göre hazırlanmıştır.
 Ürüne özgü hata mesajları, rota politikaları veya raporlama sağlayıcısı
 kuralları bu modülün içine taşınmamalıdır.
 
-## Sorumluluk sınırı
+## 2. Sorumluluklar
 
 Error Boundary şu katmanları sahiplenir:
 
@@ -30,7 +35,7 @@ Error Boundary şu katmanları sahiplenir:
 - Hataları otomatik olarak yeniden denemek
 - Kullanıcıya ait domain state'ini yönetmek
 
-## Mimari akış
+### Mimari akış
 
 ```text
 React render/lifecycle hatası
@@ -57,7 +62,7 @@ Raporlama hatası, boundary fallback'inin veya global listener akışının
 bozulmasına izin verilmemesi için izole edilir. Handler'lardan biri hata verse
 bile diğer handler'lar çalışmaya devam eder.
 
-## Dosya haritası
+## 3. Dosya sahipliği
 
 ### `index.js`
 
@@ -100,7 +105,7 @@ Tarayıcı global error listener'ıdır. `error` ve `unhandledrejection`
 olaylarını normalize eder, beklenen gürültüyü filtreler ve ortak reporter ile
 uygulama event kanalına aktarır.
 
-## Uygulama kabuğuna yerleştirme
+## 4. Kurulum
 
 Global observability kurulumu uygulama kökünde bir kez yapılır. Mevcut kabukta
 `ObservabilityBootstrap` ve `GlobalErrorListener`, `AppProviders` içinde
@@ -124,7 +129,7 @@ event ve report olarak yayınlayabilir.
 `ModuleError` ve `ComponentError`, bunun altında daha dar fallback alanları
 oluşturmak için kullanılabilir.
 
-## Boundary API'si
+## 5. Public interface
 
 ### `GlobalError`
 
@@ -227,7 +232,7 @@ sözleşmesi için kullanılabilir.
 izole edilir. Bu callback'ler içinde UI state geçişi gerekiyorsa callback'i
 kısa tutun ve yan etkileri kontrollü biçimde başlatın.
 
-## Reporter API'si
+## 6. Sözleşmeler ve kullanım örnekleri
 
 ### Reporter instance'ı alma
 
@@ -294,21 +299,21 @@ Handler'lara gönderilen report şu alanları taşır:
 ```js
 {
   error: {
-    message: '...',
-    stack: '...',
+    message: 'Request failed',
+    stack: 'Error: Request failed\\n    at loadResource (resource.js:10:5)',
     name: 'Error',
   },
-  fingerprint: '...',
+  fingerprint: 'request-failed',
   timestamp: '2026-08-31T00:00:00.000Z',
   environment: {
     route: '/movie/123',
-    userAgent: '...',
-    platform: '...',
+    userAgent: 'browser_user_agent',
+    platform: 'browser_platform',
     language: 'tr-TR',
     online: true,
     url: 'https://example.test/movie/123',
   },
-  componentStack: '...',
+  componentStack: '\\n    in ExampleComponent',
   context: {},
   tags: {},
 }
@@ -319,7 +324,7 @@ hata adı ve route üzerinden üretilir. `beforeSend` fingerprint'i değiştirir
 bu yalnızca gönderilen report'u etkiler; dedupe timer'ı capture anındaki
 orijinal fingerprint anahtarını kullanmaya devam eder.
 
-## Handler'lar
+### Handler'lar
 
 ### Console handler
 
@@ -376,7 +381,13 @@ Custom handler yalnızca normalize edilmiş report'u tüketmelidir. Handler içi
 React state'i, global listener kurulumu veya tekrar `captureError` çağrısı
 yapmayın; bunlar döngüsel reporting ve duplicate event üretebilir.
 
-## Global listener politikası
+## 7. Yaşam döngüsü
+
+Boundary capture, global listener ve reporting aynı yaşam döngüsünde birleşir;
+`GlobalErrorListener` root'ta bir kez mount edilir, reporter handler'ları capture
+sonrasında fan-out eder ve boundary reset'i ilgili subtree'yi yeniden dener.
+
+### 7.1 Global listener politikası
 
 `GlobalErrorListener` şu browser olaylarını dinler:
 
@@ -404,7 +415,7 @@ Bu filtreler network/API hata sözleşmesinin yerine geçmez. Beklenen domain
 hatası browser'a uncaught biçimde taşınıyorsa, onu burada geniş bir regex ile
 gizlemek yerine hatanın üretildiği katmanda kontrollü biçimde ele alın.
 
-## Uygulama içi hata event'i
+### 7.2 Uygulama içi hata event'i
 
 Boundary ve global listener, kullanıcıya görünür hata durumlarının ortak
 olayını yayınlar:
@@ -429,7 +440,17 @@ katmanlarıdır. Bunlar bu React preset'lerinin yerine geçmez; kendi özel rese
 ve fullscreen fallback davranışlarını korurken aynı `getErrorReporter()`
 pipeline'ını kullanabilir.
 
-## Kullanım kuralları
+## 8. Sınırlar ve hata güvenliği
+
+- Reporter disabled veya sampling `0` ise capture no-op olur.
+- Dedupe aynı fingerprint'i tanımlı pencere içinde tekrar göndermeyi engeller.
+- Geçersiz handler veya eksik Sentry SDK uygulama akışını bozmaz.
+- Handler hatası diğer handler'ların çalışmasını durdurmaz.
+- `beforeSend` report'u dönüştürebilir veya `null` döndürerek göndermeyi engelleyebilir.
+- Context, tag, stack ve URL alanlarına secret veya gereksiz kişisel veri koymayın.
+- Server exception middleware'i bu client modülünün kapsamı dışındadır.
+
+## 9. Kurallar
 
 1. Uygulama kodu `@/modules/error-boundary` facade'ından import eder.
 2. `GlobalErrorListener` yalnızca uygulama kökünde bir kez mount edilir.
@@ -445,7 +466,7 @@ pipeline'ını kullanabilir.
 10. Yeni davranış değişikliklerini characterization veya contract testiyle
     koruyun.
 
-## Test ve doğrulama
+## 10. Doğrulama
 
 Error Boundary odaklı test:
 
@@ -457,7 +478,7 @@ node --import ./scripts/register-alias.mjs --test \
 Biçim ve lint:
 
 ```bash
-npx prettier --check modules/error-boundary/*.js modules/error-boundary/README.md
+npx prettier --check modules/error-boundary/*.js modules/docs/error-boundary.md
 npx eslint modules/error-boundary/*.js
 ```
 

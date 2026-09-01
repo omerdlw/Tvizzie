@@ -1,13 +1,20 @@
 'use client';
 
-import { createContext } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
-import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_LABELS, MODAL_POSITIONS } from './config';
+import {
+  MODAL_BREAKPOINTS,
+  MODAL_CHROME,
+  MODAL_LABELS,
+  MODAL_POSITIONS,
+  MODAL_PRESETS,
+  resolveModalHeader,
+} from './config';
 
 // ── Modal runtime ───────────────────────────────────────────────────────────
 // Stack bookkeeping, focus handling, and context fallbacks stay React-facing
-// but render-free. The provider in index.js owns the callbacks that mutate the
-// stack; this file owns the deterministic state helpers those callbacks use.
+// without owning the modal surface. The provider owns stack callbacks while
+// index.js supplies the portal renderer through the composition seam.
 
 export const FALLBACK_MODAL_STATE = Object.freeze({
   position: MODAL_POSITIONS.CENTER,
@@ -127,10 +134,136 @@ export function finalizeModalClose(
 
 export const INITIAL_MODAL_STATE = createModalState([]);
 
+export function ModalProvider({ children, modalRenderer: ModalRenderer = null }) {
+  const [modalState, setModalState] = useState(INITIAL_MODAL_STATE);
+
+  const modalStackRef = useRef([]);
+  const resolveMapRef = useRef(new Map());
+  const onCloseMapRef = useRef(new Map());
+  const modalIdRef = useRef(0);
+
+  const syncModalStack = useCallback((nextStack) => {
+    modalStackRef.current = nextStack;
+    setModalState(createModalState(nextStack));
+  }, []);
+
+  const openModal = useCallback(
+    (modalType, positionInput = MODAL_POSITIONS.CENTER, config = {}) => {
+      const currentStack = modalStackRef.current;
+      const topModal = currentStack[currentStack.length - 1];
+
+      if (topModal && topModal.modalType === modalType) {
+        return Promise.resolve(null);
+      }
+
+      const filteredStack = currentStack.filter((entry) => {
+        if (entry.modalType === modalType) {
+          finalizeModalClose(entry.id, null, { onCloseMapRef, resolveMapRef });
+          return false;
+        }
+        return true;
+      });
+
+      const resolvedConfig = {
+        ...(MODAL_PRESETS[modalType] || {}),
+        ...config,
+      };
+
+      const { position, responsivePosition } = normalizePositionConfig(
+        positionInput,
+        resolvedConfig,
+      );
+
+      const resolvedHeader = resolveModalHeader(modalType, resolvedConfig);
+      const modalId = ++modalIdRef.current;
+      const modalEntry = {
+        id: modalId,
+        modalType,
+        position,
+        responsivePosition,
+        title: resolvedHeader.title,
+        headerActions: resolvedHeader.actions || null,
+        showClose: resolvedHeader.showClose ?? true,
+        chrome: resolvedConfig.chrome || MODAL_CHROME.PANEL,
+        props: resolvedConfig.data ?? resolvedConfig,
+      };
+
+      const modalPromise = new Promise((resolve) => {
+        resolveMapRef.current.set(modalId, resolve);
+        onCloseMapRef.current.set(modalId, resolvedConfig.onClose || null);
+      });
+
+      syncModalStack([...filteredStack, modalEntry]);
+      return modalPromise;
+    },
+    [syncModalStack],
+  );
+
+  const closeModal = useCallback(
+    (result = null, targetModalId = null) => {
+      const currentStack = modalStackRef.current;
+      if (currentStack.length === 0) return;
+
+      const modalId = targetModalId || currentStack[currentStack.length - 1]?.id || null;
+      const modalToClose = currentStack.find((entry) => entry.id === modalId);
+      if (!modalToClose) return;
+
+      syncModalStack(currentStack.filter((entry) => entry.id !== modalId));
+      finalizeModalClose(modalId, result, {
+        onCloseMapRef,
+        resolveMapRef,
+        logCloseErrors: true,
+      });
+    },
+    [syncModalStack],
+  );
+
+  const closeAllModals = useCallback(
+    (result = null) => {
+      const currentStack = modalStackRef.current;
+      if (currentStack.length === 0) return;
+
+      syncModalStack([]);
+      currentStack.forEach((entry) => {
+        finalizeModalClose(entry.id, result, { onCloseMapRef, resolveMapRef });
+      });
+    },
+    [syncModalStack],
+  );
+
+  const actionsValue = useMemo(
+    () => ({ openModal, closeModal, closeAllModals }),
+    [openModal, closeModal, closeAllModals],
+  );
+
+  return (
+    <ModalActionsContext.Provider value={actionsValue}>
+      <ModalStateContext.Provider value={modalState}>
+        {ModalRenderer ? <ModalRenderer /> : null}
+        {children}
+      </ModalStateContext.Provider>
+    </ModalActionsContext.Provider>
+  );
+}
+
+export function useModalActions() {
+  return useContext(ModalActionsContext);
+}
+
+export function useModalState() {
+  return useContext(ModalStateContext);
+}
+
+export function useModal() {
+  const actions = useModalActions();
+  const state = useModalState();
+  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
+}
+
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
 
-export const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
+export const SMOOTH_SCROLL_LOCK_EVENT = 'modal:smooth-scroll-lock';
 
 export function resolveActivePosition(position, responsivePosition, isMobileViewport) {
   if (!responsivePosition || typeof responsivePosition !== 'object') {

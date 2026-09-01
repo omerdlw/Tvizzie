@@ -46,6 +46,7 @@ import {
 } from '@/domains/media/ui/layouts/media-detail-section';
 import Icon from '@/ui/primitives/icon';
 import Carousel from '@/ui/components/media-carousel';
+import BackdropHero from '@/ui/components/backdrop-hero';
 import { cn } from '@/ui/class-names';
 
 function createReviewState() {
@@ -484,33 +485,7 @@ function MovieSecondaryContent({
 }
 
 function MediaBackdropHero({ image }) {
-  if (!image) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      className="relative isolate h-64 w-full overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32"
-    >
-      <div
-        // bg-contain yerine bg-cover kullanıyoruz:
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundColor: 'var(--black)',
-          backgroundImage: `url(${image})`,
-          backgroundPosition: 'center 20%', // Görselin üst kısımlarının daha iyi görünmesi için center yerine biraz yukarı odaklayabilirsin
-        }}
-      />
-      <div
-        className="absolute inset-0 z-10"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgb(11 11 11 / 18%) 0%, rgb(11 11 11 / 7%) 18%, transparent 34%), linear-gradient(to right, var(--black) 0%, rgb(11 11 11 / 95%) 3%, rgb(11 11 11 / 84%) 6%, rgb(11 11 11 / 70%) 9%, rgb(11 11 11 / 54%) 13%, rgb(11 11 11 / 38%) 17%, rgb(11 11 11 / 23%) 21%, rgb(11 11 11 / 11%) 25%, rgb(11 11 11 / 3%) 28%, transparent 32%, transparent 68%, rgb(11 11 11 / 3%) 72%, rgb(11 11 11 / 11%) 75%, rgb(11 11 11 / 23%) 79%, rgb(11 11 11 / 38%) 83%, rgb(11 11 11 / 54%) 87%, rgb(11 11 11 / 70%) 91%, rgb(11 11 11 / 84%) 94%, rgb(11 11 11 / 95%) 97%, var(--black) 100%), linear-gradient(to bottom, transparent 38%, rgb(11 11 11 / 16%) 62%, rgb(11 11 11 / 54%) 82%, var(--black) 100%)',
-        }}
-      />
-    </div>
-  );
+  return <BackdropHero image={image} position="center 20%" />;
 }
 
 function MovieView({
@@ -569,7 +544,7 @@ function MovieView({
 
           <div
             className={`relative w-full ${
-              hasInlineBackdrop ? '-mt-24 sm:-mt-36 lg:-mt-52' : 'pt-6 sm:pt-8 lg:pt-10'
+              hasInlineBackdrop ? '-mt-32 sm:-mt-48 lg:-mt-64 xl:-mt-72' : 'pt-6 sm:pt-8 lg:pt-10'
             } grid grid-cols-1 items-start gap-8 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[24rem_minmax(0,1fr)]`}
           >
             <aside className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-auto">

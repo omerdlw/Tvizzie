@@ -365,30 +365,40 @@ function FavoriteShowcaseManager({
   const showcaseItems = items.slice(0, 5);
 
   return (
-    <AccountSectionLayout
-      icon="solar:star-bold"
-      summaryLabel={`${items.length}/5 selected`}
-      title="Favorites Showcase"
-      showHeader={false}
-    >
-      {showcaseItems.length === 0 ? (
-        <AccountInlineSectionState>No showcase titles selected yet</AccountInlineSectionState>
-      ) : (
-        <Reorder.Group as="div" axis="x" values={items} onReorder={onReorder}>
-          {showcaseItems.map((item) => {
-            const canonicalKey = getCanonicalMediaKey(item);
-            return (
-              <ShowcaseCardItem
-                key={canonicalKey}
-                isOwner={isOwner}
-                item={item}
-                onRemoveItem={onRemoveItem}
-                userId={userId}
-              />
-            );
-          })}
-        </Reorder.Group>
-      )}
-    </AccountSectionLayout>
+    <div className="mb-8 w-full">
+      <AccountSectionLayout
+        icon="solar:star-bold"
+        summaryLabel={`${items.length}/5 selected`}
+        title="Favorites Showcase"
+        showHeader={true}
+      >
+        {showcaseItems.length === 0 ? (
+          <AccountInlineSectionState>
+            No showcase titles selected yet. Click the star icon on any liked title to feature it here.
+          </AccountInlineSectionState>
+        ) : (
+          <Reorder.Group
+            as="div"
+            axis="x"
+            values={items}
+            onReorder={onReorder}
+            className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-5 lg:grid-cols-5"
+          >
+            {showcaseItems.map((item) => {
+              const canonicalKey = getCanonicalMediaKey(item);
+              return (
+                <ShowcaseCardItem
+                  key={canonicalKey}
+                  isOwner={isOwner}
+                  item={item}
+                  onRemoveItem={onRemoveItem}
+                  userId={userId}
+                />
+              );
+            })}
+          </Reorder.Group>
+        )}
+      </AccountSectionLayout>
+    </div>
   );
 }

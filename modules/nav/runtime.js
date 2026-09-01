@@ -70,9 +70,9 @@ import {
   useNavigationTransactions,
 } from './routing';
 
-import { useBackgroundActions, useBackgroundState } from '@/modules/background';
-import { useLoadingActions, useLoadingState } from '@/modules/loading';
-import { useNavRegistry, useNavRuntimeRegistry } from '@/modules/registry';
+import { useBackgroundActions, useBackgroundState } from '../background';
+import { useLoadingActions, useLoadingState } from '../loading';
+import { useNavRegistry, useNavRuntimeRegistry } from '../registry';
 
 // ── Navigation runtime ──────────────────────────────────────────────────────
 
@@ -1919,10 +1919,7 @@ export function useSurfaceReturn() {
     (handoffId = null) => continuity.consumeReturn(pathname, handoffId),
     [continuity, pathname],
   );
-  return useMemo(
-    () => ({ consume, entries, peek: () => entries[0] || null }),
-    [consume, entries],
-  );
+  return useMemo(() => ({ consume, entries, peek: () => entries[0] || null }), [consume, entries]);
 }
 
 /**

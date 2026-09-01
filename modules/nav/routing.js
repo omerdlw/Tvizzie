@@ -443,10 +443,9 @@ export function navigationContinuityReducer(state, action) {
     );
     return {
       ...currentState,
-      returnHandoffs: [
-        ...returnHandoffs.filter((entry) => entry.id !== handoff.id),
-        handoff,
-      ].slice(-maxEntries),
+      returnHandoffs: [...returnHandoffs.filter((entry) => entry.id !== handoff.id), handoff].slice(
+        -maxEntries,
+      ),
     };
   }
 
@@ -462,7 +461,9 @@ export function navigationContinuityReducer(state, action) {
   if (action?.type === NAVIGATION_CONTINUITY_EVENTS.REMOVE) {
     const path = normalizePath(action.path || '');
     const entries = currentState.entries.filter((entry) => entry.path !== path);
-    return entries.length === currentState.entries.length ? currentState : { ...currentState, entries };
+    return entries.length === currentState.entries.length
+      ? currentState
+      : { ...currentState, entries };
   }
 
   if (action?.type !== NAVIGATION_CONTINUITY_EVENTS.RECORD || !action.entry?.path) {

@@ -303,13 +303,12 @@ export default function AccountMediaGridPage({
               <AccountPagination
                 currentPage={activePage}
                 totalPages={totalPages}
-                onPageChange={(page) => {
-                  if (canControlPagination) {
-                    onPageChange(page);
-                  } else if (pageBasePath) {
-                    router.push(buildAccountCollectionPageHref(pageBasePath, page));
-                  }
-                }}
+                onPageChange={canControlPagination ? onPageChange : null}
+                getPageHref={
+                  canControlPagination
+                    ? null
+                    : (page) => buildAccountCollectionPageHref(pageBasePath, page)
+                }
               />
             </div>
           )}

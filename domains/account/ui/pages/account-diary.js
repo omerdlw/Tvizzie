@@ -133,7 +133,7 @@ const DiaryView = createAccountSectionView({
     onNextMonth,
     onPreviousMonth,
   }),
-  skeletonVariant: 'activity',
+  skeletonVariant: 'diary',
   renderContent: (_sectionState, diaryState) => <AccountDiary {...diaryState} />,
 });
 

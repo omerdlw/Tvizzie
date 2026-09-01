@@ -8,8 +8,10 @@ import {
   EVENT_TYPES,
   globalEvents,
   SEMANTIC_SURFACE_CLASSES,
+  SUCCESS_ACTION_TONE_CLASS,
+  WARNING_ACTION_TONE_CLASS,
 } from '@/shared';
-import { useNavRuntimeRegistry } from '@/modules/registry';
+import { useNavRuntimeRegistry } from '../registry';
 import {
   API_ERROR_BATCH_DELAY,
   AUTH_STATUS_CLEAR_DURATION,

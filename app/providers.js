@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { MotionConfig } from 'framer-motion';
 
@@ -13,7 +14,12 @@ import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 import { composeProviders } from '@/app/_shell/compose-providers';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
-import { AuthProvider, createSupabaseAuthAdapter, useAuth } from '@/modules/auth';
+import {
+  AuthProvider,
+  createSupabaseAuthAdapter,
+  useAuth,
+  useAuthSessionReady,
+} from '@/modules/auth';
 import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
 import { subscribeToUserAccount } from '@/domains/account/client/profile';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/client';
@@ -48,7 +54,6 @@ import {
   createClient as createSupabaseClient,
   terminateBrowserSession,
 } from '@/infrastructure/supabase/client';
-
 const Nav = dynamic(() => import('@/modules/nav'));
 const NotificationsModal = dynamic(() => import('@/domains/shell/modals/notifications-modal'), {
   ssr: false,
@@ -86,6 +91,7 @@ const APP_REGISTRY_ENTRIES = Object.freeze([
 const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({
     client: () => createSupabaseClient(),
+    oauthCallbackPath: '/api/auth/callback',
     oauthDefaultNextPath: '/account',
     terminateBrowserSession,
   }),

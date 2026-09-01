@@ -128,7 +128,7 @@ function ActionButton({
       >
         <Icon icon={icon} size={16} />
       </span>
-      <span className="relative truncate">
+      <span className="relative ">
         <span className={cn(hoverLabel && 'transition-opacity duration-150 group-hover:opacity-0')}>
           {label}
         </span>

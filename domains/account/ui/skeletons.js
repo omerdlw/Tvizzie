@@ -60,37 +60,34 @@ export function AccountHeroSkeleton() {
     <>
       <div
         aria-hidden="true"
-        className={cn(
-          'relative h-64 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+4rem)] lg:-translate-x-8 xl:w-[calc(100%+8rem)] xl:-translate-x-16',
-        )}
+        className={cn('relative h-56 w-full overflow-hidden sm:h-72 lg:h-80 xl:h-96')}
       />
       <section
         aria-busy="true"
         aria-label="Loading account profile"
-        className="relative z-10 -mt-24 grid items-center gap-6 sm:-mt-36 sm:gap-8 lg:-mt-52 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12"
+        className="relative z-10 -mt-16 flex flex-col gap-5 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between sm:gap-6 lg:-mt-24"
       >
-        <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-5">
-          <div className={cn('size-20 shrink-0 rounded-[30px] sm:size-24', S)} />
-          <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:justify-center sm:gap-2">
-            <SkeletonLine className="h-12 w-3/5 max-w-md min-w-0 rounded-[16px] sm:h-14" />
-            <div className="col-span-2 flex w-full max-w-xl flex-col gap-2 sm:col-auto">
+        <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+          <div className={cn('size-20 shrink-0 rounded-2xl sm:size-24 lg:size-28', S)} />
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
+            <SkeletonLine className="h-8 w-40 max-w-md min-w-0 rounded-[10px] sm:h-9 sm:w-56" />
+            <SkeletonLine className="h-3 w-24" soft />
+            <div className="mt-0.5 flex w-full max-w-md flex-col gap-1">
               <SkeletonLine className="w-full" soft />
               <SkeletonLine className="w-3/4" soft />
             </div>
           </div>
         </div>
-        <div className="flex items-center lg:mb-1">
-          {[0, 1].map((index) => (
-            <div
-              key={index}
-              className={index === 0 ? 'pr-4 sm:pr-5' : 'border-l border-white/10 pl-4 sm:pl-5'}
-            >
-              <div className="flex min-w-16 flex-col gap-1">
-                <SkeletonLine className="h-6 w-10" />
-                <SkeletonLine className={index === 0 ? 'w-16' : 'w-20'} soft />
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/[0.03] px-3.5 py-2 self-start sm:self-end">
+          <div className="flex flex-col gap-1">
+            <SkeletonLine className="h-5 w-8" />
+            <SkeletonLine className="h-2.5 w-12" soft />
+          </div>
+          <div className="h-3.5 w-px bg-white/10" />
+          <div className="flex flex-col gap-1">
+            <SkeletonLine className="h-5 w-8" />
+            <SkeletonLine className="h-2.5 w-12" soft />
+          </div>
         </div>
       </section>
     </>
@@ -129,7 +126,10 @@ export function resolveAccountTabFromPathname(pathname) {
   if (subtab === 'watched') return { activeTab: 'watched', variant: 'watched' };
   if (subtab === 'watchlist') return { activeTab: 'watchlist', variant: 'watchlist' };
   if (subtab === 'reviews') return { activeTab: 'reviews', variant: 'reviews' };
-  if (subtab === 'lists') return { activeTab: 'lists', variant: 'lists' };
+  if (subtab === 'lists') {
+    if (segments[3]) return { activeTab: 'lists', variant: 'list-detail' };
+    return { activeTab: 'lists', variant: 'lists' };
+  }
 
   return { activeTab: 'overview', variant: 'overview' };
 }
@@ -140,6 +140,7 @@ export function renderAccountSectionSkeleton(tabOrVariant) {
       return <AccountActivitySkeleton />;
     case 'diary':
       return <AccountDiarySkeleton />;
+    case 'collection':
     case 'likes':
     case 'watched':
     case 'watchlist':
@@ -346,11 +347,26 @@ export function FilterBarSkeleton({ count = 4, showAction = true }) {
   );
 }
 
+export function AccountPaginationSkeleton() {
+  return (
+    <div className="mt-8 flex justify-center" aria-hidden="true">
+      <div className="flex items-center gap-1.5 py-2">
+        <div className={cn('h-9 w-14 rounded-xl', SOFT)} />
+        <div className={cn('size-9 rounded-xl', S)} />
+        <div className={cn('size-9 rounded-xl', SOFT)} />
+        <div className={cn('size-9 rounded-xl', SOFT)} />
+        <div className={cn('h-9 w-14 rounded-xl', SOFT)} />
+      </div>
+    </div>
+  );
+}
+
 export function AccountMediaGridSkeleton() {
   return (
     <div className="w-full">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
-        <MediaCardsSkeletonGrid />
+        <MediaCardsSkeletonGrid count={18} />
+        <AccountPaginationSkeleton />
       </SectionSkeleton>
     </div>
   );
@@ -361,6 +377,7 @@ export function AccountActivitySkeleton() {
     <div className="w-full">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={2} showAction={false} />}>
         <ActivityItemsSkeletonList count={8} />
+        <AccountPaginationSkeleton />
       </SectionSkeleton>
     </div>
   );
@@ -431,6 +448,7 @@ export function AccountReviewsSkeleton() {
     <div className="w-full">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={3} showAction={false} />}>
         <ReviewCardsSkeletonList count={6} />
+        <AccountPaginationSkeleton />
       </SectionSkeleton>
     </div>
   );
@@ -441,6 +459,7 @@ export function AccountListsSkeleton() {
     <div className="w-full">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={2} showAction={false} />}>
         <ListCardsSkeletonGrid count={6} />
+        <AccountPaginationSkeleton />
       </SectionSkeleton>
     </div>
   );
@@ -451,6 +470,7 @@ export function AccountListDetailSkeleton() {
     <div className="flex w-full flex-col gap-10 sm:gap-12">
       <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton count={4} />}>
         <MediaCardsSkeletonGrid count={6} />
+        <AccountPaginationSkeleton />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-24" summary={false}>
         <ReviewCardsSkeletonList count={3} />
@@ -562,6 +582,7 @@ export default {
   AccountListsSkeleton,
   AccountMediaGridSkeleton,
   AccountOverviewSkeleton,
+  AccountPaginationSkeleton,
   AccountReviewsSkeleton,
   AccountSectionNavSkeleton,
   AccountSkeletonLayout,

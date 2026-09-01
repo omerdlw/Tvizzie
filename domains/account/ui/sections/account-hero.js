@@ -13,6 +13,7 @@ import {
 import { createMovieBackdropImageUrl } from '@/domains/media/utils/media-data';
 import { createAccountSocialSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-social-surface';
 import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
+import BackdropHero from '@/ui/components/backdrop-hero';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -43,65 +44,7 @@ function resolveAccountBackdropUrl(profile) {
 }
 
 export function AccountBackdropHero({ image }) {
-  if (!image) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      className="relative isolate h-64 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+4rem)] lg:-translate-x-8 xl:w-[calc(100%+8rem)] xl:-translate-x-16"
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundColor: 'var(--black)',
-          backgroundImage: `url(${image})`,
-          backgroundPosition: 'center 20%',
-        }}
-      />
-      <div
-        className="absolute inset-0 z-10"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgb(11 11 11 / 20%) 0%, rgb(11 11 11 / 10%) 18%, transparent 34%), linear-gradient(to right, var(--black) 0%, rgb(11 11 11 / 80%) 6%, rgb(11 11 11 / 50%) 13%, rgb(11 11 11 / 20%) 21%, transparent 30%, transparent 70%, rgb(11 11 11 / 20%) 79%, rgb(11 11 11 / 50%) 87%, rgb(11 11 11 / 80%) 94%, var(--black) 100%), linear-gradient(to bottom, transparent 38%, rgb(11 11 11 / 20%) 62%, rgb(11 11 11 / 50%) 82%, var(--black) 100%)',
-        }}
-      />
-    </div>
-  );
-}
-
-function HeroInlineMetric({ item }) {
-  const innerContent = (
-    <>
-      <span className="font-zuume text-xl leading-none sm:text-2xl">{item.value}</span>
-
-      <span className="text-xs text-white/40 transition-colors group-hover:text-white/70">
-        {item.label}
-      </span>
-    </>
-  );
-
-  const baseClassName =
-    'group flex min-w-16 flex-col gap-0.5 text-left transition-colors hover:text-white select-none';
-
-  if (item.href) {
-    return (
-      <Link href={item.href} className={baseClassName}>
-        {innerContent}
-      </Link>
-    );
-  }
-
-  if (typeof item.onClick === 'function') {
-    return (
-      <Button type="button" onClick={item.onClick} className={baseClassName}>
-        {innerContent}
-      </Button>
-    );
-  }
-
-  return <div className={baseClassName}>{innerContent}</div>;
+  return <BackdropHero image={image} position="center 25%" />;
 }
 
 function HeroBioPreview({ className = '', description, onReadMore }) {
@@ -182,8 +125,8 @@ function HeroBioPreview({ className = '', description, onReadMore }) {
   }
 
   return (
-    <div className={`relative w-full max-w-2xl text-left ${className}`}>
-      <p className="w-full text-sm leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-base">
+    <div className={`relative w-full max-w-xl text-left ${className}`}>
+      <p className="w-full text-xs leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-sm">
         {preview.text}
         {preview.isTruncated ? '… ' : null}
         {preview.isTruncated && canOpenBio ? (
@@ -200,7 +143,7 @@ function HeroBioPreview({ className = '', description, onReadMore }) {
       <p
         ref={measureRef}
         aria-hidden="true"
-        className="pointer-events-none invisible absolute inset-x-0 top-0 w-full text-sm leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-base"
+        className="pointer-events-none invisible absolute inset-x-0 top-0 w-full text-xs leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-sm"
       >
         <span ref={measureTextRef} />
         <span className="text-xs font-semibold uppercase">Read More</span>
@@ -215,12 +158,13 @@ export default function AccountHero({
   onOpenFollowList = null,
   onReadMore = null,
   profile = null,
+  username = null,
 }) {
   const { openSurface } = useNavigationActions();
 
   const heroDisplayName =
     String(profile?.displayName || profile?.username || '').trim() || 'Account';
-  const profileUsername = profile?.username || null;
+  const profileUsername = username || profile?.username || null;
 
   const handleFollowListClick = (type) => {
     if (typeof onOpenFollowList === 'function') {
@@ -261,19 +205,6 @@ export default function AccountHero({
   const backdropUrl = useMemo(() => resolveAccountBackdropUrl(profile), [profile]);
   const hasInlineBackdrop = Boolean(backdropUrl);
 
-  const socialMetrics = [
-    {
-      label: 'Followers',
-      onClick: () => handleFollowListClick('followers'),
-      value: formatHeroCount(followerCount),
-    },
-    {
-      label: 'Following',
-      onClick: () => handleFollowListClick('following'),
-      value: formatHeroCount(followingCount),
-    },
-  ];
-
   const heroAvatarSrc = getUserAvatarUrl(profile);
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
 
@@ -283,12 +214,12 @@ export default function AccountHero({
 
       <section
         className={`relative z-10 ${
-          hasInlineBackdrop ? '-mt-24 sm:-mt-36 lg:-mt-52' : 'pt-8 sm:pt-12 lg:pt-14'
+          hasInlineBackdrop ? '-mt-20 sm:-mt-28 lg:-mt-36' : 'pt-6 sm:pt-10'
         }`}
       >
-        <div className="relative z-10 grid items-center gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
-          <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-5">
-            <div className="size-20 shrink-0 overflow-hidden rounded-[30px] ring-1 ring-inset ring-white/5 shadow-2xl sm:size-24">
+        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+            <div className="size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 shadow-2xl sm:size-24 lg:size-28 bg-black/60">
               <AdaptiveImage
                 mode="img"
                 src={heroAvatarSrc}
@@ -300,16 +231,18 @@ export default function AccountHero({
               />
             </div>
 
-            <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:justify-center">
-              <div className="min-w-0">
-                <h1 className="font-zuume max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-6xl">
-                  {heroDisplayName}
-                </h1>
-              </div>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+              <h1 className="font-zuume max-w-full text-3xl leading-tight font-bold [overflow-wrap:anywhere] uppercase sm:text-4xl lg:text-5xl tracking-wide text-white">
+                {heroDisplayName}
+              </h1>
+
+              {profileUsername ? (
+                <p className="text-xs sm:text-sm font-mono text-white/50">@{profileUsername}</p>
+              ) : null}
 
               {profile?.description ? (
                 <HeroBioPreview
-                  className="col-span-2 sm:col-auto"
+                  className="mt-0.5"
                   description={profile.description}
                   onReadMore={handleBioReadMore}
                 />
@@ -317,15 +250,34 @@ export default function AccountHero({
             </div>
           </div>
 
-          <div className="flex items-center">
-            {socialMetrics.map((item, index) => (
-              <div
-                key={`social-${item.label}-${index}`}
-                className={index === 0 ? 'pr-4 sm:pr-5' : 'border-l border-white/10 pl-4 sm:pl-5'}
-              >
-                <HeroInlineMetric item={item} />
-              </div>
-            ))}
+          <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/[0.03] px-3.5 py-2 backdrop-blur-sm self-start sm:self-end">
+            <button
+              type="button"
+              onClick={() => handleFollowListClick('following')}
+              className="group flex items-baseline gap-1.5 text-left transition-colors cursor-pointer"
+            >
+              <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
+                {formatHeroCount(followingCount)}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors group-hover:text-white/80">
+                Following
+              </span>
+            </button>
+
+            <div className="h-3.5 w-px bg-white/10" />
+
+            <button
+              type="button"
+              onClick={() => handleFollowListClick('followers')}
+              className="group flex items-baseline gap-1.5 text-left transition-colors cursor-pointer"
+            >
+              <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
+                {formatHeroCount(followerCount)}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors group-hover:text-white/80">
+                Followers
+              </span>
+            </button>
           </div>
         </div>
       </section>

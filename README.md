@@ -51,7 +51,7 @@ Tvizzie follows a domain-driven modular architecture:
 └── ui/                   # Design system primitives & layout containers
 ```
 
-Modül teknik referansları: [modules/_docs/README.md](modules/_docs/README.md)
+Modül teknik referansları: [modules/docs/README.md](modules/docs/README.md)
 
 ## 🏁 Getting Started
 

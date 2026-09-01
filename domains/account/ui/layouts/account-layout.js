@@ -171,6 +171,15 @@ function AccountProfileShellNav({ profile, username }) {
 
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   if (!username) return null;
+  const profileShell = useAccountProfileShell();
+
+  const countsMap = {
+    likes: profileShell?.likesCount,
+    watched: profileShell?.watchedCount,
+    watchlist: profileShell?.watchlistCount,
+    reviews: profileShell?.reviewsCount,
+    lists: profileShell?.listsCount,
+  };
 
   return (
     <div
@@ -184,10 +193,12 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
         className="flex w-full max-w-full scrollbar-none items-center overflow-x-auto"
       >
         {SECTION_ITEMS.map((item) => {
+          const count = countsMap[item.key];
           return (
             <NavViewItem
               key={item.key}
               item={item}
+              count={typeof count === 'number' ? count : null}
               isActive={item.key === activeKey}
               href={getSectionHref(username, item.key)}
             />
@@ -213,7 +224,7 @@ export function AccountSectionNavWrapper({
   );
 }
 
-function NavViewItem({ item, isActive, href }) {
+function NavViewItem({ item, isActive, href, count = null }) {
   const transition = useAccountNavTransition();
   const router = useRouter();
 
@@ -242,14 +253,24 @@ function NavViewItem({ item, isActive, href }) {
       className={cn(
         'inline-flex h-12 shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 text-xs font-semibold uppercase transition-colors select-none sm:min-w-0 sm:flex-1 sm:px-2',
         isActive
-          ? 'border-white text-white'
-          : 'border-transparent text-white/70 hover:bg-white/10 hover:text-white',
+          ? 'border-white text-white font-bold'
+          : 'border-transparent text-white/60 hover:bg-white/5 hover:text-white',
       )}
     >
       {item.icon ? (
         <Icon icon={item.icon} size={14} className={isActive ? 'text-white' : 'text-white/40'} />
       ) : null}
       <span>{item.label}</span>
+      {count !== null && count !== undefined ? (
+        <span
+          className={cn(
+            'ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-mono leading-none font-medium',
+            isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40',
+          )}
+        >
+          {count}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -374,6 +395,7 @@ function ProfileLayoutInner({
             followingCount={followingCount}
             onOpenFollowList={onOpenFollowList}
             onReadMore={handleReadMore}
+            username={profileHandle}
           />
         </AccountHeroReveal>
 

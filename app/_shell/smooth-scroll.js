@@ -4,8 +4,8 @@ import { createContext, useContext, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 
-const CONTEXT_MENU_VISIBILITY_EVENT = 'tvizzie:context-menu-visibility';
-const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
+const CONTEXT_MENU_VISIBILITY_EVENT = 'context-menu:visibility';
+const SMOOTH_SCROLL_LOCK_EVENT = 'modal:smooth-scroll-lock';
 const DETAIL_ROUTE_PREFIXES = ['/movie/', '/tv/', '/person/'];
 const SCROLL_LERP = 0.1;
 

@@ -37,8 +37,28 @@ export {
   navActionVariants,
   slideFadeVariants,
   textCrossfadeVariants,
+  staggerItemVariants,
   navListItemVariants,
   navFadeVariants,
+  navBadgeVariants,
+  navBackdropVariants,
+  navBreadcrumbsVariants,
+  navHudVariants,
+  getNavDescriptionVariants,
+  getNavActionStaggerTransition,
+  getNavStackAnimateProps,
+  getNavCardDelay,
+  getNavItemAnimateValues,
+  getNavItemTransition,
+  getNavCardContentAnimateProps,
+  getNavScrollProgressStyle,
+  navSoundwaveBarVariants,
+  navScrubberTooltipVariants,
+  NAV_SCRUBBER_TOOLTIP_TRANSITION,
+  NAV_SURFACE_HEADER_REVEAL_DELAY_MS,
+  NAV_SURFACE_TRANSITION,
+  NAV_SURFACE_DRAG_CONSTRAINTS,
+  NAV_SURFACE_DRAG_ELASTIC,
 } from './motion';
 
 export {
@@ -247,9 +267,9 @@ export default function Nav() {
 
   const isOverlayActive = Boolean(activeItem?.isOverlay);
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
-  const isCompactPreviewActive = compact && !expanded && isStackHovered;
-  const isTopItemCompact = compact && !expanded && !isStackHovered;
-  const isCompactStack = !expanded && compact && !isCompactPreviewActive;
+  const isCompactPreviewActive = compact && !expanded && isStackHovered && !isOverlayActive;
+  const isTopItemCompact = compact && !expanded && !isStackHovered && !isOverlayActive;
+  const isCompactStack = !expanded && compact && !isCompactPreviewActive && !isOverlayActive;
   const activeTitle = activeItem?.title || activeItem?.name || '';
 
   const { breadcrumbs } = useNavBreadcrumbs();

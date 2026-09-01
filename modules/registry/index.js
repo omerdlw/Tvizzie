@@ -86,7 +86,7 @@ export {
   useRegistryValue,
 } from './provider';
 
-export { applyRegistryConfig } from './config';
+export { applyRegistryConfig } from './handlers';
 
 export {
   useBackgroundValue,

@@ -3,23 +3,6 @@
  * Keep this module data-only: no functions, JSX, React state, or browser access.
  */
 
-export const NAV_CONFIG_FIELD_TYPES = Object.freeze({
-  expandHorizontal: 'boolean',
-  dismissible: 'boolean',
-  isOverlay: 'boolean',
-  isLoading: 'boolean',
-  width: 'number',
-  path: 'string',
-  name: 'string',
-});
-
-export const NAVIGATION_POLICY_FIELD_TYPES = Object.freeze({
-  clearTransientState: 'boolean',
-  dismissSurfaces: 'boolean',
-  prefetch: 'boolean',
-});
-
-export const NAV_RENDERABLE_FIELDS = Object.freeze(['title', 'description']);
 export const NAV_STYLE_SECTIONS = Object.freeze(['card', 'icon', 'title', 'description']);
 
 export const NAV_EVENTS = Object.freeze({

@@ -117,29 +117,35 @@ export default function AccountListsFeed({
 
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
   return (
-    <div>
-      <Button
-        type="button"
-        aria-label={`Edit ${list.title}`}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onEdit(list);
-        }}
-      >
-        <Icon icon="solar:pen-bold" size={13} />
-      </Button>
-      <Button
-        type="button"
-        aria-label={`Delete ${list.title}`}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDelete(list);
-        }}
-      >
-        <Icon icon="solar:trash-bin-trash-bold" size={13} />
-      </Button>
+    <div className="flex items-center gap-1">
+      {typeof onEdit === 'function' ? (
+        <Button
+          type="button"
+          aria-label={`Edit ${list.title}`}
+          className="center size-7 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit(list);
+          }}
+        >
+          <Icon icon="solar:pen-bold" size={13} />
+        </Button>
+      ) : null}
+      {typeof onDelete === 'function' ? (
+        <Button
+          type="button"
+          aria-label={`Delete ${list.title}`}
+          className="center size-7 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete(list);
+          }}
+        >
+          <Icon icon="solar:trash-bin-trash-bold" size={13} />
+        </Button>
+      ) : null}
     </div>
   );
 }

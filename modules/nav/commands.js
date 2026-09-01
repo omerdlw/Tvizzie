@@ -21,9 +21,9 @@ import {
   staggerItemVariants,
 } from './motion';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
-import { useModal } from '@/modules/modal';
-import { useToast } from '@/modules/notification';
-import { useNavRuntimeRegistry } from '@/modules/registry';
+import { useModal } from '../modal';
+import { useToast } from '../notification';
+import { useNavRuntimeRegistry } from '../registry';
 import { cn } from '@/ui/class-names';
 import { Button, Tooltip } from '@/ui/primitives';
 import Iconify from '@/ui/primitives/icon';

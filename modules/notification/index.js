@@ -24,12 +24,14 @@ export {
   NOTIFICATION_DRAG_ELASTIC,
   NOTIFICATION_MICRO_SPRING,
   NOTIFICATION_MICRO_TAP_SCALE,
+  NOTIFICATION_SURFACE_TRANSITION_CLASS,
   NOTIFICATION_WHILE_DRAG,
   TOAST_VARIANTS,
   notificationContentVariants,
   toastVariants,
-  useToast,
-} from './toast';
+} from './motion';
+
+export { useToast } from './toast';
 
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -56,9 +58,10 @@ import {
 import {
   NOTIFICATION_DRAG_CONSTRAINTS,
   NOTIFICATION_DRAG_ELASTIC,
+  NOTIFICATION_SURFACE_TRANSITION_CLASS,
   NOTIFICATION_WHILE_DRAG,
   toastVariants,
-} from './toast';
+} from './motion';
 
 // -----------------------------------------------------------------------------
 // Notification presentation
@@ -117,7 +120,8 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/80 p-2.5 ring-1 ring-white/10 backdrop-blur-lg transition-all duration-300 ease-in-out ring-inset',
+        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/80 p-2.5 ring-1 ring-white/10 backdrop-blur-lg ring-inset',
+        NOTIFICATION_SURFACE_TRANSITION_CLASS,
         theme.surface,
       )}
     >

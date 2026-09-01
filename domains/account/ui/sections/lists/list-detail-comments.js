@@ -93,7 +93,7 @@ function CommentsView({
         )}
 
         {totalReviewPages > 1 && (
-          <div>
+          <div className="mt-8 flex justify-center">
             <AccountPagination
               currentPage={safeCurrentReviewPage}
               totalPages={totalReviewPages}

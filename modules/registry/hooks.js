@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef } from 'react';
 
-import { applyRegistryConfig } from './config';
+import { applyRegistryConfig } from './handlers';
 import {
   DEFAULT_SOURCE,
   DYNAMIC_SOURCE,
@@ -18,7 +18,7 @@ import {
   useRegistrySelector,
   useRegistryValue,
 } from './provider';
-import { deepCompare, useStableDiff, useStabilizedRegistryConfig } from './stability';
+import { deepCompare, useStableDiff, useStabilizedRegistryConfig } from './stabilization';
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

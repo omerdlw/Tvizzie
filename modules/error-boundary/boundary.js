@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { globalEvents, EVENT_TYPES } from '@/shared';
+import { EVENT_TYPES, globalEvents } from '@/shared';
 import { Button } from '@/ui/primitives';
 
 import { getErrorReporter } from './reporter';

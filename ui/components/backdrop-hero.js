@@ -2,11 +2,20 @@
 
 import { cn } from '@/ui/class-names';
 
+export const BACKDROP_HERO_GRADIENT = [
+  // Symmetrical feather-soft side edge fades (28% smooth cubic falloff on left & right)
+  'linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.97) 2%, rgba(0, 0, 0, 0.90) 5%, rgba(0, 0, 0, 0.79) 8%, rgba(0, 0, 0, 0.64) 12%, rgba(0, 0, 0, 0.47) 16%, rgba(0, 0, 0, 0.30) 20%, rgba(0, 0, 0, 0.15) 24%, rgba(0, 0, 0, 0.04) 27%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.04) 73%, rgba(0, 0, 0, 0.15) 76%, rgba(0, 0, 0, 0.30) 80%, rgba(0, 0, 0, 0.47) 84%, rgba(0, 0, 0, 0.64) 88%, rgba(0, 0, 0, 0.79) 92%, rgba(0, 0, 0, 0.90) 95%, rgba(0, 0, 0, 0.97) 98%, rgba(0, 0, 0, 1) 100%)',
+  // Smooth gradual bottom fade extending down through title/tagline/overview
+  'linear-gradient(to bottom, transparent 0%, transparent 28%, rgba(0, 0, 0, 0.03) 38%, rgba(0, 0, 0, 0.10) 48%, rgba(0, 0, 0, 0.22) 58%, rgba(0, 0, 0, 0.42) 68%, rgba(0, 0, 0, 0.68) 78%, rgba(0, 0, 0, 0.88) 88%, rgba(0, 0, 0, 0.98) 95%, rgba(0, 0, 0, 1) 100%)',
+].join(', ');
+
 export const BACKDROP_HERO_GRADIENT_CLASS =
-  'backdrop-hero-gradient absolute inset-0 z-10';
+  'pointer-events-none absolute inset-0 z-10';
 
 export function BackdropHero({
   className,
+  gradientClassName,
+  gradientStyle,
   image,
   imageClassName,
   position = 'center 20%',
@@ -19,7 +28,7 @@ export function BackdropHero({
     <div
       aria-hidden="true"
       className={cn(
-        'relative isolate h-64 w-full overflow-hidden sm:h-80 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(30rem,45vw,36rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32',
+        'relative isolate h-80 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-96 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(36rem,52vw,44rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32 xl:h-[clamp(40rem,56vw,48rem)] xl:w-[calc(100%+24rem)] xl:-translate-x-48',
         className
       )}
     >
@@ -31,7 +40,13 @@ export function BackdropHero({
           backgroundPosition: position,
         }}
       />
-      <div className={BACKDROP_HERO_GRADIENT_CLASS} />
+      <div
+        className={cn(BACKDROP_HERO_GRADIENT_CLASS, gradientClassName)}
+        style={{
+          background: BACKDROP_HERO_GRADIENT,
+          ...gradientStyle,
+        }}
+      />
     </div>
   );
 }

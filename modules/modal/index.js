@@ -1,46 +1,35 @@
 'use client';
 
-import {
-  isValidElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { isValidElement, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { INFO_ACTION_TONE_CLASS, MOTION_EASINGS, MOTION_SPRINGS, Z_INDEX } from '@/shared';
+import { Z_INDEX } from '@/shared';
 import { cn } from '@/ui/class-names';
 import { Button, Icon } from '@/ui/primitives';
-import { ModuleError } from '@/modules/error-boundary';
-import { useModalRegistry } from '@/modules/registry';
+import { ModuleError } from '../error-boundary';
+import { useModalRegistry } from '../registry';
+import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_POSITION_CLASSES, MODAL_POSITIONS } from './config';
 import {
-  MODAL_BREAKPOINTS,
-  MODAL_CHROME,
-  MODAL_POSITION_CLASSES,
-  MODAL_POSITIONS,
-  MODAL_PRESETS,
-  resolveModalHeader,
-} from './config';
+  MODAL_CONTENT_VARIANTS,
+  MODAL_FOOTER_VARIANTS,
+  MODAL_HEADER_VARIANTS,
+  getModalPositionVariants,
+  getModalTransition,
+  modalBackdropVariants,
+  MODAL_STACK_OVERLAY_CLASS,
+} from './motion';
 import {
-  INITIAL_MODAL_STATE,
-  ModalActionsContext,
-  ModalStateContext,
+  ModalProvider as ModalRuntimeProvider,
   SMOOTH_SCROLL_LOCK_EVENT,
-  createModalState,
-  finalizeModalClose,
   getFocusableElements,
   getModalLabel,
   getViewportIsMobile,
   isSidePosition,
   isVerticalEdgePosition,
-  normalizePositionConfig,
   resolveActivePosition,
   trapFocus,
+  useModal,
 } from './runtime';
 
 export {
@@ -54,247 +43,26 @@ export {
   resolveModalHeader,
 } from './config';
 
-// ── Motion contract ─────────────────────────────────────────────────────────
-// Modal motion is intentionally exported from the facade so feature modules
-// can reuse the same choreography without reaching into implementation files.
-const MODAL_EASINGS = Object.freeze({
-  CINEMATIC: MOTION_EASINGS.CINEMATIC,
-  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
-  SOFT: MOTION_EASINGS.SOFT,
-  EXIT: MOTION_EASINGS.EXIT,
-});
-
-const MODAL_TIERS = Object.freeze({
-  MICRO: { duration: 0.24, distance: 4, scaleDelta: 0.008, ease: MODAL_EASINGS.EMPHASIZED },
-  FAST: { duration: 0.44, distance: 9, scaleDelta: 0.012, ease: MODAL_EASINGS.EMPHASIZED },
-  STANDARD: { duration: 0.66, distance: 18, scaleDelta: 0.018, ease: MODAL_EASINGS.SOFT },
-  SURFACE: { duration: 0.96, distance: 28, scaleDelta: 0.024, ease: MODAL_EASINGS.CINEMATIC },
-});
-
-const MODAL_SPRINGS = Object.freeze({
-  MICRO: MOTION_SPRINGS.PRESS,
-  PANEL: MOTION_SPRINGS.PANEL,
-  BADGE: MOTION_SPRINGS.BADGE,
-});
-
-function toCssDistance(value = 0) {
-  return typeof value === 'number' ? `${value}px` : value;
-}
-
-function toGpuTransform({ x = 0, y = 0, scale = 1 } = {}) {
-  return `translate3d(${toCssDistance(x)}, ${toCssDistance(y)}, 0) scale(${scale})`;
-}
-
-export const MODAL_MICRO_SPRING = MODAL_SPRINGS.MICRO;
-export const MODAL_PANEL_SPRING = MODAL_SPRINGS.PANEL;
-
-export const MODAL_MICRO_TAP_SCALE = 0.97;
-export const MODAL_MICRO_TAP = Object.freeze({
-  transform: toGpuTransform({ scale: MODAL_MICRO_TAP_SCALE }),
-});
-
-export const MODAL_CONTENT_STAGGER = 0.06;
-
-export const MODAL_CONTENT_VARIANTS = Object.freeze({
-  hidden: {
-    opacity: 0,
-    transform: toGpuTransform({ y: MODAL_TIERS.MICRO.distance, scale: 0.992 }),
-    filter: 'blur(4px)',
-  },
-  visible: {
-    opacity: 1,
-    transform: toGpuTransform(),
-    filter: 'blur(0px)',
-    transition: {
-      duration: MODAL_TIERS.FAST.duration,
-      ease: MODAL_EASINGS.EMPHASIZED,
-      delay: 0.08,
-    },
-  },
-  exit: {
-    opacity: 0,
-    transform: toGpuTransform({ y: 3, scale: 0.994 }),
-    filter: 'blur(3px)',
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-export const MODAL_HEADER_VARIANTS = Object.freeze({
-  hidden: { opacity: 0, filter: 'blur(4px)' },
-  visible: {
-    opacity: 1,
-    filter: 'blur(0px)',
-    transition: {
-      duration: MODAL_TIERS.FAST.duration,
-      ease: MODAL_EASINGS.EMPHASIZED,
-      delay: 0.03,
-    },
-  },
-  exit: {
-    opacity: 0,
-    filter: 'blur(3px)',
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-export const MODAL_FOOTER_VARIANTS = Object.freeze({
-  hidden: { opacity: 0, filter: 'blur(4px)' },
-  visible: {
-    opacity: 1,
-    filter: 'blur(0px)',
-    transition: {
-      duration: MODAL_TIERS.FAST.duration,
-      ease: MODAL_EASINGS.EMPHASIZED,
-      delay: 0.12,
-    },
-  },
-  exit: {
-    opacity: 0,
-    filter: 'blur(3px)',
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-export const MODAL_LIST_VARIANTS = Object.freeze({
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: MODAL_TIERS.MICRO.duration, ease: MODAL_EASINGS.EMPHASIZED },
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-export const MODAL_LIST_ITEM_VARIANTS = Object.freeze({
-  hidden: {
-    opacity: 0,
-    transform: toGpuTransform({
-      y: MODAL_TIERS.FAST.distance,
-      scale: 1 - MODAL_TIERS.FAST.scaleDelta,
-    }),
-    filter: 'blur(6px)',
-  },
-  visible: (index = 0) => ({
-    opacity: 1,
-    transform: toGpuTransform(),
-    filter: 'blur(0px)',
-    transition: {
-      duration: MODAL_TIERS.FAST.duration,
-      ease: MODAL_EASINGS.EMPHASIZED,
-      delay: 0.06 + Math.min(Math.max(Number(index) || 0, 0) * MODAL_CONTENT_STAGGER, 0.42),
-    },
-  }),
-  exit: {
-    opacity: 0,
-    transform: toGpuTransform({ y: -MODAL_TIERS.MICRO.distance, scale: 0.994 }),
-    filter: 'blur(3px)',
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-function buildVariants(tierName, { axis, fullSlide = false, direction = 1 } = {}) {
-  const tier = MODAL_TIERS[tierName];
-  const distance = fullSlide ? '100%' : tier.distance;
-  const signedDistance = direction < 0 ? (fullSlide ? '-100%' : -distance) : distance;
-  const transform = axis === 'x' ? { x: signedDistance } : { y: signedDistance };
-
-  return Object.freeze({
-    hidden: {
-      opacity: 0,
-      transform: toGpuTransform(transform),
-      filter: 'blur(10px)',
-    },
-    visible: {
-      opacity: 1,
-      transform: toGpuTransform(),
-      filter: 'blur(0px)',
-      transition: { duration: tier.duration, ease: tier.ease },
-    },
-    exit: {
-      opacity: 0,
-      transform: toGpuTransform(transform),
-      filter: 'blur(6px)',
-      transition: { duration: tier.duration * 0.72, ease: MODAL_EASINGS.EXIT },
-    },
-  });
-}
-
-export const modalBackdropVariants = Object.freeze({
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.66, ease: MODAL_EASINGS.SOFT },
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-const CENTER_VARIANTS = Object.freeze({
-  hidden: {
-    opacity: 0,
-    transform: toGpuTransform({ y: 10, scale: 0.96 }),
-    filter: 'blur(10px)',
-  },
-  visible: {
-    opacity: 1,
-    transform: toGpuTransform(),
-    filter: 'blur(0px)',
-  },
-  exit: {
-    opacity: 0,
-    transform: toGpuTransform({ y: 6, scale: 0.98 }),
-    filter: 'blur(6px)',
-    transition: { duration: 0.38, ease: MODAL_EASINGS.EXIT },
-  },
-});
-
-const BOTTOM_VARIANTS = buildVariants('SURFACE', { axis: 'y', fullSlide: true });
-const RIGHT_VARIANTS = buildVariants('SURFACE', { axis: 'x', fullSlide: true });
-const LEFT_VARIANTS = buildVariants('SURFACE', {
-  axis: 'x',
-  fullSlide: true,
-  direction: -1,
-});
-const TOP_VARIANTS = buildVariants('SURFACE', {
-  axis: 'y',
-  fullSlide: true,
-  direction: -1,
-});
-
-export function getModalPositionVariants(position) {
-  switch (position) {
-    case MODAL_POSITIONS.BOTTOM:
-      return BOTTOM_VARIANTS;
-    case MODAL_POSITIONS.RIGHT:
-      return RIGHT_VARIANTS;
-    case MODAL_POSITIONS.LEFT:
-      return LEFT_VARIANTS;
-    case MODAL_POSITIONS.TOP:
-      return TOP_VARIANTS;
-    case MODAL_POSITIONS.CENTER:
-    default:
-      return CENTER_VARIANTS;
-  }
-}
-
-export function getModalTransition(position) {
-  return position === MODAL_POSITIONS.CENTER ? MODAL_PANEL_SPRING : undefined;
-}
-
-export const MODAL_BACKDROP_VARIANTS = modalBackdropVariants;
-export const MODAL_POSITION_VARIANTS = getModalPositionVariants;
-
-export const CANCEL_BUTTON_CLASS =
-  'center h-9 shrink-0 cursor-pointer rounded-xl ring-1 ring-inset ring-white/10 px-4 text-xs font-semibold whitespace-nowrap uppercase text-white/70 hover:ring-transparent hover:bg-white hover:text-black';
-
-export const ACTION_BUTTON_CLASS = cn(
-  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/40',
-  INFO_ACTION_TONE_CLASS,
-);
+export {
+  ACTION_BUTTON_CLASS,
+  CANCEL_BUTTON_CLASS,
+  MODAL_BACKDROP_VARIANTS,
+  MODAL_CONTENT_STAGGER,
+  MODAL_CONTENT_VARIANTS,
+  MODAL_FOOTER_VARIANTS,
+  MODAL_HEADER_VARIANTS,
+  MODAL_LIST_ITEM_VARIANTS,
+  MODAL_LIST_VARIANTS,
+  MODAL_MICRO_SPRING,
+  MODAL_MICRO_TAP,
+  MODAL_MICRO_TAP_SCALE,
+  MODAL_PANEL_SPRING,
+  MODAL_POSITION_VARIANTS,
+  MODAL_STACK_OVERLAY_CLASS,
+  getModalPositionVariants,
+  getModalTransition,
+  modalBackdropVariants,
+} from './motion';
 
 function dispatchSmoothScrollLock(locked) {
   window.dispatchEvent(
@@ -672,7 +440,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-all duration-300 ease-in-out"
+              className={MODAL_STACK_OVERLAY_CLASS}
               aria-label="Close active top modal"
             />
           )}
@@ -824,153 +592,11 @@ export function Modal() {
 
 export default Modal;
 
-// ── Provider and public hooks ───────────────────────────────────────────────
+// ── Provider composition and public hooks ───────────────────────────────────
+// Stack lifecycle lives in runtime.js; this entry point only supplies the
+// visual renderer so the public provider still mounts the portal automatically.
 export function ModalProvider({ children }) {
-  const [modalState, setModalState] = useState(INITIAL_MODAL_STATE);
-
-  const modalStackRef = useRef([]);
-  const resolveMapRef = useRef(new Map());
-  const onCloseMapRef = useRef(new Map());
-  const modalIdRef = useRef(0);
-
-  const syncModalStack = useCallback((nextStack) => {
-    modalStackRef.current = nextStack;
-    setModalState(createModalState(nextStack));
-  }, []);
-
-  const openModal = useCallback(
-    (modalType, positionInput = MODAL_POSITIONS.CENTER, config = {}) => {
-      const currentStack = modalStackRef.current;
-      const topModal = currentStack[currentStack.length - 1];
-
-      if (topModal && topModal.modalType === modalType) {
-        return Promise.resolve(null);
-      }
-
-      const filteredStack = currentStack.filter((entry) => {
-        if (entry.modalType === modalType) {
-          finalizeModalClose(entry.id, null, { onCloseMapRef, resolveMapRef });
-          return false;
-        }
-        return true;
-      });
-
-      const resolvedConfig = {
-        ...(MODAL_PRESETS[modalType] || {}),
-        ...config,
-      };
-
-      const { position, responsivePosition } = normalizePositionConfig(
-        positionInput,
-        resolvedConfig,
-      );
-
-      const resolvedHeader = resolveModalHeader(modalType, resolvedConfig);
-      const modalId = ++modalIdRef.current;
-
-      const modalEntry = {
-        id: modalId,
-        modalType,
-        position,
-        responsivePosition,
-        title: resolvedHeader.title,
-        headerActions: resolvedHeader.actions || null,
-        showClose: resolvedHeader.showClose ?? true,
-        chrome: resolvedConfig.chrome || MODAL_CHROME.PANEL,
-        props: resolvedConfig.data ?? resolvedConfig,
-      };
-
-      const modalPromise = new Promise((resolve) => {
-        resolveMapRef.current.set(modalId, resolve);
-        onCloseMapRef.current.set(modalId, resolvedConfig.onClose || null);
-      });
-
-      syncModalStack([...filteredStack, modalEntry]);
-
-      return modalPromise;
-    },
-    [syncModalStack],
-  );
-
-  const closeModal = useCallback(
-    (result = null, targetModalId = null) => {
-      const currentStack = modalStackRef.current;
-
-      if (currentStack.length === 0) {
-        return;
-      }
-
-      const modalId = targetModalId || currentStack[currentStack.length - 1]?.id || null;
-
-      if (!modalId) {
-        return;
-      }
-
-      const modalToClose = currentStack.find((entry) => entry.id === modalId);
-
-      if (!modalToClose) {
-        return;
-      }
-
-      const nextStack = currentStack.filter((entry) => entry.id !== modalId);
-      syncModalStack(nextStack);
-
-      finalizeModalClose(modalId, result, {
-        onCloseMapRef,
-        resolveMapRef,
-        logCloseErrors: true,
-      });
-    },
-    [syncModalStack],
-  );
-
-  const closeAllModals = useCallback(
-    (result = null) => {
-      const currentStack = modalStackRef.current;
-
-      if (currentStack.length === 0) {
-        return;
-      }
-
-      syncModalStack([]);
-
-      currentStack.forEach((entry) => {
-        finalizeModalClose(entry.id, result, { onCloseMapRef, resolveMapRef });
-      });
-    },
-    [syncModalStack],
-  );
-
-  const actionsValue = useMemo(
-    () => ({
-      openModal,
-      closeModal,
-      closeAllModals,
-    }),
-    [openModal, closeModal, closeAllModals],
-  );
-
-  return (
-    <ModalActionsContext.Provider value={actionsValue}>
-      <ModalStateContext.Provider value={modalState}>
-        <Modal />
-        {children}
-      </ModalStateContext.Provider>
-    </ModalActionsContext.Provider>
-  );
+  return <ModalRuntimeProvider modalRenderer={Modal}>{children}</ModalRuntimeProvider>;
 }
 
-export function useModalActions() {
-  return useContext(ModalActionsContext);
-}
-
-export function useModalState() {
-  return useContext(ModalStateContext);
-}
-
-export function useModal() {
-  const actions = useModalActions();
-  const state = useModalState();
-
-  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
-}
+export { useModal, useModalActions, useModalState } from './runtime';

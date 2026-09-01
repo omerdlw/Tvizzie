@@ -5,36 +5,35 @@ import { cn } from '@/ui/class-names';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 
-const DEFAULT_NAV_CLASS = '';
-
 export function getAccountPaginationItems(currentPage, totalPages) {
-  if (totalPages <= 8) {
-    return Array.from(
-      {
-        length: totalPages,
-      },
-      (_, index) => index + 1,
-    );
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
   }
-  const pinnedStartCount = 4;
-  const pinnedEdgeCount = 2;
+
+  const pinnedStartCount = 3;
+  const pinnedEdgeCount = 1;
   const pages = new Set();
+
   const addRange = (start, end) => {
     for (let page = Math.max(1, start); page <= Math.min(end, totalPages); page++) {
       pages.add(page);
     }
   };
+
   addRange(1, pinnedEdgeCount);
   addRange(totalPages - pinnedEdgeCount + 1, totalPages);
-  if (currentPage <= pinnedStartCount) {
-    addRange(1, pinnedStartCount);
-  } else if (currentPage >= totalPages - (pinnedStartCount - 1)) {
-    addRange(totalPages - pinnedStartCount + 1, totalPages);
+
+  if (currentPage <= pinnedStartCount + 1) {
+    addRange(1, pinnedStartCount + 1);
+  } else if (currentPage >= totalPages - pinnedStartCount) {
+    addRange(totalPages - pinnedStartCount, totalPages);
   } else {
     addRange(currentPage - 1, currentPage + 1);
   }
+
   const sortedPages = Array.from(pages).sort((a, b) => a - b);
   const items = [];
+
   sortedPages.forEach((page, index) => {
     if (index > 0) {
       const prevPage = sortedPages[index - 1];
@@ -43,155 +42,176 @@ export function getAccountPaginationItems(currentPage, totalPages) {
     }
     items.push(page);
   });
+
   return items;
 }
 
 export default function AccountPagination({
-  className = null,
+  className = '',
   currentPage = 1,
-  ellipsisClassName = null,
   getPageHref = null,
   hideDisabledNav = false,
-  iconSize = 15,
-  inactivePageClassName = null,
-  layout = 'split',
-  navClassName = null,
-  nextLabel = 'Next',
+  iconSize = 14,
   nextAriaLabel = 'Go to next page',
+  nextLabel = 'Next',
   onPageChange = null,
-  pageListClassName = null,
-  pageClassName = null,
-  activePageClassName = null,
-  prevLabel = 'Previous',
   prevAriaLabel = 'Go to previous page',
+  prevLabel = 'Prev',
   showPrevNext = true,
-  splitClassName = null,
-  splitNavSlotClassName = null,
-  splitPrevSlotClassName = null,
-  splitNextSlotClassName = null,
   totalPages = 1,
 }) {
   if (totalPages <= 1) return null;
+
   const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
   const paginationItems = getAccountPaginationItems(safeCurrentPage, totalPages);
+
   const config = {
     canUseLinks: typeof getPageHref === 'function',
     canUseButtons: typeof onPageChange === 'function',
   };
-  const pageItems = paginationItems.map((item, index) =>
-    typeof item === 'number' ? (
-      <PaginationPageItem
-        key={item}
-        pageNumber={item}
-        safeCurrentPage={safeCurrentPage}
-        pageClassName={pageClassName}
-        activePageClassName={activePageClassName}
-        inactivePageClassName={inactivePageClassName}
-        getPageHref={getPageHref}
-        onPageChange={onPageChange}
-        config={config}
-      />
-    ) : (
-      <span key={`${item}-${index}`}>...</span>
-    ),
-  );
+
   const prevNavProps = {
+    ariaLabel: prevAriaLabel,
+    config,
     direction: 'previous',
+    getPageHref,
+    hideDisabledNav,
+    iconName: 'solar:alt-arrow-left-linear',
+    iconSize,
+    label: prevLabel,
+    onPageChange,
     safeCurrentPage,
     totalPages,
-    hideDisabledNav,
-    getPageHref,
-    onPageChange,
-    iconSize,
-    navClassName,
-    ariaLabel: prevAriaLabel,
-    label: prevLabel,
-    iconName: 'solar:skip-previous-bold',
-    config,
   };
+
   const nextNavProps = {
-    ...prevNavProps,
-    direction: 'next',
     ariaLabel: nextAriaLabel,
+    config,
+    direction: 'next',
+    getPageHref,
+    hideDisabledNav,
+    iconName: 'solar:alt-arrow-right-linear',
+    iconSize,
     label: nextLabel,
-    iconName: 'solar:skip-next-bold',
+    onPageChange,
+    safeCurrentPage,
+    totalPages,
   };
-  if (layout === 'split') {
-    return (
-      <div>
-        <div>{showPrevNext && <PaginationNavButton {...prevNavProps} />}</div>
-        <div>{pageItems}</div>
-        <div>{showPrevNext && <PaginationNavButton {...nextNavProps} />}</div>
-      </div>
-    );
-  }
+
   return (
-    <div>
+    <nav
+      aria-label="Pagination Navigation"
+      className={cn('flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-2', className)}
+    >
       {showPrevNext && <PaginationNavButton {...prevNavProps} />}
-      {pageItems}
+
+      <div className="flex items-center gap-1 sm:gap-1.5">
+        {paginationItems.map((item, index) =>
+          typeof item === 'number' ? (
+            <PaginationPageItem
+              key={item}
+              config={config}
+              getPageHref={getPageHref}
+              onPageChange={onPageChange}
+              pageNumber={item}
+              safeCurrentPage={safeCurrentPage}
+            />
+          ) : (
+            <span
+              key={`ellipsis-${index}`}
+              className="inline-flex h-9 min-w-6 items-center justify-center text-xs font-semibold text-white/30 select-none tracking-widest"
+              aria-hidden="true"
+            >
+              …
+            </span>
+          ),
+        )}
+      </div>
+
       {showPrevNext && <PaginationNavButton {...nextNavProps} />}
-    </div>
+    </nav>
   );
 }
-function PaginationPageItem({
-  pageNumber,
-  safeCurrentPage,
-  pageClassName,
-  activePageClassName,
-  inactivePageClassName,
-  getPageHref,
-  onPageChange,
-  config,
-}) {
+
+function PaginationPageItem({ config, getPageHref, onPageChange, pageNumber, safeCurrentPage }) {
   const isActive = pageNumber === safeCurrentPage;
-  const toneClass = isActive ? (activePageClassName ?? '') : (inactivePageClassName ?? '');
-  const resolvedClass = cn(pageClassName ?? '', toneClass);
+
   if (isActive) {
-    return <span aria-current="page">{pageNumber}</span>;
+    return (
+      <span
+        aria-current="page"
+        className="inline-flex h-9 min-w-9 items-center justify-center rounded-xl bg-white px-2.5 text-xs font-bold text-black shadow-md select-none"
+      >
+        {pageNumber}
+      </span>
+    );
   }
+
+  const baseItemClass =
+    'inline-flex h-9 min-w-9 items-center justify-center rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 text-xs font-semibold text-white/70 transition-all hover:ring-white/15 hover:bg-white/10 hover:text-white select-none';
+
   if (config.canUseLinks) {
-    return <Link href={getPageHref(pageNumber)}>{pageNumber}</Link>;
+    return (
+      <Link href={getPageHref(pageNumber)} className={baseItemClass}>
+        {pageNumber}
+      </Link>
+    );
   }
+
   if (config.canUseButtons) {
     return (
       <Button
         type="button"
         onClick={() => onPageChange(pageNumber)}
         aria-label={`Go to page ${pageNumber}`}
+        className={baseItemClass}
       >
         {pageNumber}
       </Button>
     );
   }
-  return <span>{pageNumber}</span>;
+
+  return <span className={baseItemClass}>{pageNumber}</span>;
 }
+
 function PaginationNavButton({
+  ariaLabel,
+  config,
   direction,
+  getPageHref,
+  hideDisabledNav,
+  iconName,
+  iconSize,
+  label,
+  onPageChange,
   safeCurrentPage,
   totalPages,
-  hideDisabledNav,
-  getPageHref,
-  onPageChange,
-  iconSize,
-  navClassName,
-  ariaLabel,
-  label,
-  iconName,
-  config,
 }) {
   const isPrevious = direction === 'previous';
   const targetPage = isPrevious ? safeCurrentPage - 1 : safeCurrentPage + 1;
   const disabled = isPrevious ? safeCurrentPage <= 1 : safeCurrentPage >= totalPages;
-  const navContent = String(label || '').trim() || <Icon size={iconSize} icon={iconName} />;
-  const resolvedClass = cn(DEFAULT_NAV_CLASS, navClassName);
+
   if (disabled && hideDisabledNav) return null;
+
+  const buttonClass =
+    'inline-flex h-9 items-center justify-center gap-1 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 sm:px-3 text-xs font-semibold uppercase text-white/70 transition-all hover:ring-white/15 hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-30 select-none';
+
+  const navContent = (
+    <>
+      {isPrevious && <Icon size={iconSize} icon={iconName} className="shrink-0" />}
+      <span className="hidden sm:inline">{label}</span>
+      {!isPrevious && <Icon size={iconSize} icon={iconName} className="shrink-0" />}
+    </>
+  );
+
   if (config.canUseLinks && !disabled) {
     return (
-      <Link href={getPageHref(targetPage)} aria-label={ariaLabel}>
+      <Link href={getPageHref(targetPage)} aria-label={ariaLabel} className={buttonClass}>
         {navContent}
       </Link>
     );
   }
+
   if (config.canUseButtons) {
     return (
       <Button
@@ -199,10 +219,16 @@ function PaginationNavButton({
         onClick={() => onPageChange(targetPage)}
         disabled={disabled}
         aria-label={ariaLabel}
+        className={buttonClass}
       >
         {navContent}
       </Button>
     );
   }
-  return <span aria-hidden="true">{navContent}</span>;
+
+  return (
+    <span aria-hidden="true" className={buttonClass}>
+      {navContent}
+    </span>
+  );
 }

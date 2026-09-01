@@ -1,4 +1,4 @@
-import { validateNavConfig } from '@/modules/nav/utils';
+import { isValidElement } from 'react';
 
 import {
   DEFAULT_SOURCE,
@@ -12,6 +12,76 @@ import { recordRegistryDiagnostic } from './diagnostics';
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+const NAV_CONFIG_FIELD_TYPES = Object.freeze({
+  expandHorizontal: 'boolean',
+  dismissible: 'boolean',
+  isOverlay: 'boolean',
+  isLoading: 'boolean',
+  width: 'number',
+  path: 'string',
+  name: 'string',
+});
+
+const NAVIGATION_POLICY_FIELD_TYPES = Object.freeze({
+  clearTransientState: 'boolean',
+  dismissSurfaces: 'boolean',
+  prefetch: 'boolean',
+});
+
+const NAV_RENDERABLE_FIELDS = Object.freeze(['title', 'description']);
+
+function isRenderableNavValue(value) {
+  if (value === null || value === undefined || typeof value === 'boolean') return true;
+  if (typeof value === 'string' || typeof value === 'number' || isValidElement(value)) return true;
+  return Array.isArray(value) && value.every(isRenderableNavValue);
+}
+
+export function validateNavConfig(config) {
+  const issues = [];
+
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    return { valid: false, issues: ['NAV config must be an object'] };
+  }
+
+  Object.entries(NAV_CONFIG_FIELD_TYPES).forEach(([field, expectedType]) => {
+    if (config[field] === undefined || config[field] === null) return;
+    if (typeof config[field] !== expectedType) {
+      issues.push(`NAV.${field} must be a ${expectedType}`);
+    }
+  });
+
+  NAV_RENDERABLE_FIELDS.forEach((field) => {
+    if (config[field] === undefined || config[field] === null) return;
+    if (!isRenderableNavValue(config[field])) {
+      issues.push(`NAV.${field} must be a renderable value`);
+    }
+  });
+
+  if (config.path !== undefined && !String(config.path).startsWith('/')) {
+    issues.push('NAV.path must start with /');
+  }
+  if (config.actions !== undefined && !Array.isArray(config.actions)) {
+    issues.push('NAV.actions must be an array');
+  }
+  if (config.style !== undefined && !isObject(config.style)) {
+    issues.push('NAV.style must be an object');
+  }
+  if (config.navigationPolicy !== undefined) {
+    if (!isObject(config.navigationPolicy)) {
+      issues.push('NAV.navigationPolicy must be an object');
+    } else {
+      Object.entries(NAVIGATION_POLICY_FIELD_TYPES).forEach(([field, expectedType]) => {
+        const value = config.navigationPolicy[field];
+        if (value !== undefined && typeof value !== expectedType) {
+          issues.push(`NAV.navigationPolicy.${field} must be a ${expectedType}`);
+        }
+      });
+    }
+  }
+
+  return { valid: issues.length === 0, issues };
 }
 
 function splitRegistryConfig(config, options = {}) {
@@ -37,7 +107,7 @@ function isPersistentLifecycle(lifecycle) {
   return lifecycle === REGISTRY_LIFECYCLES.PERSISTENT;
 }
 
-// ── Built-in config plugins ────────────────────────────────────────────────────
+// ── Built-in registry handlers ───────────────────────────────────────────────
 
 const backgroundPlugin = {
   name: 'background',

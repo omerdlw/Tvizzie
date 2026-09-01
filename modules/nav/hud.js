@@ -226,7 +226,10 @@ export function getActiveNavigationHud(hudEntries, selectionModeState) {
  * @param {object} [options] - Cancellation and aggregation configuration
  * @returns {object|null} Renderable HUD definition, or null when inactive
  */
-export function createNavigationOperationHud(operation, { onCancel = null, pendingCount = 1 } = {}) {
+export function createNavigationOperationHud(
+  operation,
+  { onCancel = null, pendingCount = 1 } = {},
+) {
   if (!operation?.id || operation.status !== NAVIGATION_OPERATION_STATUS.PENDING) return null;
 
   const progress = operation.progress == null ? null : operation.progress * 100;
@@ -278,7 +281,7 @@ function HudActionButton({ action, expanded = false }) {
   if (expanded) return button;
 
   return <Tooltip text={action.tooltip || action.label}>{button}</Tooltip>;
-};
+}
 
 /**
  * Renders custom or structured HUD content.

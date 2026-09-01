@@ -2,7 +2,7 @@
 
 import { Children, cloneElement, isValidElement, useMemo, useRef } from 'react';
 
-// ── Config stabilization and instance scoping ─────────────────────────────────
+// ── Registry config stabilization and instance scoping ───────────────────────
 
 export function useStableDiff(value, compareFn) {
   const ref = useRef(value);

@@ -1,10 +1,8 @@
-# Nav sistemini kullanma rehberi
+# Module: Nav
 
-`modules/nav`, uygulama kabuğundaki kart tabanlı navigasyonu çalıştırır. Modül; rota kartlarını, surface akışlarını, Heads Up Display (HUD) bildirimlerini, bağlamsal komutları, breadcrumb zincirini, erişilebilir etkileşimleri ve rota sürekliliğini tek bir çalışma zamanı altında birleştirir. Ürün alanları içeriklerini ve kurallarını tanımlar; Nav bu tanımları kaydeder, çözümler ve görüntüler.
+> Kart tabanlı navigation, surface flow, HUD, command, breadcrumb, guard ve route continuity yeteneklerini tek çalışma zamanında birleştirir.
 
-Bu belge, Nav’a yeni bir yetenek ekleyecek geliştiriciler içindir. Davranışlar mevcut kaynak koduna dayanır. Ürüne özgü adlar veya örnek akışlar bu modülün sözleşmesi değildir.
-
-## Modülün çalışma sınırları
+## 1. Genel bakış
 
 Nav’ın ana veri akışı şudur:
 
@@ -16,9 +14,25 @@ Alan modülü
   -> Cards, Surface, HUD ve komut arayüzünü görüntüler
 ```
 
-Nav mekanizmayı sahiplenir. Alan modülleri; başlık, ikon, eylem, yüzey içeriği ve iş kuralını sahiplenir. Bu ayrım, bir kartın veya surface’in ürüne ait ayrıntılarla Nav çekirdeğine bağlanmasını önler.
+Nav mekanizmayı sahiplenir. Alan modülleri; başlık, ikon, eylem, yüzey içeriği
+ve iş kuralını sahiplenir. Bu ayrım, bir kartın veya surface’in ürüne ait
+ayrıntılarla Nav çekirdeğine bağlanmasını önler.
 
-## Dosya haritası
+Bu belge, Nav’a yeni bir yetenek ekleyecek geliştiriciler içindir. Davranışlar
+mevcut kaynak koduna dayanır. Ürüne özgü adlar veya örnek akışlar bu modülün
+sözleşmesi değildir.
+
+## 2. Sorumluluklar
+
+Nav şunları sahiplenir: aktif route card stack'i, compact/expanded görünüm,
+surface flow'ları, HUD ve Operation Center, context command'ler, breadcrumb
+zinciri, navigation transaction/guard'ları, scroll-focus continuity, status
+overlay'leri, medya kontrolleri ve bunların erişilebilir interaction'ları.
+
+Alan modülleri ise route/card descriptor'larını, domain action'larını, surface
+içeriğini, HUD payload'ını ve ürün-specific route politikasını sağlar.
+
+## 3. Dosya sahipliği
 
 Bu bölümde her dosyanın görevi, ilişkileri ve çalışma biçimi yer alır.
 
@@ -142,7 +156,7 @@ Bu bölümde her dosyanın görevi, ilişkileri ve çalışma biçimi yer alır.
 
 **Çalışması:** Kontroller kendi medya kaynağını oluşturmaz. Mevcut arka plan sağlayıcısının video durumunu ve eylemlerini tüketir. Bu nedenle bileşenleri, aynı arka plan bağlamının bulunduğu Nav ağacında kullanın.
 
-## Geliştirici rehberi
+## 4. Kurulum
 
 Bu bölüm, Nav yeteneklerini uygulama alanlarına bağlamak için izlenecek yapıyı açıklar.
 
@@ -168,7 +182,28 @@ export function ApplicationShell({ children }) {
 
 Breadcrumb davranışını özelleştiriyorsanız `NavigationProvider`a `breadcrumbConfig` verin. Provider’ı sayfa bazında yeniden kurmayın; surface stack, operation ve continuity state’i provider ömrü boyunca yaşar.
 
-### Public hook’ları görevine göre seçme
+## 5. Public interface
+
+Nav'ın public yüzeyi `index.js` üzerinden gelir. Temel seçim rehberi:
+
+| İhtiyaç                 | Interface                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| Provider/render         | `NavigationProvider`, default `Nav`                                                 |
+| Birleşik state/action   | `useNavigation`                                                                     |
+| Dar state/action        | `useNavigationState`, `useNavigationActions`, `useNavigationContext`                |
+| Surface                 | `useSurfaceFlow`, `createSurfaceFlowDefinition`, `useSurfaceReturn`                 |
+| HUD/operation           | `useNavHud`, `createHudDefinition`, `useNavigationOperations`                       |
+| Route guard/transaction | `useNavigationGuard`, `createNavigationTransaction`, `useNavigationTransactions`    |
+| Continuity              | `useNavigationContinuityState`, `useNavigationContinuity`, `useSurfaceReturn`       |
+| Context actions         | `useNavContextActions`                                                              |
+| Breadcrumb              | `useNavBreadcrumbs`, `useRegisterBreadcrumbOverride`                                |
+| Layout                  | `useNavHeight`, `NavHeightSpacer`                                                   |
+| Status/media            | `useNavigationStatus`, `applyStatusOverlay`, `NavMediaControls`, `NavMediaScrubber` |
+
+Motion, constants, resolver ve descriptor factory export'ları dosya haritasında
+belirtilen implementation dosyalarından facade üzerinden yayınlanır.
+
+### 5.1 Public hook’ları görevine göre seçme
 
 Nav’ın dışarıya açık hook’ları aşağıdaki sorumluluk gruplarına ayrılır:
 
@@ -189,7 +224,9 @@ Nav’ın dışarıya açık hook’ları aşağıdaki sorumluluk gruplarına ay
 
 Nav kartı genişliği değiştiğinde sayfa içeriğini ayarlamak için `useNavHeight`ın verdiği `padding` değerini kullanın veya sayfa sonunda `NavHeightSpacer` render edin. Aynı sayfada ikisini birlikte kullanmayın.
 
-### Rota kartını registry ile kaydetme
+## 6. Sözleşmeler ve kullanım örnekleri
+
+### 6.1 Rota kartını registry ile kaydetme
 
 Nav kartları alan modüllerinden gelir. Kayıt işlemini component yaşam döngüsüne bağlayın ve aynı kaynağı cleanup’ta kaldırın.
 
@@ -226,7 +263,7 @@ Kart tanımında başlık, açıklama, ikon, `action`, `actions`, `children`, `s
 
 `navigationPolicy` alanı, karttan başlatılan geçişte `clearTransientState`, `dismissSurfaces` ve `prefetch` davranışlarını override eder. Bir politika yalnızca rotaya özgü istisna olduğunda tanımlanmalıdır; varsayılan geçiş davranışını tekrar etmeyin.
 
-### Yönlendirme ve koruma kullanma
+### 6.2 Yönlendirme ve koruma kullanma
 
 `useNavigation`, guard değerlendirmesinden geçen `navigate` işlevini içerir. Kart dışında rota değiştireceğiniz durumda bunu kullanın.
 
@@ -248,7 +285,7 @@ export function EditorControls({ hasUnsavedChanges }) {
 
 `when`, boolean, function veya async function olabilir. Guard geçişi engellediğinde `onBlock` çağrılabilir. Guard’ı ilgili düzenleme component’inde kaydedin; hook unmount olduğunda kaydı kaldırır. Uygulama kabuğu seviyesinde kalıcı guard kaydetmeyin.
 
-### Surface açma
+### 6.3 Surface açma
 
 Surface, mevcut Nav kartı üzerinde görev odaklı bir içerik açar. Tek adımlı içerik için `useNavigationActions` içindeki `openSurface` kullanın.
 
@@ -313,7 +350,7 @@ Surface descriptor’ının görünüm alanları şunlardır:
 
 `header: { icon, title, description }` kısa formu da kabul edilir. Header’ı surface içinden dinamik güncellemeniz gerekiyorsa `useSurfaceHeader`ı yalnızca aktif surface ağacında çağırın.
 
-### Çok adımlı surface flow kurma
+### 6.4 Çok adımlı surface flow kurma
 
 Surface flow, bir kullanıcı görevini tekil kimlik, snapshot ve tamamlanma sonucu altında tutar. Flow tanımını render dışına alın; her render’da yeni tanım üretmeyin.
 
@@ -365,7 +402,7 @@ Flow ayarları şunlardır:
 
 `syncWithUrl` kullanan surface’lerde flow kimliği ve snapshot tarayıcı history state’ine yazılır. Snapshot’ı yeniden oluşturulabilir ve hassas olmayan değerlerle sınırlayın.
 
-### Surface sonucunu önceki rotaya teslim etme
+### 6.5 Surface sonucunu önceki rotaya teslim etme
 
 Return handshake, surface flow tamamlandığında sonucu belirli bir iç rotaya bir kez teslim eder. Bu mekanizma `router.back()` çağırmaz; hedef rotaya geçer, kaydedilmiş scroll ve focus konumunu geri yükler.
 
@@ -403,7 +440,7 @@ export function LibraryPage() {
 
 Handshake yalnızca güvenli iç href’leri kabul eder. `returnOnCancel: true` vermezseniz iptal sonucu hedef rotaya gönderilmez.
 
-### HUD göstermek
+### 6.6 HUD göstermek
 
 HUD, kısa süreli durum veya görev bilgisini Nav üzerinde gösterir. `useNavHud`, descriptor’ı component ömrü boyunca kaydeder ve unmount’ta temizler.
 
@@ -442,7 +479,7 @@ HUD progress değeri `0` ile `100` arasındadır. Geçersiz değerler sınırlan
 
 Birden fazla HUD aktif olduğunda en yüksek `priority` görünür. Eşit öncelikte önce kaydedilen aktif HUD korunur.
 
-### Operation Center kullanma
+### 6.7 Operation Center kullanma
 
 Operation Center, uzun süren iptal edilebilir işleri HUD olarak projekte eder. Bir operasyonun progress değeri HUD’dan farklı olarak `0` ile `1` arasındadır.
 
@@ -477,7 +514,7 @@ export function SyncAction({ synchronize }) {
 
 `start` tanımı `id`, `label`, `description`, `icon`, `metadata`, `priority`, `progress`, `cancellable` ve `onCancel` alanlarını kabul eder. Bir `id` verirseniz işin tekrar başlatılmalarında aynı kimliği bilinçli olarak yönetin. İş başladığında iptal edilemiyorsa `cancellable: false` verin.
 
-### Bağlamsal komut ekleme
+### 6.8 Bağlamsal komut ekleme
 
 `useNavContextActions`, component görünür olduğu sürece araç çubuğuna komut ekler. Komutları route kaydından bağımsız, component’e özgü tutmak için bu hook’u kullanın.
 
@@ -501,7 +538,7 @@ export function CollectionActions({ refreshCollection }) {
 
 Bir komutta `key`, `icon`, `tooltip`, `onClick`, `order`, `badge`, `disabled` ve `visible` kullanılabilir. `key` sabit olmalıdır. Hook, değişen action listesindeki kaldırılmış anahtarları ve unmount’taki tüm kayıtları temizler.
 
-### Breadcrumb zincirini özelleştirme
+### 6.9 Breadcrumb zincirini özelleştirme
 
 Genel breadcrumb üretimi pathname segmentlerini kullanır. Alanınız daha anlamlı başlıklar üretiyorsa provider config’ine çözümleyici ekleyin veya sayfa içinde bir override kaydedin.
 
@@ -523,7 +560,7 @@ export function ItemPage({ title }) {
 
 Provider config’inde `root` başlangıç crumb’ını, `resolveSegment` tek bir path segmentini, `resolvePath` ise tam pathname’i çözer. `resolvePath` bir crumb dizisi döndürdüğünde varsayılan segment çözümünü değiştirir.
 
-### Rota sürekliliğini kullanma
+### 6.10 Rota sürekliliğini kullanma
 
 Nav, surface return handshake’i için scroll ve focus sürekliliğini zaten kullanır. Alanınızın özel geçişi de aynı davranışa ihtiyaç duyuyorsa `useNavigationContinuityState` facade’ını kullanın.
 
@@ -547,17 +584,32 @@ export function RememberedList() {
 
 Focus geri yüklemek istediğiniz hedefe `data-nav-focus-key` ekleyin. Continuity kaydı hedef rota ve kullanıcı göreviyle ilişkili olmalıdır; ortak ve alakasız state’i snapshot’a eklemeyin.
 
-### Durum ve medya katmanlarını doğru sınırda kullanma
+## 7. Yaşam döngüsü
+
+Navigation state, surface stack, operation, guard ve continuity kayıtları
+`NavigationProvider` ömründe tutulur. Yeni navigation transaction eski işlemi
+supersede edebilir; guard'lar geçişten önce çalışır. Surface kapanış sonucu
+return handoff ile route-scoped continuity kaydına teslim edilebilir.
+
+### 7.1 Durum ve medya katmanlarını doğru sınırda kullanma
 
 Status sistemi uygulamanın status event’lerini, bağlantı olaylarını ve kalıcı durumlarını Nav görünümüne dönüştürür. Alan modülleri, status görünümünü doğrudan taklit eden HUD veya surface oluşturmamalıdır. Görsel tema eşlemesine ihtiyaç duyarsanız `getStatusTheme` kullanın; status yaşam döngüsünü `useNavigationStatus` üzerinden mevcut runtime’a bırakın.
 
 Medya bileşenleri yalnızca Nav ağacındaki arka plan medya bağlamıyla çalışır. `NavMediaControls`, `NavMediaScrubber` ve `NavSoundwave` için bağımsız oynatıcı state’i üretmeyin.
 
-### Tanı verisini inceleme
+## 8. Sınırlar, erişilebilirlik ve tanılama
+
+Nav fixed/portal yüzeyleri focus, keyboard, scroll ve z-index ilişkilerini
+kendisi yönetir. `ResizeObserver`, `MutationObserver`, requestAnimationFrame,
+prefetch ve continuity restore davranışları burada performans açısından
+merkezîdir. Development tanı store'u bounded snapshot üretir; production'da
+tanı yan etkisiz/no-op çalışır.
+
+### 8.1 Tanı verisini inceleme
 
 Development ortamında `getNavigationDiagnostics`, `clearNavigationDiagnostics`, `createNavigationInspectorSnapshot` ve `getNavigationInspectorSnapshot` Nav çalışma zamanının tanı yüzeyini verir. Bu fonksiyonları geliştirme araçları ve testler için kullanın. Ürün arayüzünde veya kalıcı analitik hattında bu geçici tanı state’ine bağımlı olmayın.
 
-## Uygulama kuralları
+## 9. Kurallar
 
 Nav’a yeni bir yetenek eklerken şu sınırları koruyun:
 
@@ -568,7 +620,7 @@ Nav’a yeni bir yetenek eklerken şu sınırları koruyun:
 - **Katmanı doğru seçin:** Anlık bilgi için HUD, uzun iş için Operation Center, görev arayüzü için Surface, rota eylemi için command kullanın
 - **Nav’ı ürün alanından bağımsız bırakın:** Ürüne ait API, model, metin veya iş kuralını `modules/nav` içine taşımayın
 
-## Doğrulama noktaları
+## 10. Doğrulama
 
 Bir Nav entegrasyonunu gözden geçirirken aşağıdakileri kontrol edin:
 

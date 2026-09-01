@@ -25,15 +25,17 @@ import {
   useNavigationFocusTrap,
 } from './behavior';
 import {
+  isImageIconSource,
   isSafeInternalHref,
   isValidComponentType,
   resolveComponentType,
   resolveRenderableContent,
 } from './utils';
-import { NAV_COMPACT_TO_SURFACE_DELAY_MS, NAV_SURFACE_EXIT_SETTLE_MS } from './motion';
 import {
+  NAV_COMPACT_TO_SURFACE_DELAY_MS,
   NAV_SURFACE_DRAG_CONSTRAINTS,
   NAV_SURFACE_DRAG_ELASTIC,
+  NAV_SURFACE_EXIT_SETTLE_MS,
   NAV_SURFACE_TRANSITION,
   slideFadeVariants,
 } from './motion';
@@ -1486,8 +1488,17 @@ export function NavSurfaceHeader({
     >
       <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
         {icon ? (
-          <div className="center relative size-12 shrink-0">
-            {typeof icon === 'string' ? <Iconify icon={icon} size={24} /> : icon}
+          <div className="relative size-12 shrink-0">
+            {isImageIconSource(icon) ? (
+              <div
+                className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat transition-all duration-300 ease-in-out"
+                style={{ backgroundImage: `url(${icon})` }}
+              />
+            ) : (
+              <div className="center size-12 rounded-[20px] bg-white/5 text-white transition-all duration-300 ease-in-out">
+                {typeof icon === 'string' ? <Iconify icon={icon} size={24} /> : icon}
+              </div>
+            )}
           </div>
         ) : null}
 
