@@ -179,9 +179,9 @@ export default function AccountOverviewFeed({ overviewData = {}, RegistryCompone
     >
       <div className="flex w-full flex-col gap-8 sm:gap-10 lg:gap-12">
         {!canViewProfileCollections ? (
-          <AccountSectionState message="This profile is private." />
+          <AccountSectionState message="This profile is private" />
         ) : isOverviewEmpty ? (
-          <AccountSectionState message="This account has no activity or content yet." />
+          <AccountSectionState message="This account has no activity or content yet" />
         ) : (
           <>
             {hasFavorites && (

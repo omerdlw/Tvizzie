@@ -54,17 +54,17 @@ export function resolveSignInNoticeToast(notice, provider = null) {
     case AUTH_ROUTE_NOTICE.OAUTH_ACCOUNT_ALREADY_REGISTERED:
       return {
         type: 'warning',
-        message: `This email is used to sign in with ${getOAuthProviderLabel(provider, 'a social provider')} on another account. Continue with it, or disconnect it from that account’s security settings before using this email here.`,
+        message: `This email is used to sign in with ${getOAuthProviderLabel(provider, 'a social provider')} on another account. Continue with it, or disconnect it from that account’s security settings before using this email here`,
       };
     case AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED:
       return {
         type: 'error',
-        message: 'Google sign-in could not be completed. Please try again.',
+        message: 'Google sign-in could not be completed. Please try again',
       };
     case AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED:
       return {
         type: 'error',
-        message: 'Social sign-in could not be completed. Please try again.',
+        message: 'Social sign-in could not be completed. Please try again',
       };
     case AUTH_ROUTE_NOTICE.GOOGLE_PROVIDER_COLLISION:
       return {

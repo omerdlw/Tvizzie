@@ -24,13 +24,13 @@ function PrivacyView() {
               <h1 className="text-4xl font-semibold text-white sm:text-5xl">
                 Privacy Policy
               </h1>
-              <p className="mx-auto max-w-2xl text-sm leading-7 text-white/40">
+              <p className="mx-auto max-w-2xl text-sm leading-7 text-white/50">
                 This policy explains what information Tvizzie processes, why it is processed, and
                 what choices you have. It is written to reflect the current product and
                 infrastructure used by the app today.
               </p>
             </div>
-            <p className="text-xs text-white/40 uppercase">
+            <p className="text-xs text-white/50 uppercase">
               Last updated {LAST_UPDATED}
             </p>
           </header>
@@ -120,8 +120,8 @@ function PrivacyView() {
 
               <LegalSection title="How we use information">
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>To create and maintain your account and sign you in securely.</li>
-                  <li>To let you edit your profile and publish the content you choose to share.</li>
+                  <li>To create and maintain your account and sign you in securely</li>
+                  <li>To let you edit your profile and publish the content you choose to share</li>
                   <li>
                     To operate social features such as reviews, likes, lists, activity feeds, and
                     profile pages.
@@ -208,8 +208,8 @@ function PrivacyView() {
 
               <LegalSection title="Your choices">
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>You can edit your profile information inside the app.</li>
-                  <li>You can change your profile privacy setting inside your account settings.</li>
+                  <li>You can edit your profile information inside the app</li>
+                  <li>You can change your profile privacy setting inside your account settings</li>
                   <li>
                     You can remove reviews, list content, watched items, watchlist items, and other
                     profile content that you created.

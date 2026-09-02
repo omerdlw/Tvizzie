@@ -144,7 +144,7 @@ export class ErrorBoundaryCore extends React.Component {
           <p className="text-muted-foreground mb-4 max-w-md text-sm">
             {this.props.message ||
               this.state.error?.message ||
-              'Something went wrong while loading this component.'}
+              'Something went wrong while loading this component'}
           </p>
           <Button
             type="button"
@@ -167,7 +167,7 @@ export class ErrorBoundaryCore extends React.Component {
 // These wrappers keep application, module, and inline usage intention-revealing
 // while sharing the same implementation and recovery behavior.
 const GLOBAL_ERROR_TITLE = 'Application Error';
-const GLOBAL_ERROR_MESSAGE = 'Something went wrong. Please try again.';
+const GLOBAL_ERROR_MESSAGE = 'Something went wrong. Please try again';
 const MODULE_ERROR_TITLE = 'Module Error';
 const MODULE_ERROR_MESSAGE = 'This module encountered an unexpected error';
 const COMPONENT_ERROR_MESSAGE = 'Component failed to load';

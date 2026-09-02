@@ -91,7 +91,7 @@ export function AccountEditView(props) {
           <div className="mx-auto w-full max-w-3xl">
             <StatusState
               title="Account data unavailable"
-              description="We could not load your editable profile data right now."
+              description="We could not load your editable profile data right now"
             />
           </div>
         </main>
@@ -269,14 +269,14 @@ export function AccountEditView(props) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{setting.title}</span>
-                    <span className="mt-0.5 block truncate text-xs text-white/40">
+                    <span className="mt-0.5 block truncate text-xs text-white/50">
                       {setting.description}
                     </span>
                   </span>
                   <Icon
                     icon="solar:alt-arrow-right-linear"
                     size={18}
-                    className="shrink-0 text-white/40"
+                    className="shrink-0 text-white/50"
                   />
                 </Button>
               ))}
@@ -294,7 +294,7 @@ export function AccountEditView(props) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{setting.title}</span>
-                    <span className="mt-0.5 block truncate text-xs text-white/40">
+                    <span className="mt-0.5 block truncate text-xs text-white/50">
                       {setting.description}
                     </span>
                   </span>

@@ -196,7 +196,7 @@ function requireWatchDiaryResult(result) {
   if (message.includes('WATCH_DIARY_DATE_BEFORE_LATEST_ENTRY')) {
     throw createAccountCoreError(
       'WATCH_DIARY_DATE_BEFORE_LATEST_ENTRY',
-      'A later diary entry already exists for this title.',
+      'A later diary entry already exists for this title',
       { status: 400 },
     );
   }

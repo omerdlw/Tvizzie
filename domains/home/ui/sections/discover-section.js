@@ -115,7 +115,7 @@ export function DiscoverSection({
           minimumCount: batchSize,
         });
       } catch {
-        setGridError(`Could not load ${nextMediaType === 'tv' ? 'TV shows' : 'movies'} right now.`);
+        setGridError(`Could not load ${nextMediaType === 'tv' ? 'TV shows' : 'movies'} right now`);
       } finally {
         setIsFiltering(false);
       }
@@ -145,7 +145,7 @@ export function DiscoverSection({
         minimumCount: nextVisibleCount,
       });
     } catch {
-      setGridError('Could not load more titles right now.');
+      setGridError('Could not load more titles right now');
       setSectionsLoaded((currentValue) => Math.max(1, currentValue - 1));
     } finally {
       setIsLoadingMore(false);
@@ -169,7 +169,7 @@ export function DiscoverSection({
         });
       } catch {
         if (!isCancelled) {
-          setGridError('Could not fill the discover grid right now.');
+          setGridError('Could not fill the discover grid right now');
         }
       }
     }
@@ -196,7 +196,7 @@ export function DiscoverSection({
     <section className="relative w-full">
       <div className={HOME_SECTION_HEADER_CLASS}>
         <div className="flex min-w-0 flex-col justify-center">
-          <p className="text-xs font-semibold text-white/40 uppercase">Discover</p>
+          <p className="text-xs font-semibold text-white/50 uppercase">Discover</p>
           <h1 className="text-base font-bold text-white sm:text-lg">{title}</h1>
         </div>
         <SegmentedControl
@@ -232,13 +232,13 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/40 ring-1 ring-white/10 ring-inset">
+          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/50 ring-1 ring-white/10 ring-inset">
             {gridError}
           </div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering && !isLoadingMore ? (
-          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/40 ring-1 ring-white/10 ring-inset">
+          <div className="mt-4 rounded-[20px] bg-white/5 p-6 text-center text-sm text-white/50 ring-1 ring-white/10 ring-inset">
             No {title.toLowerCase()} are available right now.
           </div>
         ) : null}

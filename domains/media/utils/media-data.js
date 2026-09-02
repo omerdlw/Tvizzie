@@ -368,3 +368,21 @@ export function getPreferredMovieBackgroundFilePath(images) {
 export function getPreferredMovieBackground(images) {
   return createMovieBackdropImageUrl(getPreferredMovieBackgroundFilePath(images));
 }
+
+export function hasMediaAwards(awardsData) {
+  if (!awardsData) return false;
+  if (Array.isArray(awardsData.organizations) && awardsData.organizations.length > 0) {
+    return awardsData.organizations.some(
+      (org) =>
+        Array.isArray(org?.years) &&
+        org.years.some(
+          (yearObj) => Array.isArray(yearObj?.categories) && yearObj.categories.length > 0,
+        ),
+    );
+  }
+  return Boolean(
+    (awardsData.stats?.totalWins && awardsData.stats.totalWins > 0) ||
+      (awardsData.stats?.totalNominations && awardsData.stats.totalNominations > 0),
+  );
+}
+

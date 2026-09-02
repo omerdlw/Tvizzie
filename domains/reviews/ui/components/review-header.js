@@ -36,7 +36,7 @@ export default function ReviewHeader({
 
         <span aria-hidden="true" className="hidden h-3.5 w-px bg-white/10 sm:block" />
 
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs leading-4 font-medium text-white/40">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs leading-4 font-medium text-white/50">
           {Number.isFinite(Number(totalReviews)) && (
             <span>
               <strong className="font-semibold text-white/70">{totalReviews}</strong> {itemLabel}
@@ -46,13 +46,13 @@ export default function ReviewHeader({
 
           {hasRatingSummary && (
             <>
-              <span className="text-white/40">•</span>
+              <span className="text-white/50">•</span>
               <span className="inline-flex items-center gap-1">
                 <Icon icon="solar:star-bold" className="text-warning" size={13} />
                 <strong className="font-semibold text-white/70">{ratingStats?.average}/5</strong>
-                <span className="text-white/40">avg</span>
+                <span className="text-white/50">avg</span>
                 {ratingStats?.count ? (
-                  <span className="text-white/40">({ratingStats.count} rated)</span>
+                  <span className="text-white/50">({ratingStats.count} rated)</span>
                 ) : null}
               </span>
             </>

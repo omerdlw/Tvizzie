@@ -151,7 +151,7 @@ export default function AccountLikesFeed({
   const hasListFilters = hasActiveListFilters({
     sort: viewState.listSort,
   });
-  if (!canShowLikesGrid) return <AccountSectionState message="This profile is private." />;
+  if (!canShowLikesGrid) return <AccountSectionState message="This profile is private" />;
   const hasLikes = Array.isArray(likes) && likes.length > 0;
   return (
     <>

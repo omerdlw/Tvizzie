@@ -260,7 +260,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
         previewItems: orderedItems.slice(0, 5),
       });
 
-      toast.success('List updated successfully.');
+      toast.success('List updated successfully');
       close?.({ success: true, list: updatedList, items: orderedItems });
     } catch (error) {
       toast.error(error?.message || 'The list could not be updated');
@@ -292,7 +292,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
                   onFocus={() => setFocusedField('title')}
                   placeholder="Name your list"
                   classNames={{
-                    input: 'w-full text-sm placeholder:text-white/40 outline-none',
+                    input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
                       navActionClass({
                         cn,
@@ -312,7 +312,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
                   onFocus={() => setFocusedField('description')}
                   placeholder="Description (optional)"
                   classNames={{
-                    input: 'w-full text-sm placeholder:text-white/40 outline-none',
+                    input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
                       navActionClass({
                         cn,
@@ -425,8 +425,8 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
         </div>
       ) : (
         <div className="flex h-28 flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 text-center">
-          <Icon icon="solar:list-broken" size={24} className="text-white/40" />
-          <p className="text-xs text-white/40">No titles in this list</p>
+          <Icon icon="solar:list-broken" size={24} className="text-white/50" />
+          <p className="text-xs text-white/50">No titles in this list</p>
         </div>
       )}
 

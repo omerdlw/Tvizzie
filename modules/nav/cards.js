@@ -29,11 +29,13 @@ import {
 import {
   NAV_ACTION_DISMISS_TRANSITION,
   NAV_BADGE_TRANSITION,
+  NAV_COMPOSITOR_STYLE,
   NAV_FADE_TRANSITION,
   NAV_HEADER_SWAP_TRANSITION,
   NAV_ICON_TRANSITION,
   NAV_SURFACE_BODY_ENTER_TRANSITION,
   NAV_SURFACE_BODY_EXIT_TRANSITION,
+  NAV_SKELETON_PULSE_CLASS,
   NAV_TEXT_ENTER_TRANSITION,
   getNavCardContentAnimateProps,
   getNavCardDelay,
@@ -207,10 +209,7 @@ export const NavIcon = memo(function NavIcon({
           />
         ) : (
           <div
-            className={cn(
-              'center size-12 rounded-[20px] bg-white/5 text-white',
-              className,
-            )}
+            className={cn('center size-12 rounded-[20px] bg-white/5 text-white', className)}
             style={iconStyle}
           >
             <span>{renderIconNode(icon, size)}</span>
@@ -352,10 +351,14 @@ function Badge({ badge }) {
 function LoadingItemContent() {
   return (
     <div className="flex h-auto w-full items-center gap-2.5">
-      <div className="skeleton-block size-12 shrink-0 animate-pulse rounded-[20px]" />
+      <div
+        className={cn('skeleton-block size-12 shrink-0 rounded-[20px]', NAV_SKELETON_PULSE_CLASS)}
+      />
       <div className="flex flex-1 flex-col justify-center space-y-2">
-        <div className="skeleton-block h-4 w-52 animate-pulse rounded-full" />
-        <div className="skeleton-block-soft h-3 w-80 animate-pulse rounded-full" />
+        <div className={cn('skeleton-block h-4 w-52 rounded-full', NAV_SKELETON_PULSE_CLASS)} />
+        <div
+          className={cn('skeleton-block-soft h-3 w-80 rounded-full', NAV_SKELETON_PULSE_CLASS)}
+        />
       </div>
     </div>
   );
@@ -363,21 +366,28 @@ function LoadingItemContent() {
 
 // ── Card item rendering ──────────────────────────────────────────────────────
 
-function SurfaceItemContent({ link }) {
-  const SurfaceComponent = link.surfaceComponent;
-  const surfaceContent = link.surfaceContent;
-  const icon = link.surfaceIcon ?? link.icon ?? null;
-  const title = link.surfaceTitle ?? link.title ?? link.name ?? '';
-  const description = link.surfaceDescription ?? link.description ?? '';
-  const trailing = link.surfaceTrailing ?? link.trailing ?? null;
-  const headerAction = link.surfaceHeaderAction ?? null;
-  const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
+function SurfaceStackItemContent({ link, surface, isActive }) {
+  const SurfaceComponent = surface.surfaceComponent;
+  const surfaceContent = surface.surfaceContent;
+  const icon = surface.surfaceIcon ?? link.icon ?? null;
+  const title = surface.surfaceTitle ?? link.title ?? link.name ?? '';
+  const description = surface.surfaceDescription ?? link.description ?? '';
+  const trailing = surface.surfaceTrailing ?? link.trailing ?? null;
+  const headerAction = surface.surfaceHeaderAction ?? null;
+  const closeLabel = surface.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
   const onClose =
-    link.dismissible === false ? null : link.closeAllSurfaces || link.closeSurface || link.onClose;
-  const onBack = link.onBack || (link.canGoBack ? link.popStep || link.closeSurface : null);
+    surface.dismissible === false
+      ? null
+      : surface.closeAllSurfaces || surface.closeSurface || link.onClose;
+  const onBack = surface.onBack || (surface.canGoBack ? surface.popStep || surface.closeSurface : null);
 
   return (
-    <div className="relative w-full overflow-visible" onClick={(event) => event.stopPropagation()}>
+    <div
+      aria-hidden={isActive ? undefined : true}
+      className={cn('relative w-full overflow-visible', !isActive && 'hidden')}
+      inert={isActive ? undefined : true}
+      onClick={(event) => event.stopPropagation()}
+    >
       <div className="w-full">
         <NavSurfaceShell
           icon={icon}
@@ -387,28 +397,30 @@ function SurfaceItemContent({ link }) {
           headerAction={headerAction}
           onClose={onClose}
           onBack={onBack}
-          stepIndex={link.stepIndex ?? 0}
-          totalSteps={link.totalSteps ?? 1}
-          badge={link.badge ?? null}
-          allowSwipeDismiss={link.allowSwipeDismiss !== false}
+          stepIndex={surface.stepIndex ?? 0}
+          totalSteps={surface.totalSteps ?? 1}
+          badge={surface.badge ?? null}
+          allowSwipeDismiss={surface.allowSwipeDismiss !== false}
           closeLabel={closeLabel}
-          descriptionMaxLines={link.surfaceDescriptionMaxLines ?? 2}
-          onAnimationComplete={link.onAnimationComplete}
-          surfacePhase={link.surfacePhase}
+          descriptionMaxLines={surface.surfaceDescriptionMaxLines ?? 2}
+          isActive={isActive}
+          onAnimationComplete={surface.onAnimationComplete}
+          surfaceId={surface.surfaceId}
+          surfacePhase={surface.surfacePhase}
           contentClassName="w-full"
         >
           {isValidComponentType(SurfaceComponent) ? (
             <SurfaceComponent
-              close={link.closeSurface}
-              closeAll={link.closeAllSurfaces}
-              pushStep={link.pushStep}
-              popStep={link.popStep}
-              goToStep={link.goToStep}
-              stepIndex={link.stepIndex ?? 0}
-              totalSteps={link.totalSteps ?? 1}
-              isFirstStep={link.isFirstStep ?? true}
-              isLastStep={link.isLastStep ?? true}
-              {...link.surfaceProps}
+              close={surface.closeSurface}
+              closeAll={surface.closeAllSurfaces}
+              pushStep={surface.pushStep}
+              popStep={surface.popStep}
+              goToStep={surface.goToStep}
+              stepIndex={surface.stepIndex ?? 0}
+              totalSteps={surface.totalSteps ?? 1}
+              isFirstStep={surface.isFirstStep ?? true}
+              isLastStep={surface.isLastStep ?? true}
+              {...surface.surfaceProps}
             />
           ) : (
             surfaceContent
@@ -416,6 +428,25 @@ function SurfaceItemContent({ link }) {
         </NavSurfaceShell>
       </div>
     </div>
+  );
+}
+
+function SurfaceItemContent({ link }) {
+  const surfaceStackEntries = link.surfaceStackEntries?.length
+    ? link.surfaceStackEntries
+    : [link];
+
+  return (
+    <>
+      {surfaceStackEntries.map((surface) => (
+        <SurfaceStackItemContent
+          key={surface.surfaceId ?? 'nav-surface'}
+          link={link}
+          surface={surface}
+          isActive={surface.surfaceId === link.surfaceId}
+        />
+      ))}
+    </>
   );
 }
 
@@ -729,10 +760,12 @@ export const NavCardItem = memo(
         initial={false}
         animate={getNavItemAnimateValues({
           motionValues,
+          expanded,
           isStackHovered,
           position,
         })}
         transition={getNavItemTransition({
+          expanded,
           isStackHovered,
           position,
           delay: cardDelay,
@@ -768,7 +801,7 @@ export const NavCardItem = memo(
               animate="visible"
               exit="exit"
               transition={NAV_FADE_TRANSITION}
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-4"
             >
               <div className="min-w-0">
                 <NavTitle
@@ -797,6 +830,7 @@ export const NavCardItem = memo(
           })}
           transition={NAV_FADE_TRANSITION}
           style={{
+            ...NAV_COMPOSITOR_STYLE,
             pointerEvents: compact || (!expanded && position > 0) ? 'none' : 'auto',
           }}
         >
@@ -812,9 +846,7 @@ export const NavCardItem = memo(
                 exit="exit"
                 transition={NAV_HEADER_SWAP_TRANSITION}
                 style={{
-                  WebkitBackfaceVisibility: 'hidden',
-                  backfaceVisibility: 'hidden',
-                  WebkitFontSmoothing: 'antialiased',
+                  ...NAV_COMPOSITOR_STYLE,
                 }}
                 className="w-full"
               >
@@ -825,17 +857,13 @@ export const NavCardItem = memo(
                 key="standard-content-layer"
                 variants={navHeaderRestoreVariants}
                 initial={
-                  link.surfacePhase === NAV_SURFACE_PHASE.RESTORING_HEADER
-                    ? 'hidden'
-                    : 'visible'
+                  link.surfacePhase === NAV_SURFACE_PHASE.RESTORING_HEADER ? 'hidden' : 'visible'
                 }
                 animate="visible"
                 exit="exit"
                 transition={NAV_HEADER_SWAP_TRANSITION}
                 style={{
-                  WebkitBackfaceVisibility: 'hidden',
-                  backfaceVisibility: 'hidden',
-                  WebkitFontSmoothing: 'antialiased',
+                  ...NAV_COMPOSITOR_STYLE,
                 }}
                 className="w-full"
               >

@@ -215,7 +215,7 @@ export function useNavigationFocusTrap({ containerRef, enabled = true, onDismiss
     });
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && typeof onDismiss === 'function') {
+      if (event.key === 'Escape' && !event.defaultPrevented && typeof onDismiss === 'function') {
         event.preventDefault();
         event.stopPropagation();
         onDismiss();
@@ -244,11 +244,11 @@ export function useNavigationFocusTrap({ containerRef, enabled = true, onDismiss
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown, { capture: true });
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.cancelAnimationFrame(focusFrameId);
-      document.removeEventListener('keydown', handleKeyDown, { capture: true });
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [containerRef, enabled, onDismiss]);
 }
@@ -321,7 +321,7 @@ export function useNavKeyboard({
   }, [expanded, handleKeyDown]);
 }
 
-export function useNavigationCompact({
+export function useNavigationCompactController({
   activeItem,
   expanded,
   isHudActive = false,
@@ -349,6 +349,22 @@ export function useNavigationCompact({
   const isActionEngaged = Boolean(searchQuery?.trim());
   const behavior = useNavigationBehavior({ isVideoPlaying });
   const isBehaviorFocused = behavior === NAV_COMPACT_BEHAVIOR.FOCUSED;
+
+  const exitCompact = useCallback(() => {
+    if (!compactRef.current) return false;
+
+    // Compact is a scroll-only presentation. Once the user starts a Nav
+    // interaction, leave it behind instead of restoring it after that flow.
+    restoreCompactRef.current = false;
+    compactRef.current = false;
+    bottomLockRef.current = false;
+    downwardTravelRef.current = 0;
+    lastScrollYRef.current = typeof window === 'undefined' ? 0 : window.scrollY || 0;
+    lastToggleTimeRef.current = getCurrentTimestamp();
+    setCompact(false);
+
+    return true;
+  }, []);
 
   useEffect(() => {
     const compactAllowed = canUseCompactNav({
@@ -549,7 +565,12 @@ export function useNavigationCompact({
     isSurface,
   ]);
 
-  return compact;
+  return { compact, exitCompact };
+}
+
+/** Returns the current scroll-driven compact presentation state. */
+export function useNavigationCompact(options) {
+  return useNavigationCompactController(options).compact;
 }
 
 export function useNavigationRouteReset(pathname, onRouteChange) {

@@ -48,7 +48,7 @@ export default function MovieAction({
                 'cursor-pointer p-3 text-xs font-semibold text-white/70 uppercase outline-none data-[highlighted]:bg-white/5 data-[highlighted]:text-white',
               optionActive: 'bg-white/5 text-white',
               indicator: 'ml-auto text-white',
-              icon: 'text-white/40',
+              icon: 'text-white/50',
             }}
             aria-label="Sort reviews"
           />

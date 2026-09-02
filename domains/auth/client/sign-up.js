@@ -13,12 +13,12 @@ import { assertSignUpEmailAvailable, completeVerifiedSignUp } from './requests.j
 
 export const SIGN_UP_FEEDBACK = Object.freeze({
   'creating-account': Object.freeze({
-    description: 'Creating your account and starting your session.',
+    description: 'Creating your account and starting your session',
     phase: 'start',
     title: 'Creating account',
   }),
   redirecting: Object.freeze({
-    description: 'Redirecting to your account.',
+    description: 'Redirecting to your account',
     duration: 3000,
     phase: 'success',
     title: 'Account ready',

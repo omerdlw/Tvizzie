@@ -60,7 +60,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
             'flex size-[22px] shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
             isSelected
               ? 'ring-info bg-info text-primary'
-              : 'ring-white/5 text-white/40 group-hover:ring-white/40 group-hover:text-white/70',
+              : 'ring-white/5 text-white/50 group-hover:ring-white/50 group-hover:text-white/70',
           )}
         >
           <Icon icon="material-symbols:check-rounded" size={16} />
@@ -222,15 +222,15 @@ export default function ListPickerSurface({ close, data }) {
     if (failedListTitles.length > 0) {
       if (successfulListIds.length > 0) {
         toast.warning(
-          `${successfulListIds.length} changes applied, ${failedListTitles.length} failed.`,
+          `${successfulListIds.length} changes applied, ${failedListTitles.length} failed`,
         );
       } else {
-        toast.error('Changes could not be applied. Please try again.');
+        toast.error('Changes could not be applied. Please try again');
       }
       return;
     }
 
-    toast.success('Lists updated successfully.');
+    toast.success('Lists updated successfully');
     close({
       memberships: nextMemberships,
       selectedListIds: Object.keys(nextMemberships).filter((id) => Boolean(nextMemberships[id])),
@@ -253,10 +253,10 @@ export default function ListPickerSurface({ close, data }) {
           <ListPickerSkeleton count={2} />
         ) : lists.length === 0 ? (
           <div className="center min-h-52 flex-col gap-2.5 text-center">
-            <p className="text-xs font-bold text-white/40 uppercase">
+            <p className="text-xs font-bold text-white/50 uppercase">
               No lists yet
             </p>
-            <p className="text-sm text-white/70">Create your first list with the button above.</p>
+            <p className="text-sm text-white/70">Create your first list with the button above</p>
           </div>
         ) : (
           <motion.div

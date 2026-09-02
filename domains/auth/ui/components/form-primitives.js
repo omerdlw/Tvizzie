@@ -10,7 +10,7 @@ import Icon from '@/ui/primitives/icon';
 export const AUTH_INPUT_CLASSNAMES = Object.freeze({
   wrapper:
     'flex h-11 w-full items-center rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-4 transition-all duration-300 ease-in-out hover:ring-white/10 hover:bg-white/10 focus-within:ring-white/10 focus-within:bg-white/10',
-  input: 'w-full text-white placeholder:text-white/40 outline-none text-sm',
+  input: 'w-full text-white placeholder:text-white/50 outline-none text-sm',
 });
 
 export const AUTH_PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
@@ -29,13 +29,13 @@ export function AuthField({ children, className = '', description = '', htmlFor,
       {label ? (
         <label
           htmlFor={htmlFor}
-          className="mb-1.5 block text-xs font-semibold text-white/40 uppercase"
+          className="mb-1.5 block text-xs font-semibold text-white/50 uppercase"
         >
           {label}
         </label>
       ) : null}
       {children}
-      {description ? <p className="mt-2 text-xs leading-5 text-white/40">{description}</p> : null}
+      {description ? <p className="mt-2 text-xs leading-5 text-white/50">{description}</p> : null}
     </div>
   );
 }

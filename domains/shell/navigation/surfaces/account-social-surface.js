@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
-import { useSurfaceHeader } from '@/modules/nav';
-import { navFadeVariants, navListItemVariants } from '@/modules/nav';
+import { NavSurfaceExtension, navFadeVariants, navListItemVariants, useSurfaceHeader } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
@@ -35,14 +34,14 @@ const TABS = Object.freeze({
 });
 
 const BUTTON_BASE_CLASS =
-  'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/5 disabled:text-white/40';
+  'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/5 disabled:text-white/50';
 
 const ACTION_BUTTON_CLASSES = Object.freeze({
   destructive: `${BUTTON_BASE_CLASS} ring-error/15 bg-error/10 text-error hover:bg-error hover:text-black`,
   success: `${BUTTON_BASE_CLASS} ring-success/15 bg-success/10 text-success hover:bg-success hover:text-black`,
   info: `${BUTTON_BASE_CLASS} ring-info/15 bg-info/10 text-info hover:bg-info hover:text-black`,
   muted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/70 hover:ring-error/15 hover:bg-error/10 hover:text-error`,
-  disabledMuted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/40 cursor-default`,
+  disabledMuted: `${BUTTON_BASE_CLASS} ring-white/10 bg-white/5 text-white/50 cursor-default`,
 });
 
 const SURFACE_LIST_VARIANTS = navFadeVariants;
@@ -91,15 +90,15 @@ function resolveCollectionErrorMessage(error, tab) {
   const status = Number(error?.status || 0);
   if (status === 403) {
     return tab === TABS.INBOX
-      ? 'You are not allowed to view pending follow requests.'
-      : 'This profile is private.';
+      ? 'You are not allowed to view pending follow requests'
+      : 'This profile is private';
   }
   if (status === 401) {
-    return 'Your session has expired. Please sign in again.';
+    return 'Your session has expired. Please sign in again';
   }
   return tab === TABS.INBOX
-    ? 'Pending follow requests could not be loaded.'
-    : `Could not load ${tab}.`;
+    ? 'Pending follow requests could not be loaded'
+    : `Could not load ${tab}`;
 }
 
 function buildFollowingStatusMap(list = [], fallbackStatus = FOLLOW_STATUSES.ACCEPTED) {
@@ -253,7 +252,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
           <span className="truncate text-xs font-semibold text-white transition-colors">
             {user.displayName}
           </span>
-          <span className="truncate text-xs font-medium text-white/40">
+          <span className="truncate text-xs font-medium text-white/50">
             @{user.username || 'user'}
           </span>
         </div>
@@ -636,8 +635,8 @@ export default function AccountSocialSurface({ close, data }) {
 
   return (
     <div className="flex w-full flex-col gap-2.5 overflow-hidden">
-      <div className="flex items-center justify-between gap-2.5">
-        <div className="flex h-8 min-w-0 flex-1 scrollbar-none items-center gap-1.5 overflow-x-auto">
+      <NavSurfaceExtension id="account-social-tabs" align="center">
+        <div className="flex h-8 shrink-0 items-center gap-1.5 select-none">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -646,7 +645,7 @@ export default function AccountSocialSurface({ close, data }) {
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  'flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-xl px-2.5 text-xs font-semibold transition-all duration-200 select-none',
+                  'flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-full px-3 text-xs font-semibold transition-all duration-200 select-none',
                   isActive
                     ? 'bg-white text-black'
                     : 'text-white/70 hover:bg-white/10 hover:text-white',
@@ -657,7 +656,7 @@ export default function AccountSocialSurface({ close, data }) {
                   <span
                     className={cn(
                       'text-xs font-bold',
-                      isActive ? 'text-black/80' : 'text-white/40',
+                      isActive ? 'text-black/80' : 'text-white/50',
                     )}
                   >
                     {tab.count}
@@ -667,7 +666,7 @@ export default function AccountSocialSurface({ close, data }) {
             );
           })}
         </div>
-      </div>
+      </NavSurfaceExtension>
 
       <AnimatePresence mode="wait" initial={false}>
         {isLoading ? (
@@ -690,7 +689,7 @@ export default function AccountSocialSurface({ close, data }) {
             exit="exit"
             className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center"
           >
-            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/40">
+            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
               <Icon icon="solar:danger-circle-bold" size={22} />
             </div>
             <div className="flex max-w-sm flex-col gap-1">
@@ -706,15 +705,15 @@ export default function AccountSocialSurface({ close, data }) {
             exit="exit"
             className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center"
           >
-            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/40">
+            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
               <Icon icon="solar:users-group-rounded-linear" size={22} />
             </div>
             <div className="flex max-w-sm flex-col gap-1">
               <p className="text-xs font-semibold text-white/70">{emptyDescription}</p>
-              <p className="text-xs leading-relaxed text-white/40">
+              <p className="text-xs leading-relaxed text-white/50">
                 {activeTab === TABS.INBOX
-                  ? 'Incoming follow requests will appear here.'
-                  : `No ${activeTab} yet for this profile.`}
+                  ? 'Incoming follow requests will appear here'
+                  : `No ${activeTab} yet for this profile`}
               </p>
             </div>
           </motion.div>

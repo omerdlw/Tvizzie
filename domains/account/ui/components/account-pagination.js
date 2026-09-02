@@ -119,7 +119,7 @@ export default function AccountPagination({
           ) : (
             <span
               key={`ellipsis-${index}`}
-              className="inline-flex h-9 min-w-6 items-center justify-center text-xs font-semibold text-white/30 select-none tracking-widest"
+              className="inline-flex h-9 min-w-6 items-center justify-center text-xs font-semibold text-white/50 select-none "
               aria-hidden="true"
             >
               …

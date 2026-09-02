@@ -93,7 +93,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
 
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-semibold">@{username}</span>
-          <span className="truncate text-xs text-white/40 uppercase">
+          <span className="truncate text-xs text-white/50 uppercase">
             {formatActionSummary(actions)}
           </span>
         </div>
@@ -117,12 +117,12 @@ export default function SocialProofModal({ close, data }) {
       close={close}
       header={{
         left: (
-          <h2 className="text-xs font-bold text-white/40 uppercase">
+          <h2 className="text-xs font-bold text-white/50 uppercase">
             Friends activity
           </h2>
         ),
         right: data?.title ? (
-          <span className="truncate text-xs text-white/40">{data.title}</span>
+          <span className="truncate text-xs text-white/50">{data.title}</span>
         ) : null,
       }}
       bodyClassName="p-0"
@@ -146,9 +146,9 @@ export default function SocialProofModal({ close, data }) {
         </motion.div>
       ) : (
         <div className="center flex-col gap-2 p-8 text-center">
-          <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-white/40" />
-          <p className="text-sm font-medium text-white/40">No social activity found yet</p>
-          <p className="text-xs text-white/40">
+          <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-white/50" />
+          <p className="text-sm font-medium text-white/50">No social activity found yet</p>
+          <p className="text-xs text-white/50">
             When people you follow like, review, or watch this title, their activity will appear
             here.
           </p>

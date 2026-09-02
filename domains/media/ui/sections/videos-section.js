@@ -97,7 +97,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                       <div className="center pointer-events-none absolute inset-0 text-white transition-all duration-300 ease-in-out group-hover:scale-110">
                         <Icon icon="solar:play-circle-bold" size={48} />
                       </div>
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 text-white">
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3 text-white">
                         <h3 className="truncate text-sm font-semibold text-white">{video.name}</h3>
                       </div>
                     </>

@@ -73,7 +73,7 @@ export async function executeCollectionQuery(
   }
 
   if (result?.timedOut) {
-    console.warn(`[Supabase ${label} Timeout] After ${timeoutMs}ms. Returning fallback.`);
+    console.warn(`[Supabase ${label} Timeout] After ${timeoutMs}ms. Returning fallback`);
     return result;
   }
   return result;

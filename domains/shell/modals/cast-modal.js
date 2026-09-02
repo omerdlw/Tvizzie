@@ -58,7 +58,7 @@ const PersonCard = memo(function PersonCard({ close, person }) {
           />
         ) : (
           <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={16} className="text-white/40" />
+            <Icon icon="solar:user-bold" size={16} className="text-white/50" />
           </div>
         )}
       </div>
@@ -136,8 +136,8 @@ export default function CastModal({ close, data, header }) {
               exit={{ opacity: 0 }}
               className="center flex-col gap-2 py-16 text-center"
             >
-              <Icon icon="solar:users-group-two-rounded-bold" size={32} className="text-white/40" />
-              <p className="text-sm font-medium text-white/40">
+              <Icon icon="solar:users-group-two-rounded-bold" size={32} className="text-white/50" />
+              <p className="text-sm font-medium text-white/50">
                 No {activeTab === 'cast' ? 'cast' : 'crew'} information available
               </p>
             </motion.div>

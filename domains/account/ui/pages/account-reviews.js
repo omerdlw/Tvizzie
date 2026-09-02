@@ -171,7 +171,7 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
 
         if (!isPermissionDeniedError(error)) {
           logDataError('[Account] Reviews could not be loaded:', error);
-          setFeedError('Reviews could not be loaded right now.');
+          setFeedError('Reviews could not be loaded right now');
         }
       } finally {
         if (latestReviewRequestRef.current !== requestId) return;
@@ -327,8 +327,8 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
       setReviewDeleteConfirmation({
         title: isListComment ? 'Delete Comment?' : 'Delete Review?',
         description: isListComment
-          ? 'This comment will be permanently removed from your profile.'
-          : 'This review will be permanently removed from your profile.',
+          ? 'This comment will be permanently removed from your profile'
+          : 'This review will be permanently removed from your profile',
         confirmText: 'Delete',
         confirmLoadingText: 'Deleting',
         isDestructive: true,
@@ -429,7 +429,7 @@ const ReviewsView = createAccountSectionView({
         watchedItems={watchedItems}
       />
     ) : (
-      <AccountSectionState message="This profile is private." />
+      <AccountSectionState message="This profile is private" />
     ),
 });
 

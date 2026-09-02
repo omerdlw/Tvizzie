@@ -149,7 +149,7 @@ function SurfaceMediaForm({
           </div>
 
           <div className="flex h-28 w-full items-center justify-center">
-            <div className="relative size-28 shrink-0 overflow-hidden rounded-[20px] bg-black/50 ring-1 ring-inset ring-white/10">
+            <div className="relative size-28 shrink-0 overflow-hidden rounded-[20px] bg-black/60 ring-1 ring-inset ring-white/10">
               {hasAvatar ? (
                 <AdaptiveImage
                   key={localAvatarUrl}
@@ -161,7 +161,7 @@ function SurfaceMediaForm({
                   wrapperClassName="h-full w-full"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-white/40">
+                <div className="flex h-full w-full items-center justify-center text-white/50">
                   <Icon icon="solar:user-circle-bold" size={32} />
                 </div>
               )}
@@ -211,7 +211,7 @@ function SurfaceMediaForm({
           </div>
 
           <div className="flex h-28 w-full items-center justify-center">
-            <div className="relative h-28 w-full overflow-hidden rounded-[20px] bg-black/50 ring-1 ring-inset ring-white/10">
+            <div className="relative h-28 w-full overflow-hidden rounded-[20px] bg-black/60 ring-1 ring-inset ring-white/10">
               {hasBanner ? (
                 <AdaptiveImage
                   key={localBannerUrl}
@@ -223,7 +223,7 @@ function SurfaceMediaForm({
                   wrapperClassName="h-full w-full"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-white/40">
+                <div className="flex h-full w-full items-center justify-center text-white/50">
                   <Icon icon="solar:gallery-bold" size={32} />
                 </div>
               )}
@@ -330,7 +330,7 @@ function SurfaceProfileInfoForm({
           aria-hidden="true"
           className={cn(
             'flex h-6 w-11 shrink-0 rounded-full p-0.5 ring-1 ring-inset transition-colors',
-            localForm.isPrivate ? 'bg-white/15 ring-white/20' : 'bg-black/50 ring-white/10',
+            localForm.isPrivate ? 'bg-white/15 ring-white/15' : 'bg-black/60 ring-white/10',
           )}
         >
           <span
@@ -338,7 +338,7 @@ function SurfaceProfileInfoForm({
               'size-5 rounded-full transition-transform duration-200 ease-in-out',
               localForm.isPrivate
                 ? 'translate-x-5 bg-white shadow-sm'
-                : 'translate-x-0 bg-white/40',
+                : 'translate-x-0 bg-white/50',
             )}
           />
         </span>
@@ -471,10 +471,10 @@ export function AccountProfileSettingsForm({
             <span className="text-sm font-medium text-white">
               {form.isPrivate ? 'Private profile' : 'Public profile'}
             </span>
-            <span className="text-xs leading-5 text-white/40">
+            <span className="text-xs leading-5 text-white/50">
               {form.isPrivate
-                ? 'Only approved followers can inspect your collections.'
-                : 'Anyone can inspect your collections and profile activity.'}
+                ? 'Only approved followers can inspect your collections'
+                : 'Anyone can inspect your collections and profile activity'}
             </span>
           </div>
 
@@ -482,13 +482,13 @@ export function AccountProfileSettingsForm({
             aria-hidden="true"
             className={cn(
               'flex h-6 w-11 shrink-0 rounded-full p-0.5 ring-1 ring-inset transition-colors',
-              form.isPrivate ? 'bg-white/15 ring-white/20' : 'bg-black/50 ring-white/10',
+              form.isPrivate ? 'bg-white/15 ring-white/15' : 'bg-black/60 ring-white/10',
             )}
           >
             <span
               className={cn(
                 'size-5 rounded-full transition-transform duration-200 ease-in-out',
-                form.isPrivate ? 'translate-x-5 bg-white shadow-sm' : 'translate-x-0 bg-white/40',
+                form.isPrivate ? 'translate-x-5 bg-white shadow-sm' : 'translate-x-0 bg-white/50',
               )}
             />
           </span>

@@ -174,7 +174,7 @@ function createRemoveConfirmation({ item, onCancel, onConfirm, scope }) {
   const poster = item?.poster_path || item?.posterPath;
   return {
     title: `Remove ${scope.title}?`,
-    description: `${getMediaTitle(item)} will be removed from your ${scope.descriptionTarget}.`,
+    description: `${getMediaTitle(item)} will be removed from your ${scope.descriptionTarget}`,
     confirmText: 'Remove',
     confirmLoadingText: 'Removing',
     isDestructive: true,

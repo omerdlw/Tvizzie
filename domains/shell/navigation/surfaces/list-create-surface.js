@@ -248,7 +248,7 @@ export default function CreateListSurface({ close, data }) {
                   onFocus={() => setFocusedField('title')}
                   placeholder="Name your list"
                   classNames={{
-                    input: 'w-full text-sm placeholder:text-white/40 outline-none',
+                    input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
                       navActionClass({
                         cn,
@@ -268,7 +268,7 @@ export default function CreateListSurface({ close, data }) {
                   onFocus={() => setFocusedField('description')}
                   placeholder="Description (optional)"
                   classNames={{
-                    input: 'w-full text-sm placeholder:text-white/40 outline-none',
+                    input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
                       navActionClass({
                         cn,

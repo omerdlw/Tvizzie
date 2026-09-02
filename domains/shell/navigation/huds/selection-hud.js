@@ -91,7 +91,7 @@ export const SelectionHud = memo(function SelectionHud({
                   event.stopPropagation();
                   onCancel();
                 }}
-                className="center h-8 w-8 cursor-pointer rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/40 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                className="center h-8 w-8 cursor-pointer rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/50 hover:ring-white/10 hover:bg-white/10 hover:text-white"
                 aria-label="Cancel selection"
               >
                 <Icon icon="solar:close-circle-bold" size={16} />

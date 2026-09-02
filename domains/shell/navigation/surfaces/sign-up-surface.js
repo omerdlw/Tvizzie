@@ -43,7 +43,7 @@ export function createSignUpSurfaceEntry(data = {}, config = {}) {
     component: SignUpSurface,
     icon: 'solar:user-plus-bold',
     title: 'Sign Up',
-    description: 'Create your account',
+    description: 'Choose how you want to sign up',
     props: { data },
     ...config,
   };
@@ -119,16 +119,7 @@ export default function SignUpSurface({ close, data }) {
           : currentStep < 0
             ? 'Sign Up'
             : getSignUpStepTitle(currentStep),
-      description: '',
       trailing: null,
-      headerAction: showSignedInNotice ? null : (
-        <NavSurfaceHeaderButton
-          disabled={isBusy}
-          onClick={() => void openSignInFallback({ identifier: form.email })}
-        >
-          Sign In
-        </NavSurfaceHeaderButton>
-      ),
     });
   }, [
     currentStep,

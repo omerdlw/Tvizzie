@@ -49,7 +49,7 @@ async function sendSecurityEmail({ email, eventType, dedupeKey, title, descripti
       to: [{ email: normalizedEmail }],
       subject: `Tvizzie security alert: ${title}`,
       textContent: `${title}\n\n${description}\n\nIf this was not you, sign in and review your account security settings.`,
-      htmlContent: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px"><h2>${safeTitle}</h2><p>${safeDescription}</p><p style="color:#777">If this was not you, sign in and review your account security settings.</p></div>`,
+      htmlContent: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px"><h2>${safeTitle}</h2><p>${safeDescription}</p><p style="color:#777">If this was not you, sign in and review your account security settings</p></div>`,
     }),
   });
 

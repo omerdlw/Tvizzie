@@ -53,7 +53,7 @@ export default function MediaThumb({ poster, alt, className = '' }) {
         />
       ) : (
         <div className="flex size-full items-center justify-center">
-          <Icon icon="solar:clapperboard-bold" size={18} className="text-white/40" />
+          <Icon icon="solar:clapperboard-bold" size={18} className="text-white/50" />
         </div>
       )}
     </div>

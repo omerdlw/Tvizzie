@@ -58,7 +58,7 @@ export default function PersonFilmographySection({ person }) {
               value={activeTab}
               onChange={handleTabChange}
               renderSuffix={(item) => (
-                <span className="text-xs text-white/40">({item.count})</span>
+                <span className="text-xs text-white/50">({item.count})</span>
               )}
             />
           </div>

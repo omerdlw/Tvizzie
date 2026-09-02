@@ -163,7 +163,7 @@ export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onCh
         })}
       </div>
 
-      <p className="text-xs font-semibold text-white/40 uppercase">
+      <p className="text-xs font-semibold text-white/50 uppercase">
         {activeRange.min === activeRange.max
           ? `${activeRange.max} stars`
           : `${activeRange.min}-${activeRange.max} stars`}

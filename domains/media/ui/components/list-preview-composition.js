@@ -58,7 +58,7 @@ export default memo(function ListPreviewComposition({
   if (previewItems.length === 0) {
     return (
       <div className={cn('relative h-[68px] w-[82px] shrink-0', className)}>
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] ring-1 ring-inset  ring-white/10 bg-black text-white/40">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] ring-1 ring-inset  ring-white/10 bg-black text-white/50">
           <Icon icon={emptyIcon} size={20} />
         </div>
       </div>
@@ -94,7 +94,7 @@ export default memo(function ListPreviewComposition({
                 wrapperClassName="h-full w-full"
               />
             ) : (
-              <div className="center h-full w-full bg-white/5 text-white/40">
+              <div className="center h-full w-full bg-white/5 text-white/50">
                 <Icon icon="solar:gallery-wide-bold" size={16} />
               </div>
             )}

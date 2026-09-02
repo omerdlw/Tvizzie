@@ -79,7 +79,7 @@ function ContextMenuHeader({ classNames, header }) {
     classNames.header,
   );
   const eyebrowClassName = joinClassNames(
-    'text-xs font-semibold text-white/40 uppercase',
+    'text-xs font-semibold text-white/50 uppercase',
     classNames.headerEyebrow,
   );
   const titleClassName = joinClassNames(
@@ -133,7 +133,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
     item.danger && classNames.itemDanger,
   );
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-white/40 group-hover:text-white/70',
+    'shrink-0 text-white/50 group-hover:text-white/70',
     CONTEXT_MENU_ICON_TRANSITION_CLASS,
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
@@ -159,7 +159,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
       {item.shortcut ? (
         <span
           className={joinClassNames(
-            'ml-2 shrink-0 rounded-md bg-white/5 px-1.5 py-0.5 text-xs text-white/40 uppercase ring-1 ring-white/10 ring-inset',
+            'ml-2 shrink-0 rounded-md bg-white/5 px-1.5 py-0.5 text-xs text-white/50 uppercase ring-1 ring-white/10 ring-inset',
             classNames.itemShortcut,
           )}
         >

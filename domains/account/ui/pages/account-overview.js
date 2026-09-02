@@ -16,7 +16,7 @@ function MissingCurrentAccountState({ RegistryComponent = null }) {
       <FullscreenState contentClassName="">
         <div>
           <h1>Session Ended</h1>
-          <p>Your account profile could not be initialized. Refresh the page and try again.</p>
+          <p>Your account profile could not be initialized. Refresh the page and try again</p>
         </div>
       </FullscreenState>
     </>

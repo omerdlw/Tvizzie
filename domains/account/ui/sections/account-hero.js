@@ -232,7 +232,7 @@ export default function AccountHero({
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-              <h1 className="font-zuume max-w-full text-3xl leading-tight font-bold [overflow-wrap:anywhere] uppercase sm:text-4xl lg:text-5xl tracking-wide text-white">
+              <h1 className="font-zuume max-w-full text-3xl leading-tight font-bold [overflow-wrap:anywhere] uppercase sm:text-4xl lg:text-5xl text-white">
                 {heroDisplayName}
               </h1>
 
@@ -250,7 +250,7 @@ export default function AccountHero({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/[0.03] px-3.5 py-2 backdrop-blur-sm self-start sm:self-end">
+          <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3.5 py-2 backdrop-blur-sm self-start sm:self-end">
             <button
               type="button"
               onClick={() => handleFollowListClick('following')}
@@ -259,7 +259,7 @@ export default function AccountHero({
               <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
                 {formatHeroCount(followingCount)}
               </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors group-hover:text-white/80">
+              <span className="text-xs font-semibold uppercase text-white/50 transition-colors group-hover:text-white">
                 Following
               </span>
             </button>
@@ -274,7 +274,7 @@ export default function AccountHero({
               <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
                 {formatHeroCount(followerCount)}
               </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors group-hover:text-white/80">
+              <span className="text-xs font-semibold uppercase text-white/50 transition-colors group-hover:text-white">
                 Followers
               </span>
             </button>

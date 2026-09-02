@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { NAV_BREADCRUMBS_TRANSITION, navBreadcrumbsVariants } from './motion';
+import { NAV_BREADCRUMBS_TRANSITION, NAV_COMPOSITOR_STYLE, navBreadcrumbsVariants } from './motion';
 import { formatSlugTitle, normalizePath } from './utils';
 import { cn } from '@/ui/class-names';
 import Iconify from '@/ui/primitives/icon';
@@ -259,8 +259,9 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
       animate="visible"
       exit="exit"
       transition={NAV_BREADCRUMBS_TRANSITION}
+      style={NAV_COMPOSITOR_STYLE}
       className={cn(
-        'absolute inset-x-0 top-[calc(100%+4px)] z-10 flex h-[38px] w-full items-center justify-center rounded-[22px] bg-black/80 px-4 text-xs ring-1 ring-white/10 select-none ring-inset',
+        'absolute inset-x-0 top-[calc(100%+4px)] z-10 flex h-[40px] w-full items-center justify-center rounded-[20px] bg-black/60 px-4 text-xs ring-1 ring-white/10 select-none ring-inset',
         className,
       )}
       onClick={(event) => event.stopPropagation()}
@@ -274,7 +275,7 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
 
           if (crumb.isEllipsis) {
             return (
-              <span key="ellipsis" className="px-0.5 text-white/40 select-none">
+              <span key="ellipsis" className="px-0.5 text-white/50 select-none">
                 ...
               </span>
             );
@@ -287,13 +288,11 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
               className="flex items-center gap-1.5"
             >
               {isLast ? (
-                <span className="max-w-[180px] truncate font-medium text-white">
-                  {crumb.title}
-                </span>
+                <span className="max-w-[180px] truncate font-medium text-white">{crumb.title}</span>
               ) : (
                 <Link
                   href={crumb.path}
-                  className="max-w-[140px] truncate text-white/60 hover:text-white"
+                  className="max-w-[140px] truncate text-white/70 hover:text-white"
                 >
                   {crumb.title}
                 </Link>
@@ -303,7 +302,7 @@ export const NavBreadcrumbsCard = memo(function NavBreadcrumbsCard({
                 <Iconify
                   icon="solar:alt-arrow-right-linear"
                   size={10}
-                  className="shrink-0 text-white/30"
+                  className="shrink-0 text-white/50"
                 />
               )}
             </motion.div>

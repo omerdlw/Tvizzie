@@ -113,7 +113,7 @@ function createTitleReviewsMetadata(media, { fallbackTitle }) {
   const title = `${titleText}${year ? ` (${year})` : ''} Reviews - Tvizzie`;
 
   return createMediaMetadata({
-    description: `Read all reviews for ${titleText}.`,
+    description: `Read all reviews for ${titleText}`,
     fallbackTitle,
     imagePath: media?.backdrop_path,
     openGraphType: 'website',

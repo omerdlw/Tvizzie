@@ -243,7 +243,7 @@ export const CANCEL_BUTTON_CLASS =
   'center h-9 shrink-0 cursor-pointer rounded-xl ring-1 ring-inset ring-white/10 px-4 text-xs font-semibold whitespace-nowrap uppercase text-white/70 hover:ring-transparent hover:bg-white hover:text-black';
 
 export const ACTION_BUTTON_CLASS = cn(
-  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/40',
+  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/50',
   INFO_ACTION_TONE_CLASS,
 );
 

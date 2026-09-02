@@ -238,7 +238,7 @@ const NotificationRow = memo(function NotificationRow({
           payload={notification.payload}
           onLinkClick={onLinkClick}
         />
-        <span className="text-xs text-white/40 uppercase">
+        <span className="text-xs text-white/50 uppercase">
           {formatRelativeTime(notification.createdAt)}
         </span>
       </div>
@@ -458,7 +458,7 @@ export default function NotificationsModal({ close, header, data }) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="center h-52 px-6 text-center text-sm font-medium text-white/40"
+              className="center h-52 px-6 text-center text-sm font-medium text-white/50"
             >
               Notifications could not be loaded. Please try again.
             </motion.div>
@@ -469,7 +469,7 @@ export default function NotificationsModal({ close, header, data }) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="center h-screen text-sm font-medium text-white/40"
+              className="center h-screen text-sm font-medium text-white/50"
             >
               You have no notifications yet
             </motion.div>

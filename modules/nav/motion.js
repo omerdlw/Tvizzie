@@ -134,6 +134,18 @@ const NAV_SURFACE_BODY_EXIT_TRANSITION = Object.freeze({
   ease: NAV_EASINGS.CINEMATIC,
 });
 
+const NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.54,
+  ease: NAV_EASINGS.CINEMATIC,
+});
+
+const NAV_SURFACE_EXTENSIONS_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.38,
+  ease: NAV_EASINGS.EXIT,
+});
+
 const NAV_CARD_HEIGHT_OPEN_TRANSITION = Object.freeze({
   type: 'tween',
   duration: 0.84,
@@ -254,14 +266,63 @@ const NAV_BREADCRUMBS_TRANSITION = Object.freeze({
 
 const NAV_HUD_TRANSITION = NAV_FADE_TRANSITION;
 
+const NAV_SURFACE_CHOREOGRAPHY_TIMINGS = Object.freeze({
+  ACTION_DISMISS_MS: 260,
+  ACTION_DISMISS_SETTLE_MS: 100,
+  HEADER_SWAP_MS: 480,
+  HEADER_SWAP_SETTLE_MS: 140,
+  BODY_ENTER_MS: 840,
+  BODY_EXIT_MS: 620,
+  BODY_COLLAPSE_SETTLE_MS: 140,
+  HEADER_RESTORE_MS: 480,
+  RESTORE_SETTLE_MS: 100,
+});
+
+const NAV_SKELETON_PULSE_CLASS = 'animate-pulse';
+
+const NAV_SCRUBBER_TOOLTIP_SPRING = Object.freeze({
+  damping: 28,
+  stiffness: 350,
+});
+
+const NAV_MEDIA_VOLUME_FILL_TRANSITION = 'width 240ms cubic-bezier(0.16, 1, 0.3, 1)';
+const NAV_MEDIA_VOLUME_THUMB_POSITION_TRANSITION = 'left 240ms cubic-bezier(0.16, 1, 0.3, 1)';
+
+const navMediaVolumeThumbVariants = Object.freeze({
+  idle: Object.freeze({
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
+    scale: 1,
+  }),
+  dragging: Object.freeze({
+    boxShadow: '0 0 8px rgba(255, 255, 255, 0.5)',
+    scale: 1.25,
+  }),
+});
+
+/**
+ * Shared raster-stability hints for animated Nav roots.
+ *
+ * Motion promotes active transform/opacity animations when it can. Keeping a
+ * permanent `will-change` hint on every Nav layer exhausts GPU memory and can
+ * introduce competing compositing contexts around backdrop-filter surfaces.
+ * @type {Readonly<CSSStyleDeclaration>}
+ */
+const NAV_COMPOSITOR_STYLE = Object.freeze({
+  WebkitBackfaceVisibility: 'hidden',
+  backfaceVisibility: 'hidden',
+  WebkitFontSmoothing: 'antialiased',
+});
+
 function toGpuTransform(y = 0, scale = 1) {
-  const safeY = Number(y);
-  const safeScale = Number(scale);
+  const safeY = Number.parseFloat(y);
+  const safeScale = Number.parseFloat(scale);
 
   return `translate3d(0, ${
     Number.isFinite(safeY) ? safeY : 0
   }px, 0) scale(${Number.isFinite(safeScale) ? safeScale : 1})`;
 }
+
+const navSurfaceDragTransformTemplate = ({ y, scale }) => toGpuTransform(y, scale);
 
 /**
  * Motion variants for navigation action controls.
@@ -289,6 +350,18 @@ function getNavActionMotionProps({ disabled = false, reduceMotion = false } = {}
     variants: navActionVariants,
     transition: NAV_BUTTON_TRANSITION,
   };
+}
+
+function getNavMediaVolumeFillTransition({ isDragging = false } = {}) {
+  return isDragging ? 'none' : NAV_MEDIA_VOLUME_FILL_TRANSITION;
+}
+
+function getNavMediaVolumeThumbAnimateProps({ isDragging = false } = {}) {
+  return isDragging ? navMediaVolumeThumbVariants.dragging : navMediaVolumeThumbVariants.idle;
+}
+
+function getNavMediaVolumeThumbPositionTransition({ isDragging = false } = {}) {
+  return isDragging ? 'none' : NAV_MEDIA_VOLUME_THUMB_POSITION_TRANSITION;
 }
 
 function buildVariants(tierName, { distanceScale = 0 } = {}) {
@@ -462,6 +535,29 @@ const navSurfaceBodyVariants = Object.freeze({
     transition: {
       duration: 0.62,
       ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+});
+
+const navSurfaceExtensionsVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    transform: toGpuTransform(10, 0.96),
+  },
+  visible: {
+    opacity: 1,
+    transform: toGpuTransform(0),
+    transition: {
+      duration: 0.54,
+      ease: NAV_EASINGS.CINEMATIC,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transform: toGpuTransform(6, 0.98),
+    transition: {
+      duration: 0.38,
+      ease: NAV_EASINGS.EXIT,
     },
   },
 });
@@ -662,15 +758,17 @@ function getNavStackAnimateProps({
   width,
   height,
   isBreadcrumbsVisible = false,
+  isExtensionsVisible = false,
   isFullscreen = false,
 }) {
   const safeWidth = Number(width);
   const safeHeight = Number(height);
+  const liftAmount = isBreadcrumbsVisible ? -42 : 0;
   return {
     width: Math.max(0, Math.round(Number.isFinite(safeWidth) ? safeWidth : 0)),
     height: Math.max(0, Math.round(Number.isFinite(safeHeight) ? safeHeight : 0)),
 
-    transform: toGpuTransform(isBreadcrumbsVisible ? -48 : 0),
+    transform: toGpuTransform(liftAmount),
 
     opacity: isFullscreen ? 0 : 1,
 
@@ -692,12 +790,20 @@ function getNavCardDelay({ expanded = false, isStackHovered = false, position = 
   return 0;
 }
 
-function getNavItemAnimateValues({ motionValues, isStackHovered = false, position = 0 } = {}) {
+function getNavItemAnimateValues({
+  motionValues,
+  expanded = false,
+  isStackHovered = false,
+  position = 0,
+} = {}) {
   if (!motionValues) return {};
 
   const safePosition = Math.max(0, Number(position) || 0);
 
-  const isHoveredOffset = isStackHovered && safePosition > 0;
+  // The preview offset belongs to the collapsed deck only. A focused input can
+  // restore hover after a tab/app switch, but expanded cards must retain their
+  // exact fixed stack spacing in that case.
+  const isHoveredOffset = !expanded && isStackHovered && safePosition > 0;
 
   const peekProgress = Math.min(safePosition / 3, 1);
 
@@ -715,8 +821,14 @@ function getNavItemAnimateValues({ motionValues, isStackHovered = false, positio
   };
 }
 
-function getNavItemTransition({ isStackHovered = false, position = 0, delay = 0 } = {}) {
-  const baseTransition = isStackHovered && position > 0 ? NAV_PEEK_TRANSITION : NAV_CARD_TRANSITION;
+function getNavItemTransition({
+  expanded = false,
+  isStackHovered = false,
+  position = 0,
+  delay = 0,
+} = {}) {
+  const baseTransition =
+    !expanded && isStackHovered && position > 0 ? NAV_PEEK_TRANSITION : NAV_CARD_TRANSITION;
 
   return {
     ...baseTransition,
@@ -735,8 +847,6 @@ function getNavCardContentAnimateProps({ compact = false, expanded = false, posi
 
       isHidden ? 1 - NAV_TIERS.MICRO.scaleDelta : 1,
     ),
-
-    filter: isHidden ? 'blur(5px)' : 'blur(0px)',
   };
 }
 
@@ -782,19 +892,16 @@ const navScrubberTooltipVariants = Object.freeze({
   hidden: {
     opacity: 0,
     transform: toGpuTransform(8, 0.94),
-    filter: 'blur(5px)',
   },
 
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
-    filter: 'blur(0px)',
   },
 
   exit: {
     opacity: 0,
     transform: toGpuTransform(6, 0.96),
-    filter: 'blur(4px)',
   },
 });
 
@@ -845,9 +952,20 @@ export {
   NAV_SURFACE_DRAG_ELASTIC,
   NAV_BREADCRUMBS_TRANSITION,
   NAV_HUD_TRANSITION,
+  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
+  NAV_SKELETON_PULSE_CLASS,
+  NAV_SCRUBBER_TOOLTIP_SPRING,
+  NAV_MEDIA_VOLUME_FILL_TRANSITION,
+  NAV_MEDIA_VOLUME_THUMB_POSITION_TRANSITION,
+  NAV_COMPOSITOR_STYLE,
   toGpuTransform,
+  navSurfaceDragTransformTemplate,
   navActionVariants,
+  navMediaVolumeThumbVariants,
   getNavActionMotionProps,
+  getNavMediaVolumeFillTransition,
+  getNavMediaVolumeThumbAnimateProps,
+  getNavMediaVolumeThumbPositionTransition,
   slideFadeVariants,
   textCrossfadeVariants,
   staggerItemVariants,
@@ -856,6 +974,9 @@ export {
   navSurfaceControlsVariants,
   navCommandBarSwapVariants,
   navSurfaceBodyVariants,
+  navSurfaceExtensionsVariants,
+  NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION,
+  NAV_SURFACE_EXTENSIONS_EXIT_TRANSITION,
   navActionDismissVariants,
   navListItemVariants,
   navFadeVariants,

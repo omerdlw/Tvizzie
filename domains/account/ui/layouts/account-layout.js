@@ -70,7 +70,7 @@ const SECTION_ITEMS = [
 ];
 
 const DEFAULT_NOT_FOUND_DESCRIPTION =
-  "We couldn't load this account. It may have been removed, or the link may be invalid.";
+  "We couldn't load this account. It may have been removed, or the link may be invalid";
 
 function getSectionHref(username, key) {
   return key === 'overview' ? `/account/${username}` : `/account/${username}/${key}`;
@@ -254,18 +254,18 @@ function NavViewItem({ item, isActive, href, count = null }) {
         'inline-flex h-12 shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 text-xs font-semibold uppercase transition-colors select-none sm:min-w-0 sm:flex-1 sm:px-2',
         isActive
           ? 'border-white text-white font-bold'
-          : 'border-transparent text-white/60 hover:bg-white/5 hover:text-white',
+          : 'border-transparent text-white/70 hover:bg-white/10 hover:text-white',
       )}
     >
       {item.icon ? (
-        <Icon icon={item.icon} size={14} className={isActive ? 'text-white' : 'text-white/40'} />
+        <Icon icon={item.icon} size={14} className={isActive ? 'text-white' : 'text-white/50'} />
       ) : null}
       <span>{item.label}</span>
       {count !== null && count !== undefined ? (
         <span
           className={cn(
-            'ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-mono leading-none font-medium',
-            isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40',
+            'ml-0.5 rounded-full px-1.5 py-0.5 text-xs font-mono leading-none font-medium',
+            isActive ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50',
           )}
         >
           {count}

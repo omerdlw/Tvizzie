@@ -195,7 +195,7 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
           'group/poster relative aspect-[2/3] w-full cursor-pointer select-none overflow-hidden rounded-[20px] ring-1 ring-inset transition-all duration-300 ease-in-out',
           isAdded
             ? 'ring-info/40 ring-info/30 bg-white/10 ring-1'
-            : 'ring-white/5 bg-white/5 hover:ring-white/40',
+            : 'ring-white/5 bg-white/5 hover:ring-white/50',
         )}
       >
         {posterSrc ? (
@@ -225,7 +225,7 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
             'center absolute top-1.5 right-1.5 z-10 size-6 cursor-pointer rounded-full ring-1 ring-inset backdrop-blur-md',
             isAdded
               ? 'ring-info/40 bg-info/40 text-info hover:ring-error/40 hover:bg-error/30 hover:text-error'
-              : 'ring-white/15 bg-black/50 text-white/70 hover:ring-white/40 hover:bg-black/80 hover:text-white',
+              : 'ring-white/15 bg-black/60 text-white/70 hover:ring-white/50 hover:bg-black/80 hover:text-white',
           )}
         >
           {isAdded ? (
@@ -279,7 +279,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
       className="group/item flex items-center justify-between gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 p-2 text-white/70 transition-colors duration-150 hover:ring-white/10 hover:bg-white/10 hover:text-white"
     >
       <div className="flex min-w-0 items-center gap-2.5">
-        <span className="w-4 text-center text-xs font-medium text-white/40">{index + 1}</span>
+        <span className="w-4 text-center text-xs font-medium text-white/50">{index + 1}</span>
         <div className="h-9 w-6 shrink-0 overflow-hidden rounded-md bg-white/5">
           <AdaptiveImage
             mode="img"
@@ -292,11 +292,11 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-xs font-medium text-white/70">{title}</span>
-            <span className="shrink-0 text-xs text-white/40 uppercase">
+            <span className="shrink-0 text-xs text-white/50 uppercase">
               {isTv ? 'TV' : 'Movie'}
             </span>
           </div>
-          {year ? <p className="text-xs text-white/40">{year}</p> : null}
+          {year ? <p className="text-xs text-white/50">{year}</p> : null}
         </div>
       </div>
 
@@ -308,7 +308,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
               onClick={() => onMoveUp(index)}
               disabled={index === 0}
               aria-label="Move item up"
-              className="center h-7 w-7 rounded-lg text-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="center h-7 w-7 rounded-lg text-white/50 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon="solar:arrow-up-linear" size={14} />
             </Button>
@@ -317,7 +317,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
               onClick={() => onMoveDown(index)}
               disabled={index === totalItems - 1}
               aria-label="Move item down"
-              className="center h-7 w-7 rounded-lg text-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="center h-7 w-7 rounded-lg text-white/50 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon icon="solar:arrow-down-linear" size={14} />
             </Button>
@@ -328,7 +328,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
           type="button"
           onClick={() => onRemove(item)}
           aria-label={`Remove ${title} from list`}
-          className="center hover:text-error h-7 w-7 rounded-lg text-white/40"
+          className="center hover:text-error h-7 w-7 rounded-lg text-white/50"
         >
           <Icon icon="solar:trash-bin-trash-bold" size={14} />
         </Button>
@@ -344,7 +344,7 @@ export const ListPreviewStack = memo(function ListPreviewStack({ list }) {
   if (previewItems.length === 0) {
     return (
       <div className="relative h-[68px] w-[82px] shrink-0">
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] overflow-hidden rounded-[14px] ring-1 ring-inset  ring-white/10 bg-black text-white/40">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] overflow-hidden rounded-[14px] ring-1 ring-inset  ring-white/10 bg-black text-white/50">
           <Icon icon="solar:list-bold" size={20} />
         </div>
       </div>
@@ -377,7 +377,7 @@ export const ListPreviewStack = memo(function ListPreviewStack({ list }) {
                 wrapperClassName="h-full w-full "
               />
             ) : (
-              <div className="center h-full w-full bg-white/5 text-white/40">
+              <div className="center h-full w-full bg-white/5 text-white/50">
                 <Icon icon="solar:filmstrip-bold" size={14} />
               </div>
             )}

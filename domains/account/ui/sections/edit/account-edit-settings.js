@@ -148,7 +148,7 @@ function SurfaceSessionsSection({
     <div className="flex flex-col gap-2.5">
       {localSessions.length === 0 ? (
         <div className="flex min-h-24 w-full items-center justify-center rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 p-4 text-center">
-          <span className="text-xs text-white/40">No active sessions found</span>
+          <span className="text-xs text-white/50">No active sessions found</span>
         </div>
       ) : (
         localSessions.map((session) => {
@@ -173,7 +173,7 @@ function SurfaceSessionsSection({
                   <span className="truncate text-sm font-semibold text-white">
                     {session.deviceLabel || 'Browser session'}
                   </span>
-                  <span className="truncate text-xs text-white/40">{detailText}</span>
+                  <span className="truncate text-xs text-white/50">{detailText}</span>
                 </div>
               </div>
 
@@ -350,7 +350,7 @@ export function AccountEditSettings({
                   {isConnecting ? `Connecting ${label}` : `Connect ${label}`}
                 </span>
               </span>
-              <Icon icon="solar:link-linear" size={16} className="shrink-0 text-white/40" />
+              <Icon icon="solar:link-linear" size={16} className="shrink-0 text-white/50" />
             </Button>
           );
         })}
@@ -526,7 +526,7 @@ export function AccountEditSettings({
         variant={variant}
         summaryLabel={
           currentAuthEmail ? (
-            <span className="text-xs font-medium text-white/40 lowercase">{currentAuthEmail}</span>
+            <span className="text-xs font-medium text-white/50 lowercase">{currentAuthEmail}</span>
           ) : null
         }
       >
@@ -561,7 +561,7 @@ export function AccountEditSettings({
               <Icon icon="solar:letter-bold" size={16} />
               Email
             </span>
-            <span className="text-white/40">{currentAuthEmail || 'Not available'}</span>
+            <span className="text-white/50">{currentAuthEmail || 'Not available'}</span>
           </div>
           {linkedOAuthProviders.map((provider) => (
             <div
@@ -572,7 +572,7 @@ export function AccountEditSettings({
                 <Icon icon={getOAuthProviderIcon(provider)} size={16} />
                 {getOAuthProviderLabel(provider)}
               </span>
-              <span className="text-white/40">Connected</span>
+              <span className="text-white/50">Connected</span>
             </div>
           ))}
           {passkeys.map((passkey) => (
@@ -584,7 +584,7 @@ export function AccountEditSettings({
                 <Icon icon="solar:key-bold" size={16} />
                 {passkey?.friendlyName || passkey?.friendly_name || 'Passkey'}
               </span>
-              <span className="text-white/40">Passkey</span>
+              <span className="text-white/50">Passkey</span>
             </div>
           ))}
         </div>
@@ -600,7 +600,7 @@ export function AccountEditSettings({
               return (
                 <div key={provider} className="flex items-center justify-between gap-2.5 py-2.5">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/50 text-white/70 ring-1 ring-white/5 ring-inset">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/60 text-white/70 ring-1 ring-white/5 ring-inset">
                       {icon ? <Icon icon={icon} size={20} aria-hidden="true" /> : null}
                     </span>
                     <span className="truncate text-sm font-medium text-white">{label}</span>
@@ -619,11 +619,11 @@ export function AccountEditSettings({
             })}
           </div>
         ) : (
-          <p className="text-sm leading-6 text-white/40">No OAuth providers connected.</p>
+          <p className="text-sm leading-6 text-white/50">No OAuth providers connected</p>
         )}
         {availableOAuthProviders.length ? (
           <div className="flex flex-wrap items-center gap-2.5 border-t border-white/5 pt-2.5">
-            <span className="w-full text-xs font-medium text-white/40 uppercase">
+            <span className="w-full text-xs font-medium text-white/50 uppercase">
               Add a provider
             </span>
             {availableOAuthProviders.map((provider) => {
@@ -657,10 +657,10 @@ export function AccountEditSettings({
         </ActionButton>
         <div className="mt-2.5 flex flex-col divide-y divide-white/5 border-y border-white/5">
           {sessionsLoading ? (
-            <p className="py-2.5 text-sm text-white/40">Loading sessions</p>
+            <p className="py-2.5 text-sm text-white/50">Loading sessions</p>
           ) : null}
           {!sessionsLoading && !sessions.length ? (
-            <p className="py-2.5 text-sm text-white/40">No active sessions found.</p>
+            <p className="py-2.5 text-sm text-white/50">No active sessions found</p>
           ) : null}
           {sessions.map((session) => (
             <div key={session.id} className="flex items-center justify-between gap-2.5 py-2.5">
@@ -672,7 +672,7 @@ export function AccountEditSettings({
                     <span className="text-success text-xs font-normal">This device</span>
                   ) : null}
                 </div>
-                <p className="mt-1 text-xs text-white/40">
+                <p className="mt-1 text-xs text-white/50">
                   Last active {formatDate(session.lastActiveAt)}
                   {session.ip ? ` · ${session.ip}` : ''}
                 </p>
@@ -696,7 +696,7 @@ export function AccountEditSettings({
       {passkeySupported && showSection('passkeys') ? (
         <SectionCard title="Passkeys" summaryLabel={`${passkeys.length} connected`} variant={variant}>
           {passkeysLoading ? (
-            <div className="flex items-center gap-2 text-sm text-white/40">
+            <div className="flex items-center gap-2 text-sm text-white/50">
               <Icon icon="solar:refresh-bold" size={16} />
               Loading passkeys
             </div>
@@ -715,7 +715,7 @@ export function AccountEditSettings({
                     className="flex flex-col gap-2.5 py-2.5 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/50 text-white/70 ring-1 ring-white/5 ring-inset">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/60 text-white/70 ring-1 ring-white/5 ring-inset">
                         <Icon icon="solar:key-bold" size={20} aria-hidden="true" />
                       </span>
                       {isRenaming ? (
@@ -731,7 +731,7 @@ export function AccountEditSettings({
                           <span className="truncate text-sm font-medium text-white">
                             {friendlyName}
                           </span>
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-white/50">
                             Last used {formatDate(passkey?.lastUsedAt || passkey?.last_used_at)}
                           </span>
                         </div>
@@ -780,7 +780,7 @@ export function AccountEditSettings({
               })}
             </div>
           ) : (
-            <p className="text-sm leading-6 text-white/40">No passkeys connected.</p>
+            <p className="text-sm leading-6 text-white/50">No passkeys connected</p>
           )}
           <ActionButton
             type="button"
@@ -800,7 +800,7 @@ export function AccountEditSettings({
         variant={variant}
         summaryLabel={verifiedMfaFactors.length ? 'AAL2 ready' : 'Optional'}
       >
-        {mfaLoading ? <p className="text-sm text-white/40">Loading authenticator status</p> : null}
+        {mfaLoading ? <p className="text-sm text-white/50">Loading authenticator status</p> : null}
         {!mfaLoading && verifiedMfaFactors.length ? (
           <div className="flex flex-col divide-y divide-white/5 border-y border-white/5">
             {verifiedMfaFactors.map((factor) => (
@@ -809,7 +809,7 @@ export function AccountEditSettings({
                   <span className="text-sm font-medium text-white">
                     {factor.friendlyName || 'Authenticator app'}
                   </span>
-                  <span className="text-xs text-white/40">
+                  <span className="text-xs text-white/50">
                     Enabled {formatDate(factor.createdAt)}
                   </span>
                 </div>
@@ -826,7 +826,7 @@ export function AccountEditSettings({
           </div>
         ) : null}
         {!mfaLoading && hasUnfinishedMfaSetup ? (
-          <p className="text-sm leading-6 text-white/40">
+          <p className="text-sm leading-6 text-white/50">
             An earlier setup was not completed. Restart to generate a new setup key.
           </p>
         ) : null}

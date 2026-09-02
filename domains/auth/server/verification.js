@@ -88,7 +88,7 @@ export async function sendVerificationEmail({ code, email, expiresAt, purpose })
       <div style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #4f46e5; background-color: #f3f4f6; padding: 16px; text-align: center; margin-bottom: 24px;">
         ${code}
       </div>
-      <p style="font-size: 12px; color: #9ca3af;">This code expires in 10 minutes. If you did not request this, please ignore this email.</p>
+      <p style="font-size: 12px; color: #9ca3af;">This code expires in 10 minutes. If you did not request this, please ignore this email</p>
     </div>
   `;
 
@@ -433,7 +433,7 @@ function getLoginVerificationSecret() {
     missingMessage: 'LOGIN_VERIFICATION_SECRET is missing and no fallback secret is available',
     warningGlobalKey: '__tvizzie_login_verification_secret_fallback_warned__',
     warningMessage:
-      '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET.',
+      '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET',
   });
 }
 
@@ -570,7 +570,7 @@ export function createSignUpEmailAlreadyRegisteredError(account) {
   const oauthProviderLabel = oauthProvider ? getOAuthProviderLabel(oauthProvider) : null;
   const error = new Error(
     oauthProviderLabel
-      ? `This email is used to sign in with ${oauthProviderLabel} on another account. Continue with ${oauthProviderLabel}, or disconnect it from that account’s security settings before using this email here.`
+      ? `This email is used to sign in with ${oauthProviderLabel} on another account. Continue with ${oauthProviderLabel}, or disconnect it from that account’s security settings before using this email here`
       : 'This email is already registered',
   );
 

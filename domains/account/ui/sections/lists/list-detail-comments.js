@@ -74,7 +74,7 @@ function CommentsView({
           <ReviewCardsSkeletonList count={3} />
         ) : visibleReviews.length === 0 ? (
           <AccountInlineSectionState>
-            {reviews.length > 0 ? 'No comments match the current filters.' : 'No comments yet'}
+            {reviews.length > 0 ? 'No comments match the current filters' : 'No comments yet'}
           </AccountInlineSectionState>
         ) : (
           <ReviewList

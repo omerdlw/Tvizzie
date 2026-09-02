@@ -45,11 +45,12 @@ export function getNavItemCardProps({
   const collapsedScaleValue = collapsedScale ** position;
   const y = expanded ? position * expandedOffsetY : position * collapsedOffsetY;
   const scale = expanded ? cardScale || 1 : collapsedScaleValue;
-  const opacity = expanded || position < visibleCount ? 1 : 0;
+  const collapsedOpacity = Math.max(0.1, +(1 - position * 0.2).toFixed(2));
+  const opacity = expanded ? 1 : position < visibleCount ? collapsedOpacity : 0;
 
   return {
     className: cn(
-      'absolute h-auto w-full ring-1 ring-inset ring-white/10 bg-black/50 rounded-[30px] p-2.5 transform-gpu isolate',
+      'absolute h-auto w-full ring-1 ring-inset ring-white/10 bg-black/60 rounded-[30px] p-2.5 transform-gpu isolate',
       isHeavyBlur ? 'backdrop-blur-xl' : 'backdrop-blur-sm',
       isTop ? 'inset-0 h-full' : isAnchoredToBottom ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',

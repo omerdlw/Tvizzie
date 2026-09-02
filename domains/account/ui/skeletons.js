@@ -78,7 +78,7 @@ export function AccountHeroSkeleton() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/[0.03] px-3.5 py-2 self-start sm:self-end">
+        <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3.5 py-2 self-start sm:self-end">
           <div className="flex flex-col gap-1">
             <SkeletonLine className="h-5 w-8" />
             <SkeletonLine className="h-2.5 w-12" soft />

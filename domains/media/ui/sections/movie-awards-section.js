@@ -251,7 +251,7 @@ function PrestigeHeroHeader({
         {honor.title}
       </h1>
 
-      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs sm:text-sm font-medium text-white/40">
+      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs sm:text-sm font-medium text-white/50">
         <span className="flex items-center gap-1.5 font-bold text-white">
           <Icon icon="solar:cup-bold" size={14} className="text-white" />
           {wins} {wins === 1 ? 'Win' : 'Wins'}
@@ -311,7 +311,7 @@ function OrganizationFilterRibbon({
           <span
             className={cn(
               'rounded-full px-1.5 py-0.5 text-xs',
-              !activeOrganizationId && !winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/40',
+              !activeOrganizationId && !winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
             )}
           >
             {totalItemsCount}
@@ -338,7 +338,7 @@ function OrganizationFilterRibbon({
             <span
               className={cn(
                 'rounded-full px-1.5 py-0.5 text-xs',
-                winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/40',
+                winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
               )}
             >
               {winsCount}
@@ -376,7 +376,7 @@ function OrganizationFilterRibbon({
                 <Icon
                   icon="solar:diploma-verified-bold"
                   size={14}
-                  className={isSelected ? 'text-black' : 'text-white/40'}
+                  className={isSelected ? 'text-black' : 'text-white/50'}
                 />
               )}
 
@@ -385,7 +385,7 @@ function OrganizationFilterRibbon({
               <span
                 className={cn(
                   'text-xs',
-                  isSelected ? 'text-black/50 font-semibold' : 'text-white/40',
+                  isSelected ? 'text-black/60 font-semibold' : 'text-white/50',
                 )}
               >
                 {org.winsCount > 0 ? `${org.winsCount}W` : `${org.nominationsCount}N`}
@@ -415,7 +415,7 @@ function RecipientLink({ recipient }) {
           />
         </div>
       ) : (
-        <Icon icon="solar:user-bold" size={12} className="text-white/40" />
+        <Icon icon="solar:user-bold" size={12} className="text-white/50" />
       )}
       <span className="truncate group-hover/recipient:underline">{recipient.name}</span>
     </Link>
@@ -437,13 +437,13 @@ function MovieOrgAwardGroup({ group }) {
                 wrapperClassName="size-full"
               />
             ) : (
-              <Icon icon="solar:diploma-verified-bold" size={26} className="text-white/40" />
+              <Icon icon="solar:diploma-verified-bold" size={26} className="text-white/50" />
             )}
           </div>
 
           <div className="flex flex-col justify-center gap-0.5">
             <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">{group.title}</h3>
-            <p className="text-xs font-medium text-white/40 leading-none">
+            <p className="text-xs font-medium text-white/50 leading-none">
               {group.awards.length} {group.awards.length === 1 ? 'Total Nomination' : 'Total Honors'}
             </p>
           </div>
@@ -470,7 +470,7 @@ function MovieOrgAwardGroup({ group }) {
               className="flex items-center justify-between gap-2.5 border-t border-white/5 py-2.5"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1 pl-[54px] sm:pl-[58px]">
-                <div className="flex flex-wrap items-center gap-1.5 text-xs text-white/40">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-white/50">
                   <span className="font-semibold">{award.year}</span>
                   {award.ceremony && award.ceremony !== award.organization ? (
                     <>
@@ -500,7 +500,7 @@ function MovieOrgAwardGroup({ group }) {
                     Win
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-white/40 uppercase">
+                  <span className="text-xs font-semibold text-white/50 uppercase">
                     Nominee
                   </span>
                 )}
@@ -516,10 +516,10 @@ function MovieOrgAwardGroup({ group }) {
 function AwardsMessage({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="center size-14 rounded-[16px] ring-1 ring-inset ring-white/10 bg-white/5 text-white/40">
+      <div className="center size-14 rounded-[16px] ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
         <Icon icon="solar:cup-star-linear" size={30} />
       </div>
-      <p className="mt-4 text-sm font-semibold text-white/40">{children}</p>
+      <p className="mt-4 text-sm font-semibold text-white/50">{children}</p>
     </div>
   );
 }
@@ -530,6 +530,7 @@ export default function MovieAwards({
   mediaId,
   mediaType = 'movie',
   awardsPromise,
+  onEmpty,
 }) {
   const resolvedMediaId = mediaId || movieId || tvId;
   const { academyWins, allItems, emmyWins, nominations, organizations, status, wins } =
@@ -541,6 +542,12 @@ export default function MovieAwards({
 
   const [activeOrganizationId, setActiveOrganizationId] = useState(null);
   const [winsOnly, setWinsOnly] = useState(false);
+
+  useEffect(() => {
+    if (status === 'ready' && !allItems.length) {
+      onEmpty?.();
+    }
+  }, [status, allItems.length, onEmpty]);
 
   const orgStats = useMemo(
     () => groupByOrganization(allItems, organizations),
@@ -568,7 +575,7 @@ export default function MovieAwards({
   }
 
   if (status === 'ready' && !allItems.length) {
-    return <AwardsMessage>No awards information found for this title</AwardsMessage>;
+    return null;
   }
 
   const isTv = mediaType === 'tv';
@@ -599,7 +606,7 @@ export default function MovieAwards({
 
       <div className="w-full">
         {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-12 text-center text-sm font-medium text-white/40">
+          <div className="flex flex-col items-center justify-center rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-12 text-center text-sm font-medium text-white/50">
             No matching awards found for the selected filter.
           </div>
         ) : (

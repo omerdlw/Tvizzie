@@ -117,7 +117,7 @@ export default function AccountActivityOverview({
 
         if (!isPermissionDeniedError(error)) {
           logDataError('[AccountOverview] Activity feed could not be loaded:', error);
-          setFeedError('Activity could not be loaded right now.');
+          setFeedError('Activity could not be loaded right now');
         }
       } finally {
         if (!ignore && requestRef.current === requestId) {

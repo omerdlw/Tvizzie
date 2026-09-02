@@ -402,7 +402,7 @@ export function createSupabaseAuthAdapter(options = {}) {
 
       if (oauthIntent === 'link' && isManualLinkingDisabledError(error)) {
         normalizedError.code = 'OAUTH_LINK_MANUAL_LINKING_DISABLED';
-        normalizedError.message = `${providerLabel} linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
+        normalizedError.message = `${providerLabel} linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again`;
       }
 
       throw normalizedError;
@@ -749,7 +749,7 @@ export function createSupabaseAuthAdapter(options = {}) {
 
         if (isManualLinkingDisabledError(error)) {
           normalizedError.code = 'OAUTH_UNLINK_MANUAL_LINKING_DISABLED';
-          normalizedError.message = `${getOAuthProviderLabel(provider)} disconnecting is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
+          normalizedError.message = `${getOAuthProviderLabel(provider)} disconnecting is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again`;
         }
 
         throw normalizedError;

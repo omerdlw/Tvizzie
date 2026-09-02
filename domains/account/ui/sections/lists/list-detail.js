@@ -236,15 +236,15 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       watchlistCount={watchlistCount}
     >
       {!canShowList ? (
-        <AccountSectionState message="This profile is private." />
+        <AccountSectionState message="This profile is private" />
       ) : !list ? (
-        <AccountSectionState message="This list could not be found." />
+        <AccountSectionState message="This list could not be found" />
       ) : (
         <div className="flex w-full flex-col gap-10 sm:gap-12">
           <AccountMediaGridPage
             currentPage={mediaPage}
             emptyMessage={
-              hasMediaFilters && hasListItems ? 'No titles match the current filters.' : undefined
+              hasMediaFilters && hasListItems ? 'No titles match the current filters' : undefined
             }
             icon="solar:clapperboard-bold"
             isLoading={isListItemsLoading}

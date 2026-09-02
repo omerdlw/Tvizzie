@@ -124,7 +124,7 @@ export default function FileUploadSurface({ close, data }) {
         <p className="text-base font-semibold text-white">
           Click to upload or drag and drop
         </p>
-        <p className="text-xs leading-relaxed text-white/40">{hint}</p>
+        <p className="text-xs leading-relaxed text-white/50">{hint}</p>
       </div>
       <div className="overflow-visible p-1">
         <Button

@@ -10,22 +10,22 @@ import Icon from '@/ui/primitives/icon';
 export const UI = {
   bar: 'flex w-full flex-wrap items-center gap-2',
   trigger:
-    'inline-flex min-h-9 max-w-full items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3 text-left text-xs font-medium text-white/70 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40',
+    'inline-flex min-h-9 max-w-full items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3 text-left text-xs font-medium text-white/70 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50',
   triggerActive: 'ring-white/10 bg-white/10 text-white',
   iconButton:
-    'size-9 shrink-0 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40',
+    'size-9 shrink-0 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50',
   resetButton:
-    'ml-auto min-h-9 rounded-xl ring-1 ring-inset ring-transparent px-3 text-xs font-medium text-white/40 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40',
+    'ml-auto min-h-9 rounded-xl ring-1 ring-inset ring-transparent px-3 text-xs font-medium text-white/50 transition-colors hover:ring-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50',
   menu: 'z-50 max-h-[60dvh] min-w-[var(--radix-popover-trigger-width)] overflow-y-auto overscroll-contain rounded-2xl ring-1 ring-inset ring-white/10 bg-black/80 p-1.5 shadow-xl backdrop-blur-xl',
-  sectionLabel: 'px-2.5 pb-1 pt-2 text-xs font-semibold uppercase text-white/40',
+  sectionLabel: 'px-2.5 pb-1 pt-2 text-xs font-semibold uppercase text-white/50',
   menuItem:
-    'flex min-h-9 w-full items-center justify-between gap-3 rounded-lg px-2.5 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/40',
+    'flex min-h-9 w-full items-center justify-between gap-3 rounded-lg px-2.5 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/50',
   menuItemActive: 'bg-white/10 font-medium text-white hover:bg-white/15',
   divider: 'mt-2 border-t border-white/10 pt-2',
   inputWrap:
-    'flex h-9 min-w-[180px] flex-1 items-center gap-2 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-white/40 focus-within:bg-white/10',
-  input: 'min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40',
-  helperText: 'px-2.5 py-2 text-xs leading-5 text-white/40',
+    'flex h-9 min-w-[180px] flex-1 items-center gap-2 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-white/50 focus-within:bg-white/10',
+  input: 'min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/50',
+  helperText: 'px-2.5 py-2 text-xs leading-5 text-white/50',
   visibilityItem:
     'flex min-h-9 w-full items-center justify-between gap-3 rounded-lg px-2.5 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white',
   visibilityItemActive: 'bg-white/10 font-medium text-white hover:bg-white/15',
@@ -140,10 +140,10 @@ export function RatingRangeEditor({ filters, onChange }) {
   return (
     <div className={cn(UI.divider, 'space-y-2')}>
       <div className="space-y-1">
-        <span className="block px-2.5 text-xs font-semibold text-white/40 uppercase">
+        <span className="block px-2.5 text-xs font-semibold text-white/50 uppercase">
           Rating (or range)
         </span>
-        <div className="rounded-xl ring-1 ring-inset ring-white/10 bg-black/50 px-2 py-2">
+        <div className="rounded-xl ring-1 ring-inset ring-white/10 bg-black/60 px-2 py-2">
           <RatingRangeSelector
             maxValue={filters.maxRating}
             minValue={filters.minRating}
@@ -165,7 +165,7 @@ export function VisibilityGroup({ title = '', options = [], selectedFlags, onTog
       {title ? <SectionLabel>{title}</SectionLabel> : null}
 
       {options.length === 0 ? (
-        <p className={UI.helperText}>No visibility filters available.</p>
+        <p className={UI.helperText}>No visibility filters available</p>
       ) : (
         options.map((option) => {
           const active = selectedFlags.has(option.key);

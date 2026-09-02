@@ -63,7 +63,7 @@ export default function AccountListsFeed({
       window.history.replaceState({}, '', newUrl);
     }
   }, [viewState, collectionRootPath]);
-  if (!canShowLists) return <AccountSectionState message="This profile is private." />;
+  if (!canShowLists) return <AccountSectionState message="This profile is private" />;
   const hasFilters = hasActiveListFilters({
     sort: viewState.sort,
   });

@@ -46,7 +46,7 @@ const DefaultSelect = forwardRef(
           )}
           <span className={cn('inline-flex items-center', classes.value)}>
             <SelectPrimitive.Value placeholder={placeholder}>
-              {selectedOption?.label || placeholder}
+              {selectedOption?.triggerLabel || selectedOption?.label || placeholder}
             </SelectPrimitive.Value>
           </span>
           {rightIcon ? (
@@ -66,7 +66,11 @@ const DefaultSelect = forwardRef(
 
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className={cn('min-w-(--radix-select-trigger-width)', classes.menu)}
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+            className={cn('min-w-(--radix-select-trigger-width) overflow-hidden', classes.menu)}
             position="popper"
             side={side}
             align={align}
@@ -74,7 +78,11 @@ const DefaultSelect = forwardRef(
             onCloseAutoFocus={(event) => event.preventDefault()}
             style={{ zIndex: Z_INDEX.SELECT }}
           >
-            <SelectPrimitive.Viewport className={cn(classes.optionsList)}>
+            <SelectPrimitive.Viewport
+              data-lenis-prevent
+              data-lenis-prevent-wheel
+              className={cn('w-full overflow-y-auto overscroll-contain', classes.optionsList)}
+            >
               {options.map((option) => (
                 <SelectPrimitive.Item
                   key={option.value}

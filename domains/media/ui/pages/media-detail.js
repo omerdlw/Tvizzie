@@ -15,7 +15,10 @@ import {
   getPreferredMovieBackground,
   getGalleryImages,
   getMediaComputedData,
+  hasMediaAwards,
 } from '@/domains/media/utils/media-data';
+import { useToast } from '@/modules/notification';
+import { getMediaAwardsServer } from '@/domains/media/server/movie-awards.js';
 import { Suspense, use } from 'react';
 import { NavHeightSpacer } from '@/modules/nav';
 import { useRegisterBreadcrumbOverride } from '@/modules/nav';
@@ -507,6 +510,7 @@ function MovieView({
   activeView,
   setActiveView,
 }) {
+  const toast = useToast();
   const collectionMedia = useMemo(() => ({ ...movie, entityType: mediaType }), [mediaType, movie]);
   const { certification, creators, director, genres, rating, runtimeText, tags, writers, year } =
     computed;
@@ -517,6 +521,103 @@ function MovieView({
   const isAwardsView = activeView === 'awards';
   const hasAwardsView = Boolean(awardsPromise) || Boolean(movie?.id);
   const hasInlineBackdrop = typeof backgroundImage === 'string' && backgroundImage.trim();
+
+  const awardsDataRef = useRef(null);
+  const [hasAwards, setHasAwards] = useState(null);
+  const [isCheckingAwards, setIsCheckingAwards] = useState(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+    setHasAwards(null);
+    awardsDataRef.current = null;
+
+    async function resolveAwards() {
+      try {
+        let data = null;
+        if (awardsPromise) {
+          data = await awardsPromise;
+        } else if (movie?.id) {
+          const response = await getMediaAwardsServer({ id: movie.id, mediaType });
+          data = response?.data;
+        }
+        if (!isCurrent) return;
+        awardsDataRef.current = data;
+        setHasAwards(hasMediaAwards(data));
+      } catch {
+        if (!isCurrent) return;
+        awardsDataRef.current = null;
+        setHasAwards(false);
+      }
+    }
+
+    void resolveAwards();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [awardsPromise, movie?.id, mediaType]);
+
+  const handleAwardsClick = useCallback(async () => {
+    if (isAwardsView) {
+      setActiveView('main');
+      return;
+    }
+
+    if (isCheckingAwards) return;
+
+    if (hasAwards === false) {
+      toast.info('No awards information found for this title', {
+        allowInProduction: true,
+        icon: 'solar:cup-star-linear',
+      });
+      return;
+    }
+
+    if (hasAwards === true) {
+      setActiveView('awards');
+      return;
+    }
+
+    setIsCheckingAwards(true);
+    try {
+      let data = awardsDataRef.current;
+      if (!data) {
+        if (awardsPromise) {
+          data = await awardsPromise;
+        } else if (movie?.id) {
+          const response = await getMediaAwardsServer({ id: movie.id, mediaType });
+          data = response?.data;
+        }
+        awardsDataRef.current = data;
+      }
+
+      const exists = hasMediaAwards(data);
+      setHasAwards(exists);
+
+      if (!exists) {
+        toast.info('No awards information found for this title', {
+          allowInProduction: true,
+          icon: 'solar:cup-star-linear',
+        });
+        return;
+      }
+
+      setActiveView('awards');
+    } catch {
+      toast.error('Awards are temporarily unavailable');
+    } finally {
+      setIsCheckingAwards(false);
+    }
+  }, [
+    isAwardsView,
+    isCheckingAwards,
+    hasAwards,
+    awardsPromise,
+    movie?.id,
+    mediaType,
+    toast,
+    setActiveView,
+  ]);
 
   return (
     <>
@@ -566,10 +667,11 @@ function MovieView({
                         ? [
                             {
                               active: isAwardsView,
+                              disabled: isCheckingAwards,
                               icon: isAwardsView ? 'solar:arrow-left-bold' : 'solar:cup-star-bold',
                               key: 'awards',
                               label: isAwardsView ? 'Back to Details' : 'Awards',
-                              onClick: () => setActiveView(isAwardsView ? 'main' : 'awards'),
+                              onClick: handleAwardsClick,
                             },
                           ]
                         : []),
@@ -628,6 +730,7 @@ function MovieView({
                         mediaId={movie.id}
                         mediaType={mediaType}
                         awardsPromise={awardsPromise}
+                        onEmpty={() => setActiveView('main')}
                       />
                     </Suspense>
                   </div>

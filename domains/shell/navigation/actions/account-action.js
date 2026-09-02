@@ -200,7 +200,7 @@ export default function AccountAction(props) {
             type="button"
             onClick={onPreviousMonth}
             aria-label="Previous month"
-            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-inset"
+            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
           >
             <Icon icon="solar:arrow-left-linear" size={NAV_ACTION_STYLES.icon} />
           </Button>
@@ -213,7 +213,7 @@ export default function AccountAction(props) {
             type="button"
             onClick={onNextMonth}
             aria-label="Next month"
-            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-inset"
+            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
           >
             <Icon icon="solar:arrow-right-linear" size={NAV_ACTION_STYLES.icon} />
           </Button>

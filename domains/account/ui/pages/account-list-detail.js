@@ -428,14 +428,14 @@ export default function AccountListDetailView({ routeData = null }) {
           primeListItemsCache(nextListItems);
         }
         toast.success(
-          `${mediaKeys.length} ${mediaKeys.length === 1 ? 'item' : 'items'} removed from list.`,
+          `${mediaKeys.length} ${mediaKeys.length === 1 ? 'item' : 'items'} removed from list`,
         );
       } catch (error) {
         if (previousListItems) {
           setListItems(previousListItems);
           primeListItemsCache(previousListItems);
         }
-        toast.error(error?.message || 'Failed to remove items from list.');
+        toast.error(error?.message || 'Failed to remove items from list');
         throw error;
       }
     },
@@ -475,7 +475,7 @@ export default function AccountListDetailView({ routeData = null }) {
 
       setListItemRemoveConfirmation({
         title: 'Remove List Item?',
-        description: `${getMediaTitle(item)} will be removed from this list.`,
+        description: `${getMediaTitle(item)} will be removed from this list`,
         confirmText: 'Remove',
         confirmLoadingText: 'Removing',
         isDestructive: true,
@@ -709,7 +709,7 @@ export default function AccountListDetailView({ routeData = null }) {
 
       setReviewDeleteConfirmation({
         title: 'Delete Comment?',
-        description: 'This comment will be permanently removed.',
+        description: 'This comment will be permanently removed',
         confirmText: 'Delete',
         confirmLoadingText: 'Deleting',
         isDestructive: true,

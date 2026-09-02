@@ -7,10 +7,10 @@ import { cn } from '@/ui/class-names';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared';
 
 export const INPUT_BASE_CLASSES =
-  'h-11 w-full rounded-[20px] bg-white/5 px-4 text-sm text-white ring-1 ring-inset ring-white/5 transition-all duration-300 ease-in-out placeholder:text-white/40 hover:bg-white/10 hover:ring-white/15 focus:bg-white/10 focus:ring-white/20';
+  'h-11 w-full rounded-[20px] bg-white/5 px-4 text-sm text-white ring-1 ring-inset ring-white/5 transition-all duration-300 ease-in-out placeholder:text-white/50 hover:bg-white/10 hover:ring-white/15 focus:bg-white/10 focus:ring-white/50';
 
 export const TEXTAREA_BASE_CLASSES =
-  'w-full min-h-36 rounded-[20px] bg-white/5 p-4 text-sm text-white ring-1 ring-inset ring-white/5 transition-all duration-300 ease-in-out placeholder:text-white/40 hover:bg-white/10 hover:ring-white/15 focus:bg-white/10 focus:ring-white/20 resize-none';
+  'w-full min-h-36 rounded-[20px] bg-white/5 p-4 text-sm text-white ring-1 ring-inset ring-white/5 transition-all duration-300 ease-in-out placeholder:text-white/50 hover:bg-white/10 hover:ring-white/15 focus:bg-white/10 focus:ring-white/50 resize-none';
 
 const BUTTON_FRAME_CLASSES =
   'center h-10 gap-2.5 px-2.5 rounded-[20px] text-xs uppercase font-semibold disabled:cursor-not-allowed disabled:opacity-50';
@@ -36,7 +36,7 @@ export function StatusState({ title, description }) {
   return (
     <div className="flex min-h-[50vh] items-center justify-center px-4 py-12">
       <div className="w-full max-w-xl rounded-2xl bg-white/5 p-6 text-center ring-1 ring-white/10 ring-inset">
-        <p className="text-xs font-semibold text-white/40 uppercase">Account Editor</p>
+        <p className="text-xs font-semibold text-white/50 uppercase">Account Editor</p>
         <h1 className="mt-3 text-2xl font-semibold text-white">{title}</h1>
         <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
       </div>
@@ -77,11 +77,11 @@ export function SectionCard({
         >
           {title}
         </h2>
-        {summaryLabel ? <div className="text-xs text-white/40">{summaryLabel}</div> : null}
+        {summaryLabel ? <div className="text-xs text-white/50">{summaryLabel}</div> : null}
       </div>
       <div>
         {description ? (
-          <p className="mb-4 max-w-2xl text-sm leading-6 text-white/40">{description}</p>
+          <p className="mb-4 max-w-2xl text-sm leading-6 text-white/50">{description}</p>
         ) : null}
         <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
       </div>
@@ -91,9 +91,9 @@ export function SectionCard({
 export function Field({ label, hint, children, className }) {
   return (
     <label className={cn('flex flex-col gap-2', className)}>
-      <span className="text-xs font-medium text-white/40">{label}</span>
+      <span className="text-xs font-medium text-white/50">{label}</span>
       {children}
-      {hint ? <span className="text-xs leading-5 text-white/40">{hint}</span> : null}
+      {hint ? <span className="text-xs leading-5 text-white/50">{hint}</span> : null}
     </label>
   );
 }
@@ -143,7 +143,7 @@ export function MediaField({
       <div>
         <div
           className={cn(
-            'aspect-square overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10 ring-inset',
+            'aspect-square overflow-hidden rounded-xl bg-black/60 ring-1 ring-white/10 ring-inset',
             previewClassName,
           )}
         >
@@ -157,7 +157,7 @@ export function MediaField({
               wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-white/5 text-white/40">
+            <div className="flex h-full w-full items-center justify-center bg-white/5 text-white/50">
               <Icon icon="solar:gallery-bold" size={20} />
             </div>
           )}

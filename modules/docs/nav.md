@@ -118,11 +118,11 @@ Bu bölümde her dosyanın görevi, ilişkileri ve çalışma biçimi yer alır.
 
 ### `surface.js`
 
-**Rolü:** Surface tanımları, çok adımlı surface akışları, URL geri yükleme, geri dönüş handshake’i, stack yaşam döngüsü ve surface kabuğunu sahiplenir.
+**Rolü:** Surface tanımları, çok adımlı surface akışları, URL geri yükleme, geri dönüş handshake’i, stack yaşam döngüsü, surface kabuğu ve kart üstü extensions (eklentiler) sistemini sahiplenir.
 
-**İlişkileri:** `runtime`, surface stack ve flow işlemlerini sağlar. `cards`, stack’teki aktif surface’i `NavSurfaceShell` ile render eder. `behavior`, focus trap ve odak geri yüklemesini; `routing`, return handoff teslimini yürütür.
+**İlişkileri:** `runtime`, surface stack ve flow işlemlerini sağlar. `cards`, stack’teki aktif surface’i `NavSurfaceShell` ile render eder. `index`, kart stack'inin üzerinde yüzen `NavSurfaceExtensionsBar`ı görüntüler. `behavior`, focus trap ve odak geri yüklemesini; `routing`, return handoff teslimini yürütür.
 
-**Çalışması:** Bir surface descriptor’ı, başlık meta verisini ve render edilecek component veya node’u normalleştirir. Stack açma, kapatma, adım değiştirme, URL eşleme, swipe dismissal ve odak yönetimi tek reducer çevresinde gerçekleşir. Flow’lar surface üstünde görev düzeyinde durum saklar; kapanış sonucu isteğe bağlı olarak güvenli bir iç rotaya teslim edilir.
+**Çalışması:** Bir surface descriptor’ı, başlık meta verisini, render edilecek component veya node’u ve opsiyonel `extensions` listesini normalleştirir. Stack açma, kapatma, adım değiştirme, URL eşleme, swipe dismissal ve odak yönetimi tek reducer çevresinde gerçekleşir. Stack’te altta kalan surface’ler unmount edilmez; görünmez ve inert halde tutulur, böylece form ve adım state’i geri dönüldüğünde korunur. `useSurfaceHeader` yalnızca verilen alanları birleştirir. Segmented control veya selectbox gibi yardımcı kontroller, surface gövdesinde yer kaplamaması için `useSurfaceExtensions` veya `<NavSurfaceExtension>` ile kartın üstünde yüzen (floating) extension panelleri olarak yansıtılır. Flow’lar surface üstünde görev düzeyinde durum saklar; kapanış sonucu isteğe bağlı olarak güvenli bir iç rotaya teslim edilir.
 
 ### `routing.js`
 
@@ -192,6 +192,7 @@ Nav'ın public yüzeyi `index.js` üzerinden gelir. Temel seçim rehberi:
 | Birleşik state/action   | `useNavigation`                                                                     |
 | Dar state/action        | `useNavigationState`, `useNavigationActions`, `useNavigationContext`                |
 | Surface                 | `useSurfaceFlow`, `createSurfaceFlowDefinition`, `useSurfaceReturn`                 |
+| Surface extensions      | `useSurfaceExtensions`, `NavSurfaceExtension`, `NavSurfaceExtensionsBar`             |
 | HUD/operation           | `useNavHud`, `createHudDefinition`, `useNavigationOperations`                       |
 | Route guard/transaction | `useNavigationGuard`, `createNavigationTransaction`, `useNavigationTransactions`    |
 | Continuity              | `useNavigationContinuityState`, `useNavigationContinuity`, `useSurfaceReturn`       |
@@ -218,6 +219,7 @@ Nav’ın dışarıya açık hook’ları aşağıdaki sorumluluk gruplarına ay
 | Rota görünümünü geri yükleme    | `useNavigationContinuityState`, `useSurfaceReturn`                   | Scroll, focus ve flow sonucu teslimi                                      |
 | Bağlamsal araç çubuğu           | `useNavContextActions`                                               | Aktif rota için geçici komutlar                                           |
 | Surface görevi                  | `useSurfaceFlow`                                                     | Tekil, çok adımlı veya URL ile geri açılabilir görevler                   |
+| Surface kart üstü kontrolleri   | `useSurfaceExtensions`, `NavSurfaceExtension`                       | Kart gövdesi yerine kartın üstünde yüzen filtre, sekme ve seçim panelleri |
 | Breadcrumb                      | `useNavBreadcrumbs`, `useRegisterBreadcrumbOverride`                 | Rota zinciri ve sayfa ömrüne bağlı override                               |
 
 `useNavigationActions` düşük seviye facade’ıdır. `setExpanded`, `setIsCompact`, `setCompactLock`, `setSelectionMode` ve ilgili surface, HUD, command, continuity eylemlerini içerir. Bu action’ları yalnızca görünüm veya altyapı davranışı Nav’a ait olduğunda çağırın. Alan state’ini Nav reducer’ına koymayın.
@@ -347,10 +349,112 @@ Surface descriptor’ının görünüm alanları şunlardır:
 | `steps`, `currentStepIndex`    | Adım başlangıç durumu                                     |
 | `syncWithUrl`, `urlKey`        | URL üzerinden tekrar açma davranışı                       |
 | `badge`                        | Header rozeti                                             |
+| `extensions`                   | Kartın üzerinde yüzen eklenti/filtre tanımları dizisi     |
 
 `header: { icon, title, description }` kısa formu da kabul edilir. Header’ı surface içinden dinamik güncellemeniz gerekiyorsa `useSurfaceHeader`ı yalnızca aktif surface ağacında çağırın.
 
-### 6.4 Çok adımlı surface flow kurma
+### 6.4 Surface Extensions (Kart eklentileri)
+
+Segmented control (kategori/sekme butonları), filtreler ve selectbox gibi bileşenler surface kartının gövdesinde yer aldığında hem dikey alanı daraltır hem de görsel kalabalık oluşturur. Surface Extensions sistemi, bu yardımcı kontrolleri surface kartının dışına, kartın hemen 4px üstünde yüzen (floating) eklenti panelleri olarak taşır (`bottom-[calc(100%+4px)]`).
+
+#### Görsel Tasarım ve Geometri Kuralları
+
+- **Kapsül Görünümü:** Eklenti kutucukları (`ExtensionPill`), nav kartı ile birebir aynı görsel dile sahiptir: `bg-black/60 backdrop-blur-xl ring-1 ring-inset ring-white/10 rounded-full h-10 p-1 shadow-lg`.
+- **Eşmerkezli Radius (Concentric Geometry):** Dış kutucuk 20px (`rounded-full`, 40px yükseklik), 4px iç dolgu (`p-1`) ve iç kontroller 16px (`rounded-full`, 32px yükseklik) ile tasarlanmıştır. $20\text{px} - 4\text{px} = 16\text{px}$ geometrisi sayesinde her iki uçta ve tüm açılarda tam simetrik 4px homojen iç boşluk elde edilir.
+- **Segmented Controls & Genişlik:** Segmented control eklentisi `w-full flex-1 min-w-0` ile sol tarafı tamamen kaplar. İçindeki butonlar `flex-1 min-w-fit justify-center` ile tam genişliğe homojen yayılır. Sağdaki kontrollerle (örn: Selectbox) arasında net **4px** (`gap-1`) boşluk bulunur.
+- **Selectbox Kuralları:**
+  - **Seçili Değer (Value):** Ülke adı gizlidir; yalnızca bayrak emojisi ve 2 harfli ISO kodu gösterilir (`triggerLabel: '${flag} ${code}'`, örn: `🇹🇷 TR`).
+  - **Açılır Menü (Menu):** Seçeneklerde ülke isimleri tam olarak görünür (`label: '${flag} ${code} · ${countryName}'`, örn: `🇹🇷 TR · Türkiye`).
+  - **Kaydırma Desteği:** Sayfadaki Lenis yumuşak kaydırma kütüphanesinin açılır menüyü kilitlemesini önlemek için `data-lenis-prevent`, `data-lenis-prevent-wheel` ve `stopPropagation` eklenmiştir.
+
+#### Mimari ve Performans
+
+- **Sıfır Re-render Maliyeti:** Bileşen ağacı, `SurfaceExtensionsStore` (harici store) ve React'ın `useSyncExternalStore` kancası ile senkronize edilir. `<NavSurfaceExtension>` içeriği değiştiğinde tüm React ağacı re-render edilmez; yalnızca `NavSurfaceExtensionsBar` güncellenir. Bu mimari sonsuz re-render döngülerini ("maximum update depth exceeded") kökten engeller ve 60fps akıcılık sağlar.
+
+Eklentiler hem deklaratif bileşen (`<NavSurfaceExtension>`), hem hook (`useSurfaceExtensions`), hem de descriptor seviyesinde tanımlanabilir:
+
+#### Deklaratif kullanım: `<NavSurfaceExtension>`
+
+```jsx
+import { NavSurfaceExtension } from '@/modules/nav';
+import { Button, Select } from '@/ui/primitives';
+
+function WatchProvidersSurface() {
+  const [activeCategory, setActiveCategory] = useState('ALL');
+  const [resolvedRegion, setResolvedRegion] = useState('TR');
+
+  return (
+    <div className="flex w-full flex-col gap-2.5 overflow-hidden">
+      {/* Sol tarafta tam genişlik segmented control kapsülü */}
+      <NavSurfaceExtension id="categories" align="left" className="w-full flex-1 min-w-0">
+        <div className="flex h-8 w-full min-w-0 flex-1 items-center gap-1 overflow-x-auto scrollbar-none">
+          <Button onClick={() => setActiveCategory('ALL')} className="flex-1 justify-center rounded-full">All</Button>
+          <Button onClick={() => setActiveCategory('STREAM')} className="flex-1 justify-center rounded-full">Stream</Button>
+        </div>
+      </NavSurfaceExtension>
+
+      {/* Sağ tarafta 4px mesafeli bölge seçim kapsülü */}
+      <NavSurfaceExtension id="region" align="right">
+        <Select
+          value={resolvedRegion}
+          onChange={setResolvedRegion}
+          options={regionOptions}
+          side="top"
+          align="end"
+          classNames={{
+            trigger: 'flex h-8 items-center gap-2 rounded-full px-3 text-xs font-semibold text-white/70',
+          }}
+        />
+      </NavSurfaceExtension>
+
+      {/* Surface gövdesinde temiz liste içeriği */}
+      <div className="provider-list">...</div>
+    </div>
+  );
+}
+```
+
+#### Dinamik hook kullanımı: `useSurfaceExtensions`
+
+```jsx
+import { useSurfaceExtensions } from '@/modules/nav';
+
+function FilterableSurface({ categories, activeCategory, onSelectCategory }) {
+  useSurfaceExtensions([
+    {
+      id: 'category-filters',
+      align: 'left',
+      className: 'w-full flex-1 min-w-0',
+      content: (
+        <div className="flex h-8 w-full min-w-0 flex-1 items-center gap-1">
+          {categories.map((cat) => (
+            <button key={cat.id} onClick={() => onSelectCategory(cat.id)} className="flex-1 rounded-full">
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      ),
+    },
+  ]);
+
+  return <div className="content">...</div>;
+}
+```
+
+Eklenti descriptor alanları şunlardır:
+
+| Alan        | Amaç                                                                   |
+| ----------- | ---------------------------------------------------------------------- |
+| `id`        | Eklentinin tekil kimliği                                               |
+| `align`     | Konum hizalaması (`'left'`, `'right'`, `'center'`; varsayılan `'left'`) |
+| `content`   | Render edilecek React node'u                                           |
+| `component` | Render edilecek React bileşeni                                         |
+| `props`     | Bileşene aktarılacak propslar                                          |
+| `order`     | Sıralama önceliği (varsayılan `0`)                                     |
+| `className` | Kapsül üzerine eklenecek ek CSS sınıfları                              |
+| `unstyled`  | Varsayılan frosted glass kapsül stilini devre dışı bırakır             |
+
+### 6.5 Çok adımlı surface flow kurma
 
 Surface flow, bir kullanıcı görevini tekil kimlik, snapshot ve tamamlanma sonucu altında tutar. Flow tanımını render dışına alın; her render’da yeni tanım üretmeyin.
 
@@ -402,7 +506,7 @@ Flow ayarları şunlardır:
 
 `syncWithUrl` kullanan surface’lerde flow kimliği ve snapshot tarayıcı history state’ine yazılır. Snapshot’ı yeniden oluşturulabilir ve hassas olmayan değerlerle sınırlayın.
 
-### 6.5 Surface sonucunu önceki rotaya teslim etme
+### 6.6 Surface sonucunu önceki rotaya teslim etme
 
 Return handshake, surface flow tamamlandığında sonucu belirli bir iç rotaya bir kez teslim eder. Bu mekanizma `router.back()` çağırmaz; hedef rotaya geçer, kaydedilmiş scroll ve focus konumunu geri yükler.
 
@@ -440,7 +544,7 @@ export function LibraryPage() {
 
 Handshake yalnızca güvenli iç href’leri kabul eder. `returnOnCancel: true` vermezseniz iptal sonucu hedef rotaya gönderilmez.
 
-### 6.6 HUD göstermek
+### 6.7 HUD göstermek
 
 HUD, kısa süreli durum veya görev bilgisini Nav üzerinde gösterir. `useNavHud`, descriptor’ı component ömrü boyunca kaydeder ve unmount’ta temizler.
 
@@ -479,7 +583,7 @@ HUD progress değeri `0` ile `100` arasındadır. Geçersiz değerler sınırlan
 
 Birden fazla HUD aktif olduğunda en yüksek `priority` görünür. Eşit öncelikte önce kaydedilen aktif HUD korunur.
 
-### 6.7 Operation Center kullanma
+### 6.8 Operation Center kullanma
 
 Operation Center, uzun süren iptal edilebilir işleri HUD olarak projekte eder. Bir operasyonun progress değeri HUD’dan farklı olarak `0` ile `1` arasındadır.
 
@@ -514,7 +618,7 @@ export function SyncAction({ synchronize }) {
 
 `start` tanımı `id`, `label`, `description`, `icon`, `metadata`, `priority`, `progress`, `cancellable` ve `onCancel` alanlarını kabul eder. Bir `id` verirseniz işin tekrar başlatılmalarında aynı kimliği bilinçli olarak yönetin. İş başladığında iptal edilemiyorsa `cancellable: false` verin.
 
-### 6.8 Bağlamsal komut ekleme
+### 6.9 Bağlamsal komut ekleme
 
 `useNavContextActions`, component görünür olduğu sürece araç çubuğuna komut ekler. Komutları route kaydından bağımsız, component’e özgü tutmak için bu hook’u kullanın.
 
@@ -538,7 +642,7 @@ export function CollectionActions({ refreshCollection }) {
 
 Bir komutta `key`, `icon`, `tooltip`, `onClick`, `order`, `badge`, `disabled` ve `visible` kullanılabilir. `key` sabit olmalıdır. Hook, değişen action listesindeki kaldırılmış anahtarları ve unmount’taki tüm kayıtları temizler.
 
-### 6.9 Breadcrumb zincirini özelleştirme
+### 6.10 Breadcrumb zincirini özelleştirme
 
 Genel breadcrumb üretimi pathname segmentlerini kullanır. Alanınız daha anlamlı başlıklar üretiyorsa provider config’ine çözümleyici ekleyin veya sayfa içinde bir override kaydedin.
 
@@ -560,7 +664,7 @@ export function ItemPage({ title }) {
 
 Provider config’inde `root` başlangıç crumb’ını, `resolveSegment` tek bir path segmentini, `resolvePath` ise tam pathname’i çözer. `resolvePath` bir crumb dizisi döndürdüğünde varsayılan segment çözümünü değiştirir.
 
-### 6.10 Rota sürekliliğini kullanma
+### 6.11 Rota sürekliliğini kullanma
 
 Nav, surface return handshake’i için scroll ve focus sürekliliğini zaten kullanır. Alanınızın özel geçişi de aynı davranışa ihtiyaç duyuyorsa `useNavigationContinuityState` facade’ını kullanın.
 
@@ -596,6 +700,31 @@ return handoff ile route-scoped continuity kaydına teslim edilebilir.
 Status sistemi uygulamanın status event’lerini, bağlantı olaylarını ve kalıcı durumlarını Nav görünümüne dönüştürür. Alan modülleri, status görünümünü doğrudan taklit eden HUD veya surface oluşturmamalıdır. Görsel tema eşlemesine ihtiyaç duyarsanız `getStatusTheme` kullanın; status yaşam döngüsünü `useNavigationStatus` üzerinden mevcut runtime’a bırakın.
 
 Medya bileşenleri yalnızca Nav ağacındaki arka plan medya bağlamıyla çalışır. `NavMediaControls`, `NavMediaScrubber` ve `NavSoundwave` için bağımsız oynatıcı state’i üretmeyin.
+
+### 7.2 Kart yığını ızgarası, boşluklar ve opaklık kademelendirmesi
+
+Nav modülü, ekranın alt kenarı ile kartlar ve yardımcı paneller arasındaki boşlukları katı bir **4px ızgarası** üzerinden yönetir:
+
+- **Taban Konumu:** `#nav-card-stack` ekranın alt kenarından tam 4px mesafede (`bottom-[4px]`) sabitlenir.
+- **Expand Modu Aralıkları:** Kartlar açıkken aralarındaki dikey boşluk `NAV_VIEWPORT_GAP = 4` kuralına uyar (`expandedY: -72px`). Her kart arasında net **4px** mesafe korunur.
+- **Breadcrumbs Konumu:** Nav kartının 4px altında (`top-[calc(100%+4px)]`) yer alır. Aktifleştiğinde kart yığını `42px` yukarı kaldırılarak (`38px + 4px = 42px`), breadcrumbs'ın ekran altından 4px mesafede süzülmesi sağlanır.
+- **Surface Extensions Konumu:** Surface kartının 4px üstünde (`bottom-[calc(100%+4px)]`) yer alır. Yığın tabanı sabit `bottom-[4px]`te kalır; kartın yukarı kalkmasına gerek kalmaz.
+
+#### Kart Opaklık Kademelendirmesi (Stack Opacity)
+
+Kart yığınındaki derinlik algısını ve odak hiyerarşisini güçlendirmek için pozisyona bağlı opaklık yönetimi uygulanır:
+
+- **Expand Modunda (`expanded: true`):** Kullanıcı kartları açtığında, tüm kartların okunabilirliği ve erişilebilirliği için istisnasız **%100** (`1.0`) opaklık uygulanır.
+- **Collapsed Modunda (`expanded: false` - arkaya yığılma):** Arkada üst üste binen deaktif kartlar kademeli olarak soluklaşır:
+  - Aktif kart (`position === 0`): **%100** (`1.0`)
+  - Deaktif 1. kart (`position === 1`): **%80** (`0.8`)
+  - Deaktif 2. kart (`position === 2`): **%60`** (`0.6`)
+  - Deaktif 3. kart (`position === 3`): **%40`** (`0.4`)
+  - Deaktif 4. kart (`position === 4`): **%20`** (`0.2`)
+  - `position >= 5`: **%10** (`0.1`)
+  - Görünür sınırın (`visibleCount`) dışındaki kartlar: **%0** (`0`)
+
+Framer Motion, mod değişimlerinde (expand / collapse) ve aktif kart geçişlerinde bu opaklık değerlerini ara değerlerle yumuşatarak 60fps akıcılıkla geçiş yapar.
 
 ## 8. Sınırlar, erişilebilirlik ve tanılama
 

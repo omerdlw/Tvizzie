@@ -53,7 +53,7 @@ function EpisodeCard({ episode, index = 0, onLog }) {
       data-backdrop-file-path={episode?.still_path || ''}
       overlay={
         <>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/50 to-transparent p-3 text-white">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-3 text-white">
             <p className="text-xs font-semibold text-white/70 uppercase tabular-nums">
               E{episodeNumber}
             </p>
@@ -63,7 +63,7 @@ function EpisodeCard({ episode, index = 0, onLog }) {
             type="button"
             aria-label={`Log ${title} to diary`}
             onClick={() => onLog?.(episode, episodeNumber)}
-            className="center absolute top-2 right-2 size-11 rounded-[14px] ring-1 ring-inset ring-white/15 bg-black/50 text-white transition-colors hover:ring-white/40 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="center absolute top-2 right-2 size-11 rounded-[14px] ring-1 ring-inset ring-white/15 bg-black/60 text-white transition-colors hover:ring-white/50 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon icon="solar:calendar-add-bold" size={19} />
           </Button>
@@ -172,7 +172,7 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [], ser
             ))}
           </Carousel>
         ) : (
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-white/50">
             Episodes for this season are unavailable right now.
           </p>
         )}

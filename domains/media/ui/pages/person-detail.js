@@ -179,7 +179,7 @@ function PersonView({
                   </div>
                 ) : (
                   <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px] lg:w-[20rem] xl:w-[24rem]">
-                    <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/40">
+                    <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/50">
                       <Icon icon="solar:user-bold" size={40} />
                     </div>
                   </div>

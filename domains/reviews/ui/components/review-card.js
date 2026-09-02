@@ -145,7 +145,7 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       type="button"
       className={cn(
         'inline-flex w-fit cursor-pointer items-center justify-start gap-1.5 self-start pt-0 text-xs font-medium transition-colors duration-200 disabled:cursor-default disabled:opacity-50',
-        hasLiked ? 'text-error' : 'text-white/40 hover:text-white/70',
+        hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70',
       )}
     >
       <Icon
@@ -153,7 +153,7 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
         size={14}
         className={cn(
           'transition-transform duration-300',
-          hasLiked ? 'text-error scale-110' : 'text-white/40',
+          hasLiked ? 'text-error scale-110' : 'text-white/50',
         )}
       />
       <span className="tabular-nums">{getReviewLikeText(likesCount)}</span>
@@ -249,7 +249,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-xs font-semibold text-white/40 uppercase group-hover:text-white/70">
+        <span className="block text-xs font-semibold text-white/50 uppercase group-hover:text-white/70">
           Spoiler warning
         </span>
         <span className="block text-sm leading-6 text-white/70 group-hover:text-white">
@@ -401,7 +401,7 @@ export default function ReviewCard({
                   </div>
 
                   <div className="flex min-w-0 items-center gap-1.5 text-sm text-white/70">
-                    <span className="text-white/40">Review by</span>
+                    <span className="text-white/50">Review by</span>
                     <Link
                       href={accountHref}
                       className="truncate font-semibold text-white hover:underline"
@@ -457,7 +457,7 @@ export default function ReviewCard({
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 {displayVariant === 'media-recent' ? (
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm leading-snug text-white/70">
-                    <span className="text-white/40">Review by</span>
+                    <span className="text-white/50">Review by</span>
                     <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
@@ -471,8 +471,8 @@ export default function ReviewCard({
                     <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
-                    <span className="text-white/40">•</span>
-                    <span className="text-xs text-white/40 sm:text-sm">{formattedDate}</span>
+                    <span className="text-white/50">•</span>
+                    <span className="text-xs text-white/50 sm:text-sm">{formattedDate}</span>
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-white/70">
@@ -480,11 +480,11 @@ export default function ReviewCard({
                     {hasLikedSubject && (
                       <Icon icon="solar:heart-bold" size={16} className="text-warning" />
                     )}
-                    <span className="text-white/40">Watched by</span>
+                    <span className="text-white/50">Watched by</span>
                     <Link href={accountHref} className="font-semibold text-white hover:underline">
                       {displayName}
                     </Link>
-                    <span className="text-xs text-white/40 sm:text-sm">{letterboxdDate}</span>
+                    <span className="text-xs text-white/50 sm:text-sm">{letterboxdDate}</span>
                   </div>
                 )}
 
@@ -498,7 +498,7 @@ export default function ReviewCard({
                   )
                 ) : (
                   hasRating && (
-                    <p className="text-xs text-white/40 sm:text-sm">- Rated without review</p>
+                    <p className="text-xs text-white/50 sm:text-sm">- Rated without review</p>
                   )
                 )}
 

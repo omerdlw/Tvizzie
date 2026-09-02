@@ -128,7 +128,7 @@ export function ProfileMediaActions({
             aria-label={action.label}
             title={action.label}
             disabled={action.disabled}
-            className="center size-7 rounded-full text-white/70 transition-colors bg-black/50 hover:bg-black/70 backdrop-blur-sm hover:text-white"
+            className="center size-7 rounded-full text-white/70 transition-colors bg-black/60 hover:bg-black/80 backdrop-blur-sm hover:text-white"
             onClick={(event) => {
               event.stopPropagation();
               event.preventDefault();
@@ -145,7 +145,7 @@ export function ProfileMediaActions({
           type="button"
           aria-label="Add to list"
           title="Add to list"
-          className="center size-7 rounded-full text-white/70 transition-colors bg-black/50 hover:bg-black/70 backdrop-blur-sm hover:text-white"
+          className="center size-7 rounded-full text-white/70 transition-colors bg-black/60 hover:bg-black/80 backdrop-blur-sm hover:text-white"
           onClick={handleAddToList}
         >
           <Icon icon="solar:list-broken" size={14} />
@@ -157,7 +157,7 @@ export function ProfileMediaActions({
           aria-label={removeLabel}
           title={removeLabel}
           disabled={isRemoving}
-          className="center size-7 rounded-full text-error/70 transition-colors bg-black/50 hover:bg-black/70 backdrop-blur-sm hover:text-error"
+          className="center size-7 rounded-full text-error/70 transition-colors bg-black/60 hover:bg-black/80 backdrop-blur-sm hover:text-error"
           onClick={handleRemove}
         >
           <Icon icon="solar:trash-bin-trash-bold" size={14} />
@@ -255,7 +255,7 @@ export default function AccountMediaGridPage({
                     'flex size-7 items-center justify-center rounded-xl ring-1 ring-inset shadow-lg transition-all duration-200',
                     isSelected
                       ? 'ring-info bg-info text-black font-bold scale-105 shadow-info/30'
-                      : 'ring-white/30 bg-black/70 text-white/40 group-hover:ring-white/60 group-hover:text-white',
+                      : 'ring-white/15 bg-black/80 text-white/50 group-hover:ring-white/50 group-hover:text-white',
                   )}
                 >
                   <Icon icon="material-symbols:check-rounded" size={18} />

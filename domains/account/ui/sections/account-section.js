@@ -18,7 +18,7 @@ export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = 'mb-4';
 export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-8 flex justify-center';
 export const ACCOUNT_SECTION_BORDER_CLASS = '';
 export const ACCOUNT_EMPTY_SECTION_CLASS =
-  'flex flex-col items-center justify-center gap-2 rounded-2xl ring-1 ring-inset  ring-white/5 bg-white/5 p-8 text-center text-xs sm:text-sm text-white/40';
+  'flex flex-col items-center justify-center gap-2 rounded-2xl ring-1 ring-inset  ring-white/5 bg-white/5 p-8 text-center text-xs sm:text-sm text-white/50';
 
 export function AccountInlineSectionState({ children, className = '' }) {
   return (
@@ -60,7 +60,7 @@ export function AccountSectionHeading({
     >
       <div className="flex min-w-0 items-center gap-2">
         {icon && (
-          <Icon icon={icon} size={16} className="shrink-0 text-white/40 transition-colors" />
+          <Icon icon={icon} size={16} className="shrink-0 text-white/50 transition-colors" />
         )}
         {isLink ? (
           <Link
@@ -72,7 +72,7 @@ export function AccountSectionHeading({
               <Icon
                 icon="solar:alt-arrow-right-linear"
                 size={12}
-                className="shrink-0 text-white/40 transition-colors group-hover:text-white"
+                className="shrink-0 text-white/50 transition-colors group-hover:text-white"
               />
             )}
           </Link>
@@ -85,13 +85,13 @@ export function AccountSectionHeading({
 
       <div className="flex shrink-0 items-center gap-3">
         {summaryLabel && (
-          <span className="text-xs font-semibold text-white/40 uppercase">{summaryLabel}</span>
+          <span className="text-xs font-semibold text-white/50 uppercase">{summaryLabel}</span>
         )}
         {action}
         {showSeeMore && titleHref && (
           <Link
             href={titleHref}
-            className="hidden items-center gap-1 text-xs font-semibold text-white/40 uppercase transition-colors hover:text-white sm:inline-flex"
+            className="hidden items-center gap-1 text-xs font-semibold text-white/50 uppercase transition-colors hover:text-white sm:inline-flex"
           >
             <span>See more</span>
             <Icon icon="solar:alt-arrow-right-linear" size={12} />
@@ -122,7 +122,7 @@ export function AccountSectionState({ message, isInitialSection = true }) {
         {normalizeFeedbackContent(message)}
       </p>
       {isPrivateMessage ? (
-        <p className="max-w-xs text-xs text-white/40">
+        <p className="max-w-xs text-xs text-white/50">
           Follow this account to see their activity, reviews, and collections.
         </p>
       ) : null}

@@ -18,8 +18,8 @@ import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
 
 function getMfaDescription(mode) {
   return isMfaVerificationMode(mode)
-    ? 'Enter the six-digit code from your authenticator app.'
-    : 'Scan the QR code or use the setup key.';
+    ? 'Enter the six-digit code from your authenticator app'
+    : 'Scan the QR code or use the setup key';
 }
 
 function isMfaVerificationMode(mode) {
@@ -42,7 +42,7 @@ function resolveMfaSetup(setupMfa) {
   let timeoutId;
   const timeout = new Promise((_, reject) => {
     timeoutId = setTimeout(
-      () => reject(new Error('Authenticator setup timed out. Please try again.')),
+      () => reject(new Error('Authenticator setup timed out. Please try again')),
       MFA_SETUP_TIMEOUT_MS,
     );
   });
@@ -271,7 +271,7 @@ export default function MfaSetupSurface({ close, data }) {
       className="flex flex-col gap-2.5"
     >
       {isPreparing ? (
-        <div className="flex min-h-14 items-center justify-center rounded-[20px] bg-white/5 px-4 text-sm text-white/40 ring-1 ring-inset ring-white/5">
+        <div className="flex min-h-14 items-center justify-center rounded-[20px] bg-white/5 px-4 text-sm text-white/50 ring-1 ring-inset ring-white/5">
           Preparing authenticator setup
         </div>
       ) : null}

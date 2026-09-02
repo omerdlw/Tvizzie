@@ -10,7 +10,7 @@ import {
   resolveWatchRegionFromBrowser,
 } from '@/infrastructure/tmdb/client';
 import { NAV_BUTTON_TRANSITION, navFadeVariants, navListItemVariants } from '@/modules/nav';
-import { useSurfaceHeader } from '@/modules/nav';
+import { NavSurfaceExtension, useSurfaceHeader } from '@/modules/nav';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Button, Select } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
@@ -277,7 +277,10 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
     );
   }, [resolvedProvidersData?.results]);
 
+  const hasAnyProviders = allRegionsWithData.length > 0;
+
   const selectableRegions = useMemo(() => {
+    if (!hasAnyProviders) return [];
     const set = new Set(allRegionsWithData);
     if (resolvedRegion) {
       set.add(resolvedRegion);
@@ -287,14 +290,17 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
       if (b === resolvedRegion) return 1;
       return a.localeCompare(b);
     });
-  }, [allRegionsWithData, resolvedRegion]);
+  }, [allRegionsWithData, resolvedRegion, hasAnyProviders]);
 
   const regionOptions = useMemo(() => {
     return selectableRegions.map((code) => {
       const hasData = allRegionsWithData.includes(code);
+      const flag = getRegionFlag(code);
+      const countryName = getRegionDisplayName(code);
       return {
         value: code,
-        label: `${getRegionFlag(code)} ${code} - ${getRegionDisplayName(code)}${!hasData ? ' (N/A)' : ''}`,
+        triggerLabel: `${flag} ${code}`,
+        label: `${flag} ${code} · ${countryName}${!hasData ? ' (N/A)' : ''}`,
       };
     });
   }, [selectableRegions, allRegionsWithData]);
@@ -365,21 +371,34 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
   const setHeader = useSurfaceHeader();
   useEffect(() => {
     if (!setHeader) return;
-    const count = filteredProviders.length;
-    const countLabel = `${count} ${count === 1 ? 'provider' : 'providers'}`;
     const regionName = getRegionDisplayName(resolvedRegion) || resolvedRegion;
+    let description;
+    if (!hasAnyProviders) {
+      description = 'No streaming options available';
+    } else if (filteredProviders.length === 0) {
+      description = `${regionName} · 0 providers`;
+    } else {
+      const count = filteredProviders.length;
+      const countLabel = `${count} ${count === 1 ? 'provider' : 'providers'}`;
+      description = `${regionName} · ${countLabel}`;
+    }
+
     setHeader({
       icon: posterIcon,
       title: mediaTitle || 'Where to Watch',
-      description: `${regionName} · ${countLabel}`,
+      description,
     });
-  }, [setHeader, posterIcon, mediaTitle, resolvedRegion, filteredProviders.length]);
+  }, [setHeader, posterIcon, mediaTitle, resolvedRegion, filteredProviders.length, hasAnyProviders]);
 
   return (
     <div className="flex w-full flex-col gap-2.5 overflow-hidden">
-      <div className="flex items-center justify-between gap-2.5">
-        {availableCategories.length > 1 ? (
-          <div className="flex h-8 min-w-0 flex-1 scrollbar-none items-center gap-1.5 overflow-x-auto">
+      {availableCategories.length > 1 && (
+        <NavSurfaceExtension
+          id="watch-providers-categories"
+          align="left"
+          className="w-full flex-1 min-w-0"
+        >
+          <div className="flex h-8 w-full min-w-0 flex-1 scrollbar-none items-center gap-1 overflow-x-auto">
             {availableCategories.map((cat) => {
               const isActive = activeCategory === cat.key;
               const count = categoryCounts[cat.key] || 0;
@@ -389,7 +408,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                   type="button"
                   onClick={() => setActiveCategory(cat.key)}
                   className={cn(
-                    'flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-xl px-2.5 text-xs font-semibold transition-all duration-200 select-none',
+                    'flex h-full min-w-fit flex-1 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-200 select-none',
                     isActive
                       ? 'bg-white text-black'
                       : 'text-white/70 hover:bg-white/10 hover:text-white',
@@ -399,7 +418,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                   <span
                     className={cn(
                       'text-xs font-bold',
-                      isActive ? 'text-black/80' : 'text-white/40',
+                      isActive ? 'text-black/80' : 'text-white/50',
                     )}
                   >
                     {count}
@@ -408,8 +427,10 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
               );
             })}
           </div>
-        ) : null}
-        {selectableRegions.length > 0 && (
+        </NavSurfaceExtension>
+      )}
+      {selectableRegions.length > 0 && (
+        <NavSurfaceExtension id="watch-providers-region" align="right">
           <div className="relative flex shrink-0 items-center">
             <Select
               value={resolvedRegion}
@@ -418,25 +439,25 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                 setActiveCategory('ALL');
               }}
               options={regionOptions}
-              side="bottom"
+              side="top"
               align="end"
               aria-label="Select watch region"
               classNames={{
                 trigger:
-                  'flex h-8 items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 text-xs font-semibold text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white',
-                value:'flex items-center gap-1 text-xs font-bold text-white uppercase',
-                menu: 'max-h-60 overflow-y-auto ring-1 ring-inset ring-white/10 bg-black p-1',
-                optionsList: 'flex flex-col gap-1',
+                  'flex h-8 items-center gap-2 rounded-full px-3 text-xs font-semibold text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white',
+                value: 'flex items-center gap-1 text-xs font-bold text-white uppercase',
+                menu: 'max-h-60 rounded-[18px] ring-1 ring-inset ring-white/10 bg-black/80 backdrop-blur-sm p-1 shadow-xs',
+                optionsList: 'flex flex-col gap-1 max-h-56 overflow-y-auto scrollbar-none',
                 option:
-                  'cursor-pointer p-2 text-xs font-medium text-white/70 outline-none data-[highlighted]:bg-white/10 data-[highlighted]:text-white',
+                  'cursor-pointer rounded-xl p-2 text-xs font-medium text-white/70 outline-none data-[highlighted]:bg-white/10 data-[highlighted]:text-white',
                 optionActive: 'bg-white/10 text-white font-semibold',
                 indicator: 'ml-auto text-white',
-                icon: 'text-white/40 text-xs',
+                icon: 'text-white/50 text-xs',
               }}
             />
           </div>
-        )}
-      </div>
+        </NavSurfaceExtension>
+      )}
       {filteredProviders.length > 0 ? (
         <div
           data-lenis-prevent
@@ -488,7 +509,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                         <span className="truncate text-xs font-semibold transition-colors">
                           {provider.name}
                         </span>
-                        <span className="truncate text-xs font-medium text-white/40">
+                        <span className="truncate text-xs font-medium text-white/50">
                           {getProviderSubtitle(provider.types, activeCategory)}
                         </span>
                       </div>
@@ -526,11 +547,6 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                           >
                             <Icon icon={config.icon} size={12} />
                             <span>{config.label}</span>
-                            <Icon
-                              icon="solar:arrow-right-up-linear"
-                              size={12}
-                              className="text-white/70"
-                            />
                           </motion.a>
                         );
                       })}
@@ -544,25 +560,27 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
       ) : (
         <div
           key={`empty-${resolvedRegion}-${activeCategory}`}
-          className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center"
+          className="min-h-[6rem] w-full gap-3 rounded-[20px] ring-1 ring-inset ring-white/5 p-6 text-center"
         >
-          <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/40">
-            <Icon icon="solar:tv-broken" size={22} />
-          </div>
           <div className="flex max-w-sm flex-col gap-1">
-            <p className="text-xs font-semibold text-white/70">
-              Not available in {getRegionDisplayName(resolvedRegion) || resolvedRegion}{' '}
-              {getRegionFlag(resolvedRegion)}
+            <p className="text-sm font-semibold text-white/90">
+              {!hasAnyProviders
+                ? 'Not Yet Available to Stream'
+                : activeCategory !== 'ALL'
+                  ? `No ${PROVIDER_CATEGORIES.find((c) => c.key === activeCategory)?.label || ''} options in ${getRegionDisplayName(resolvedRegion) || resolvedRegion}`
+                  : `Not available in ${getRegionDisplayName(resolvedRegion) || resolvedRegion} ${getRegionFlag(resolvedRegion)}`}
             </p>
-            <p className="text-xs leading-relaxed text-white/40">
-              {allRegionsWithData.length > 0
-                ? 'Watch provider data is not available in this region. You can switch to one of the available regions below:'
-                : 'Watch provider data is currently not available for this title in any region.'}
+            <p className="text-xs leading-relaxed text-white/50">
+              {!hasAnyProviders
+                ? 'This title is not currently available to stream, rent, or buy on digital platforms'
+                : activeCategory !== 'ALL'
+                  ? 'There are no options in this category for this region. Try selecting "All" to view all available providers'
+                  : 'Watch provider data is not available in this region. You can switch to one of the available regions below:'}
             </p>
           </div>
 
-          {allRegionsWithData.length > 0 && (
-            <div className="mt-1 flex flex-wrap items-center justify-center gap-2.5">
+          {hasAnyProviders && allRegionsWithData.length > 0 && (
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
               {allRegionsWithData.slice(0, 8).map((code) => (
                 <Button
                   key={code}
@@ -571,7 +589,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                     setResolvedRegion(code);
                     setActiveCategory('ALL');
                   }}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:ring-white/20 hover:bg-white/10 hover:text-white transition-all duration-150"
                 >
                   <span className="text-sm leading-none">{getRegionFlag(code)}</span>
                   <span>{getRegionDisplayName(code) || code}</span>

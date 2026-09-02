@@ -54,7 +54,7 @@ function PersonsDisplay({ persons, label }) {
         {visible.map((person, index) => (
           <div key={person.id} className="flex items-start gap-1">
             <PersonLink person={person} />
-            {index < visible.length - 1 && <span className="text-white/40">,</span>}
+            {index < visible.length - 1 && <span className="text-white/50">,</span>}
           </div>
         ))}
 
@@ -246,7 +246,7 @@ export default function Sidebar({
             wrapperClassName="h-full w-full rounded-[20px]"
           />
         ) : (
-          <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/40">
+          <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/50">
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}

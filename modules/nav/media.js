@@ -5,8 +5,13 @@ import { AnimatePresence, motion, useMotionValue, useSpring } from 'motion/react
 
 import { PLAYBACK_RATES } from './constants';
 import {
+  getNavActionMotionProps,
+  getNavMediaVolumeFillTransition,
+  getNavMediaVolumeThumbAnimateProps,
+  getNavMediaVolumeThumbPositionTransition,
   NAV_BUTTON_TRANSITION,
   NAV_SCRUBBER_TOOLTIP_TRANSITION,
+  NAV_SCRUBBER_TOOLTIP_SPRING,
   navScrubberTooltipVariants,
   navSoundwaveBarVariants,
 } from './motion';
@@ -371,8 +376,7 @@ export const NavMediaControls = memo(function NavMediaControls({ className = '' 
 
       <div className="flex items-center gap-1.5">
         <motion.div
-          whileTap={!isDraggingVolume ? { scale: 0.98 } : undefined}
-          transition={NAV_BUTTON_TRANSITION}
+          {...getNavActionMotionProps({ disabled: isDraggingVolume })}
           className={cn(
             'group flex h-8 items-center gap-1.5 rounded-full px-2.5 ring-1 select-none ring-inset',
             isDraggingVolume
@@ -423,9 +427,7 @@ export const NavMediaControls = memo(function NavMediaControls({ className = '' 
                 className="h-full origin-left rounded-full bg-white"
                 style={{
                   width: `${effectiveVolume * 100}%`,
-                  transition: isDraggingVolume
-                    ? 'none'
-                    : 'width 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+                  transition: getNavMediaVolumeFillTransition({ isDragging: isDraggingVolume }),
                 }}
               />
             </div>
@@ -436,16 +438,13 @@ export const NavMediaControls = memo(function NavMediaControls({ className = '' 
                 'pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md ring-2 ring-black',
                 isDraggingVolume ? 'opacity-100' : 'opacity-0 group-hover/track:opacity-100',
               )}
-              animate={{
-                scale: isDraggingVolume ? 1.25 : 1,
-                boxShadow: isDraggingVolume
-                  ? '0 0 8px rgba(255, 255, 255, 0.45)'
-                  : '0 1px 3px rgba(0, 0, 0, 0.5)',
-              }}
+              animate={getNavMediaVolumeThumbAnimateProps({ isDragging: isDraggingVolume })}
               transition={NAV_BUTTON_TRANSITION}
               style={{
                 left: `${effectiveVolume * 100}%`,
-                transition: isDraggingVolume ? 'none' : 'left 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: getNavMediaVolumeThumbPositionTransition({
+                  isDragging: isDraggingVolume,
+                }),
               }}
             />
           </div>
@@ -504,7 +503,7 @@ export const NavMediaScrubber = memo(function NavMediaScrubber({
   const [hoverTime, setHoverTime] = useState(0);
 
   const hoverX = useMotionValue(0);
-  const smoothHoverX = useSpring(hoverX, { damping: 28, stiffness: 350 });
+  const smoothHoverX = useSpring(hoverX, NAV_SCRUBBER_TOOLTIP_SPRING);
 
   const scrubberRef = useRef(null);
   const progressBarRef = useRef(null);

@@ -181,7 +181,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                           transition={{ duration: 0.3, ease: MOTION_EASINGS.CINEMATIC }}
                         />
                       ) : (
-                        <div className="center h-full w-full bg-black/50 text-white/40">
+                        <div className="center h-full w-full bg-black/60 text-white/50">
                           <Icon icon="solar:gallery-wide-bold" size={20} />
                         </div>
                       )}
@@ -209,7 +209,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               </h3>
               <p
                 className={`mt-1 line-clamp-2 text-xs leading-relaxed ${
-                  listDescription ? 'font-normal text-white/40' : 'font-normal text-white/40 italic'
+                  listDescription ? 'font-normal text-white/50' : 'font-normal text-white/50 italic'
                 }`}
               >
                 {listDescription || 'No description'}

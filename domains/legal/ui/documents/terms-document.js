@@ -24,13 +24,13 @@ function TermsView() {
               <h1 className="text-4xl font-semibold text-white sm:text-5xl">
                 Terms of Service
               </h1>
-              <p className="mx-auto max-w-2xl text-sm leading-7 text-white/40">
+              <p className="mx-auto max-w-2xl text-sm leading-7 text-white/50">
                 These terms govern access to and use of Tvizzie. They are written to match the
                 current product: a movie and TV discovery service with accounts, profile pages,
                 watch tracking, reviews, likes, and lists.
               </p>
             </div>
-            <p className="text-xs text-white/40 uppercase">
+            <p className="text-xs text-white/50 uppercase">
               Last updated {LAST_UPDATED}
             </p>
           </header>
@@ -71,8 +71,8 @@ function TermsView() {
                   <li>
                     You are responsible for the accuracy of information you add to your account.
                   </li>
-                  <li>You are responsible for activity that happens under your account.</li>
-                  <li>You must keep your login credentials and verification codes secure.</li>
+                  <li>You are responsible for activity that happens under your account</li>
+                  <li>You must keep your login credentials and verification codes secure</li>
                   <li>
                     You may not attempt to gain unauthorized access to other accounts or restricted
                     parts of the service.
@@ -105,18 +105,18 @@ function TermsView() {
               <LegalSection title="Acceptable use">
                 <p>You agree not to use Tvizzie to:</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Break the law or violate another person&apos;s rights.</li>
-                  <li>Harass, abuse, threaten, impersonate, or dox other people.</li>
+                  <li>Break the law or violate another person&apos;s rights</li>
+                  <li>Harass, abuse, threaten, impersonate, or dox other people</li>
                   <li>
                     Upload malicious code, interfere with the service, or attempt to bypass security
                     controls.
                   </li>
-                  <li>Spam the product with automated or repetitive content.</li>
+                  <li>Spam the product with automated or repetitive content</li>
                   <li>
                     Scrape or extract data from the service in a way that harms the product, its
                     users, or its infrastructure.
                   </li>
-                  <li>Post content that you do not have the right to publish.</li>
+                  <li>Post content that you do not have the right to publish</li>
                 </ul>
               </LegalSection>
 

@@ -42,7 +42,7 @@ function PersonImage({
   if (!src) {
     return (
       <div className="center h-full w-full">
-        <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-white/40" />
+        <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-white/50" />
       </div>
     );
   }

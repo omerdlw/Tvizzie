@@ -14,7 +14,12 @@ import {
   resolveRenderableContent,
   toArray,
 } from './utils';
-import { NAV_HUD_TRANSITION, navHudVariants } from './motion';
+import {
+  NAV_COMPOSITOR_STYLE,
+  NAV_HUD_TRANSITION,
+  NAV_SKELETON_PULSE_CLASS,
+  navHudVariants,
+} from './motion';
 import { cn } from '@/ui/class-names';
 import { Button, Tooltip } from '@/ui/primitives';
 import Iconify from '@/ui/primitives/icon';
@@ -319,6 +324,7 @@ export const NavHudShell = memo(function NavHudShell({
         exit="exit"
         transition={NAV_HUD_TRANSITION}
         className={cn('flex w-full flex-col justify-center gap-2 select-none', className)}
+        style={NAV_COMPOSITOR_STYLE}
         onClick={(event) => {
           event.stopPropagation();
           onClick?.(event);
@@ -347,7 +353,7 @@ export const NavHudShell = memo(function NavHudShell({
                     </div>
                   )}
                   {description && (
-                    <div className="truncate text-xs leading-tight text-white/40">
+                    <div className="truncate text-xs leading-tight text-white/50">
                       {description}
                     </div>
                   )}
@@ -371,7 +377,7 @@ export const NavHudShell = memo(function NavHudShell({
                       e.stopPropagation();
                       onCancel(e);
                     }}
-                    className="flex size-8 items-center justify-center rounded-xl bg-white/5 text-white/40 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
+                    className="flex size-8 items-center justify-center rounded-xl bg-white/5 text-white/50 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
                     aria-label="Dismiss HUD"
                   >
                     <Iconify icon="solar:close-circle-bold" size={16} />
@@ -383,7 +389,12 @@ export const NavHudShell = memo(function NavHudShell({
             {(progress != null || isIndeterminate) && (
               <div className="relative h-1 w-full overflow-hidden rounded-full bg-white/10">
                 {isIndeterminate ? (
-                  <div className="h-full w-1/3 animate-pulse rounded-full bg-white/70" />
+                  <div
+                    className={cn(
+                      'h-full w-1/3 rounded-full bg-white/70',
+                      NAV_SKELETON_PULSE_CLASS,
+                    )}
+                  />
                 ) : (
                   <div
                     className="h-full w-full origin-left rounded-full bg-white/70"

@@ -62,7 +62,7 @@ export default function SignInSurface({ close, data }) {
     setHeader?.({
       icon: 'solar:user-circle-bold',
       title: 'Sign In',
-      description: 'Choose how you want to sign in.',
+      description: 'Choose how you want to sign in',
       trailing: null,
       headerAction: (
         <NavSurfaceHeaderButton

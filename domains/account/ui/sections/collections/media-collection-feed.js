@@ -47,7 +47,7 @@ export default function MediaCollectionFeed({
   );
   const genreOptions = useMemo(() => collectMediaGenreOptions(items), [items]);
 
-  if (!canShowGrid) return <AccountSectionState message="This profile is private." />;
+  if (!canShowGrid) return <AccountSectionState message="This profile is private" />;
   if (loadError) return <AccountSectionState message={loadError} />;
 
   return (

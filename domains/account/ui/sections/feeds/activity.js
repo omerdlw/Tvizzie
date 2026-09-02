@@ -151,7 +151,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
           ))}
         </div>
         {createdLabel && (
-          <span className="shrink-0 text-xs font-semibold text-white/40">
+          <span className="shrink-0 text-xs font-semibold text-white/50">
             {createdLabel}
           </span>
         )}

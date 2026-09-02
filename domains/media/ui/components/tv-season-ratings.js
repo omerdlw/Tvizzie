@@ -41,7 +41,7 @@ function getEpisodeMap(seasons) {
 export function RatingsLegend({ className }) {
   return (
     <div className={cn('flex flex-col gap-2.5 pt-2', className)}>
-      <p className="text-xs font-semibold text-white/40 uppercase">Rating Scale</p>
+      <p className="text-xs font-semibold text-white/50 uppercase">Rating Scale</p>
       <div className="flex flex-col gap-2">
         {RATING_LEGEND.map((item) => (
           <div key={item.label} className="flex items-center gap-2.5 text-xs font-semibold text-white/70 uppercase">
@@ -57,12 +57,12 @@ export function RatingsLegend({ className }) {
 function TvSeasonRatingsEmpty() {
   return (
     <section className="flex min-h-64 w-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <span className="center size-11 rounded-[14px] ring-1 ring-inset ring-white/10 bg-black/50 text-white/40">
+      <span className="center size-11 rounded-[14px] ring-1 ring-inset ring-white/10 bg-black/60 text-white/50">
         <Icon icon="solar:chart-2-bold" size={20} />
       </span>
       <div>
         <h2 className="text-sm font-semibold text-white">Ratings unavailable</h2>
-        <p className="mt-1 max-w-sm text-sm leading-6 text-white/40">
+        <p className="mt-1 max-w-sm text-sm leading-6 text-white/50">
           Episode ratings are not available for this series yet.
         </p>
       </div>
@@ -78,8 +78,8 @@ function resolveGridScale(seasonsCount) {
       colWidth: '4.5rem',
       rowHeaderWidth: '2.5rem',
       gapClass: 'gap-2.5 sm:gap-3',
-      seasonHeaderClass: 'center h-8 sm:h-9 text-xs sm:text-sm font-bold text-white/40 uppercase',
-      episodeLabelClass: 'center size-10 sm:size-12 self-center text-xs sm:text-sm font-bold text-white/40 uppercase tabular-nums',
+      seasonHeaderClass: 'center h-8 sm:h-9 text-xs sm:text-sm font-bold text-white/50 uppercase',
+      episodeLabelClass: 'center size-10 sm:size-12 self-center text-xs sm:text-sm font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -90,8 +90,8 @@ function resolveGridScale(seasonsCount) {
       colWidth: '3.75rem',
       rowHeaderWidth: '2.25rem',
       gapClass: 'gap-2 sm:gap-2.5',
-      seasonHeaderClass: 'center h-8 text-xs font-bold text-white/40 uppercase',
-      episodeLabelClass: 'center size-9 sm:size-10 self-center text-xs font-bold text-white/40 uppercase tabular-nums',
+      seasonHeaderClass: 'center h-8 text-xs font-bold text-white/50 uppercase',
+      episodeLabelClass: 'center size-9 sm:size-10 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -102,8 +102,8 @@ function resolveGridScale(seasonsCount) {
       colWidth: '3rem',
       rowHeaderWidth: '2rem',
       gapClass: 'gap-1.5 sm:gap-2',
-      seasonHeaderClass: 'center h-7 text-xs font-bold text-white/40 uppercase',
-      episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/40 uppercase tabular-nums',
+      seasonHeaderClass: 'center h-7 text-xs font-bold text-white/50 uppercase',
+      episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -113,8 +113,8 @@ function resolveGridScale(seasonsCount) {
     colWidth: '2.5rem',
     rowHeaderWidth: '2rem',
     gapClass: 'gap-1.5',
-    seasonHeaderClass: 'center h-7 text-xs font-bold text-white/40 uppercase',
-    episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/40 uppercase tabular-nums',
+    seasonHeaderClass: 'center h-7 text-xs font-bold text-white/50 uppercase',
+    episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
   };
 }
 

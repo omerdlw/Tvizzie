@@ -170,7 +170,7 @@ export function useAccountOverviewState(routeData = null) {
     if (!isCurrentAccountMissing || handledMissingAccountRef.current) return;
 
     handledMissingAccountRef.current = true;
-    toast.error('Your account profile could not be initialized. Refresh the page and try again.', {
+    toast.error('Your account profile could not be initialized. Refresh the page and try again', {
       dedupeKey: 'current-account-missing',
       duration: 6000,
     });
@@ -178,7 +178,7 @@ export function useAccountOverviewState(routeData = null) {
 
   const reviewPreview = useOverviewPreviewFeed({
     canLoad: canLoadPreviews,
-    errorMessage: 'Reviews could not be loaded right now.',
+    errorMessage: 'Reviews could not be loaded right now',
     hasSeededFeed: hasSeededReviewFeed,
     initialFeed: initialReviewFeed,
     loadFeed: useCallback(
@@ -233,8 +233,8 @@ export function useAccountOverviewState(routeData = null) {
         confirmLoadingText: 'Deleting',
         confirmText: 'Delete',
         description: isListComment
-          ? 'This comment will be permanently removed from your profile.'
-          : 'This review will be permanently removed from your profile.',
+          ? 'This comment will be permanently removed from your profile'
+          : 'This review will be permanently removed from your profile',
         icon: poster ? (poster.startsWith('/') ? `${TMDB_IMG}/w342${poster}` : poster) : undefined,
         isDestructive: true,
         onCancel: () => setReviewDeleteConfirmation(null),

@@ -16,6 +16,29 @@ import { isSafeInternalHref, isSamePath, normalizePath } from './utils';
 
 // ── Navigation transactions ──────────────────────────────────────────────────
 
+/**
+ * Builds a stable client-side navigation identity from all route-addressable parts.
+ * @param {{hash?: string, pathname?: string, search?: string}} parts - Browser location parts
+ * @returns {string} Path, query string, and hash in browser order
+ */
+export function getNavigationLocationKey({ hash = '', pathname = '/', search = '' } = {}) {
+  const normalizedPathname = String(pathname || '/').trim() || '/';
+  const normalizedSearch = String(search || '').trim();
+  const normalizedHash = String(hash || '').trim();
+  const query = normalizedSearch
+    ? normalizedSearch.startsWith('?')
+      ? normalizedSearch
+      : `?${normalizedSearch}`
+    : '';
+  const fragment = normalizedHash
+    ? normalizedHash.startsWith('#')
+      ? normalizedHash
+      : `#${normalizedHash}`
+    : '';
+
+  return `${normalizedPathname}${query}${fragment}`;
+}
+
 /** Creates the initial transaction snapshot for navigation work. */
 export function createNavigationTransactionState() {
   return {

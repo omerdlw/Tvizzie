@@ -341,7 +341,7 @@ export async function handleVerificationPost(request) {
       if (String(purpose).toLowerCase() === 'sign-in') {
         const pendingToken = request.cookies.get('tvz_login_pending')?.value;
         if (!pendingToken)
-          throw new Error('Verification session has expired. Please sign in again.');
+          throw new Error('Verification session has expired. Please sign in again');
         pendingSignIn = verifyPendingSignInToken(pendingToken);
         if (
           normalizeEmailValue(pendingSignIn.email) !== email ||

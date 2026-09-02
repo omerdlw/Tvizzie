@@ -10,8 +10,8 @@ export default function ReviewAuthFallback({
 }) {
   const helperText =
     mode === 'comment'
-      ? `Sign in to leave a comment on ${title}.`
-      : `Sign in to leave a rating or review for ${title}.`;
+      ? `Sign in to leave a comment on ${title}`
+      : `Sign in to leave a rating or review for ${title}`;
   const isAccountSection = variant === 'account-section';
 
   return (

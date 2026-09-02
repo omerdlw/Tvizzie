@@ -2,6 +2,6 @@ import { AccountNotFoundState } from '@/domains/account/ui/layouts/account-layou
 
 export default function NotFound() {
   return (
-    <AccountNotFoundState description="We couldn't find this account. It may have been removed, made private, or the username may be incorrect." />
+    <AccountNotFoundState description="We couldn't find this account. It may have been removed, made private, or the username may be incorrect" />
   );
 }

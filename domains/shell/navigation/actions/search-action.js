@@ -77,7 +77,7 @@ export function SearchResultPosterItem({ item, imageErrors = {}, onImageError, o
   const typeLabel = isTv ? 'TV' : 'Movie';
 
   const posterContent = (
-    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out group-hover/poster:ring-white/40">
+    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out group-hover/poster:ring-white/50">
       {imagePath && !hasImageError ? (
         <AdaptiveImage
           fill
@@ -405,13 +405,13 @@ export function SearchActionControls({
                 button: SEARCH_STYLES.input,
                 isActive: false,
               }),
-              input: 'w-full text-sm placeholder:text-white/40 outline-none',
+              input: 'w-full text-sm placeholder:text-white/50 outline-none',
               leftIcon: 'mr-2 center shrink-0',
             }}
             enterKeyHint="search"
             leftIcon={
               <Icon
-                className={`${query ? 'text-white' : 'text-white/40'}`}
+                className={`${query ? 'text-white' : 'text-white/50'}`}
                 icon="solar:magnifer-linear"
                 size={16}
               />

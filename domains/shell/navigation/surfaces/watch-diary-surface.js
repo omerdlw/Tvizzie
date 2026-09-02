@@ -180,7 +180,7 @@ export default function WatchDiarySurface({ close, data }) {
               onChange={(event) => setWatchedOn(event.target.value)}
               classNames={{
                 input:
-                  'h-11 w-full rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-sm font-medium text-white transition-colors outline-none focus:ring-white/40 focus-visible:ring-2 focus-visible:ring-white/40',
+                  'h-11 w-full rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 text-sm font-medium text-white transition-colors outline-none focus:ring-white/50 focus-visible:ring-2 focus-visible:ring-white/50',
               }}
             />
           </label>
@@ -198,7 +198,7 @@ export default function WatchDiarySurface({ close, data }) {
             classNames={{
               wrapper:
                 'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/10 bg-white/5 px-3 transition-colors hover:ring-white/15',
-              box: 'size-4 shrink-0 rounded-full ring-1 ring-inset ring-white/15 bg-white/5 focus-visible:ring-2 focus-visible:ring-white/40 data-[state=checked]:bg-white data-[state=checked]:text-black',
+              box: 'size-4 shrink-0 rounded-full ring-1 ring-inset ring-white/15 bg-white/5 focus-visible:ring-2 focus-visible:ring-white/50 data-[state=checked]:bg-white data-[state=checked]:text-black',
               indicator: 'size-full text-black',
               label: 'text-sm font-medium text-white',
             }}
@@ -259,8 +259,8 @@ export default function WatchDiarySurface({ close, data }) {
             transition={NAV_FADE_TRANSITION}
             className="flex min-h-24 flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 px-4 text-center"
           >
-            <Icon icon="solar:calendar-minimalistic-bold" size={20} className="text-white/40" />
-            <p className="text-sm text-white/40">
+            <Icon icon="solar:calendar-minimalistic-bold" size={20} className="text-white/50" />
+            <p className="text-sm text-white/50">
               Your first entry for {episodeLabel ? `${title} · ${episodeLabel}` : title} starts
               here.
             </p>
@@ -284,10 +284,10 @@ export default function WatchDiarySurface({ close, data }) {
                 custom={index + 3}
                 className="flex flex-col gap-1.5 px-3 py-3"
               >
-                <time className="text-xs font-bold text-white/40 uppercase">
+                <time className="text-xs font-bold text-white/50 uppercase">
                   {formatDiaryDate(entry.watchedOn || entry.watchedAt)}
                 </time>
-                <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-white/40 uppercase">
+                <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-white/50 uppercase">
                   {entry.isRewatch ? <span>Rewatch</span> : null}
                 </div>
               </motion.article>

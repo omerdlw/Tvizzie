@@ -238,7 +238,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
         userId: auth.user.id,
       });
       setSavedShowcase(localShowcase);
-      toast.success('Favorites order saved successfully.');
+      toast.success('Favorites order saved successfully');
     } catch (error) {
       toast.error(error?.message || 'Favorites showcase could not be updated');
     } finally {
@@ -387,7 +387,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
 
         if (!isPermissionDeniedError(error)) {
           logDataError('[Account] Liked reviews could not be loaded:', error);
-          setReviewsError('Liked reviews could not be loaded right now.');
+          setReviewsError('Liked reviews could not be loaded right now');
         }
       } finally {
         if (latestLikedReviewsRequestRef.current === requestId) {
@@ -486,7 +486,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
 
           if (!isPermissionDeniedError(error)) {
             logDataError('[Account] Liked lists could not be loaded:', error);
-            setLikedListsError('Liked lists could not be loaded right now.');
+            setLikedListsError('Liked lists could not be loaded right now');
           }
         }
       } finally {

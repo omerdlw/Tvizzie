@@ -12,6 +12,7 @@ import {
   getItemKey,
 } from './utils';
 import { NavBreadcrumbsCard, useNavBreadcrumbs } from './breadcrumbs';
+import { NavSurfaceExtensionsBar, useIsSurfaceExtensionsVisible } from './surface';
 import { useNavKeyboard } from './behavior';
 import { NavCardItem } from './cards';
 import { useNavHeightController, useNavViewport } from './layout';
@@ -23,10 +24,7 @@ import {
   getNavStackAnimateProps,
   navBackdropVariants,
 } from './motion';
-import {
-  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
-  NAV_SURFACE_PHASE,
-} from './constants';
+import { NAV_SURFACE_CHOREOGRAPHY_TIMINGS, NAV_SURFACE_PHASE } from './constants';
 import { useNavigation, useNavigationActions, useNavigationState } from './runtime';
 
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
@@ -40,11 +38,16 @@ export {
   NAV_CARD_COLLAPSE_TRANSITION,
   NAV_FADE_TRANSITION,
   NAV_MICRO_TRANSITION,
+  NAV_SKELETON_PULSE_CLASS,
+  NAV_SCRUBBER_TOOLTIP_SPRING,
+  NAV_MEDIA_VOLUME_FILL_TRANSITION,
+  NAV_MEDIA_VOLUME_THUMB_POSITION_TRANSITION,
   NAV_RESULTS_TRANSITION,
   NAV_RESULTS_EXIT_TRANSITION,
   NAV_RESULTS_STAGGER_DELAY,
   NAV_CARD_HEIGHT_OPEN_TRANSITION,
   NAV_CARD_HEIGHT_CLOSE_TRANSITION,
+  NAV_COMPOSITOR_STYLE,
   NAV_ACTION_DISMISS_TRANSITION,
   NAV_HEADER_SWAP_TRANSITION,
   NAV_SURFACE_BODY_ENTER_TRANSITION,
@@ -53,9 +56,14 @@ export {
   navHeaderSwapVariants,
   navHeaderRestoreVariants,
   navSurfaceControlsVariants,
+  navSurfaceDragTransformTemplate,
   navCommandBarSwapVariants,
   navSurfaceBodyVariants,
+  navSurfaceExtensionsVariants,
+  NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION,
+  NAV_SURFACE_EXTENSIONS_EXIT_TRANSITION,
   navActionVariants,
+  navMediaVolumeThumbVariants,
   slideFadeVariants,
   textCrossfadeVariants,
   staggerItemVariants,
@@ -68,6 +76,9 @@ export {
   navHudVariants,
   getNavDescriptionVariants,
   getNavActionStaggerTransition,
+  getNavMediaVolumeFillTransition,
+  getNavMediaVolumeThumbAnimateProps,
+  getNavMediaVolumeThumbPositionTransition,
   getNavStackAnimateProps,
   getNavCardDelay,
   getNavItemAnimateValues,
@@ -131,10 +142,18 @@ export {
   createSurfaceFlowSession,
   createSurfaceReturnHandshake,
   isSurfaceDescriptor,
+  NavSurfaceExtension,
+  NavSurfaceExtensionsBar,
+  normalizeSurfaceExtension,
   resolveActiveStepDefinition,
   resolveSurfaceAction,
+  SurfaceExtensionsContext,
+  SurfaceExtensionsProvider,
   updateSurfaceFlowSession,
+  useIsSurfaceExtensionsVisible,
+  useSurfaceExtensions,
   useSurfaceFlow,
+  useSurfaceId,
 } from './surface';
 export { applyStatusOverlay, getStatusTheme, useNavigationStatus } from './status';
 export {
@@ -144,6 +163,7 @@ export {
   createNavigationContinuityState,
   createNavigationReturnHandoff,
   createNavigationTopology,
+  getNavigationLocationKey,
   navigationContinuityReducer,
   navigationTransactionReducer,
   resolveNavigationContinuityEntry,
@@ -270,6 +290,7 @@ export default function Nav() {
     setExpanded,
     activeIndex,
     compact,
+    exitCompact,
     isHudActive,
     expanded,
     navigate,
@@ -300,6 +321,7 @@ export default function Nav() {
   const { breadcrumbs } = useNavBreadcrumbs();
   const hasBreadcrumbs = Boolean(breadcrumbs && breadcrumbs.length > 1);
   const isBreadcrumbsCardVisible = Boolean(expanded && !isOverlayActive && hasBreadcrumbs);
+  const isExtensionsVisible = useIsSurfaceExtensionsVisible(activeItem);
 
   const compactStackWidth = useMemo(
     () => estimateCompactCardWidth(activeTitle, stackWidth),
@@ -400,8 +422,8 @@ export default function Nav() {
       if (!expanded) {
         if (isTop) {
           if (compact && !isCompactPreviewActive) {
-            setIsStackHovered(true);
-            setIsHovered(true);
+            clearHoverState();
+            setExpanded(true);
             return;
           }
 
@@ -465,17 +487,16 @@ export default function Nav() {
             animate="visible"
             exit="exit"
             transition={NAV_BACKDROP_TRANSITION}
-            className="fixed inset-0 cursor-pointer bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 cursor-pointer bg-linear-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm"
             style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
             onClick={handleOutsideDismiss}
           />
         )}
       </AnimatePresence>
-
       <motion.div
         id="nav-card-stack"
         ref={navRef}
-        className="fixed inset-x-0 bottom-1 mx-auto touch-manipulation select-none"
+        className="fixed inset-x-0 bottom-[4px] mx-auto touch-manipulation select-none"
         style={{
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',
@@ -485,10 +506,12 @@ export default function Nav() {
           width: isCompactStack ? compactStackWidth : stackWidth,
           height: containerHeight,
           isBreadcrumbsVisible: isBreadcrumbsCardVisible,
+          isExtensionsVisible,
           isFullscreen: isFullscreenStateActive,
         })}
         transition={navStackTransition}
       >
+        <NavSurfaceExtensionsBar activeItem={activeItem} />
         <AnimatePresence>{isBreadcrumbsCardVisible && <NavBreadcrumbsCard />}</AnimatePresence>
         {renderedNavItems}
       </motion.div>

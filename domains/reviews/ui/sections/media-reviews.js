@@ -236,7 +236,7 @@ export default function MediaReviews({
         )}
         {isSortControlEnabled && (
           <div className="flex w-full items-center justify-between border-b border-white/10 pb-4">
-            <span className="text-xs font-semibold text-white/40 uppercase">Sort</span>
+            <span className="text-xs font-semibold text-white/50 uppercase">Sort</span>
             <Select
               onChange={setSortMode}
               options={REVIEW_SORT_OPTIONS}
@@ -249,7 +249,7 @@ export default function MediaReviews({
                   'cursor-pointer rounded-[8px] px-3 py-2 text-xs font-semibold text-white/70 uppercase outline-none data-[highlighted]:bg-white/5 data-[highlighted]:text-white',
                 optionActive: 'bg-white/5 text-white',
                 indicator: 'ml-auto text-white',
-                icon: 'text-white/40',
+                icon: 'text-white/50',
               }}
               aria-label="Sort reviews"
             />

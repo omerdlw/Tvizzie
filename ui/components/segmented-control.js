@@ -120,7 +120,7 @@ export default function SegmentedControl({
   }
 
   const defaultButtonPadding = 'px-3 py-1 text-xs';
-  const defaultIndicatorBg = 'bg-white/10 shadow-sm';
+  const defaultIndicatorBg = 'bg-black shadow-sm';
   const defaultWrapperBg = 'ring-1 ring-inset ring-white/5 bg-white/5 shadow-inner';
 
   return (

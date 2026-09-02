@@ -293,7 +293,7 @@ export default function CollectionActions({ additionalActions = [], media }) {
     } catch {
       pendingStatusRef.current.like = null;
       setState((prev) => ({ ...prev, liked: previousLikedState }));
-      toast.error('Action Failed', 'Could not update your like status. Please try again.');
+      toast.error('Action Failed', 'Could not update your like status. Please try again');
     } finally {
       pendingStatusRef.current.like = null;
       setPendingAction(null);
@@ -333,7 +333,7 @@ export default function CollectionActions({ additionalActions = [], media }) {
     } catch {
       pendingStatusRef.current.watched = null;
       setState((prev) => ({ ...prev, watched: previousWatchedState }));
-      toast.error('Action Failed', 'Could not update your watched status. Please try again.');
+      toast.error('Action Failed', 'Could not update your watched status. Please try again');
     } finally {
       pendingStatusRef.current.watched = null;
       setPendingAction(null);
@@ -387,7 +387,7 @@ export default function CollectionActions({ additionalActions = [], media }) {
     } catch {
       pendingStatusRef.current.watchlist = null;
       setState((prev) => ({ ...prev, watchlist: previousWatchlistState }));
-      toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
+      toast.error('Action Failed', 'Could not update watchlist status. Please try again');
     } finally {
       pendingStatusRef.current.watchlist = null;
       setPendingAction(null);

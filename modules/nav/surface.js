@@ -1,8 +1,10 @@
 import {
   cloneElement,
   createContext,
+  createElement,
   forwardRef,
   isValidElement,
+  memo,
   useCallback,
   useContext,
   useEffect,
@@ -10,6 +12,7 @@ import {
   useReducer,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import { AnimatePresence, motion, useMotionValue, useTransform } from 'motion/react';
 
@@ -35,15 +38,19 @@ import {
 } from './utils';
 import {
   NAV_COMPACT_TO_SURFACE_DELAY_MS,
+  NAV_COMPOSITOR_STYLE,
   NAV_HEADER_SWAP_TRANSITION,
   NAV_SURFACE_BODY_ENTER_TRANSITION,
   NAV_SURFACE_BODY_EXIT_TRANSITION,
+  NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION,
   NAV_SURFACE_DRAG_CONSTRAINTS,
   NAV_SURFACE_DRAG_ELASTIC,
   NAV_SURFACE_EXIT_SETTLE_MS,
   navHeaderSwapVariants,
+  navSurfaceDragTransformTemplate,
   navSurfaceControlsVariants,
   navSurfaceBodyVariants,
+  navSurfaceExtensionsVariants,
   slideFadeVariants,
 } from './motion';
 import { cn } from '@/ui/class-names';
@@ -59,6 +66,58 @@ export function isSurfaceDescriptor(value) {
   return (
     value != null && typeof value === 'object' && !Array.isArray(value) && !isValidElement(value)
   );
+}
+
+let generatedExtensionId = 0;
+
+/**
+ * Normalizes an extension definition for surface auxiliary controls.
+ * @param {*} input - Extension definition, component, or node
+ * @returns {object|null} Normalized extension descriptor
+ */
+export function normalizeSurfaceExtension(input) {
+  if (!input) return null;
+  if (isValidElement(input)) {
+    return {
+      align: 'left',
+      className: '',
+      component: null,
+      content: input,
+      id: `ext-${++generatedExtensionId}`,
+      order: 0,
+      props: {},
+      unstyled: false,
+    };
+  }
+  if (typeof input !== 'object') return null;
+
+  const component = isValidComponentType(input.component) ? input.component : null;
+  const content =
+    isValidElement(input.content) ||
+    typeof input.content === 'string' ||
+    typeof input.content === 'number'
+      ? input.content
+      : null;
+
+  if (!component && content == null) return null;
+
+  const align =
+    input.align === 'right' || input.align === 'end'
+      ? 'right'
+      : input.align === 'center'
+        ? 'center'
+        : 'left';
+
+  return {
+    align,
+    className: typeof input.className === 'string' ? input.className : '',
+    component,
+    content,
+    id: String(input.id || input.key || `ext-${++generatedExtensionId}`),
+    order: Number.isFinite(Number(input.order)) ? Number(input.order) : 0,
+    props: input.props && typeof input.props === 'object' ? input.props : {},
+    unstyled: Boolean(input.unstyled),
+  };
 }
 
 function normalizeSurfaceFlowSnapshot(value) {
@@ -320,6 +379,11 @@ function normalizeSurfaceDefinition(
     syncWithUrl: descriptor?.syncWithUrl ?? config?.syncWithUrl ?? false,
     urlKey: descriptor?.urlKey ?? config?.urlKey ?? null,
     badge: descriptor?.badge ?? config?.badge ?? null,
+    extensions: Array.isArray(descriptor?.extensions ?? config?.extensions)
+      ? (descriptor?.extensions ?? config?.extensions).map(normalizeSurfaceExtension).filter(Boolean)
+      : (descriptor?.extensions ?? config?.extensions)
+        ? [normalizeSurfaceExtension(descriptor?.extensions ?? config?.extensions)].filter(Boolean)
+        : [],
   };
 }
 
@@ -407,6 +471,11 @@ export function resolveActiveStepDefinition(surfaceEntry) {
     canGoBack: currentIndex > 0,
     isFirstStep: currentIndex === 0,
     isLastStep: currentIndex === steps.length - 1,
+    extensions: step.extensions
+      ? Array.isArray(step.extensions)
+        ? step.extensions.map(normalizeSurfaceExtension).filter(Boolean)
+        : [normalizeSurfaceExtension(step.extensions)].filter(Boolean)
+      : surfaceEntry.extensions || [],
   };
 }
 
@@ -433,62 +502,90 @@ export function applySurfaceToNavItem(
     surfacePhase = NAV_SURFACE_PHASE.OPEN,
   } = {},
 ) {
-  const surfaceEntry = resolveActiveStepDefinition(rawSurfaceEntry);
-  const surfaceComponent = surfaceEntry?.component ?? null;
-  const surfaceContent = surfaceEntry?.content ?? null;
+  const createSurfacePresentation = (entry, stack) => {
+    const surfaceEntry = resolveActiveStepDefinition(entry);
+    const surfaceComponent = surfaceEntry?.component ?? null;
+    const surfaceContent = surfaceEntry?.content ?? null;
 
-  if (!item || (!surfaceComponent && surfaceContent == null)) {
+    if (!surfaceComponent && surfaceContent == null) return null;
+
+    const surfaceId = surfaceEntry.id ?? null;
+    const canGoBack = Boolean(surfaceEntry.canGoBack) || stack.length > 1;
+    const surfaceFlow =
+      typeof getSurfaceFlow === 'function' ? getSurfaceFlow(surfaceEntry.flow?.flowId) : null;
+
+    return {
+      allowSwipeDismiss: surfaceEntry.allowSwipeDismiss !== false,
+      badge: surfaceEntry.badge ?? null,
+      canGoBack,
+      closeAllSurfaces: typeof closeAllSurfaces === 'function' ? closeAllSurfaces : null,
+      closeSurface:
+        typeof closeSurface === 'function'
+          ? (result = null) => closeSurface(result, surfaceId)
+          : (result = null) => {
+              surfaceEntry?.onClose?.(result);
+            },
+      dismissible: surfaceEntry.dismissible !== false,
+      expandHorizontal: surfaceEntry.expandHorizontal ?? false,
+      goToStep: typeof goToStep === 'function' ? (index) => goToStep(index, surfaceId) : null,
+      isFirstStep: surfaceEntry.isFirstStep ?? true,
+      isLastStep: surfaceEntry.isLastStep ?? true,
+      onAnimationComplete: handleSurfaceAnimationComplete,
+      onBack: canGoBack
+        ? () => {
+            if (typeof goBackSurface === 'function') {
+              goBackSurface();
+            } else if (typeof popStep === 'function') {
+              popStep(surfaceId);
+            } else if (typeof closeSurface === 'function') {
+              closeSurface(null, surfaceId);
+            }
+          }
+        : null,
+      popStep: typeof popStep === 'function' ? () => popStep(surfaceId) : null,
+      pushStep: typeof pushStep === 'function' ? (step) => pushStep(step, surfaceId) : null,
+      stepIndex: surfaceEntry.stepIndex ?? 0,
+      surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
+      surfaceComponent,
+      surfaceContent,
+      surfaceDescription: surfaceEntry.description ?? null,
+      surfaceDescriptionMaxLines: surfaceEntry.descriptionMaxLines ?? 2,
+      surfaceHeaderAction: surfaceEntry.headerAction ?? null,
+      surfaceIcon: surfaceEntry.icon ?? null,
+      surfaceId,
+      surfaceProps: surfaceFlow
+        ? { ...(surfaceEntry.props || {}), surfaceFlow }
+        : surfaceEntry.props || {},
+      surfacePhase,
+      surfaceTitle: surfaceEntry.title ?? null,
+      surfaceTrailing: surfaceEntry.trailing ?? null,
+      surfaceExtensions: surfaceEntry.extensions || [],
+      extensions: surfaceEntry.extensions || [],
+      totalSteps: surfaceEntry.totalSteps ?? 1,
+      width: surfaceEntry.width ?? null,
+    };
+  };
+  const stackEntries = surfaceStack.length ? surfaceStack : [rawSurfaceEntry];
+  const surfaceStackEntries = stackEntries
+    .map((entry, index) => createSurfacePresentation(entry, stackEntries.slice(0, index + 1)))
+    .filter(Boolean);
+  const surfaceEntry = surfaceStackEntries[surfaceStackEntries.length - 1] || null;
+
+  if (!item || !surfaceEntry) {
     return item;
   }
-
-  const surfaceId = surfaceEntry.id ?? null;
-  const canGoBack = Boolean(surfaceEntry.canGoBack) || surfaceStack.length > 1;
-  const onBack = canGoBack ? goBackSurface : null;
-  const surfaceFlow =
-    typeof getSurfaceFlow === 'function' ? getSurfaceFlow(surfaceEntry.flow?.flowId) : null;
 
   return {
     ...item,
     isSurface: true,
     isOverlay: true,
     surfacePhase,
-    surfaceId,
-    dismissible: surfaceEntry.dismissible !== false,
-    allowSwipeDismiss: surfaceEntry.allowSwipeDismiss !== false,
-    surfaceComponent,
-    surfaceContent,
-    surfaceProps: surfaceFlow
-      ? { ...(surfaceEntry.props || {}), surfaceFlow }
-      : surfaceEntry.props || {},
-    closeSurface:
-      typeof closeSurface === 'function'
-        ? closeSurface
-        : (result = null) => {
-            surfaceEntry?.onClose?.(result);
-          },
-    closeAllSurfaces: typeof closeAllSurfaces === 'function' ? closeAllSurfaces : null,
-    pushStep: typeof pushStep === 'function' ? (step) => pushStep(step, surfaceId) : null,
-    popStep: typeof popStep === 'function' ? () => popStep(surfaceId) : null,
-    goToStep: typeof goToStep === 'function' ? (index) => goToStep(index, surfaceId) : null,
-    canGoBack,
-    onBack,
-    onAnimationComplete: handleSurfaceAnimationComplete,
-    stepIndex: surfaceEntry.stepIndex ?? 0,
-    totalSteps: surfaceEntry.totalSteps ?? 1,
-    isFirstStep: surfaceEntry.isFirstStep ?? true,
-    isLastStep: surfaceEntry.isLastStep ?? true,
-    badge: surfaceEntry.badge ?? null,
+    ...surfaceEntry,
     actions: null,
-    action: resolveSurfaceAction(item, surfaceEntry),
-    surfaceIcon: surfaceEntry.icon ?? null,
-    surfaceTitle: surfaceEntry.title ?? null,
-    surfaceDescription: surfaceEntry.description ?? null,
-    surfaceDescriptionMaxLines: surfaceEntry.descriptionMaxLines ?? 2,
-    surfaceTrailing: surfaceEntry.trailing ?? null,
-    surfaceHeaderAction: surfaceEntry.headerAction ?? null,
-    surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
-    expandHorizontal: surfaceEntry.expandHorizontal ?? false,
-    width: surfaceEntry.width ?? null,
+    action: resolveSurfaceAction(item, resolveActiveStepDefinition(rawSurfaceEntry)),
+    surfaceStackEntries,
+    surfaceExtensions: surfaceEntry.surfaceExtensions || surfaceEntry.extensions || [],
+    extensions: surfaceEntry.extensions || [],
   };
 }
 
@@ -597,12 +694,15 @@ function resolveSurfaceEntry(entry, payloadMap) {
 }
 
 function createSurfaceState(surfaceStack = [], payloadMap = null) {
-  const activeSurface = resolveSurfaceEntry(surfaceStack[surfaceStack.length - 1], payloadMap);
+  const resolvedSurfaceStack = surfaceStack
+    .map((entry) => resolveSurfaceEntry(entry, payloadMap))
+    .filter(Boolean);
+  const activeSurface = resolvedSurfaceStack[resolvedSurfaceStack.length - 1];
   return {
     activeSurfaceId: activeSurface?.id || null,
-    isSurfaceOpen: surfaceStack.length > 0,
+    isSurfaceOpen: resolvedSurfaceStack.length > 0,
     activeSurfaceEntry: activeSurface || null,
-    surfaceStack,
+    surfaceStack: resolvedSurfaceStack,
   };
 }
 
@@ -870,9 +970,7 @@ export function useSurfaceStack({
     const effectivePhase =
       nextPhase ?? (nextStack.length > 0 ? NAV_SURFACE_PHASE.OPEN : NAV_SURFACE_PHASE.IDLE);
     setSurfacePhase(effectivePhase);
-    setSurfaceState(
-      createSurfaceState(nextStack, surfacePayloadMapRef.current, effectivePhase),
-    );
+    setSurfaceState(createSurfaceState(nextStack, surfacePayloadMapRef.current, effectivePhase));
   }, []);
 
   const restoreSurfaceFocus = useCallback((surfaceId, result, nextStack = []) => {
@@ -887,6 +985,7 @@ export function useSurfaceStack({
 
     focusRestoreFrameRef.current = requestAnimationFrame(() => {
       focusRestoreFrameRef.current = null;
+      if (surfaceStackRef.current.length > 0) return;
       focusNavigationElement(focusOrigin);
     });
   }, []);
@@ -1075,12 +1174,12 @@ export function useSurfaceStack({
 
       if (isReturningToPreviousSurface) {
         clearChoreographyTimers();
-        finalizeSurfaceClose(surfaceId, result, nextStack);
         surfaceStackRef.current = nextStack;
         updatePhase(NAV_SURFACE_PHASE.OPEN);
         setSurfaceState(
           createSurfaceState(nextStack, surfacePayloadMapRef.current, NAV_SURFACE_PHASE.OPEN),
         );
+        finalizeSurfaceClose(surfaceId, result, nextStack);
         return;
       }
 
@@ -1097,13 +1196,13 @@ export function useSurfaceStack({
         // Adım 3 & 4: Geçiş tamamlandı, yalnızca Nav Header kalır, kaynaklar temizlenir
         const t2 = setTimeout(() => {
           updatePhase(NAV_SURFACE_PHASE.IDLE);
-          finalizeSurfaceClose(surfaceId, result, []);
           surfaceStackRef.current = [];
           setSurfaceState(
             createSurfaceState([], surfacePayloadMapRef.current, NAV_SURFACE_PHASE.IDLE),
           );
+          finalizeSurfaceClose(surfaceId, result, []);
 
-          if (pendingScheduler.size === 0) {
+          if (surfaceStackRef.current.length === 0 && pendingScheduler.size === 0) {
             unlockCompactAfterSurfaceClose();
           }
         }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.RESTORE_SETTLE_MS);
@@ -1111,12 +1210,7 @@ export function useSurfaceStack({
       }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_EXIT_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_COLLAPSE_SETTLE_MS);
       choreographyTimersRef.current.push(t1);
     },
-    [
-      clearChoreographyTimers,
-      finalizeSurfaceClose,
-      unlockCompactAfterSurfaceClose,
-      updatePhase,
-    ],
+    [clearChoreographyTimers, finalizeSurfaceClose, unlockCompactAfterSurfaceClose, updatePhase],
   );
 
   const goBackSurface = useCallback(() => {
@@ -1161,26 +1255,21 @@ export function useSurfaceStack({
 
         const t2 = setTimeout(() => {
           updatePhase(NAV_SURFACE_PHASE.IDLE);
-          currentStack.forEach((entry) => {
-            finalizeSurfaceClose(entry.id, result);
-          });
-          dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
           surfaceStackRef.current = [];
           setSurfaceState(
             createSurfaceState([], surfacePayloadMapRef.current, NAV_SURFACE_PHASE.IDLE),
           );
-          unlockCompactAfterSurfaceClose();
+          dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.CLOSE_ALL_SURFACES });
+          currentStack.forEach((entry) => {
+            finalizeSurfaceClose(entry.id, result);
+          });
+          if (surfaceStackRef.current.length === 0) unlockCompactAfterSurfaceClose();
         }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.HEADER_RESTORE_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.RESTORE_SETTLE_MS);
         choreographyTimersRef.current.push(t2);
       }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_EXIT_MS + NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_COLLAPSE_SETTLE_MS);
       choreographyTimersRef.current.push(t1);
     },
-    [
-      clearChoreographyTimers,
-      finalizeSurfaceClose,
-      unlockCompactAfterSurfaceClose,
-      updatePhase,
-    ],
+    [clearChoreographyTimers, finalizeSurfaceClose, unlockCompactAfterSurfaceClose, updatePhase],
   );
 
   const openSurface = useCallback(
@@ -1302,12 +1391,7 @@ export function useSurfaceStack({
 
       return resultPromise;
     },
-    [
-      clearChoreographyTimers,
-      setCompactLock,
-      setExpanded,
-      setSearchQuery,
-    ],
+    [clearChoreographyTimers, setCompactLock, setExpanded, setSearchQuery],
   );
 
   const updateSurfaceFlow = useCallback(
@@ -1543,6 +1627,16 @@ export function useSurfaceStack({
   };
 }
 const SurfaceHeaderContext = createContext(null);
+export const SurfaceExtensionsContext = createContext(null);
+export const SurfaceIdContext = createContext(null);
+
+/**
+ * Returns the active surface identifier when rendered inside a surface.
+ * @returns {string|number|null} Current surface ID
+ */
+export function useSurfaceId() {
+  return useContext(SurfaceIdContext);
+}
 
 /**
  * Returns the current surface header updater when rendered inside a surface.
@@ -1551,6 +1645,380 @@ const SurfaceHeaderContext = createContext(null);
 export function useSurfaceHeader() {
   return useContext(SurfaceHeaderContext);
 }
+
+class SurfaceExtensionsStore {
+  constructor() {
+    this.extensionsBySurface = new Map();
+    this.cachedListBySurface = new Map();
+    this.listeners = new Set();
+    this.version = 0;
+  }
+
+  subscribe = (listener) => {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  };
+
+  notify = () => {
+    this.version++;
+    this.cachedListBySurface.clear();
+    for (const listener of this.listeners) {
+      listener();
+    }
+  };
+
+  getExtensionsForSurface = (surfaceId) => {
+    const sId = surfaceId != null ? String(surfaceId) : 'global';
+    if (this.cachedListBySurface.has(sId)) {
+      return this.cachedListBySurface.get(sId);
+    }
+
+    const globalExts = this.extensionsBySurface.get('global');
+    const surfaceExts = this.extensionsBySurface.get(sId);
+
+    if (!globalExts && !surfaceExts) {
+      const empty = [];
+      this.cachedListBySurface.set(sId, empty);
+      return empty;
+    }
+
+    const merged = new Map();
+    if (globalExts) {
+      for (const [id, ext] of globalExts) {
+        merged.set(id, ext);
+      }
+    }
+    if (surfaceExts) {
+      for (const [id, ext] of surfaceExts) {
+        merged.set(id, ext);
+      }
+    }
+
+    const result = Array.from(merged.values()).sort((a, b) => a.order - b.order);
+    this.cachedListBySurface.set(sId, result);
+    return result;
+  };
+
+  setExtension = (surfaceId, extension) => {
+    if (!extension) return;
+    const normalized = normalizeSurfaceExtension(extension);
+    if (!normalized) return;
+    const sId = surfaceId != null ? String(surfaceId) : 'global';
+
+    let surfaceMap = this.extensionsBySurface.get(sId);
+    if (!surfaceMap) {
+      surfaceMap = new Map();
+      this.extensionsBySurface.set(sId, surfaceMap);
+    }
+
+    const prev = surfaceMap.get(normalized.id);
+    if (
+      prev &&
+      prev.content === normalized.content &&
+      prev.align === normalized.align &&
+      prev.order === normalized.order &&
+      prev.className === normalized.className &&
+      prev.unstyled === normalized.unstyled &&
+      prev.component === normalized.component &&
+      prev.props === normalized.props
+    ) {
+      return;
+    }
+
+    surfaceMap.set(normalized.id, normalized);
+    this.notify();
+  };
+
+  removeExtension = (surfaceId, extensionId) => {
+    if (!extensionId) return;
+    const sId = surfaceId != null ? String(surfaceId) : 'global';
+    const surfaceMap = this.extensionsBySurface.get(sId);
+    if (!surfaceMap || !surfaceMap.has(extensionId)) return;
+
+    surfaceMap.delete(extensionId);
+    if (surfaceMap.size === 0) {
+      this.extensionsBySurface.delete(sId);
+    }
+    this.notify();
+  };
+
+  clearSurface = (surfaceId) => {
+    const sId = surfaceId != null ? String(surfaceId) : 'global';
+    if (!this.extensionsBySurface.has(sId)) return;
+    this.extensionsBySurface.delete(sId);
+    this.notify();
+  };
+}
+
+/**
+ * Manages surface-scoped auxiliary extensions state for descendant components.
+ * @param {object} props - Provider properties
+ * @returns {React.ReactElement} Extensions provider
+ */
+export function SurfaceExtensionsProvider({ children }) {
+  const storeRef = useRef(null);
+  if (!storeRef.current) {
+    storeRef.current = new SurfaceExtensionsStore();
+  }
+
+  return (
+    <SurfaceExtensionsContext.Provider value={storeRef.current}>
+      {children}
+    </SurfaceExtensionsContext.Provider>
+  );
+}
+
+/**
+ * Registers surface extensions dynamically or returns the extensions registry store.
+ * @param {Array<object>|object|null} [input] - Optional extensions to bind to active surface
+ * @returns {SurfaceExtensionsStore|null} Extensions store
+ */
+export function useSurfaceExtensions(input) {
+  const store = useContext(SurfaceExtensionsContext);
+  const surfaceId = useSurfaceId();
+
+  useEffect(() => {
+    if (input == null || !store) return undefined;
+    const list = Array.isArray(input) ? input : [input];
+    list.forEach((item) => store.setExtension(surfaceId, item));
+
+    return () => {
+      store.clearSurface(surfaceId);
+    };
+  }, [store, surfaceId, input]);
+
+  return store;
+}
+
+/**
+ * Declarative component for mounting an auxiliary control into the active surface's extensions bar.
+ * @param {object} props - Component properties
+ * @returns {null}
+ */
+export function NavSurfaceExtension({
+  align = 'left',
+  children,
+  className = '',
+  id,
+  order = 0,
+  unstyled = false,
+}) {
+  const store = useContext(SurfaceExtensionsContext);
+  const surfaceId = useSurfaceId();
+  const generatedIdRef = useRef(null);
+  if (generatedIdRef.current === null) {
+    generatedIdRef.current = id || `nav-surface-ext-${Math.random().toString(36).slice(2, 9)}`;
+  }
+  const effectiveId = id || generatedIdRef.current;
+
+  // Sync extension definition and content to store on render
+  useEffect(() => {
+    if (!store) return;
+    store.setExtension(surfaceId, {
+      align,
+      className,
+      content: children,
+      id: effectiveId,
+      order,
+      unstyled,
+    });
+  });
+
+  // Clean up on unmount or surfaceId/effectiveId change
+  useEffect(() => {
+    return () => {
+      if (store) {
+        store.removeExtension(surfaceId, effectiveId);
+      }
+    };
+  }, [store, surfaceId, effectiveId]);
+
+  return null;
+}
+
+function ExtensionPill({ ext, fill = false }) {
+  const Component = ext.component;
+  const content = Component
+    ? isValidComponentType(Component)
+      ? <Component {...ext.props} />
+      : null
+    : ext.content;
+
+  if (ext.unstyled) {
+    return (
+      <div
+        className={cn('pointer-events-auto', fill && 'w-full flex-1 min-w-0', ext.className)}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'flex h-10 max-w-full items-center gap-1 rounded-full ring-1 ring-inset ring-white/10 bg-black/60 backdrop-blur-xl p-1 shadow-lg pointer-events-auto select-none',
+        fill && 'w-full flex-1 min-w-0',
+        ext.className,
+      )}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {content}
+    </div>
+  );
+}
+
+/**
+ * Hook to check if surface extensions are actively visible for the current nav item.
+ * @param {object|null} activeItem - Current active nav item
+ * @returns {boolean} Whether extensions should be shown
+ */
+export function useIsSurfaceExtensionsVisible(activeItem) {
+  const store = useContext(SurfaceExtensionsContext);
+  const surfaceId = activeItem?.surfaceId || 'global';
+  const isSurface = Boolean(activeItem?.isSurface);
+  const phase = activeItem?.surfacePhase;
+  const isBodyVisible =
+    phase === NAV_SURFACE_PHASE.EXPANDING_BODY || phase === NAV_SURFACE_PHASE.OPEN;
+
+  const subscribe = useCallback(
+    (onStoreChange) => {
+      if (!store) return () => {};
+      return store.subscribe(onStoreChange);
+    },
+    [store],
+  );
+
+  const getSnapshot = useCallback(() => {
+    if (!store) return 0;
+    return store.getExtensionsForSurface(surfaceId).length;
+  }, [store, surfaceId]);
+
+  const dynamicCount = useSyncExternalStore(subscribe, getSnapshot, () => 0);
+
+  const descriptorCount = useMemo(() => {
+    const raw = activeItem?.surfaceExtensions || activeItem?.extensions || [];
+    return Array.isArray(raw) ? raw.length : 0;
+  }, [activeItem?.surfaceExtensions, activeItem?.extensions]);
+
+  return Boolean(isSurface && isBodyVisible && (dynamicCount > 0 || descriptorCount > 0));
+}
+
+/**
+ * Renders the floating extensions bar below the active surface card in the navigation stack.
+ * @param {object} props - Component properties
+ * @returns {React.ReactElement|null} Rendered extensions bar
+ */
+export const NavSurfaceExtensionsBar = memo(function NavSurfaceExtensionsBar({ activeItem }) {
+  const isSurface = Boolean(activeItem?.isSurface);
+  const phase = activeItem?.surfacePhase;
+  const isBodyVisible =
+    phase === NAV_SURFACE_PHASE.EXPANDING_BODY || phase === NAV_SURFACE_PHASE.OPEN;
+
+  const store = useContext(SurfaceExtensionsContext);
+  const surfaceId = activeItem?.surfaceId || 'global';
+
+  const subscribe = useCallback(
+    (onStoreChange) => {
+      if (!store) return () => {};
+      return store.subscribe(onStoreChange);
+    },
+    [store],
+  );
+
+  const getSnapshot = useCallback(() => {
+    if (!store) return [];
+    return store.getExtensionsForSurface(surfaceId);
+  }, [store, surfaceId]);
+
+  const dynamicExtensions = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => [],
+  );
+
+  const descriptorExtensions = useMemo(() => {
+    const raw = activeItem?.surfaceExtensions || activeItem?.extensions || [];
+    return Array.isArray(raw) ? raw.map(normalizeSurfaceExtension).filter(Boolean) : [];
+  }, [activeItem?.surfaceExtensions, activeItem?.extensions]);
+
+  const allExtensions = useMemo(() => {
+    const map = new Map();
+    descriptorExtensions.forEach((ext) => map.set(ext.id, ext));
+    dynamicExtensions.forEach((ext) => map.set(ext.id, ext));
+    return Array.from(map.values()).sort((a, b) => a.order - b.order);
+  }, [descriptorExtensions, dynamicExtensions]);
+
+  const hasExtensions = allExtensions.length > 0;
+  const shouldRender = isSurface && isBodyVisible && hasExtensions;
+
+  const leftExtensions = useMemo(
+    () => allExtensions.filter((e) => e.align === 'left'),
+    [allExtensions],
+  );
+  const centerExtensions = useMemo(
+    () => allExtensions.filter((e) => e.align === 'center'),
+    [allExtensions],
+  );
+  const rightExtensions = useMemo(
+    () => allExtensions.filter((e) => e.align === 'right'),
+    [allExtensions],
+  );
+  const hasCenter = centerExtensions.length > 0;
+
+  return (
+    <AnimatePresence>
+      {shouldRender && (
+        <motion.div
+          key={`nav-surface-extensions-${surfaceId}`}
+          variants={navSurfaceExtensionsVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION}
+          style={NAV_COMPOSITOR_STYLE}
+          className="absolute inset-x-0 bottom-[calc(100%+4px)] z-20 flex w-full items-center justify-between gap-1 pointer-events-none select-none"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {/* Left extension cluster */}
+          <div className="flex min-w-0 flex-1 items-center justify-start gap-1 pointer-events-auto">
+            {leftExtensions.map((ext) => (
+              <ExtensionPill
+                key={ext.id}
+                ext={ext}
+                fill={!hasCenter && leftExtensions.length === 1}
+              />
+            ))}
+          </div>
+
+          {/* Center extension cluster */}
+          {hasCenter && (
+            <div className="flex shrink-0 items-center justify-center gap-1 pointer-events-auto">
+              {centerExtensions.map((ext) => (
+                <ExtensionPill key={ext.id} ext={ext} />
+              ))}
+            </div>
+          )}
+
+          {/* Right extension cluster */}
+          <div
+            className={cn(
+              'flex items-center justify-end gap-1 pointer-events-auto',
+              hasCenter ? 'min-w-0 flex-1' : 'shrink-0',
+            )}
+          >
+            {rightExtensions.map((ext) => (
+              <ExtensionPill key={ext.id} ext={ext} />
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});
 
 /**
  * Renders a standardized control for surface headers.
@@ -1602,7 +2070,9 @@ export function NavSurfaceHeader({
   closeLabel = 'Close surface',
   backLabel = 'Previous step',
   descriptionMaxLines = 2,
+  descriptionId = undefined,
   className = '',
+  titleId = undefined,
 }) {
   const hasHeaderAction = Boolean(headerAction);
   const hasClose = typeof onClose === 'function';
@@ -1647,17 +2117,18 @@ export function NavSurfaceHeader({
         <div className="flex min-w-0 flex-1 items-center justify-between gap-2.5 overflow-hidden">
           <div className="flex min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <h3 className="truncate text-base font-bold text-white">{title}</h3>
+              <h3 id={titleId} className="truncate text-base font-bold text-white">{title}</h3>
               {badge ? (
                 <span className="center rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white">
                   {badge}
                 </span>
               ) : stepIndicatorText ? (
-                <span className="text-xs font-semibold text-white/40">• {stepIndicatorText}</span>
+                <span className="text-xs font-semibold text-white/50">• {stepIndicatorText}</span>
               ) : null}
             </div>
             {description ? (
               <p
+                id={descriptionId}
                 className="text-sm leading-snug text-white/70"
                 style={{
                   display: '-webkit-box',
@@ -1697,11 +2168,7 @@ export function NavSurfaceHeader({
             </motion.div>
           ) : null}
           {hasBack ? (
-            <motion.div
-              key="surface-header-back"
-              variants={navSurfaceControlsVariants}
-              custom={1}
-            >
+            <motion.div key="surface-header-back" variants={navSurfaceControlsVariants} custom={1}>
               <Button
                 type="button"
                 onClick={(event) => {
@@ -1720,11 +2187,7 @@ export function NavSurfaceHeader({
             </motion.div>
           ) : null}
           {hasClose ? (
-            <motion.div
-              key="surface-header-close"
-              variants={navSurfaceControlsVariants}
-              custom={2}
-            >
+            <motion.div key="surface-header-close" variants={navSurfaceControlsVariants} custom={2}>
               <Button
                 type="button"
                 onClick={(event) => {
@@ -1772,6 +2235,8 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     contentClassName = '',
     children,
     onAnimationComplete = null,
+    isActive = true,
+    surfaceId = null,
     surfacePhase = NAV_SURFACE_PHASE.OPEN,
   },
   ref,
@@ -1818,96 +2283,120 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
   );
 
   const isFullyOpen = surfacePhase === NAV_SURFACE_PHASE.OPEN;
+  const patchHeader = useCallback((patch) => {
+    setHeaderState((previousState) => ({
+      ...previousState,
+      ...(typeof patch === 'function' ? patch(previousState) : patch),
+    }));
+  }, []);
+  const titleId = surfaceId == null ? undefined : `nav-surface-title-${surfaceId}`;
+  const descriptionId =
+    surfaceId == null || !headerState.description
+      ? undefined
+      : `nav-surface-description-${surfaceId}`;
   const dragY = useMotionValue(0);
   const dragOpacity = useTransform(dragY, [0, 180], [1, 0.75]);
   const dragScale = useTransform(dragY, [0, 180], [1, 0.96]);
 
   useNavigationFocusTrap({
     containerRef: surfaceElementRef,
-    enabled: isFullyOpen,
+    enabled: isActive && isFullyOpen,
     onDismiss: typeof onClose === 'function' ? onClose : null,
   });
 
   const handleDragEnd = (_event, info) => {
-    if (!allowSwipeDismiss || typeof onClose !== 'function' || !isFullyOpen) return;
+    if (!isActive || !allowSwipeDismiss || typeof onClose !== 'function' || !isFullyOpen) return;
     if (info.offset.y > 65 || info.velocity.y > 400) {
       onClose();
     }
   };
 
   const isBodyVisible =
-    surfacePhase === NAV_SURFACE_PHASE.EXPANDING_BODY ||
-    surfacePhase === NAV_SURFACE_PHASE.OPEN;
+    surfacePhase === NAV_SURFACE_PHASE.EXPANDING_BODY || surfacePhase === NAV_SURFACE_PHASE.OPEN;
 
   const isHeaderVisible =
-    surfacePhase !== NAV_SURFACE_PHASE.DISMISSING_ACTION &&
-    surfacePhase !== NAV_SURFACE_PHASE.IDLE;
+    surfacePhase !== NAV_SURFACE_PHASE.DISMISSING_ACTION && surfacePhase !== NAV_SURFACE_PHASE.IDLE;
+
+  const resolvedSurfaceId = surfaceId || 'active';
 
   return (
-    <SurfaceHeaderContext.Provider value={setHeaderState}>
-      <motion.section
-        ref={setSurfaceElementRef}
-        role="dialog"
-        aria-modal="true"
-        tabIndex={-1}
-        className={cn('relative flex flex-col gap-2.5 overflow-visible', className)}
-        style={{
-          y: dragY,
-          opacity: dragOpacity,
-          scale: dragScale,
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden',
-          WebkitFontSmoothing: 'antialiased',
-        }}
-        drag={allowSwipeDismiss && typeof onClose === 'function' && isFullyOpen ? 'y' : false}
-        dragConstraints={NAV_SURFACE_DRAG_CONSTRAINTS}
-        dragElastic={NAV_SURFACE_DRAG_ELASTIC}
-        onDragEnd={handleDragEnd}
-        onAnimationComplete={onAnimationComplete}
-      >
-        <div className="w-full">
-          <NavSurfaceHeader
-            descriptionMaxLines={descriptionMaxLines}
-            description={headerState.description}
-            trailing={headerState.trailing}
-            headerAction={headerState.headerAction}
-            title={headerState.title}
-            icon={headerState.icon}
-            onBack={headerState.onBack || onBack}
-            stepIndex={headerState.stepIndex ?? stepIndex}
-            totalSteps={headerState.totalSteps ?? totalSteps}
-            badge={headerState.badge ?? badge}
-            closeLabel={closeLabel}
-            backLabel={backLabel}
-            onClose={onClose}
-          />
-        </div>
-
-        <AnimatePresence mode="wait" initial={false}>
-          {isBodyVisible && (
-            <motion.div
-              key="surface-body-motion"
-              variants={navSurfaceBodyVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={
-                surfacePhase === NAV_SURFACE_PHASE.COLLAPSING_BODY
-                  ? NAV_SURFACE_BODY_EXIT_TRANSITION
-                  : NAV_SURFACE_BODY_ENTER_TRANSITION
-              }
-              style={{
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden',
-                WebkitFontSmoothing: 'antialiased',
-              }}
-              className={cn('w-full overflow-visible', contentClassName)}
-            >
-              {children}
-            </motion.div>
+    <SurfaceIdContext.Provider value={resolvedSurfaceId}>
+      <SurfaceHeaderContext.Provider value={patchHeader}>
+        <motion.section
+          ref={setSurfaceElementRef}
+          role="dialog"
+          aria-modal="true"
+          aria-describedby={descriptionId}
+          aria-hidden={isActive ? undefined : true}
+          aria-labelledby={titleId}
+          inert={isActive ? undefined : true}
+          tabIndex={-1}
+          className={cn(
+            'relative flex flex-col gap-2.5 overflow-visible',
+            !isActive && 'hidden',
+            className,
           )}
-        </AnimatePresence>
-      </motion.section>
-    </SurfaceHeaderContext.Provider>
+          style={{
+            ...NAV_COMPOSITOR_STYLE,
+            y: dragY,
+            opacity: dragOpacity,
+            scale: dragScale,
+          }}
+          transformTemplate={navSurfaceDragTransformTemplate}
+          drag={
+            isActive && allowSwipeDismiss && typeof onClose === 'function' && isFullyOpen
+              ? 'y'
+              : false
+          }
+          dragConstraints={NAV_SURFACE_DRAG_CONSTRAINTS}
+          dragElastic={NAV_SURFACE_DRAG_ELASTIC}
+          onDragEnd={handleDragEnd}
+          onAnimationComplete={onAnimationComplete}
+        >
+          <div className="w-full">
+            <NavSurfaceHeader
+              descriptionMaxLines={descriptionMaxLines}
+              descriptionId={descriptionId}
+              description={headerState.description}
+              trailing={headerState.trailing}
+              headerAction={headerState.headerAction}
+              title={headerState.title}
+              titleId={titleId}
+              icon={headerState.icon}
+              onBack={headerState.onBack || onBack}
+              stepIndex={headerState.stepIndex ?? stepIndex}
+              totalSteps={headerState.totalSteps ?? totalSteps}
+              badge={headerState.badge ?? badge}
+              closeLabel={closeLabel}
+              backLabel={backLabel}
+              onClose={onClose}
+            />
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            {isBodyVisible && (
+              <motion.div
+                key="surface-body-motion"
+                variants={navSurfaceBodyVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={
+                  surfacePhase === NAV_SURFACE_PHASE.COLLAPSING_BODY
+                    ? NAV_SURFACE_BODY_EXIT_TRANSITION
+                    : NAV_SURFACE_BODY_ENTER_TRANSITION
+                }
+                style={{
+                  ...NAV_COMPOSITOR_STYLE,
+                }}
+                className={cn('w-full overflow-visible', contentClassName)}
+              >
+                {children}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+      </SurfaceHeaderContext.Provider>
+    </SurfaceIdContext.Provider>
   );
 });

@@ -70,7 +70,7 @@ function DiaryTitle({ entry }) {
   return (
     <div className="min-w-0">
       <h3 className="truncate text-xs font-semibold text-white sm:text-sm">{entry.title}</h3>
-      {episodeLabel ? <p className="truncate text-xs text-white/40">{episodeLabel}</p> : null}
+      {episodeLabel ? <p className="truncate text-xs text-white/50">{episodeLabel}</p> : null}
     </div>
   );
 }
@@ -79,7 +79,7 @@ function MonthMarker({ month }) {
   return (
     <time className="inline-flex items-center gap-1">
       <span>{month.month}</span>
-      <span className="text-white/40">{month.year}</span>
+      <span className="text-white/50">{month.year}</span>
     </time>
   );
 }
@@ -88,7 +88,7 @@ function RatingStars({ value }) {
   const rating = Number(value);
   if (!Number.isFinite(rating) || rating <= 0) {
     return (
-      <span className="text-white/40" aria-label="No rating">
+      <span className="text-white/50" aria-label="No rating">
         —
       </span>
     );
@@ -110,7 +110,7 @@ function RatingStars({ value }) {
             {fill >= 0.5 ? (
               <Icon icon="solar:star-bold" size={13} />
             ) : (
-              <Icon icon="solar:star-linear" size={13} className="text-white/20" />
+              <Icon icon="solar:star-linear" size={13} className="text-white/50" />
             )}
           </span>
         );
@@ -120,7 +120,7 @@ function RatingStars({ value }) {
 }
 
 function RewatchMark({ isRewatch }) {
-  if (!isRewatch) return <span className="text-white/20">—</span>;
+  if (!isRewatch) return <span className="text-white/50">—</span>;
   return (
     <span title="Rewatch" className="text-white/70">
       <Icon icon="solar:restart-bold" size={14} aria-label="Rewatch" />
@@ -129,7 +129,7 @@ function RewatchMark({ isRewatch }) {
 }
 
 function ReviewMark({ entry }) {
-  if (!entry.hasReview) return <span className="text-white/20">—</span>;
+  if (!entry.hasReview) return <span className="text-white/50">—</span>;
   const href =
     entry.entityType && entry.entityId ? `/${entry.entityType}/${entry.entityId}/reviews` : null;
   const content = (
@@ -152,7 +152,7 @@ function DiaryLedgerDesktop({ rows }) {
   return (
     <div className="hidden w-full overflow-x-auto rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5 sm:block">
       <table className="w-full text-left text-xs text-white/70">
-        <thead className="border-b border-white/5 text-xs font-semibold text-white/40 uppercase">
+        <thead className="border-b border-white/5 text-xs font-semibold text-white/50 uppercase">
           <tr>
             <th scope="col" className="px-4 py-3">
               Month
@@ -180,7 +180,7 @@ function DiaryLedgerDesktop({ rows }) {
               <td className="px-4 py-3 font-semibold text-white">
                 {beginsMonth ? <MonthMarker month={month} /> : null}
               </td>
-              <td className="px-4 py-3 font-mono text-white/40">
+              <td className="px-4 py-3 font-mono text-white/50">
                 <time dateTime={entry.watchedOn}>{formatDayToken(entry.watchedOn)}</time>
               </td>
               <td className="px-4 py-3">
@@ -221,7 +221,7 @@ function DiaryLedgerMobile({ rows }) {
           ) : null}
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2.5">
-              <time dateTime={entry.watchedOn} className="shrink-0 font-mono text-xs text-white/40">
+              <time dateTime={entry.watchedOn} className="shrink-0 font-mono text-xs text-white/50">
                 {formatDayToken(entry.watchedOn)}
               </time>
               <DiaryPoster entry={entry} />
@@ -243,7 +243,7 @@ function DiaryLedger({ entries }) {
   const rows = useMemo(() => getLedgerRows(entries), [entries]);
   if (rows.length === 0) {
     return (
-      <AccountInlineSectionState>No diary entries for this month yet.</AccountInlineSectionState>
+      <AccountInlineSectionState>No diary entries for this month yet</AccountInlineSectionState>
     );
   }
   return (

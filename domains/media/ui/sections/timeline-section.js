@@ -46,7 +46,7 @@ export default function PersonTimeline({ person }) {
               return (
                 <div key={year} className="relative flex">
                   <div className="w-16 shrink-0 sm:w-24">
-                    <span className="block pt-1 pr-3 text-right text-xs font-bold text-white/40 sm:pr-4 sm:text-base">
+                    <span className="block pt-1 pr-3 text-right text-xs font-bold text-white/50 sm:pr-4 sm:text-base">
                       {year}
                     </span>
                   </div>
@@ -81,7 +81,7 @@ export default function PersonTimeline({ person }) {
                               {title}
                             </span>
                             {creditLabel && (
-                              <span className="truncate text-sm text-white/40">{creditLabel}</span>
+                              <span className="truncate text-sm text-white/50">{creditLabel}</span>
                             )}
                           </div>
                         </Link>

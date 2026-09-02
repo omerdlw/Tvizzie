@@ -43,6 +43,7 @@ import {
   applySurfaceToNavItem,
   createInlineSurfaceEntry,
   createSurfaceLifecycleState,
+  SurfaceExtensionsProvider,
   SurfaceFlowProvider,
   surfaceLifecycleReducer,
   useSurfaceStack,
@@ -59,12 +60,13 @@ import {
   useNavHudLifecycle,
 } from './hud';
 import { applyStatusOverlay, useNavigationStatus } from './status';
-import { useNavigationCompact, useNavigationRouteReset } from './behavior';
+import { useNavigationCompactController, useNavigationRouteReset } from './behavior';
 import { applyMediaAction } from './media';
 import { BreadcrumbProvider } from './breadcrumbs';
 import { useNavCommandRegistry } from './commands';
 import {
   createNavigationTopology,
+  getNavigationLocationKey,
   resolveNavigationRoutePolicy,
   useNavigationContinuity,
   useNavigationTransactions,
@@ -475,14 +477,50 @@ export function NavHeightSpacer({ className = '' }) {
 
 // ── Route resolution and display model ────────────────────────────────────────
 
+function useNavigationLocationKey() {
+  const pathname = usePathname();
+  const getBrowserLocationKey = useCallback(
+    () =>
+      getNavigationLocationKey({
+        hash: typeof window === 'undefined' ? '' : window.location.hash,
+        pathname,
+        search: typeof window === 'undefined' ? '' : window.location.search,
+      }),
+    [pathname],
+  );
+  const [locationKey, setLocationKey] = useState(getBrowserLocationKey);
+  const syncLocationKey = useCallback(() => {
+    const nextLocationKey = getBrowserLocationKey();
+    setLocationKey((currentLocationKey) =>
+      currentLocationKey === nextLocationKey ? currentLocationKey : nextLocationKey,
+    );
+    return nextLocationKey;
+  }, [getBrowserLocationKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    syncLocationKey();
+    window.addEventListener('hashchange', syncLocationKey);
+    window.addEventListener('popstate', syncLocationKey);
+    return () => {
+      window.removeEventListener('hashchange', syncLocationKey);
+      window.removeEventListener('popstate', syncLocationKey);
+    };
+  }, [syncLocationKey]);
+
+  return { locationKey, syncLocationKey };
+}
+
 function useNavigationCore() {
   const pathname = usePathname();
+  const { locationKey, syncLocationKey } = useNavigationLocationKey();
   const router = useRouter();
   const { clearPreparedRouteReset, closeSurface, continuity, openSurface, prepareRouteReset } =
     useNavigationActions();
   const { startLoading, stopLoading } = useLoadingActions();
   const { createGuardSurface } = useNavRuntimeRegistry();
-  const previousPathRef = useRef(pathname);
+  const previousLocationKeyRef = useRef(locationKey);
   const handleTransactionEvent = useCallback(({ transaction, type }) => {
     recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.ROUTE_TRANSACTION, {
       from: transaction.from,
@@ -547,6 +585,35 @@ function useNavigationCore() {
         emitNavigationEvent(NAV_EVENTS.NAVIGATE_START, { from, to: href });
         router.push(href);
         emitNavigationEvent(NAV_EVENTS.NAVIGATE, { from, item: undefined, to: href });
+
+        if (typeof window !== 'undefined') {
+          const currentUrl = new URL(window.location.href);
+          const destinationUrl = new URL(href, window.location.origin);
+          const isQueryOrHashOnlyTransition =
+            normalizePath(currentUrl.pathname) === normalizePath(destinationUrl.pathname);
+
+          if (isQueryOrHashOnlyTransition) {
+            window.requestAnimationFrame(() => {
+              const locationKey = getNavigationLocationKey({
+                hash: window.location.hash,
+                pathname: window.location.pathname,
+                search: window.location.search,
+              });
+              if (!isSamePath(locationKey, href) || !completeTransactionForPath(locationKey)) {
+                return;
+              }
+
+              emitNavigationEvent(NAV_EVENTS.NAVIGATE_END, {
+                duration: undefined,
+                from,
+                to: locationKey,
+              });
+              previousLocationKeyRef.current = locationKey;
+              syncLocationKey();
+              stopLoading();
+            });
+          }
+        }
         return true;
       } catch (error) {
         clearPreparedRouteReset();
@@ -559,6 +626,7 @@ function useNavigationCore() {
     [
       beginTransaction,
       clearPreparedRouteReset,
+      completeTransactionForPath,
       continuity,
       failTransaction,
       isTransactionCurrent,
@@ -566,6 +634,7 @@ function useNavigationCore() {
       router,
       startLoading,
       stopLoading,
+      syncLocationKey,
     ],
   );
 
@@ -609,7 +678,7 @@ function useNavigationCore() {
 
   const navigate = useCallback(
     async (href, { force = false, item = null, source = 'navigation' } = {}) => {
-      const from = pathname;
+      const from = locationKey;
       const routePolicy = resolveNavigationRoutePolicy({ href, item });
 
       if (!routePolicy.canNavigate) {
@@ -659,25 +728,25 @@ function useNavigationCore() {
       failTransaction,
       isTransactionCurrent,
       openGuardConfirmation,
-      pathname,
+      locationKey,
       stopLoading,
     ],
   );
 
   useEffect(() => {
-    if (previousPathRef.current === pathname) {
+    if (previousLocationKeyRef.current === locationKey) {
       return;
     }
 
     emitNavigationEvent(NAV_EVENTS.NAVIGATE_END, {
       duration: undefined,
-      from: previousPathRef.current,
-      to: pathname,
+      from: previousLocationKeyRef.current,
+      to: locationKey,
     });
-    completeTransactionForPath(pathname);
-    previousPathRef.current = pathname;
+    completeTransactionForPath(locationKey);
+    previousLocationKeyRef.current = locationKey;
     stopLoading();
-  }, [completeTransactionForPath, pathname, stopLoading]);
+  }, [completeTransactionForPath, locationKey, stopLoading]);
 
   return {
     activeTransaction,
@@ -916,8 +985,8 @@ function resolveActiveItem({
   if (attention?.kind === NAV_ATTENTION_KIND.SURFACE) {
     return applySurfaceToNavItem(baseActiveItem, surfaceState.activeSurfaceEntry, {
       ...surfaceActions,
-      closeSurface: (result) => surfaceActions.closeSurface(result, surfaceState.activeSurfaceId),
       surfacePhase: surfaceState.surfacePhase,
+      surfaceStack: surfaceState.surfaceStack,
     });
   }
 
@@ -1787,7 +1856,11 @@ export function NavigationProvider({ breadcrumbConfig = null, children }) {
       createElement(
         SurfaceFlowProvider,
         { value: surfaceFlowValue },
-        createElement(BreadcrumbProvider, { config: breadcrumbConfig }, children),
+        createElement(
+          SurfaceExtensionsProvider,
+          null,
+          createElement(BreadcrumbProvider, { config: breadcrumbConfig }, children),
+        ),
       ),
     ),
   );
@@ -1960,7 +2033,7 @@ export function useNavigation() {
 
   const activeItemHasAction = Boolean(activeItem?.action);
 
-  const compact = useNavigationCompact({
+  const { compact, exitCompact } = useNavigationCompactController({
     activeItem,
     expanded: isExpanded,
     isHudActive: isHudModeActive,
@@ -1978,20 +2051,48 @@ export function useNavigation() {
     setIsHovered(false);
   }, []);
 
+  const pendingExpandFrameRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingExpandFrameRef.current !== null) {
+        cancelAnimationFrame(pendingExpandFrameRef.current);
+      }
+    };
+  }, []);
+
   const setExpanded = useCallback(
     (nextValue) => {
-      setExpandedState((previousValue) => {
-        const resolvedValue =
-          typeof nextValue === 'function' ? nextValue(previousValue) : nextValue;
+      const resolvedValue = typeof nextValue === 'function' ? nextValue(isExpanded) : nextValue;
 
-        if (isSurfaceActive && resolvedValue) {
-          return previousValue;
-        }
+      if (isSurfaceActive && resolvedValue) {
+        return;
+      }
 
-        return resolvedValue;
+      if (!resolvedValue && pendingExpandFrameRef.current !== null) {
+        cancelAnimationFrame(pendingExpandFrameRef.current);
+        pendingExpandFrameRef.current = null;
+      }
+
+      if (!resolvedValue || !compact || typeof window === 'undefined') {
+        setExpandedState(resolvedValue);
+        return;
+      }
+
+      // Present the regular card for one frame before expanding so Motion has
+      // a stable non-compact transform to animate from.
+      exitCompact();
+
+      if (pendingExpandFrameRef.current !== null) {
+        return;
+      }
+
+      pendingExpandFrameRef.current = requestAnimationFrame(() => {
+        pendingExpandFrameRef.current = null;
+        setExpandedState(true);
       });
     },
-    [isSurfaceActive, setExpandedState],
+    [compact, exitCompact, isExpanded, isSurfaceActive, setExpandedState],
   );
 
   const wasSurfaceActiveRef = useRef(false);
@@ -2068,6 +2169,7 @@ export function useNavigation() {
     setNavHeight,
     setSearchQuery,
     setCompactLock,
+    exitCompact,
 
     isHovered,
     setIsHovered,

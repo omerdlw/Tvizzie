@@ -320,10 +320,10 @@ export default function ReviewEditorSurface({ close, data }) {
             wrapper:
               'flex rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out focus-within:bg-white/10',
             textarea:
-              'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-white/40',
+              'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-white/50',
           }}
         />
-        <div className="pointer-events-none absolute right-3.5 bottom-2.5 flex items-center gap-2.5 text-xs font-medium text-white/40 select-none">
+        <div className="pointer-events-none absolute right-3.5 bottom-2.5 flex items-center gap-2.5 text-xs font-medium text-white/50 select-none">
           {validationError ? (
             <span className="text-error/80 font-semibold">{validationError}</span>
           ) : hasText ? (

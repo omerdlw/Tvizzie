@@ -226,7 +226,7 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
       }
 
       logDataError('[Account] Activity could not be loaded:', error);
-      setFeedError('Activity could not be loaded right now.');
+      setFeedError('Activity could not be loaded right now');
     } finally {
       if (latestRequestRef.current === requestId) {
         setIsFeedLoading(false);
@@ -392,7 +392,7 @@ const ActivityView = createAccountSectionView({
         }
       />
     ) : (
-      <AccountSectionState message="This profile is private." />
+      <AccountSectionState message="This profile is private" />
     ),
 });
 

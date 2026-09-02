@@ -44,7 +44,7 @@ const Tooltip = forwardRef(
             collisionPadding={collisionPadding}
             className={cn(
               'tooltip-content pointer-events-none z-(--z-tooltip) font-medium select-none rounded-full',
-              'bg-white px-2.5 py-1 text-xs font-semibold text-black shadow-lg shadow-black/50',
+              'bg-white px-2.5 py-1 text-xs font-semibold text-black shadow-lg shadow-black/60',
               classes.content,
               classes.root,
             )}

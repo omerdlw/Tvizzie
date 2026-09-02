@@ -432,7 +432,7 @@ export function useAccountSecurityActions({
       setDeleteConfirmation({
         cancelText: 'Cancel',
         confirmText: 'Remove passkey',
-        description: 'You will need your email or another sign-in method to access this account.',
+        description: 'You will need your email or another sign-in method to access this account',
         icon: 'solar:shield-warning-bold',
         isDestructive: true,
         title: 'Remove passkey?',
@@ -481,7 +481,7 @@ export function useAccountSecurityActions({
         cancelText: 'Cancel',
         confirmLoadingText: 'Disconnecting',
         confirmText: `Disconnect ${providerLabel}`,
-        description: `You will no longer be able to sign in with ${providerLabel}. Your other sign-in methods will remain available.`,
+        description: `You will no longer be able to sign in with ${providerLabel}. Your other sign-in methods will remain available`,
         icon: 'solar:shield-warning-bold',
         isDestructive: true,
         title: `Disconnect ${providerLabel}?`,
