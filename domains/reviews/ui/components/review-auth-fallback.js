@@ -21,7 +21,7 @@ export default function ReviewAuthFallback({
           ? 'flex w-full items-center justify-between border-b border-white/10 p-4'
           : `flex w-full items-center justify-between ${
               mode === 'comment' ? 'border-b' : 'border-y'
-            } ring-white/10 py-4`
+            } py-4 ring-white/10`
       }
     >
       <div className="min-w-0">
@@ -38,7 +38,7 @@ export default function ReviewAuthFallback({
       </div>
       <Button
         type="button"
-        className="inline-flex items-center justify-between gap-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 uppercase hover:bg-white hover:text-black"
+        className="inline-flex items-center justify-between gap-2.5 rounded-full bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/10 ring-inset hover:bg-white hover:text-black"
         onClick={onSignIn}
       >
         Sign In

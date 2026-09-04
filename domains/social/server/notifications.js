@@ -6,7 +6,7 @@ import {
   isSupportedContentSubjectType,
   isTvReference,
   normalizeMediaType,
-} from '@/shared';
+} from '@/domains/media/utils/media-key';
 import {
   NOTIFICATION_EVENT_TYPE_SET,
   NOTIFICATION_EVENT_TYPES,
@@ -14,10 +14,7 @@ import {
   NOTIFICATION_TYPES,
 } from '@/domains/social/utils/constants';
 import { publishUserEvent } from '@/infrastructure/realtime/server';
-import {
-  getOrLoadCachedValue,
-  invalidateCachedValuesWhere,
-} from '@/infrastructure/http/server';
+import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/infrastructure/http/server';
 
 const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SELECT = [

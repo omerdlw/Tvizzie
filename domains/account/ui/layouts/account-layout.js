@@ -183,15 +183,12 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
 
   return (
     <div
+      aria-label="Account sections"
       className={cn(
-        'relative mx-auto flex w-full max-w-full items-center overflow-hidden border-b border-white/5',
+        'relative inline-flex w-fit max-w-[calc(100vw-2rem)] items-center p-1 rounded-full bg-black/60 backdrop-blur-sm ring-1 ring-white/10 shadow-sm overflow-x-auto scrollbar-none',
         className,
       )}
     >
-      <nav
-        aria-label="Account sections"
-        className="flex w-full max-w-full scrollbar-none items-center overflow-x-auto"
-      >
         {SECTION_ITEMS.map((item) => {
           const count = countsMap[item.key];
           return (
@@ -204,7 +201,6 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
             />
           );
         })}
-      </nav>
     </div>
   );
 }
@@ -251,21 +247,21 @@ function NavViewItem({ item, isActive, href, count = null }) {
       href={href}
       onClick={handleClick}
       className={cn(
-        'inline-flex h-12 shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 text-xs font-semibold uppercase transition-colors select-none sm:min-w-0 sm:flex-1 sm:px-2',
+        'center h-auto shrink-0 gap-1.5 rounded-full p-2.5 text-xs font-semibold uppercase transition-colors select-none',
         isActive
-          ? 'border-white text-white font-bold'
-          : 'border-transparent text-white/70 hover:bg-white/10 hover:text-white',
+          ? 'bg-white/15 text-white font-bold'
+          : 'text-white/70 hover:bg-white/10 hover:text-white',
       )}
     >
       {item.icon ? (
-        <Icon icon={item.icon} size={14} className={isActive ? 'text-white' : 'text-white/50'} />
+        <Icon icon={item.icon} size={13} className={isActive ? 'text-white' : 'text-white/50'} />
       ) : null}
-      <span>{item.label}</span>
+      <span className="leading-none">{item.label}</span>
       {count !== null && count !== undefined ? (
         <span
           className={cn(
-            'ml-0.5 rounded-full px-1.5 py-0.5 text-xs font-mono leading-none font-medium',
-            isActive ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50',
+            'ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-mono leading-none font-medium',
+            isActive ? 'bg-white/20 text-white' : 'bg-white/10 text-white/50',
           )}
         >
           {count}
@@ -385,29 +381,43 @@ function ProfileLayoutInner({
     <AccountProfileShellProvider value={profileShell}>
       <AccountProfileShellNav profile={profile} username={profileHandle} />
 
-      <div
-        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
-      >
-        <AccountHeroReveal>
-          <AccountHero
-            profile={profile}
-            followerCount={followerCount}
-            followingCount={followingCount}
-            onOpenFollowList={onOpenFollowList}
-            onReadMore={handleReadMore}
-            username={profileHandle}
-          />
-        </AccountHeroReveal>
-
-        <AccountNavReveal className="mt-8 sm:mt-10">
+      {/* Floating absolute navbar centered on top of banner */}
+      <div className="absolute top-0 inset-x-0 z-30 flex justify-center pointer-events-none p-2 sm:p-4">
+        <AccountNavReveal className="pointer-events-auto inline-flex justify-center">
           <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
         </AccountNavReveal>
+      </div>
 
-        <main className="w-full pt-6 sm:pt-8">
-          <AccountSectionScene sceneKey={pendingTab ? '' : pathname}>
-            {mainContent}
-          </AccountSectionScene>
-        </main>
+      <div className="relative z-10 w-full [overflow-anchor:none]">
+        {/* Hero Section Container */}
+        <div
+          className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 sm:px-6 lg:px-8`}
+        >
+          <AccountHeroReveal>
+            <AccountHero
+              profile={profile}
+              followerCount={followerCount}
+              followingCount={followingCount}
+              onOpenFollowList={onOpenFollowList}
+              onReadMore={handleReadMore}
+              username={profileHandle}
+            />
+          </AccountHeroReveal>
+        </div>
+
+        {/* Full-width w-screen separator border below Hero */}
+        <div className="w-full border-b border-white/10" />
+
+        {/* Main Content Container */}
+        <div
+          className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 sm:px-6 lg:px-8`}
+        >
+          <main className="w-full pt-6 sm:pt-8">
+            <AccountSectionScene sceneKey={pendingTab ? '' : pathname}>
+              {mainContent}
+            </AccountSectionScene>
+          </main>
+        </div>
       </div>
       <NavHeightSpacer className="w-full bg-black" />
     </AccountProfileShellProvider>

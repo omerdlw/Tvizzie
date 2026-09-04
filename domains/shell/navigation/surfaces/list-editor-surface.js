@@ -4,17 +4,12 @@ import { useDeferredValue, useEffect, useState, useTransition, useCallback, useM
 import { AnimatePresence, motion } from 'motion/react';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuth } from '@/modules/auth';
-import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
+import { getNavActionClass, SEARCH_STYLES } from '@/domains/shell/navigation/actions/constants';
 import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import {
-  reorderUserListItems,
-  toggleUserListItem,
-  updateUserList,
-} from '@/domains/account/client/lists';
+import { reorderUserListItems, toggleUserListItem, updateUserList } from '@/domains/account/client';
 import { TmdbService } from '@/infrastructure/tmdb/client';
 import { cn } from '@/ui/class-names';
-import { navActionClass, SEARCH_STYLES } from '@/domains/shell/navigation/actions/constants';
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';
 import { SearchActionControls } from '@/domains/shell/navigation/actions/search-action';
 import { Button, Input } from '@/ui/primitives';
@@ -294,7 +289,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
                   classNames={{
                     input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
-                      navActionClass({
+                      getNavActionClass({
                         cn,
                         button: SEARCH_STYLES.input,
                         isActive: focusedField === 'title',
@@ -314,7 +309,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
                   classNames={{
                     input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
-                      navActionClass({
+                      getNavActionClass({
                         cn,
                         button: SEARCH_STYLES.input,
                         isActive: focusedField === 'description',
@@ -389,7 +384,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
                     {Array.from({ length: 4 }).map((_, index) => (
                       <div
                         key={`search-skeleton-${index}`}
-                        className="skeleton-block-soft aspect-[2/3] w-full animate-pulse rounded-[20px] ring-1 ring-inset ring-white/5"
+                        className="skeleton-block-soft aspect-[2/3] w-full animate-pulse rounded-[20px] ring-1 ring-white/5 ring-inset"
                       />
                     ))}
                   </div>
@@ -424,7 +419,7 @@ export default function ListEditorSurface({ close, data, ...restProps }) {
           </AnimatePresence>
         </div>
       ) : (
-        <div className="flex h-28 flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 text-center">
+        <div className="flex h-28 flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/5 text-center ring-1 ring-white/10 ring-inset">
           <Icon icon="solar:list-broken" size={24} className="text-white/50" />
           <p className="text-xs text-white/50">No titles in this list</p>
         </div>

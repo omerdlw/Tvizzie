@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { canViewerAccessUserContent } from '@/domains/account/server/profile';
+import { canViewerAccessUserContent } from '@/domains/account/server';
 import { resolveOptionalSessionRequest } from '@/domains/auth/server/session.js';
 import {
   getAccountSocialProofResource,

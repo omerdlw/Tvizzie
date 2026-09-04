@@ -67,6 +67,14 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/', '.next/', '.open-next/', 'out/', 'build/', '**/*-all.js', '.agents/'],
+    ignores: [
+      'node_modules/',
+      '.next/',
+      '.open-next/',
+      'out/',
+      'build/',
+      '**/*-all.js',
+      '.agents/',
+    ],
   },
 ];

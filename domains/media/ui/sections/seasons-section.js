@@ -63,7 +63,7 @@ function EpisodeCard({ episode, index = 0, onLog }) {
             type="button"
             aria-label={`Log ${title} to diary`}
             onClick={() => onLog?.(episode, episodeNumber)}
-            className="center absolute top-2 right-2 size-11 rounded-[14px] ring-1 ring-inset ring-white/15 bg-black/60 text-white transition-colors hover:ring-white/50 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="center absolute top-2 right-2 size-11 rounded-[14px] bg-black/60 text-white ring-1 ring-white/15 transition-colors ring-inset hover:bg-black/80 hover:ring-white/50 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon icon="solar:calendar-add-bold" size={19} />
           </Button>

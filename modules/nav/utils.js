@@ -7,7 +7,6 @@ import {
   NAV_ACTION_KEYS,
   NAV_STYLE_SECTIONS,
 } from './constants';
-import { validateNavConfig } from '../registry/handlers';
 
 /**
  * Converts a nullable value to an array without flattening nested values.
@@ -36,8 +35,6 @@ export function isObjectLike(value) {
 export function toObject(value) {
   return isObjectLike(value) ? value : {};
 }
-
-export { validateNavConfig };
 
 /**
  * Extracts legacy top-level card style properties.
@@ -451,7 +448,11 @@ export function isActionlessNavItem(activeItem) {
 
 /** @param {object} activeItem - Active item @returns {boolean} Whether the status may show actions */
 export function isStatusToolbarActionAllowed(activeItem) {
-  return activeItem?.type === 'APP_ERROR' || activeItem?.type === 'API_ERROR';
+  return (
+    activeItem?.type === 'APP_ERROR' ||
+    activeItem?.type === 'API_ERROR' ||
+    activeItem?.type === 'GUARD'
+  );
 }
 
 /** @param {Array<object>} actions - Context actions @param {object} activeItem - Active item @returns {Array<object>} Allowed actions */

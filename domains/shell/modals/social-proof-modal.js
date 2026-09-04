@@ -7,7 +7,7 @@ import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+} from '@/domains/account/client';
 import { Container } from '@/modules/modal';
 import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal';
 import AdaptiveImage from '@/ui/components/adaptive-image';
@@ -78,7 +78,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
         onClick={close}
         className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-white/5 p-3 transition-all duration-300 ease-in-out hover:bg-black lg:p-4"
       >
-        <div className="center size-10 shrink-0 overflow-hidden rounded-[14px] ring-1 ring-inset ring-white/5 bg-white/5">
+        <div className="center size-10 shrink-0 overflow-hidden rounded-[14px] bg-white/5 ring-1 ring-white/5 ring-inset">
           <AdaptiveImage
             mode="img"
             src={getUserAvatarUrl(user)}
@@ -99,7 +99,10 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions, index 
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 self-center">
-          <span aria-hidden="true" className="center size-7 rounded-lg ring-1 ring-inset ring-white/10 text-white/70">
+          <span
+            aria-hidden="true"
+            className="center size-7 rounded-lg text-white/70 ring-1 ring-white/10 ring-inset"
+          >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
         </div>
@@ -116,11 +119,7 @@ export default function SocialProofModal({ close, data }) {
       className="relative max-h-[85vh] w-[min(92vw,560px)]"
       close={close}
       header={{
-        left: (
-          <h2 className="text-xs font-bold text-white/50 uppercase">
-            Friends activity
-          </h2>
-        ),
+        left: <h2 className="text-xs font-bold text-white/50 uppercase">Friends activity</h2>,
         right: data?.title ? (
           <span className="truncate text-xs text-white/50">{data.title}</span>
         ) : null,

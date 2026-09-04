@@ -8,10 +8,7 @@ import {
   POSTER_PREFERENCE_CHANGE_EVENT,
   notifyPosterPreferenceChange,
 } from './background-preferences.js';
-import {
-  getSupabaseClient,
-  assertSupabaseResult,
-} from '@/infrastructure/http/client';
+import { getSupabaseClient, assertSupabaseResult } from '@/infrastructure/http/client';
 
 const STORAGE_KEY = 'tvizzie.person.poster.preferences';
 const MAX_PREFERENCES = 200;

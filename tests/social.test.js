@@ -9,14 +9,22 @@ import {
   NOTIFICATION_TYPES,
   NOTIFICATION_TYPE_SET,
 } from '@/domains/social/utils/constants';
-import { buildProfileRealtimeTopic, PROFILE_LIVE_EVENT_TYPE } from '@/infrastructure/realtime/client';
+import {
+  buildProfileRealtimeTopic,
+  PROFILE_LIVE_EVENT_TYPE,
+} from '@/infrastructure/realtime/client';
 
 test('social activity events map to their canonical slots', () => {
   const record = buildEventRecord({
     actor: { avatarUrl: null, displayName: 'Test User', id: 'actor-1', username: 'test-user' },
     eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
     occurredAt: '2026-08-24T00:00:00.000Z',
-    payload: { subjectId: '101', subjectPoster: '/poster.jpg', subjectTitle: 'Test Movie', subjectType: 'movie' },
+    payload: {
+      subjectId: '101',
+      subjectPoster: '/poster.jpg',
+      subjectTitle: 'Test Movie',
+      subjectType: 'movie',
+    },
     visibility: 'public',
   });
 

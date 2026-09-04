@@ -318,7 +318,7 @@ export default function ReviewEditorSurface({ close, data }) {
           onChange={handleTextChange}
           className={{
             wrapper:
-              'flex rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out focus-within:bg-white/10',
+              'flex rounded-[20px] bg-white/5 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset focus-within:bg-white/10',
             textarea:
               'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-white/50',
           }}

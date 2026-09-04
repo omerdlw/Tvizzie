@@ -1,13 +1,11 @@
-import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
-
 // ── Context-menu motion contract ────────────────────────────────────────────
 // The menu view consumes every enter, exit, item, and press token from this
-// file so context-menu animation remains consistent with the shared foundation.
+// file so context-menu animation remains consistent.
 
 const CONTEXT_MENU_EASINGS = Object.freeze({
-  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
-  SOFT: MOTION_EASINGS.SOFT,
-  EXIT: MOTION_EASINGS.EXIT,
+  EMPHASIZED: Object.freeze([0.16, 1, 0.3, 1]),
+  SOFT: Object.freeze([0.22, 1, 0.36, 1]),
+  EXIT: Object.freeze([0.7, 0, 0.84, 0]),
 });
 
 const CONTEXT_MENU_TIERS = Object.freeze({
@@ -18,7 +16,12 @@ function toGpuTransform({ x = 0, y = 0, scale = 1 } = {}) {
   return `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
 }
 
-export const CONTEXT_MENU_MICRO_SPRING = MOTION_SPRINGS.PRESS;
+export const CONTEXT_MENU_MICRO_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 520,
+  damping: 30,
+  mass: 0.28,
+});
 export const CONTEXT_MENU_ITEM_TAP = Object.freeze({
   transform: toGpuTransform({ scale: 0.97 }),
 });
@@ -94,6 +97,3 @@ export const menuPopVariants = Object.freeze({
 export const CONTEXT_MENU_POP_VARIANTS = menuPopVariants;
 export const CONTEXT_MENU_CONTENT_VARIANTS = menuContentVariants;
 export const CONTEXT_MENU_ITEM_VARIANTS = menuItemVariants;
-
-export const CONTEXT_MENU_ITEM_TRANSITION_CLASS = 'transition-all duration-200 ease-in-out';
-export const CONTEXT_MENU_ICON_TRANSITION_CLASS = 'transition-colors duration-200 ease-in-out';

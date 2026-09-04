@@ -38,18 +38,7 @@ function withDefaultDuration(duration, options = {}) {
 
 const PRODUCTION_OPTIONAL_TOAST_TYPES = new Set([TOAST_TYPES.SUCCESS, TOAST_TYPES.INFO]);
 
-function isSuppressedToastMessage(message) {
-  const normalized = String(message || '')
-    .trim()
-    .toLowerCase();
-  return (
-    normalized.includes('profile is private') || normalized.includes('this profile is private')
-  );
-}
-
-function shouldSuppressToast(type, options = {}, message = '') {
-  if (isSuppressedToastMessage(message)) return true;
-
+function shouldSuppressToast(type, options = {}) {
   if (process.env.NODE_ENV !== 'production') return false;
   if (!PRODUCTION_OPTIONAL_TOAST_TYPES.has(type)) return false;
 
@@ -78,11 +67,7 @@ export function useToast() {
       } = options;
       const normalizedMessage = normalizeFeedbackText(message);
 
-      if (
-        !normalizedMessage ||
-        isSuppressedToastMessage(normalizedMessage) ||
-        shouldSuppressToast(type, { allowInProduction }, normalizedMessage)
-      ) {
+      if (!normalizedMessage || shouldSuppressToast(type, { allowInProduction })) {
         return null;
       }
 

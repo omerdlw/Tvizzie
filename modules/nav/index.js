@@ -95,6 +95,8 @@ export {
 } from './motion';
 
 export {
+  NAV_ACTION_MOTION_PROPS,
+  NAV_ACTION_STYLES,
   NAV_ATTENTION_KIND,
   NAV_ATTENTION_PRIORITY,
   NAV_ATTENTION_PRIORITY_OFFSET_MAX,
@@ -113,11 +115,13 @@ export {
   NAVIGATION_EVENTS,
   NAVIGATION_LIFECYCLE,
   NAVIGATION_TRANSACTION_STATUS,
+  SEMANTIC_SURFACE_CLASSES,
+  getNavActionClass,
 } from './constants';
 
-export { formatMediaTime, isValidComponentType, validateNavConfig } from './utils';
+export { formatMediaTime, isValidComponentType } from './utils';
 export { NavMediaControls, NavMediaScrubber, NavSoundwave } from './media';
-export { NavDescription, NavIcon, NavTitle } from './cards';
+export { NavCardHeader, NavDescription, NavIcon, NavTitle } from './cards';
 export {
   BreadcrumbProvider,
   NavBreadcrumbsCard,
@@ -128,10 +132,12 @@ export {
   useRegisterBreadcrumbOverride,
 } from './breadcrumbs';
 export {
+  areHudDefinitionsEqual,
   createHudDefinition,
   createNavigationOperationHud,
   isHudDescriptor,
   resolveActiveHud,
+  upsertHudEntry,
 } from './hud';
 export {
   applySurfaceToNavItem,
@@ -155,7 +161,14 @@ export {
   useSurfaceFlow,
   useSurfaceId,
 } from './surface';
-export { applyStatusOverlay, getStatusTheme, useNavigationStatus } from './status';
+export {
+  applyStatusOverlay,
+  createGuardStatus,
+  getStatusTheme,
+  GuardAction,
+  GuardActions,
+  useNavigationStatus,
+} from './status';
 export {
   createNavigationTransaction,
   createNavigationTransactionState,
@@ -497,6 +510,7 @@ export default function Nav() {
         id="nav-card-stack"
         ref={navRef}
         className="fixed inset-x-0 bottom-[4px] mx-auto touch-manipulation select-none"
+        data-controls-hidden={expanded || activeItem?.isSurface ? 'true' : 'false'}
         style={{
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',

@@ -1,102 +1,47 @@
-# Module: Notification
+# Notification
 
-> Kritik bildirimleri ve kısa süreli toast'ları state, persistence, event bridge ve erişilebilir overlay lifecycle'ıyla yönetir.
+`modules/notification`, kısa toast'ları ve kalıcı kritik bildirimleri aynı provider altında yönetir. Domain mesajı ve domain event'i üretir; modül normalizasyon, timer, storage ve erişilebilir overlay lifecycle'ını yönetir.
 
-## 1. Genel bakış
+## Sınır
 
-`modules/notification`, üreticilerin yalnızca normalize edilmiş bir notification
-veya toast interface'i kullanmasını sağlar. State, timer, browser storage,
-portal, swipe-dismiss ve unauthorized event bridge tek provider ağacında birleşir.
+`store.js` state, critical persistence ve browser storage'ı; `toast.js` mesaj odaklı facade ile production policy'sini; `motion.js` interaction değerlerini; `index.js` renderer, listener ve public facade'ı içerir.
 
-## 2. Sorumluluklar
+Kritik türler `PERMISSION_DENIED`, `SESSION_EXPIRED`, `SERVER_ERROR` ve `OFFLINE`dır. Toast türleri `SUCCESS`, `WARNING`, `ERROR` ve `INFO`dur. Yalnız kritik türler refresh sonrasında geri yüklenir.
 
-### Sahip olduğu kararlar
-
-- Critical ve toast state'ini tutmak
-- Critical bildirimleri refresh sonrasında hydrate etmek
-- Toast message normalization, duration ve suppression policy'si
-- Timer replacement, dedupe ve dismiss lifecycle'ı
-- Portal overlay, action, close ve swipe interaction'ları
-- `API_UNAUTHORIZED` event'ini session-expired notification'a çevirmek
-- Motion variant ve interaction token'larını sunmak
-
-### Sahip olmadığı kararlar
-
-- Domain event'ini üretmek veya backend notification persistence'ı
-- Auth/session state'ini yönetmek
-- Navigation state'ini değiştirmek
-- Ürün mesajlarının veya domain copy'sinin kaynağı olmak
-
-## 3. Dosya sahipliği
-
-| Dosya       | Sahip olduğu implementasyon                        | Public mi? |
-| ----------- | -------------------------------------------------- | ---------- |
-| `index.js`  | Overlay, container, listener ve public facade      | Evet       |
-| `store.js`  | Provider, state, storage ve critical persistence   | Dolaylı    |
-| `toast.js`  | `useToast`, duration, suppression ve dedupe policy | Dolaylı    |
-| `motion.js` | Toast/content/drag/tap motion sözleşmesi           | Dolaylı    |
-
-Görsel notification render'ı `index.js` içinde kalır; ayrıca `view.js` yoktur.
-`NotificationBadgeListener` public compatibility hook'u olarak no-op'tur.
-
-## 4. Kurulum
-
-Provider, listener ve container uygulama kökünde birer kez mount edilmelidir:
+## Kurulum
 
 ```jsx
 <NotificationProvider>
+  {children}
   <NotificationListener />
   <NotificationContainer />
-  {children}
 </NotificationProvider>
 ```
 
-`NotificationListener` route layout'larında tekrar mount edilmemelidir; aksi
-halde tek event birden fazla notification üretebilir. `NotificationBadgeListener`
-mevcut feature layout'larında compatibility için mount edilebilir fakat state
-veya listener kurmaz.
+Provider, listener ve container'ı uygulama kabuğunda bir kez mount edin. `NotificationBadgeListener` eski kullanımlar için no-op compatibility bileşenidir.
 
-## 5. Public interface
+## API seçimi
 
-| Grup            | Export'lar                                                                     |
-| --------------- | ------------------------------------------------------------------------------ |
-| Provider/render | `NotificationProvider`, `NotificationContainer`, `NotificationOverlay`         |
-| Global bridge   | `NotificationListener`, `NotificationBadgeListener`                            |
-| State/action    | `useNotificationState`, `useNotificationActions`                               |
-| Toast           | `useToast`                                                                     |
-| Tür/config      | `CRITICAL_TYPES`, `TOAST_TYPES`, `NOTIFICATION_CONFIG`                         |
-| Storage         | `getStorageItem`, `setStorageItem`, `removeStorageItem`                        |
-| Motion          | `toastVariants`, `notificationContentVariants` ve `NOTIFICATION_*` export'ları |
+| İhtiyaç                         | API                                                     |
+| ------------------------------- | ------------------------------------------------------- |
+| Normal kullanıcı geri bildirimi | `useToast`                                              |
+| Kalıcı veya kritik durum        | `useNotificationActions`                                |
+| Notification state'i            | `useNotificationState`                                  |
+| Root görünümü                   | `NotificationContainer`, `NotificationListener`         |
+| SSR-safe browser storage        | `getStorageItem`, `setStorageItem`, `removeStorageItem` |
 
-`useNotificationState()` normalized `notifications` ve hydration state'ini;
-`useNotificationActions()` ise `showNotification` ve `dismissNotification`
-başta olmak üzere store action'larını döndürür.
+## Kullanım
 
-## 6. Sözleşmeler ve kullanım örnekleri
-
-### 6.1 Bildirim türleri
-
-Critical türler: `PERMISSION_DENIED`, `SESSION_EXPIRED`, `SERVER_ERROR`,
-`OFFLINE`.
-
-Toast türleri: `SUCCESS`, `WARNING`, `ERROR`, `INFO`.
-
-Critical notification yalnızca `CRITICAL_TYPES` içindeyse storage'a yazılır;
-toast'lar refresh sonrasında geri yüklenmez.
-
-### 6.2 `useToast` kullanımı
+Başarılı veya hatalı kısa işler için `useToast` kullanın. Aynı iş tekrarlandığında stabil bir `dedupeKey` verin:
 
 ```jsx
-import { useToast } from '@/modules/notification';
-import { Button } from '@/ui/primitives';
-
 function SaveButton() {
   const toast = useToast();
 
   async function save() {
     try {
       await saveChanges();
-      toast.success('Changes saved');
+      toast.success('Changes saved', { allowInProduction: true });
     } catch (error) {
       toast.error(error?.message || 'Changes could not be saved', {
         dedupeKey: 'save-changes-error',
@@ -109,148 +54,52 @@ function SaveButton() {
 }
 ```
 
-Method'lar:
+Production'da `SUCCESS` ve `INFO` toast'ları varsayılan olarak gösterilmez. Gerekliyse `allowInProduction: true` verin. Default süreler success/info için 3000 ms, warning/error için 4000 ms'dir.
 
-- `success(message, options)`: default 3000 ms
-- `warning(message, options)`: default 4000 ms
-- `error(message, options)`: default 4000 ms
-- `info(message, options)`: default 3000 ms
-- `show(type, message, options)`: caller duration'ı belirler
-
-Toast options: `action`, `actions`, `allowInProduction`, `dedupeKey`, `description`,
-`duration`, `id`, `title`, `icon`, `dismissible`, `theme` ve diğer notification
-presentation alanlarıdır. `dedupeKey`, explicit `id` verilse bile önceliklidir.
-
-Mesajlar `normalizeFeedbackText` ile normalize edilir. Boş mesajlar ve policy
-tarafından bastırılan beklenen mesajlar gösterilmez. Production'da success/info
-toast'ları varsayılan olarak bastırılır; gerekli durumlarda
-`allowInProduction: true` verilir.
-
-### 6.3 Düşük seviye notification
+Kritik durumları düşük seviye action ile yayınlayın:
 
 ```jsx
-import { CRITICAL_TYPES, useNotificationActions } from '@/modules/notification';
-import { Button } from '@/ui/primitives';
-
 function OfflineBridge() {
-  const { showNotification, dismissNotification } = useNotificationActions();
-
-  function showOffline() {
-    showNotification(CRITICAL_TYPES.OFFLINE, {
-      id: 'network-offline',
-      message: 'You are currently offline',
-      dismissible: true,
-    });
-  }
+  const { dismissNotification, showNotification } = useNotificationActions();
 
   return (
-    <>
-      <Button onClick={showOffline}>Show offline state</Button>
-      <Button onClick={() => dismissNotification('network-offline')}>Dismiss</Button>
-    </>
+    <Button
+      onClick={() =>
+        showNotification(CRITICAL_TYPES.OFFLINE, {
+          id: 'network-offline',
+          message: 'You are currently offline',
+          actions: [
+            {
+              label: 'Dismiss',
+              dismiss: true,
+              onClick: () => dismissNotification('network-offline'),
+            },
+          ],
+        })
+      }
+    >
+      Show offline state
+    </Button>
   );
 }
 ```
 
-`showNotification(type, data)` temel olarak `id`, `message`, `description`,
-`duration`, `title`, `icon`, `actions`, `dismissible`, `theme` ve
-`actionToneClass` alanlarını kabul eder. Bu düşük seviye interface toast
-suppression policy'sini otomatik olarak uygulamaz.
+Action descriptor `label`, `onClick`, `dismiss` ve `className` kabul eder. `dismiss: false`, action sonrası bildirimi açık bırakır.
 
-### 6.4 Action descriptor
+## Lifecycle ve kurallar
 
-```js
-{
-  label: 'Retry',
-  onClick: retryRequest,
-  dismiss: true,
-  className: 'custom-action-class',
-}
-```
+- Aynı id mevcut kaydı günceller; `dedupeKey`, toast için id'den önce gelir
+- Auto-dismiss yalnız dismissible notification'larda çalışır
+- Auto-dismiss olmayan dismissible notification close düğmesi gösterir
+- `NotificationListener`, uygun `API_UNAUTHORIZED` olayını session-expired critical notification'a çevirir
+- Bozuk storage ve geçersiz critical kayıt güvenli biçimde temizlenir
 
-`dismiss: false` verilirse action sonrası notification açık kalır.
+Domain event'lerini bu modülde üretmeyin. Payload'a token veya gereksiz kişisel veri koymayın. Motion değerlerini feature içinde ikinci kez tanımlamayın.
 
-### 6.5 Storage yardımcıları
-
-```js
-import { getStorageItem, removeStorageItem, setStorageItem } from '@/modules/notification';
-
-const value = getStorageItem('feature-state', { ready: false });
-setStorageItem('feature-state', { ready: true });
-removeStorageItem('feature-state');
-```
-
-Yardımcılar SSR-safe'tir. Browser storage kullanılamazsa okuma fallback döner;
-yazma/çıkarma exception fırlatmak yerine güvenli sonuç verir.
-
-### 6.6 Motion
-
-```js
-import {
-  NOTIFICATION_ACTION_TAP,
-  NOTIFICATION_MICRO_SPRING,
-  NOTIFICATION_WHILE_DRAG,
-  toastVariants,
-} from '@/modules/notification';
-```
-
-Motion değerlerini feature component'lerinde yeniden tanımlamayın.
-
-## 7. Yaşam döngüsü
-
-```text
-useToast / useNotificationActions
-  -> NotificationProvider
-     -> normalize + dedupe + timer
-     -> critical persistence
-  -> NotificationContainer
-     -> timestamp sort
-     -> portal(document.body)
-     -> AnimatePresence + drag
-```
-
-- İlk client render güvenli boş snapshot ile başlar.
-- Storage hydrate edildikten sonra persistence effect'i etkinleşir.
-- Aynı notification id mevcut kaydı günceller; `dedupeKey` stabil state key'idir.
-- Auto-dismiss aktif ve notification dismissible ise yatay swipe kullanılabilir.
-- Swipe 80 px offset veya 300 velocity eşiğini geçince dismiss olur.
-- Auto-dismiss olmayan dismissible notification'da close button görünür.
-- `NotificationListener`, `API_UNAUTHORIZED` ve `source: 'app'` event'ini
-  session-expired critical notification'a dönüştürür.
-- Listener cleanup sırasında global subscription kaldırılır.
-
-## 8. Sınırlar, erişilebilirlik ve performans
-
-- Container `aria-live="polite"`; overlay `role="alert"` ve `aria-atomic="true"` taşır.
-- Notification container `document.body` içine portal edilir; page stacking context'lerinden ayrıdır.
-- Critical storage anahtarı `critical_notifications`'tır.
-- Bozuk JSON, geçersiz critical type ve boş kayıt güvenli biçimde temizlenir.
-- State ve action context'leri ayrıdır.
-- Secret, token ve gereksiz kişisel veri notification payload'ına konulmamalıdır.
-
-## 9. Kurallar
-
-1. Provider, container ve global listener'ı root'ta tek kez mount edin.
-2. Normal kullanıcı feedback'i için `useToast`, kalıcı kritik durum için
-   `showNotification` kullanın.
-3. Tekrarlayan aynı iş akışlarında stabil `dedupeKey` kullanın.
-4. Domain event'lerini bu modülde üretmeyin; yalnızca event bridge olarak tüketin.
-5. Action callback'lerinde notification state'ini doğrudan mutate etmeyin.
-6. `NotificationBadgeListener`'ı gerçek state sahibiymiş gibi kullanmayın.
-7. Yeni suppression, persistence veya interaction davranışını test ve bu belge
-   ile birlikte güncelleyin.
-
-## 10. Doğrulama
+## Doğrulama
 
 ```bash
 npx prettier --check modules/notification/*.js modules/docs/notification.md
 npx eslint modules/notification/*.js
-node --import ./scripts/register-alias.mjs --test \
-  tests/characterization/notification-module.test.js \
-  tests/characterization/motion-foundation.test.js
-npm run build:webpack
+node --import ./scripts/register-alias.mjs --test tests/modules.test.js
 ```
-
-Test kapsamı: hydration/persistence, bozuk storage, duration/timer replacement,
-dedupe, production suppression, unauthorized source filtresi, listener cleanup,
-dismiss/action/swipe interaction'ları ve public export'lar.

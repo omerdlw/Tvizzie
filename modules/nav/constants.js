@@ -1,6 +1,7 @@
+import { cn } from '@/ui/class-names';
+
 /**
- * Static navigation values shared across the module.
- * Keep this module data-only: no functions, JSX, React state, or browser access.
+ * Navigation constants, action styles, and styling utilities shared across the module.
  */
 
 export const NAV_STYLE_SECTIONS = Object.freeze(['card', 'icon', 'title', 'description']);
@@ -93,7 +94,17 @@ export const NAV_SURFACE_PHASE = Object.freeze({
   RESTORING_HEADER: 'restoring_header',
 });
 
-export { NAV_SURFACE_CHOREOGRAPHY_TIMINGS } from './motion';
+export const NAV_SURFACE_CHOREOGRAPHY_TIMINGS = Object.freeze({
+  ACTION_DISMISS_MS: 260,
+  ACTION_DISMISS_SETTLE_MS: 100,
+  HEADER_SWAP_MS: 480,
+  HEADER_SWAP_SETTLE_MS: 140,
+  BODY_ENTER_MS: 840,
+  BODY_EXIT_MS: 620,
+  BODY_COLLAPSE_SETTLE_MS: 140,
+  HEADER_RESTORE_MS: 480,
+  RESTORE_SETTLE_MS: 100,
+});
 
 export const COMPACT_CARD_HORIZONTAL_PADDING = 56;
 export const COMPACT_CARD_MIN_WIDTH = 148;
@@ -257,7 +268,103 @@ export const NAV_ACTION_ORDER = Object.freeze({
   LOGOUT: 30,
 });
 
+export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
+  error: Object.freeze({
+    icon: 'ring-1 ring-inset ring-error/10 bg-error/10 text-error',
+    surface: 'bg-error/10 ring-1 ring-inset ring-error/50',
+    description: 'text-error',
+    title: 'text-error',
+  }),
+  info: Object.freeze({
+    icon: 'ring-1 ring-inset ring-info/10 bg-info/10 text-info',
+    surface: 'bg-info/10 ring-1 ring-inset ring-info/50',
+    description: 'text-info',
+    title: 'text-info',
+  }),
+  success: Object.freeze({
+    icon: 'ring-1 ring-inset ring-success/10 bg-success/10 text-success',
+    description: 'text-success',
+    surface: 'bg-success/10 ring-1 ring-inset ring-success/50',
+    title: 'text-success',
+  }),
+  warning: Object.freeze({
+    icon: 'ring-1 ring-inset ring-warning/10 bg-warning/10 text-warning',
+    description: 'text-warning',
+    surface: 'bg-warning/20 ring-1 ring-inset ring-warning/50',
+    title: 'text-warning',
+  }),
+});
+
+export const NAV_ACTION_STYLES = Object.freeze({
+  base: 'center w-full rounded-[20px] gap-2.5 ring-1 ring-inset px-4 py-2.5 text-xs font-semibold uppercase cursor-pointer',
+  muted: 'ring-white/5 bg-white/5 hover:bg-white/10 text-white/70',
+  active: 'ring-white/10 bg-white/10 hover:bg-white/15 text-white',
+  action: Object.freeze({
+    muted:
+      'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:text-white hover:bg-white/10',
+    active: 'ring-1 ring-inset ring-white/10 bg-white/10 hover:bg-white/15 text-white',
+  }),
+  row: 'flex w-full gap-2.5',
+  icon: 16,
+});
+
+export const NAV_ACTION_MOTION_PROPS = Object.freeze({
+  whileTap: { scale: 0.98 },
+});
+
+/**
+ * Unified helper to compute classes for navigation action buttons, triggers, inputs, and tabs.
+ *
+ * Supports both standard action items (defaulting to NAV_ACTION_STYLES.base) and
+ * custom action surfaces (such as search inputs and filter tabs).
+ *
+ * @param {object} [options]
+ * @param {string} [options.className] Additional classes or target element class
+ * @param {string} [options.button] Alias for className (used by input/tab surfaces)
+ * @param {boolean} [options.isActive=false] Whether the item is active/focused
+ * @param {string} [options.variant] Explicit override for variant/state classes
+ * @param {string} [options.tone] Semantic tone ('error' | 'warning' | 'success' | 'info' | 'active' | 'muted')
+ * @param {string|false|null} [options.base] Base class to apply (defaults to NAV_ACTION_STYLES.base unless `button` is specified without `base`)
+ * @param {Function} [options.cn] Optional class resolver function (defaults to standard `cn`)
+ * @returns {string}
+ */
+export function getNavActionClass({
+  className = '',
+  button = '',
+  isActive = false,
+  variant = '',
+  tone = '',
+  base,
+  cn: classNamesFn,
+} = {}) {
+  const resolve = classNamesFn || cn;
+
+  // Custom action surface (e.g., search input, tabs) where caller passes custom button base styling
+  if (button && !className && base === undefined) {
+    if (tone) {
+      const toneClass =
+        NAV_ACTION_STYLES.action[tone] ||
+        SEMANTIC_SURFACE_CLASSES[tone]?.surface ||
+        NAV_ACTION_STYLES.action.muted;
+      return resolve(button, toneClass);
+    }
+    const stateToken = isActive ? NAV_ACTION_STYLES.action.active : NAV_ACTION_STYLES.action.muted;
+    return resolve(button, stateToken);
+  }
+
+  // Standard nav action element
+  const elementClass = className || button;
+  const resolvedBase = base !== undefined ? base : NAV_ACTION_STYLES.base;
+  const stateClass =
+    variant ||
+    (tone && (SEMANTIC_SURFACE_CLASSES[tone]?.surface || NAV_ACTION_STYLES.action[tone])) ||
+    (isActive ? NAV_ACTION_STYLES.active : NAV_ACTION_STYLES.muted);
+
+  return resolve(stateClass, resolvedBase, elementClass);
+}
+
 export const STATUS_PRIORITY = Object.freeze({
+  GUARD: 120,
   ACCOUNT_DELETE: 115,
   APP_ERROR: 100,
   API_ERROR: 95,
@@ -270,6 +377,7 @@ export const STATUS_PRIORITY = Object.freeze({
 });
 
 export const ERROR_STATUS_TYPES = new Set([
+  'GUARD',
   'ACCOUNT_DELETE',
   'APP_ERROR',
   'API_ERROR',
@@ -277,6 +385,7 @@ export const ERROR_STATUS_TYPES = new Set([
 ]);
 
 export const STATUS_TONES = Object.freeze({
+  GUARD: 'error',
   ACCOUNT_DELETE: 'error',
   API_ERROR: 'error',
   APP_ERROR: 'error',
@@ -322,3 +431,5 @@ export const NAV_COMPACT_BEHAVIOR = Object.freeze({
 });
 
 export const MAX_VISIBLE_STACKED_CARDS = 3;
+
+export const navActionClass = getNavActionClass;

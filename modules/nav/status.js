@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { motion } from 'motion/react';
 import { Wifi, WifiOff } from 'lucide-react';
 import {
   DESTRUCTIVE_ACTION_TONE_CLASS,
   EVENT_TYPES,
   globalEvents,
-  SEMANTIC_SURFACE_CLASSES,
   SUCCESS_ACTION_TONE_CLASS,
   WARNING_ACTION_TONE_CLASS,
 } from '@/shared';
@@ -18,11 +18,16 @@ import {
   AUTH_STATUS_STORAGE_KEY,
   AUTH_STATUS_TYPES,
   ERROR_STATUS_TYPES,
+  getNavActionClass,
+  NAV_ACTION_STYLES,
+  SEMANTIC_SURFACE_CLASSES,
   STATUS_CLEAR_DURATION,
   STATUS_PRIORITY,
   STATUS_TONES,
 } from './constants';
+import { NAV_FADE_TRANSITION, textCrossfadeVariants } from './motion';
 import { normalizeLower, normalizeUpper } from './utils';
+import { cn } from '@/ui/class-names';
 import { Spinner } from '@/ui/feedback/spinner';
 import { Button } from '@/ui/primitives';
 
@@ -62,6 +67,59 @@ function ErrorActions({ onRetry, onRefresh }) {
     </div>
   );
 }
+
+export function GuardActions({
+  onCancel,
+  onConfirm,
+  cancelLabel = 'Kal',
+  confirmLabel = 'Yine de Geç',
+  cancelText,
+  confirmText,
+  className = '',
+}) {
+  const effectiveCancel = cancelLabel || cancelText || 'Kal';
+  const effectiveConfirm = confirmLabel || confirmText || 'Yine de Geç';
+
+  return (
+    <motion.div
+      variants={textCrossfadeVariants}
+      initial="hidden"
+      animate="visible"
+      transition={NAV_FADE_TRANSITION}
+      className={cn(NAV_ACTION_STYLES.row, className)}
+    >
+      <Button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onCancel?.();
+        }}
+        className={getNavActionClass({
+          variant: NAV_ACTION_STYLES.muted,
+          className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+        })}
+      >
+        <span className="truncate">{effectiveCancel}</span>
+      </Button>
+
+      <Button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onConfirm?.();
+        }}
+        className={getNavActionClass({
+          variant: DESTRUCTIVE_ACTION_TONE_CLASS,
+          className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+        })}
+      >
+        <span className="truncate">{effectiveConfirm}</span>
+      </Button>
+    </motion.div>
+  );
+}
+
+export const GuardAction = GuardActions;
 
 // ── Status definitions, persistence, and feedback ─────────────────────────────
 
@@ -253,6 +311,56 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
     isOverlay: true,
     action: () => (
       <ErrorActions onRetry={retryHandler} onRefresh={() => window.location.reload()} />
+    ),
+  });
+}
+
+export function createGuardStatus({
+  action,
+  guardAction,
+  title = 'Navigasyon Engellendi',
+  description = 'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+  icon = 'solar:danger-triangle-bold',
+  style,
+  onConfirm,
+  onCancel,
+  cancelLabel,
+  confirmLabel,
+  cancelText = 'Kal',
+  confirmText = 'Yine de Geç',
+  clearStatus,
+}) {
+  const cancelHandler = () => {
+    clearStatus?.();
+    onCancel?.();
+  };
+
+  const confirmHandler = () => {
+    clearStatus?.();
+    onConfirm?.();
+  };
+
+  const effectiveCancel = cancelLabel || cancelText;
+  const effectiveConfirm = confirmLabel || confirmText;
+  const GuardActionComponent = action || guardAction || GuardActions;
+
+  return createOverlayStatus({
+    type: 'GUARD',
+    priority: STATUS_PRIORITY.GUARD,
+    title,
+    description,
+    icon,
+    style: style || getStatusTheme('GUARD'),
+    isOverlay: true,
+    action: () => (
+      <GuardActionComponent
+        onCancel={cancelHandler}
+        onConfirm={confirmHandler}
+        cancelLabel={effectiveCancel}
+        confirmLabel={effectiveConfirm}
+        cancelText={effectiveCancel}
+        confirmText={effectiveConfirm}
+      />
     ),
   });
 }
@@ -640,6 +748,35 @@ function subscribeToNotFoundStatusEvents({ notFoundAction, setStatus, updateStat
   });
 }
 
+function subscribeToGuardStatusEvents({ clearStatus, setStatus, updateStatus }) {
+  return globalEvents.subscribe(EVENT_TYPES.NAV_GUARD, (eventData) => {
+    if (eventData?.clear) {
+      setStatus((currentStatus) => (currentStatus?.type === 'GUARD' ? null : currentStatus));
+      return;
+    }
+
+    updateStatus(
+      createGuardStatus({
+        action: eventData?.action,
+        guardAction: eventData?.guardAction,
+        title: eventData?.title || 'Navigasyon Engellendi',
+        description:
+          eventData?.message ||
+          'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+        icon: eventData?.icon || 'solar:danger-triangle-bold',
+        style: eventData?.style || getStatusTheme('GUARD'),
+        onCancel: eventData?.onCancel,
+        onConfirm: eventData?.onConfirm,
+        cancelLabel: eventData?.cancelLabel,
+        confirmLabel: eventData?.confirmLabel,
+        cancelText: eventData?.cancelText || 'Kal',
+        confirmText: eventData?.confirmText || 'Yine de Geç',
+        clearStatus,
+      }),
+    );
+  });
+}
+
 function subscribeToConnectionStatusEvents({ handleOffline, handleOnline }) {
   window.addEventListener('offline', handleOffline);
   window.addEventListener('online', handleOnline);
@@ -773,6 +910,11 @@ function useNavigationStatusEventSubscriptions({
       setStatus,
       updateStatus,
     });
+    const unsubscribeGuard = subscribeToGuardStatusEvents({
+      clearStatus,
+      setStatus,
+      updateStatus,
+    });
     const unsubscribeConnection = subscribeToConnectionStatusEvents({
       handleOffline,
       handleOnline,
@@ -787,6 +929,7 @@ function useNavigationStatusEventSubscriptions({
       unsubscribeSignUp();
       unsubscribeAuthFeedback();
       unsubscribeNotFound();
+      unsubscribeGuard();
 
       clearTransientTimers();
       unsubscribeConnection();
@@ -972,7 +1115,11 @@ export function applyStatusOverlay(item, statusState) {
     return item;
   }
 
-  const showStatusActions = statusState.type === 'APP_ERROR' || statusState.type === 'API_ERROR';
+  const showStatusActions =
+    statusState.type === 'APP_ERROR' ||
+    statusState.type === 'API_ERROR' ||
+    statusState.type === 'GUARD' ||
+    Boolean(statusState.action);
 
   return {
     ...item,

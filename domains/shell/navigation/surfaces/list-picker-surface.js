@@ -11,7 +11,7 @@ import {
   getUserListMemberships,
   subscribeToUserLists,
   toggleUserListItem,
-} from '@/domains/account/client/lists';
+} from '@/domains/account/client';
 import { createCreateListSurfaceEntry } from './list-create-surface';
 import { cn } from '@/ui/class-names';
 import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
@@ -40,10 +40,10 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
         type="button"
         onClick={onToggle}
         className={cn(
-          'group flex w-full cursor-pointer items-center gap-2 rounded-[20px] ring-1 ring-inset p-2 text-left',
+          'group flex w-full cursor-pointer items-center gap-2 rounded-[20px] p-2 text-left ring-1 ring-inset',
           isSelected
-            ? 'ring-white/10 bg-white/10 text-white hover:bg-white/15'
-            : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
+            ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15'
+            : 'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10',
         )}
       >
         <ListPreviewStack list={list} />
@@ -60,7 +60,7 @@ const ListRow = memo(function ListRow({ list, isSelected, onToggle, index }) {
             'flex size-[22px] shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
             isSelected
               ? 'ring-info bg-info text-primary'
-              : 'ring-white/5 text-white/50 group-hover:ring-white/50 group-hover:text-white/70',
+              : 'text-white/50 ring-white/5 group-hover:text-white/70 group-hover:ring-white/50',
           )}
         >
           <Icon icon="material-symbols:check-rounded" size={16} />
@@ -77,10 +77,7 @@ export function createListPickerSurfaceEntry(data = {}, config = {}) {
     title: 'Your Lists',
     description: 'Choose lists for this title',
     headerAction: (
-      <ListPickerHeaderAction
-        media={data?.media ?? null}
-        userId={data?.userId ?? null}
-      />
+      <ListPickerHeaderAction media={data?.media ?? null} userId={data?.userId ?? null} />
     ),
     props: { data },
     ...config,
@@ -253,9 +250,7 @@ export default function ListPickerSurface({ close, data }) {
           <ListPickerSkeleton count={2} />
         ) : lists.length === 0 ? (
           <div className="center min-h-52 flex-col gap-2.5 text-center">
-            <p className="text-xs font-bold text-white/50 uppercase">
-              No lists yet
-            </p>
+            <p className="text-xs font-bold text-white/50 uppercase">No lists yet</p>
             <p className="text-sm text-white/70">Create your first list with the button above</p>
           </div>
         ) : (

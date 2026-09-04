@@ -243,8 +243,7 @@ export function assertStepUp(request, { purpose, userId, email = null }) {
     .map((item) => normalizeLowerValue(item))
     .filter(Boolean);
 
-  if (!purposeList.includes(expectedPurpose))
-    throw new Error('Step-up verification is invalid');
+  if (!purposeList.includes(expectedPurpose)) throw new Error('Step-up verification is invalid');
   if (expectedEmail && stepUp.email !== expectedEmail)
     throw new Error('Step-up verification is invalid');
 

@@ -17,7 +17,6 @@ import {
   getModalPositionVariants,
   getModalTransition,
   modalBackdropVariants,
-  MODAL_STACK_OVERLAY_CLASS,
 } from './motion';
 import {
   ModalProvider as ModalRuntimeProvider,
@@ -35,20 +34,16 @@ import {
 export {
   MODAL_BREAKPOINTS,
   MODAL_CHROME,
-  MODAL_LABELS,
   MODAL_POSITION_CLASSES,
   MODAL_POSITIONS,
-  MODAL_PRESETS,
-  resolveAuthVerificationHeader,
   resolveModalHeader,
 } from './config';
 
 export {
-  ACTION_BUTTON_CLASS,
-  CANCEL_BUTTON_CLASS,
   MODAL_BACKDROP_VARIANTS,
   MODAL_CONTENT_STAGGER,
   MODAL_CONTENT_VARIANTS,
+  MODAL_EASINGS,
   MODAL_FOOTER_VARIANTS,
   MODAL_HEADER_VARIANTS,
   MODAL_LIST_ITEM_VARIANTS,
@@ -58,7 +53,6 @@ export {
   MODAL_MICRO_TAP_SCALE,
   MODAL_PANEL_SPRING,
   MODAL_POSITION_VARIANTS,
-  MODAL_STACK_OVERLAY_CLASS,
   getModalPositionVariants,
   getModalTransition,
   modalBackdropVariants,
@@ -440,7 +434,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className={MODAL_STACK_OVERLAY_CLASS}
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-all duration-300 ease-in-out"
               aria-label="Close active top modal"
             />
           )}

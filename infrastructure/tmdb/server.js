@@ -1,13 +1,13 @@
 import 'server-only';
 import { cache } from 'react';
 import { NextResponse } from 'next/server';
+import { TMDB_API_URL } from '@/shared';
 import {
   isPersonMediaType,
   isTvMediaType,
   isTitleMediaType,
   normalizeMediaType,
-  TMDB_API_URL,
-} from '@/shared';
+} from '@/domains/media/utils/media-key';
 import {
   CACHE_CONTROL,
   cacheControlHeaders,
@@ -998,4 +998,3 @@ export async function GET(request) {
       );
   }
 }
-

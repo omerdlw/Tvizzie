@@ -380,7 +380,9 @@ function normalizeSurfaceDefinition(
     urlKey: descriptor?.urlKey ?? config?.urlKey ?? null,
     badge: descriptor?.badge ?? config?.badge ?? null,
     extensions: Array.isArray(descriptor?.extensions ?? config?.extensions)
-      ? (descriptor?.extensions ?? config?.extensions).map(normalizeSurfaceExtension).filter(Boolean)
+      ? (descriptor?.extensions ?? config?.extensions)
+          .map(normalizeSurfaceExtension)
+          .filter(Boolean)
       : (descriptor?.extensions ?? config?.extensions)
         ? [normalizeSurfaceExtension(descriptor?.extensions ?? config?.extensions)].filter(Boolean)
         : [],
@@ -1840,16 +1842,18 @@ export function NavSurfaceExtension({
 
 function ExtensionPill({ ext, fill = false }) {
   const Component = ext.component;
-  const content = Component
-    ? isValidComponentType(Component)
-      ? <Component {...ext.props} />
-      : null
-    : ext.content;
+  const content = Component ? (
+    isValidComponentType(Component) ? (
+      <Component {...ext.props} />
+    ) : null
+  ) : (
+    ext.content
+  );
 
   if (ext.unstyled) {
     return (
       <div
-        className={cn('pointer-events-auto', fill && 'w-full flex-1 min-w-0', ext.className)}
+        className={cn('pointer-events-auto', fill && 'w-full min-w-0 flex-1', ext.className)}
         onClick={(event) => event.stopPropagation()}
       >
         {content}
@@ -1860,8 +1864,8 @@ function ExtensionPill({ ext, fill = false }) {
   return (
     <div
       className={cn(
-        'flex h-10 max-w-full items-center gap-1 rounded-full ring-1 ring-inset ring-white/10 bg-black/60 backdrop-blur-xl p-1 shadow-lg pointer-events-auto select-none',
-        fill && 'w-full flex-1 min-w-0',
+        'pointer-events-auto flex h-10 max-w-full items-center gap-1 rounded-full bg-black/60 p-1 shadow-lg ring-1 ring-white/10 backdrop-blur-xl select-none ring-inset',
+        fill && 'w-full min-w-0 flex-1',
         ext.className,
       )}
       onClick={(event) => event.stopPropagation()}
@@ -1934,11 +1938,7 @@ export const NavSurfaceExtensionsBar = memo(function NavSurfaceExtensionsBar({ a
     return store.getExtensionsForSurface(surfaceId);
   }, [store, surfaceId]);
 
-  const dynamicExtensions = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    () => [],
-  );
+  const dynamicExtensions = useSyncExternalStore(subscribe, getSnapshot, () => []);
 
   const descriptorExtensions = useMemo(() => {
     const raw = activeItem?.surfaceExtensions || activeItem?.extensions || [];
@@ -1980,11 +1980,11 @@ export const NavSurfaceExtensionsBar = memo(function NavSurfaceExtensionsBar({ a
           exit="exit"
           transition={NAV_SURFACE_EXTENSIONS_ENTER_TRANSITION}
           style={NAV_COMPOSITOR_STYLE}
-          className="absolute inset-x-0 bottom-[calc(100%+4px)] z-20 flex w-full items-center justify-between gap-1 pointer-events-none select-none"
+          className="pointer-events-none absolute inset-x-0 bottom-[calc(100%+4px)] z-20 flex w-full items-center justify-between gap-1 select-none"
           onClick={(event) => event.stopPropagation()}
         >
           {/* Left extension cluster */}
-          <div className="flex min-w-0 flex-1 items-center justify-start gap-1 pointer-events-auto">
+          <div className="pointer-events-auto flex min-w-0 flex-1 items-center justify-start gap-1">
             {leftExtensions.map((ext) => (
               <ExtensionPill
                 key={ext.id}
@@ -1996,7 +1996,7 @@ export const NavSurfaceExtensionsBar = memo(function NavSurfaceExtensionsBar({ a
 
           {/* Center extension cluster */}
           {hasCenter && (
-            <div className="flex shrink-0 items-center justify-center gap-1 pointer-events-auto">
+            <div className="pointer-events-auto flex shrink-0 items-center justify-center gap-1">
               {centerExtensions.map((ext) => (
                 <ExtensionPill key={ext.id} ext={ext} />
               ))}
@@ -2006,7 +2006,7 @@ export const NavSurfaceExtensionsBar = memo(function NavSurfaceExtensionsBar({ a
           {/* Right extension cluster */}
           <div
             className={cn(
-              'flex items-center justify-end gap-1 pointer-events-auto',
+              'pointer-events-auto flex items-center justify-end gap-1',
               hasCenter ? 'min-w-0 flex-1' : 'shrink-0',
             )}
           >
@@ -2093,56 +2093,77 @@ export function NavSurfaceHeader({
   }, [hasClose, hasHeaderAction, headerAction]);
 
   const stepIndicatorText = totalSteps > 1 ? `Step ${stepIndex + 1} of ${totalSteps}` : null;
+  const surfaceHeaderKey = useMemo(() => {
+    const iconPart = typeof icon === 'string' ? icon : icon ? 'icon-node' : 'no-icon';
+    return `${iconPart}:${title}:${description}:${stepIndex}:${badge || ''}`;
+  }, [badge, description, icon, stepIndex, title]);
 
   return (
     <div
       className={cn('relative flex w-full min-w-0 items-start justify-between gap-2.5', className)}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
-        {icon ? (
-          <div className="relative size-12 shrink-0">
-            {isImageIconSource(icon) ? (
-              <div
-                className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${icon})` }}
-              />
-            ) : (
-              <div className="center size-12 rounded-[20px] bg-white/5 text-white">
-                {typeof icon === 'string' ? <Iconify icon={icon} size={24} /> : icon}
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={surfaceHeaderKey}
+            variants={navHeaderSwapVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={NAV_HEADER_SWAP_TRANSITION}
+            className="flex w-full min-w-0 items-center gap-2.5 overflow-hidden"
+            style={{ ...NAV_COMPOSITOR_STYLE }}
+          >
+            {icon ? (
+              <div className="relative size-12 shrink-0">
+                {isImageIconSource(icon) ? (
+                  <div
+                    className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${icon})` }}
+                  />
+                ) : (
+                  <div className="center size-12 rounded-[20px] bg-white/5 text-white">
+                    {typeof icon === 'string' ? <Iconify icon={icon} size={24} /> : icon}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ) : null}
-
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2.5 overflow-hidden">
-          <div className="flex min-w-0 flex-1 flex-col justify-center -space-y-0.5">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <h3 id={titleId} className="truncate text-base font-bold text-white">{title}</h3>
-              {badge ? (
-                <span className="center rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white">
-                  {badge}
-                </span>
-              ) : stepIndicatorText ? (
-                <span className="text-xs font-semibold text-white/50">• {stepIndicatorText}</span>
-              ) : null}
-            </div>
-            {description ? (
-              <p
-                id={descriptionId}
-                className="text-sm leading-snug text-white/70"
-                style={{
-                  display: '-webkit-box',
-                  WebkitBoxOrient: 'vertical',
-                  WebkitLineClamp: descriptionMaxLines,
-                  overflow: 'hidden',
-                }}
-              >
-                {description}
-              </p>
             ) : null}
-          </div>
-          {trailing ? <div className="shrink-0">{trailing}</div> : null}
-        </div>
+
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2.5 overflow-hidden">
+              <div className="flex min-w-0 flex-1 flex-col justify-center -space-y-0.5">
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  <h3 id={titleId} className="truncate text-base font-bold text-white">
+                    {title}
+                  </h3>
+                  {badge ? (
+                    <span className="center rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white">
+                      {badge}
+                    </span>
+                  ) : stepIndicatorText ? (
+                    <span className="text-xs font-semibold text-white/50">
+                      • {stepIndicatorText}
+                    </span>
+                  ) : null}
+                </div>
+                {description ? (
+                  <p
+                    id={descriptionId}
+                    className="text-sm leading-snug text-white/70"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: descriptionMaxLines,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {description}
+                  </p>
+                ) : null}
+              </div>
+              {trailing ? <div className="shrink-0">{trailing}</div> : null}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {controlCount ? (

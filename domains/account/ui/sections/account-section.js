@@ -18,7 +18,7 @@ export const ACCOUNT_SECTION_TOOLBAR_PADDING_CLASS = 'mb-4';
 export const ACCOUNT_SECTION_PAGINATION_CLASS = 'mt-8 flex justify-center';
 export const ACCOUNT_SECTION_BORDER_CLASS = '';
 export const ACCOUNT_EMPTY_SECTION_CLASS =
-  'flex flex-col items-center justify-center gap-2 rounded-2xl ring-1 ring-inset  ring-white/5 bg-white/5 p-8 text-center text-xs sm:text-sm text-white/50';
+  'flex flex-col items-center justify-center gap-2 rounded-2xl ring-1 ring-inset ring-white/5 bg-white/5 p-8 text-center text-xs sm:text-sm text-white/50';
 
 export function AccountInlineSectionState({ children, className = '' }) {
   return (

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Container } from '@/modules/modal';
-import { MOTION_EASINGS } from '@/shared';
+import { Container, MODAL_EASINGS } from '@/modules/modal';
 
 export default function VideoPreviewModal({ close, data }) {
   const [isPlaying, setIsPlaying] = useState(Boolean(data?.key));
@@ -42,7 +41,7 @@ export default function VideoPreviewModal({ close, data }) {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.28, ease: MOTION_EASINGS.SOFT }}
+        transition={{ duration: 0.28, ease: MODAL_EASINGS.SOFT }}
         className="relative aspect-video h-auto w-full overflow-hidden rounded-[20px] bg-black"
       >
         <AnimatePresence>

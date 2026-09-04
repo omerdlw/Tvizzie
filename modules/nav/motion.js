@@ -1,10 +1,8 @@
-import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
-
 const NAV_EASINGS = Object.freeze({
-  CINEMATIC: MOTION_EASINGS.CINEMATIC,
-  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
-  SOFT: MOTION_EASINGS.SOFT,
-  EXIT: MOTION_EASINGS.EXIT,
+  CINEMATIC: Object.freeze([0.76, 0, 0.24, 1]),
+  EMPHASIZED: Object.freeze([0.16, 1, 0.3, 1]),
+  SOFT: Object.freeze([0.22, 1, 0.36, 1]),
+  EXIT: Object.freeze([0.7, 0, 0.84, 0]),
 });
 
 const NAV_TIERS = Object.freeze({
@@ -38,9 +36,9 @@ const NAV_TIERS = Object.freeze({
 });
 
 const NAV_SPRINGS = Object.freeze({
-  PRESS: MOTION_SPRINGS.PRESS,
-  BADGE: MOTION_SPRINGS.BADGE,
-  DECK: MOTION_SPRINGS.PANEL,
+  PRESS: Object.freeze({ type: 'spring', stiffness: 520, damping: 30, mass: 0.28 }),
+  BADGE: Object.freeze({ type: 'spring', stiffness: 360, damping: 20, mass: 0.42 }),
+  DECK: Object.freeze({ type: 'spring', stiffness: 180, damping: 24, mass: 0.8 }),
 
   PEEK: Object.freeze({
     type: 'spring',
@@ -118,7 +116,7 @@ const NAV_ACTION_DISMISS_TRANSITION = Object.freeze({
 
 const NAV_HEADER_SWAP_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: 0.48,
+  duration: 0.64,
   ease: NAV_EASINGS.CINEMATIC,
 });
 
@@ -266,18 +264,6 @@ const NAV_BREADCRUMBS_TRANSITION = Object.freeze({
 
 const NAV_HUD_TRANSITION = NAV_FADE_TRANSITION;
 
-const NAV_SURFACE_CHOREOGRAPHY_TIMINGS = Object.freeze({
-  ACTION_DISMISS_MS: 260,
-  ACTION_DISMISS_SETTLE_MS: 100,
-  HEADER_SWAP_MS: 480,
-  HEADER_SWAP_SETTLE_MS: 140,
-  BODY_ENTER_MS: 840,
-  BODY_EXIT_MS: 620,
-  BODY_COLLAPSE_SETTLE_MS: 140,
-  HEADER_RESTORE_MS: 480,
-  RESTORE_SETTLE_MS: 100,
-});
-
 const NAV_SKELETON_PULSE_CLASS = 'animate-pulse';
 
 const NAV_SCRUBBER_TOOLTIP_SPRING = Object.freeze({
@@ -424,21 +410,21 @@ const staggerItemVariants = buildVariants('FAST', {
 const navHeaderSwapVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    transform: toGpuTransform(10, 0.98),
+    transform: toGpuTransform(14, 0.97),
   },
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
     transition: {
-      duration: 0.48,
+      duration: 0.64,
       ease: NAV_EASINGS.CINEMATIC,
     },
   },
   exit: {
     opacity: 0,
-    transform: toGpuTransform(-10, 0.98),
+    transform: toGpuTransform(-12, 0.97),
     transition: {
-      duration: 0.48,
+      duration: 0.54,
       ease: NAV_EASINGS.CINEMATIC,
     },
   },
@@ -447,21 +433,21 @@ const navHeaderSwapVariants = Object.freeze({
 const navHeaderRestoreVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    transform: toGpuTransform(-10, 0.98),
+    transform: toGpuTransform(-12, 0.97),
   },
   visible: {
     opacity: 1,
     transform: toGpuTransform(0),
     transition: {
-      duration: 0.48,
+      duration: 0.64,
       ease: NAV_EASINGS.CINEMATIC,
     },
   },
   exit: {
     opacity: 0,
-    transform: toGpuTransform(10, 0.98),
+    transform: toGpuTransform(14, 0.97),
     transition: {
-      duration: 0.48,
+      duration: 0.54,
       ease: NAV_EASINGS.CINEMATIC,
     },
   },
@@ -626,7 +612,8 @@ const navFadeVariants = Object.freeze({
 
   exit: {
     opacity: 0,
-    transform: toGpuTransform(8, 0.99),
+    transform: toGpuTransform(-8, 0.99),
+    transition: NAV_TEXT_EXIT_TRANSITION,
   },
 });
 
@@ -738,7 +725,7 @@ function getNavDescriptionVariants(targetOpacity = 0.7) {
 
     exit: {
       opacity: 0,
-      transform: toGpuTransform(5, 0.99),
+      transform: toGpuTransform(-5, 0.99),
       transition: {
         duration: 0.38,
         ease: NAV_EASINGS.EXIT,
@@ -952,7 +939,6 @@ export {
   NAV_SURFACE_DRAG_ELASTIC,
   NAV_BREADCRUMBS_TRANSITION,
   NAV_HUD_TRANSITION,
-  NAV_SURFACE_CHOREOGRAPHY_TIMINGS,
   NAV_SKELETON_PULSE_CLASS,
   NAV_SCRUBBER_TOOLTIP_SPRING,
   NAV_MEDIA_VOLUME_FILL_TRANSITION,

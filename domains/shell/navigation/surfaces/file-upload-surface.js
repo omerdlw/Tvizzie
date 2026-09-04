@@ -104,26 +104,24 @@ export default function FileUploadSurface({ close, data }) {
       animate="visible"
       transition={NAV_FADE_TRANSITION}
       className={cn(
-        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-[20px] ring-1 ring-inset px-6 py-8 text-center transition-all duration-300 ease-in-out',
+        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-[20px] px-6 py-8 text-center ring-1 transition-all duration-300 ease-in-out ring-inset',
         isDragActive
           ? 'ring-info/30 bg-info/10'
-          : 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10',
+          : 'bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:ring-white/10',
       )}
     >
       <div
         className={cn(
-          'center size-14 rounded-[20px] ring-1 ring-inset transition-all duration-300 ease-in-out',
+          'center size-14 rounded-[20px] ring-1 transition-all duration-300 ease-in-out ring-inset',
           isDragActive
             ? 'ring-info/20 bg-info/10 text-info'
-            : 'ring-white/5 bg-white/5 text-white/70',
+            : 'bg-white/5 text-white/70 ring-white/5',
         )}
       >
         <Icon icon="solar:cloud-upload-bold" size={24} />
       </div>
       <div className="space-y-1 px-4">
-        <p className="text-base font-semibold text-white">
-          Click to upload or drag and drop
-        </p>
+        <p className="text-base font-semibold text-white">Click to upload or drag and drop</p>
         <p className="text-xs leading-relaxed text-white/50">{hint}</p>
       </div>
       <div className="overflow-visible p-1">
@@ -134,10 +132,10 @@ export default function FileUploadSurface({ close, data }) {
             inputRef.current?.click();
           }}
           className={cn(
-            'inline-flex h-9 items-center justify-center rounded-xl ring-1 ring-inset px-4 text-xs font-bold uppercase',
+            'inline-flex h-9 items-center justify-center rounded-xl px-4 text-xs font-bold uppercase ring-1 ring-inset',
             isDragActive
               ? 'ring-info/20 bg-info/10 text-info hover:bg-info/20'
-              : 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
+              : 'bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10',
           )}
         >
           {buttonLabel}

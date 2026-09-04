@@ -6,14 +6,10 @@ import { AnimatePresence, motion } from 'motion/react';
 import { INFO_ACTION_TONE_CLASS } from '@/shared';
 import { useAuth } from '@/modules/auth';
 import { NavSurfaceHeaderButton, useNavigationActions, useSurfaceHeader } from '@/modules/nav';
-import {
-  getNavActionClass,
-  navActionClass,
-  SEARCH_STYLES,
-} from '@/domains/shell/navigation/actions/constants';
+import { getNavActionClass, SEARCH_STYLES } from '@/domains/shell/navigation/actions/constants';
 import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_TAP_SCALE } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import { createUserListWithItems } from '@/domains/account/client/lists';
+import { createUserListWithItems } from '@/domains/account/client';
 import { TmdbService } from '@/infrastructure/tmdb/client';
 import { cn } from '@/ui/class-names';
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';
@@ -250,7 +246,7 @@ export default function CreateListSurface({ close, data }) {
                   classNames={{
                     input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
-                      navActionClass({
+                      getNavActionClass({
                         cn,
                         button: SEARCH_STYLES.input,
                         isActive: focusedField === 'title',
@@ -270,7 +266,7 @@ export default function CreateListSurface({ close, data }) {
                   classNames={{
                     input: 'w-full text-sm placeholder:text-white/50 outline-none',
                     wrapper: cn(
-                      navActionClass({
+                      getNavActionClass({
                         cn,
                         button: SEARCH_STYLES.input,
                         isActive: focusedField === 'description',
@@ -345,7 +341,7 @@ export default function CreateListSurface({ close, data }) {
                     {Array.from({ length: 4 }).map((_, index) => (
                       <div
                         key={`search-skeleton-${index}`}
-                        className="skeleton-block-soft aspect-[2/3] w-full animate-pulse rounded-[20px] ring-1 ring-inset ring-white/5"
+                        className="skeleton-block-soft aspect-[2/3] w-full animate-pulse rounded-[20px] ring-1 ring-white/5 ring-inset"
                       />
                     ))}
                   </div>

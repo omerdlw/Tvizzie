@@ -1,10 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/infrastructure/supabase/server';
-import {
-  canViewerAccessUserContent,
-  createPrivateProfileError,
-} from '@/domains/account/server/profile';
+import { canViewerAccessUserContent, createPrivateProfileError } from '@/domains/account/server';
 import {
   LIST_REVIEW_SELECT,
   MEDIA_REVIEW_SELECT,

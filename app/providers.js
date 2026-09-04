@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { MotionConfig } from 'motion/react';
 
-import { isReservedAccountSegment } from '@/shared';
+import { isReservedAccountSegment } from '@/domains/account/constants';
 
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
@@ -20,8 +20,8 @@ import {
   useAuth,
   useAuthSessionReady,
 } from '@/modules/auth';
-import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
-import { subscribeToUserAccount } from '@/domains/account/client/profile';
+import { getUserAvatarUrl } from '@/domains/account/client';
+import { subscribeToUserAccount } from '@/domains/account/client';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/client';
 import {
   createConsoleHandler,
@@ -32,6 +32,7 @@ import {
 } from '@/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/modules/loading';
 import { ModalProvider } from '@/modules/modal';
+import { Controls } from '@/modules/controls';
 import { createSurfaceFlowDefinition, NavigationProvider } from '@/modules/nav';
 import { useNavigationActions } from '@/modules/nav';
 import {
@@ -415,6 +416,7 @@ export const AppProviders = ({ children }) => {
           <BackgroundOverlay />
           <LoadingOverlay />
           <Nav />
+          <Controls />
           <NotificationContainer />
           <SmoothScrollProvider>
             <GlobalError>{children}</GlobalError>

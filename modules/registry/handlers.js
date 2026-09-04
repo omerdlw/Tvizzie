@@ -186,6 +186,105 @@ const contextMenuPlugin = {
   },
 };
 
+const CONTROL_SIDES = new Set(['left', 'right']);
+
+function validateControlsConfig(config) {
+  const issues = [];
+
+  if (!isObject(config)) {
+    return { issues: ['CONTROLS config must be an object'], valid: false };
+  }
+
+  if (typeof config.id !== 'string' || config.id.trim().length === 0) {
+    issues.push('CONTROLS.id must be a non-empty string');
+  }
+  if (!CONTROL_SIDES.has(config.side)) {
+    issues.push('CONTROLS.side must be left or right');
+  }
+  if (config.content === undefined || config.content === null || config.content === false) {
+    issues.push('CONTROLS.content must be renderable');
+  }
+  if (!Number.isFinite(Number(config.order))) {
+    issues.push('CONTROLS.order must be a finite number');
+  }
+
+  return { issues, valid: issues.length === 0 };
+}
+
+const controlsPlugin = {
+  name: 'controls',
+  apply: (config, context) => {
+    const { batch, instanceId, pathname, register, unregister } = context;
+    const controls = config?.controls;
+    const controlConfigs = Array.isArray(controls) ? controls : controls ? [controls] : [];
+    if (controlConfigs.length === 0) return;
+
+    const registrations = controlConfigs.flatMap((controlConfig) => {
+      const { cleanupDelayMs, lifecycle, payload, registerOptions, source } = splitRegistryConfig(
+        controlConfig,
+        { type: REGISTRY_TYPES.CONTROLS },
+      );
+      const validation = validateControlsConfig(payload);
+
+      if (!validation.valid) {
+        recordRegistryDiagnostic({
+          action: 'reject',
+          issues: validation.issues,
+          reason: 'invalid-controls-config',
+          type: REGISTRY_TYPES.CONTROLS,
+        });
+        console.warn('[Registry] Invalid CONTROLS config:', validation.issues);
+        return [];
+      }
+
+      const path = pathname || '/';
+      return [
+        {
+          cleanupDelayMs,
+          key: `${path}::${payload.id}`,
+          lifecycle,
+          source,
+          value: { ...payload, path },
+          registerOptions,
+        },
+      ];
+    });
+
+    if (registrations.length === 0) return;
+
+    const cleanupScope = getCleanupScope(context);
+    const registerAll = (queue) => {
+      registrations.forEach(({ key, registerOptions, source, value }) => {
+        clearCleanupTimer(cleanupScope, createCleanupKey(key, source, instanceId));
+        queue.register(REGISTRY_TYPES.CONTROLS, key, value, source, registerOptions);
+      });
+    };
+
+    if (typeof batch === 'function') {
+      batch(registerAll);
+    } else {
+      registerAll({ register });
+    }
+
+    return () => {
+      const registrationsToDispose = registrations.filter(
+        ({ lifecycle }) => !isPersistentLifecycle(lifecycle),
+      );
+      if (registrationsToDispose.length === 0) return;
+
+      registrationsToDispose.forEach(({ cleanupDelayMs, key, source }) => {
+        const cleanupKey = createCleanupKey(key, source, instanceId);
+        scheduleOrRunCleanup(
+          cleanupScope,
+          cleanupKey,
+          () => unregister(REGISTRY_TYPES.CONTROLS, key, { source, instanceId }),
+          cleanupDelayMs,
+        );
+      });
+    };
+  },
+};
+
 // ── Delayed cleanup lifecycle helpers ─────────────────────────────────────────
 
 function createScopedCleanupKey(source, instanceId = null) {
@@ -451,6 +550,7 @@ const titlePlugin = {
 const REGISTRY_HANDLERS = [
   titlePlugin,
   contextMenuPlugin,
+  controlsPlugin,
   navPlugin,
   modalPlugin,
   backgroundPlugin,

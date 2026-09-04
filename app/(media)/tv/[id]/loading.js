@@ -20,7 +20,7 @@ function TvDetailSkeleton() {
   return (
     <MediaRouteSkeletonShell>
       <MediaBackdropSkeleton />
-      <div className="relative w-full -mt-24 sm:-mt-36 lg:-mt-52 grid grid-cols-1 items-start gap-8 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[24rem_minmax(0,1fr)]">
+      <div className="relative -mt-24 grid w-full grid-cols-1 items-start gap-8 sm:-mt-36 lg:-mt-52 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[24rem_minmax(0,1fr)]">
         <MediaSidebarSkeleton />
         <div className="flex w-full min-w-0 flex-col lg:w-auto">
           <div className="flex w-full flex-col">

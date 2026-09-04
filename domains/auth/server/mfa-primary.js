@@ -39,10 +39,7 @@ function decode(value) {
 function encryptPendingMfa(payload) {
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', getMfaPrimarySecret(), iv);
-  const encrypted = Buffer.concat([
-    cipher.update(JSON.stringify(payload), 'utf8'),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify(payload), 'utf8'), cipher.final()]);
 
   return [encode(iv), encode(encrypted), encode(cipher.getAuthTag())].join('.');
 }

@@ -15,9 +15,7 @@ const AWARD_TYPES = Object.freeze({
 });
 
 function getOriginalImagePath(path) {
-  return path
-    ? path.replace(/\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i, '/t/p/original/')
-    : null;
+  return path ? path.replace(/\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i, '/t/p/original/') : null;
 }
 
 function getAwardCountLabel(count, singular, plural) {
@@ -120,9 +118,7 @@ function useMediaAwards({ mediaId, mediaType = 'movie', awardsPromise }) {
 }
 
 function getPrestigeHonor(items = [], winsCount = 0, majorWinsCount = 0, isTv = false) {
-  const oscarWin = items.find(
-    (i) => i.type === 'Win' && /academy|oscar/i.test(i.organization),
-  );
+  const oscarWin = items.find((i) => i.type === 'Win' && /academy|oscar/i.test(i.organization));
   if (oscarWin) {
     return {
       title: 'Academy Award Winner',
@@ -140,9 +136,7 @@ function getPrestigeHonor(items = [], winsCount = 0, majorWinsCount = 0, isTv = 
     };
   }
 
-  const globeWin = items.find(
-    (i) => i.type === 'Win' && /golden globe/i.test(i.organization),
-  );
+  const globeWin = items.find((i) => i.type === 'Win' && /golden globe/i.test(i.organization));
   if (globeWin) {
     return {
       title: 'Golden Globe Winner',
@@ -226,8 +220,7 @@ function groupByOrganization(items = [], organizations = []) {
   return Array.from(groups.values())
     .filter((group) => group.awards.length > 0)
     .sort(
-      (left, right) =>
-        right.winsCount - left.winsCount || right.awards.length - left.awards.length,
+      (left, right) => right.winsCount - left.winsCount || right.awards.length - left.awards.length,
     );
 }
 
@@ -247,11 +240,11 @@ function PrestigeHeroHeader({
 
   return (
     <div className="relative flex w-full flex-col text-left">
-      <h1 className="font-zuume -mt-2 line-clamp-2 max-w-full overflow-hidden text-7xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:-mt-2.5 sm:text-8xl lg:-mt-3 lg:text-9xl text-white">
+      <h1 className="font-zuume -mt-2 line-clamp-2 max-w-full overflow-hidden text-7xl leading-none font-bold [overflow-wrap:anywhere] text-white uppercase sm:-mt-2.5 sm:text-8xl lg:-mt-3 lg:text-9xl">
         {honor.title}
       </h1>
 
-      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs sm:text-sm font-medium text-white/50">
+      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs font-medium text-white/50 sm:text-sm">
         <span className="flex items-center gap-1.5 font-bold text-white">
           <Icon icon="solar:cup-bold" size={14} className="text-white" />
           {wins} {wins === 1 ? 'Win' : 'Wins'}
@@ -263,7 +256,7 @@ function PrestigeHeroHeader({
         {majorWinsCount > 0 ? (
           <>
             <span className="text-white/15">•</span>
-            <span className="text-white/70 font-semibold">
+            <span className="font-semibold text-white/70">
               {majorWinsCount} {majorWinsLabel}
             </span>
           </>
@@ -301,17 +294,19 @@ function OrganizationFilterRibbon({
             if (winsOnly) onToggleWinsOnly?.();
           }}
           className={cn(
-            'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+            'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
             !activeOrganizationId && !winsOnly
-              ? 'ring-white bg-white text-black font-bold shadow-sm'
-              : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+              ? 'bg-white font-bold text-black shadow-sm ring-white'
+              : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
           )}
         >
           <span>All Honors</span>
           <span
             className={cn(
               'rounded-full px-1.5 py-0.5 text-xs',
-              !activeOrganizationId && !winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
+              !activeOrganizationId && !winsOnly
+                ? 'bg-black/10 font-bold text-black'
+                : 'text-white/50',
             )}
           >
             {totalItemsCount}
@@ -323,10 +318,10 @@ function OrganizationFilterRibbon({
             type="button"
             onClick={() => onToggleWinsOnly?.()}
             className={cn(
-              'flex h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+              'flex h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
               winsOnly
-                ? 'ring-white bg-white text-black font-bold shadow-sm'
-                : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+                ? 'bg-white font-bold text-black shadow-sm ring-white'
+                : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
             )}
           >
             <Icon
@@ -338,7 +333,7 @@ function OrganizationFilterRibbon({
             <span
               className={cn(
                 'rounded-full px-1.5 py-0.5 text-xs',
-                winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
+                winsOnly ? 'bg-black/10 font-bold text-black' : 'text-white/50',
               )}
             >
               {winsCount}
@@ -356,10 +351,10 @@ function OrganizationFilterRibbon({
               type="button"
               onClick={() => onSelectOrganization(isSelected ? null : org.id)}
               className={cn(
-                'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+                'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
                 isSelected
-                  ? 'ring-white bg-white text-black font-bold shadow-sm'
-                  : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+                  ? 'bg-white font-bold text-black shadow-sm ring-white'
+                  : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
               )}
             >
               {logoSrc ? (
@@ -380,12 +375,12 @@ function OrganizationFilterRibbon({
                 />
               )}
 
-              <span className="truncate max-w-[140px] sm:max-w-[180px]">{org.title}</span>
+              <span className="max-w-[140px] truncate sm:max-w-[180px]">{org.title}</span>
 
               <span
                 className={cn(
                   'text-xs',
-                  isSelected ? 'text-black/60 font-semibold' : 'text-white/50',
+                  isSelected ? 'font-semibold text-black/60' : 'text-white/50',
                 )}
               >
                 {org.winsCount > 0 ? `${org.winsCount}W` : `${org.nominationsCount}N`}
@@ -427,7 +422,7 @@ function MovieOrgAwardGroup({ group }) {
     <div className="flex w-full flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2.5 pb-1">
         <div className="flex items-center gap-2.5">
-          <div className="center size-11 sm:size-12 shrink-0 overflow-hidden rounded-[8px] sm:rounded-[10px]">
+          <div className="center size-11 shrink-0 overflow-hidden rounded-[8px] sm:size-12 sm:rounded-[10px]">
             {group.logo ? (
               <AdaptiveImage
                 mode="img"
@@ -442,9 +437,10 @@ function MovieOrgAwardGroup({ group }) {
           </div>
 
           <div className="flex flex-col justify-center gap-0.5">
-            <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">{group.title}</h3>
-            <p className="text-xs font-medium text-white/50 leading-none">
-              {group.awards.length} {group.awards.length === 1 ? 'Total Nomination' : 'Total Honors'}
+            <h3 className="text-lg leading-tight font-bold text-white sm:text-xl">{group.title}</h3>
+            <p className="text-xs leading-none font-medium text-white/50">
+              {group.awards.length}{' '}
+              {group.awards.length === 1 ? 'Total Nomination' : 'Total Honors'}
             </p>
           </div>
         </div>
@@ -480,7 +476,7 @@ function MovieOrgAwardGroup({ group }) {
                   ) : null}
                 </div>
 
-                <p className="text-sm sm:text-base font-semibold text-white leading-snug">
+                <p className="text-sm leading-snug font-semibold text-white sm:text-base">
                   {award.category}
                 </p>
 
@@ -500,9 +496,7 @@ function MovieOrgAwardGroup({ group }) {
                     Win
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-white/50 uppercase">
-                    Nominee
-                  </span>
+                  <span className="text-xs font-semibold text-white/50 uppercase">Nominee</span>
                 )}
               </div>
             </div>
@@ -516,7 +510,7 @@ function MovieOrgAwardGroup({ group }) {
 function AwardsMessage({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="center size-14 rounded-[16px] ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
+      <div className="center size-14 rounded-[16px] bg-white/5 text-white/50 ring-1 ring-white/10 ring-inset">
         <Icon icon="solar:cup-star-linear" size={30} />
       </div>
       <p className="mt-4 text-sm font-semibold text-white/50">{children}</p>
@@ -606,7 +600,7 @@ export default function MovieAwards({
 
       <div className="w-full">
         {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-12 text-center text-sm font-medium text-white/50">
+          <div className="flex flex-col items-center justify-center rounded-[20px] bg-white/5 p-12 text-center text-sm font-medium text-white/50 ring-1 ring-white/10 ring-inset">
             No matching awards found for the selected filter.
           </div>
         ) : (

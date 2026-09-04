@@ -128,6 +128,7 @@ export default function ImagesSection({ images, baseDelay = 0 }) {
                   }
                   onClick={() =>
                     openModal('PREVIEW_MODAL', 'center', {
+                      chrome: 'bare',
                       data: image,
                     })
                   }

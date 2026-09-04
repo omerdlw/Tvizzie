@@ -225,7 +225,7 @@ export default function MediaReviews({
                 </p>
               </div>
               <Button
-                className="inline-flex w-full items-center justify-center gap-2.5 rounded-full ring-1 ring-inset ring-white/5 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 uppercase hover:bg-white hover:text-black sm:w-auto sm:justify-between"
+                className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white hover:text-black sm:w-auto sm:justify-between"
                 type="button"
                 onClick={() => openReviewModal()}
               >

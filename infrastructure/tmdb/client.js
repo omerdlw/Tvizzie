@@ -1,9 +1,5 @@
-import {
-  TMDB_API_URL,
-  toFiniteNumber,
-  isPersonMediaType,
-  isTvMediaType,
-} from '@/shared';
+import { TMDB_API_URL, toFiniteNumber } from '@/shared';
+import { isPersonMediaType, isTvMediaType } from '@/domains/media/utils/media-key';
 
 const DEFAULT_WATCH_REGION = 'US';
 const UNKNOWN_REGION_CODES = new Set(['A1', 'A2', 'AP', 'EU', 'T1', 'XX']);
@@ -261,7 +257,6 @@ export async function requestTmdbMovieImages(id) {
     },
   });
 }
-
 
 function toRequiredId(value) {
   const normalizedId = String(value || '').trim();
@@ -2319,8 +2314,6 @@ export function createSearchQueryPolicy(query = '') {
   };
 }
 
-
-
 export async function normalizeSearchResults(
   items = [],
   query = '',
@@ -2348,4 +2341,3 @@ export function buildAuthorityFallbackItems(items = [], type = 'movie', options 
     ? buildPersonAuthorityFallbackItems(items, options)
     : buildMovieAuthorityFallbackItems(items, { ...options, mediaType: normalizedType });
 }
-

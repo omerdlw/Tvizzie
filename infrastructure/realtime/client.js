@@ -460,8 +460,6 @@ export function invalidatePollingSubscriptions(keys = [], options = {}) {
   });
 }
 
-
-
 const eventSourceRegistry = new Map();
 const publicChannelRegistry = new Map();
 
@@ -872,4 +870,3 @@ export function subscribeToPublicLiveEvent(topic, eventType, callback) {
     publicChannelRegistry.delete(normalizedTopic);
   };
 }
-

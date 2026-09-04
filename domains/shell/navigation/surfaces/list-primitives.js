@@ -192,10 +192,10 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
           }
         }}
         className={cn(
-          'group/poster relative aspect-[2/3] w-full cursor-pointer select-none overflow-hidden rounded-[20px] ring-1 ring-inset transition-all duration-300 ease-in-out',
+          'group/poster relative aspect-[2/3] w-full cursor-pointer overflow-hidden rounded-[20px] ring-1 transition-all duration-300 ease-in-out select-none ring-inset',
           isAdded
             ? 'ring-info/40 ring-info/30 bg-white/10 ring-1'
-            : 'ring-white/5 bg-white/5 hover:ring-white/50',
+            : 'bg-white/5 ring-white/5 hover:ring-white/50',
         )}
       >
         {posterSrc ? (
@@ -204,7 +204,7 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
             src={posterSrc}
             alt={title}
             sizes="(max-width: 640px) 25vw, 120px"
-            className="rounded-[20px] object-cover transition-transform duration-300 ease-out group-hover/poster:scale-105 select-none pointer-events-none"
+            className="pointer-events-none rounded-[20px] object-cover transition-transform duration-300 ease-out select-none group-hover/poster:scale-105"
             wrapperClassName="h-full w-full rounded-[20px] select-none pointer-events-none"
           />
         ) : (
@@ -222,10 +222,10 @@ export const SearchResultPosterItem = memo(function SearchResultPosterItem({
           }}
           aria-label={isAdded ? `Remove ${title} from list` : `Add ${title} to list`}
           className={cn(
-            'center absolute top-1.5 right-1.5 z-10 size-6 cursor-pointer rounded-full ring-1 ring-inset backdrop-blur-md',
+            'center absolute top-1.5 right-1.5 z-10 size-6 cursor-pointer rounded-full ring-1 backdrop-blur-md ring-inset',
             isAdded
               ? 'ring-info/40 bg-info/40 text-info hover:ring-error/40 hover:bg-error/30 hover:text-error'
-              : 'ring-white/15 bg-black/60 text-white/70 hover:ring-white/50 hover:bg-black/80 hover:text-white',
+              : 'bg-black/60 text-white/70 ring-white/15 hover:bg-black/80 hover:text-white hover:ring-white/50',
           )}
         >
           {isAdded ? (
@@ -276,7 +276,7 @@ export const SelectedListItemRow = memo(function SelectedListItemRow({
       animate="visible"
       exit="exit"
       custom={index}
-      className="group/item flex items-center justify-between gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 p-2 text-white/70 transition-colors duration-150 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+      className="group/item flex items-center justify-between gap-2.5 rounded-[20px] bg-white/5 p-2 text-white/70 ring-1 ring-white/5 transition-colors duration-150 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <span className="w-4 text-center text-xs font-medium text-white/50">{index + 1}</span>
@@ -344,7 +344,7 @@ export const ListPreviewStack = memo(function ListPreviewStack({ list }) {
   if (previewItems.length === 0) {
     return (
       <div className="relative h-[68px] w-[82px] shrink-0">
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] overflow-hidden rounded-[14px] ring-1 ring-inset  ring-white/10 bg-black text-white/50">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] overflow-hidden rounded-[14px] bg-black text-white/50 ring-1 ring-white/10 ring-inset">
           <Icon icon="solar:list-bold" size={20} />
         </div>
       </div>
@@ -358,7 +358,7 @@ export const ListPreviewStack = memo(function ListPreviewStack({ list }) {
         return (
           <div
             key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-            className="ring-primary absolute bottom-0 overflow-hidden rounded-[14px] ring-1 ring-inset bg-black"
+            className="ring-primary absolute bottom-0 overflow-hidden rounded-[14px] bg-black ring-1 ring-inset"
             style={{
               width: '46px',
               height: `${68 - index * 6}px`,

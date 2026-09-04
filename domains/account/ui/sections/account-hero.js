@@ -14,9 +14,20 @@ import { createMovieBackdropImageUrl } from '@/domains/media/utils/media-data';
 import { createAccountSocialSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-social-surface';
 import { createAccountBioSurfaceEntry } from '@/domains/shell/navigation/surfaces/account-bio-surface';
 import BackdropHero from '@/ui/components/backdrop-hero';
+import Icon from '@/ui/primitives/icon';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
+}
+
+function formatHeroJoinDate(value) {
+  const date = new Date(value || '');
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
 }
 
 function resolveAccountBackdropUrl(profile) {
@@ -44,80 +55,35 @@ function resolveAccountBackdropUrl(profile) {
 }
 
 export function AccountBackdropHero({ image }) {
-  return <BackdropHero image={image} position="center 25%" />;
+  return (
+    <BackdropHero
+      image={image}
+      position="center 25%"
+      className="lg:h-[clamp(28rem,40vw,34rem)] xl:h-[clamp(30rem,42vw,36rem)]"
+    />
+  );
 }
 
 function HeroBioPreview({ className = '', description, onReadMore }) {
-  const measureRef = useRef(null);
-  const measureTextRef = useRef(null);
-  const [preview, setPreview] = useState({ text: description, isTruncated: false });
+  const textRef = useRef(null);
+  const [isTruncated, setIsTruncated] = useState(false);
   const canOpenBio = typeof onReadMore === 'function';
 
   useEffect(() => {
-    const measureElement = measureRef.current;
-    const measureTextElement = measureTextRef.current;
-    if (!measureElement || !measureTextElement || !description) {
-      return;
-    }
-
-    const updatePreview = () => {
-      const computedStyle = window.getComputedStyle(measureElement);
-      const lineHeight = Number.parseFloat(computedStyle.lineHeight);
-      const maxHeight = lineHeight * 2;
-      const normalizedDescription = description.replace(/\s+/g, ' ').trim();
-
-      const fitsInTwoLines = (text, includeReadMore = false) => {
-        measureTextElement.textContent = text;
-        const readMoreElement = measureElement.lastElementChild;
-        if (readMoreElement) {
-          readMoreElement.hidden = !includeReadMore;
-        }
-        return measureElement.scrollHeight <= maxHeight + 1;
-      };
-
-      if (!normalizedDescription || fitsInTwoLines(normalizedDescription)) {
-        setPreview((current) =>
-          current.text === normalizedDescription && !current.isTruncated
-            ? current
-            : { text: normalizedDescription, isTruncated: false },
-        );
-        return;
+    const checkTruncation = () => {
+      const el = textRef.current;
+      if (el) {
+        setIsTruncated(el.scrollWidth > el.clientWidth);
       }
-
-      const characters = Array.from(normalizedDescription);
-      let lowerBound = 0;
-      let upperBound = characters.length;
-
-      while (lowerBound < upperBound) {
-        const midpoint = Math.ceil((lowerBound + upperBound) / 2);
-        const candidate = `${characters.slice(0, midpoint).join('').trimEnd()}… `;
-
-        if (fitsInTwoLines(candidate, true)) {
-          lowerBound = midpoint;
-        } else {
-          upperBound = midpoint - 1;
-        }
-      }
-
-      const text = characters.slice(0, lowerBound).join('').trimEnd();
-      setPreview((current) =>
-        current.text === text && current.isTruncated ? current : { text, isTruncated: true },
-      );
     };
 
-    updatePreview();
+    checkTruncation();
 
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(updatePreview).catch(() => {});
+    if (typeof ResizeObserver !== 'undefined' && textRef.current) {
+      const observer = new ResizeObserver(checkTruncation);
+      observer.observe(textRef.current);
+      return () => observer.disconnect();
     }
-
-    if (typeof ResizeObserver !== 'function') {
-      return;
-    }
-
-    const observer = new ResizeObserver(updatePreview);
-    observer.observe(measureElement);
-    return () => observer.disconnect();
   }, [description]);
 
   if (!description) {
@@ -125,29 +91,19 @@ function HeroBioPreview({ className = '', description, onReadMore }) {
   }
 
   return (
-    <div className={`relative w-full max-w-xl text-left ${className}`}>
-      <p className="w-full text-xs leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-sm">
-        {preview.text}
-        {preview.isTruncated ? '… ' : null}
-        {preview.isTruncated && canOpenBio ? (
-          <Button
-            type="button"
-            onClick={onReadMore}
-            className="inline-flex cursor-pointer text-xs font-semibold text-white/70 uppercase transition-colors hover:text-white"
-          >
-            Read More
-          </Button>
-        ) : null}
-      </p>
-
-      <p
-        ref={measureRef}
-        aria-hidden="true"
-        className="pointer-events-none invisible absolute inset-x-0 top-0 w-full text-xs leading-relaxed text-pretty [overflow-wrap:anywhere] [word-break:break-word] text-white/70 sm:text-sm"
-      >
-        <span ref={measureTextRef} />
-        <span className="text-xs font-semibold uppercase">Read More</span>
-      </p>
+    <div className={`flex w-full min-w-0 items-center text-xs leading-relaxed text-white/70 sm:text-sm ${className}`}>
+      <span ref={textRef} className="truncate min-w-0">
+        {description}
+      </span>
+      {isTruncated && canOpenBio ? (
+        <Button
+          type="button"
+          onClick={onReadMore}
+          className="shrink-0 ml-2 inline-flex cursor-pointer text-xs font-semibold text-white/80 uppercase transition-colors hover:text-white"
+        >
+          Read More
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -207,77 +163,81 @@ export default function AccountHero({
 
   const heroAvatarSrc = getUserAvatarUrl(profile);
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
+  const joinedAt = formatHeroJoinDate(profile?.createdAt);
+  const isPrivateProfile = Boolean(profile?.isPrivate);
 
   return (
     <>
       {hasInlineBackdrop ? <AccountBackdropHero image={backdropUrl} /> : null}
 
       <section
-        className={`relative z-10 ${
+        className={`relative z-10 w-full pb-6 ${
           hasInlineBackdrop ? '-mt-20 sm:-mt-28 lg:-mt-36' : 'pt-6 sm:pt-10'
         }`}
       >
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-          <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-            <div className="size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 shadow-2xl sm:size-24 lg:size-28 bg-black/60">
-              <AdaptiveImage
-                mode="img"
-                src={heroAvatarSrc}
-                alt={heroDisplayName}
-                decoding="async"
-                className="h-full w-full object-cover"
-                onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
-                wrapperClassName="h-full w-full"
-              />
-            </div>
-
-            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-              <h1 className="font-zuume max-w-full text-3xl leading-tight font-bold [overflow-wrap:anywhere] uppercase sm:text-4xl lg:text-5xl text-white">
-                {heroDisplayName}
-              </h1>
-
-              {profileUsername ? (
-                <p className="text-xs sm:text-sm font-mono text-white/50">@{profileUsername}</p>
-              ) : null}
-
-              {profile?.description ? (
-                <HeroBioPreview
-                  className="mt-0.5"
-                  description={profile.description}
-                  onReadMore={handleBioReadMore}
-                />
-              ) : null}
-            </div>
+        <div className="relative z-10 flex min-w-0 items-start gap-4 sm:gap-6 lg:gap-7">
+          <div className="size-20 shrink-0 overflow-hidden rounded-full bg-black/60 shadow-2xl ring-2 ring-white/10 sm:size-28 lg:size-32">
+            <AdaptiveImage
+              mode="img"
+              src={heroAvatarSrc}
+              alt={heroDisplayName}
+              decoding="async"
+              className="h-full w-full object-cover"
+              onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
+              wrapperClassName="h-full w-full"
+            />
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-5 rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 px-3.5 py-2 backdrop-blur-sm self-start sm:self-end">
-            <button
-              type="button"
-              onClick={() => handleFollowListClick('following')}
-              className="group flex items-baseline gap-1.5 text-left transition-colors cursor-pointer"
-            >
-              <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
-                {formatHeroCount(followingCount)}
-              </span>
-              <span className="text-xs font-semibold uppercase text-white/50 transition-colors group-hover:text-white">
-                Following
-              </span>
-            </button>
+          <div className="flex min-w-0 flex-1 flex-col pt-1 sm:pt-1.5">
+            <h1 className="font-zuume max-w-full text-4xl leading-[0.84] font-bold tracking-tight [overflow-wrap:anywhere] text-white uppercase sm:text-6xl lg:text-7xl">
+              {heroDisplayName}
+            </h1>
 
-            <div className="h-3.5 w-px bg-white/10" />
+            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm text-white/55 sm:mt-3 sm:gap-x-3 sm:text-base">
+              <button
+                type="button"
+                onClick={() => handleFollowListClick('following')}
+                className="group inline-flex cursor-pointer items-baseline gap-1.5 text-left transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
+              >
+                <span className="font-semibold text-white transition-colors group-hover:text-white">
+                  {formatHeroCount(followingCount)}
+                </span>
+                <span>Following</span>
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => handleFollowListClick('followers')}
+                className="group inline-flex cursor-pointer items-baseline gap-1.5 text-left transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
+              >
+                <span className="font-semibold text-white transition-colors group-hover:text-white">
+                  {formatHeroCount(followerCount)}
+                </span>
+                <span>Followers</span>
+              </button>
+              <span>•</span>
+              <span>Joined {joinedAt}</span>
+              <span>•</span>
+              <span
+                className="inline-flex items-center gap-1.5"
+                title={isPrivateProfile ? 'Private profile' : 'Public profile'}
+              >
+                <Icon
+                  icon={isPrivateProfile ? 'solar:lock-keyhole-bold' : 'solar:global-bold'}
+                  size={16}
+                  aria-hidden="true"
+                />
+                <span>{isPrivateProfile ? 'Private' : 'Public'}</span>
+              </span>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => handleFollowListClick('followers')}
-              className="group flex items-baseline gap-1.5 text-left transition-colors cursor-pointer"
-            >
-              <span className="font-zuume text-xl sm:text-2xl font-bold text-white transition-colors group-hover:text-white">
-                {formatHeroCount(followerCount)}
-              </span>
-              <span className="text-xs font-semibold uppercase text-white/50 transition-colors group-hover:text-white">
-                Followers
-              </span>
-            </button>
+            {profile?.description ? (
+              <HeroBioPreview
+                className="mt-2.5 sm:mt-3"
+                description={profile.description}
+                onReadMore={handleBioReadMore}
+              />
+            ) : null}
           </div>
         </div>
       </section>

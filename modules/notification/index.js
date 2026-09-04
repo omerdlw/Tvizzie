@@ -24,7 +24,6 @@ export {
   NOTIFICATION_DRAG_ELASTIC,
   NOTIFICATION_MICRO_SPRING,
   NOTIFICATION_MICRO_TAP_SCALE,
-  NOTIFICATION_SURFACE_TRANSITION_CLASS,
   NOTIFICATION_WHILE_DRAG,
   TOAST_VARIANTS,
   notificationContentVariants,
@@ -47,7 +46,6 @@ import {
 import { cn } from '@/ui/class-names';
 import Icon from '@/ui/primitives/icon';
 import { Button } from '@/ui/primitives';
-import { getNavActionClass } from '@/domains/shell/navigation/actions/constants';
 
 import {
   CRITICAL_TYPES,
@@ -58,7 +56,6 @@ import {
 import {
   NOTIFICATION_DRAG_CONSTRAINTS,
   NOTIFICATION_DRAG_ELASTIC,
-  NOTIFICATION_SURFACE_TRANSITION_CLASS,
   NOTIFICATION_WHILE_DRAG,
   toastVariants,
 } from './motion';
@@ -120,8 +117,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/80 p-2.5 ring-1 ring-white/10 backdrop-blur-lg ring-inset',
-        NOTIFICATION_SURFACE_TRANSITION_CLASS,
+        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/80 p-2.5 ring-1 ring-white/10 backdrop-blur-lg transition-all duration-300 ease-in-out ring-inset',
         theme.surface,
       )}
     >
@@ -189,10 +185,10 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   action.onClick?.();
                   if (action.dismiss !== false) onDismiss();
                 }}
-                className={getNavActionClass({
-                  isActive: false,
-                  className: action.className || config.actionToneClass,
-                })}
+                className={cn(
+                  'center w-full cursor-pointer gap-2.5 rounded-[20px] bg-white/5 px-4 py-2.5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white/10',
+                  action.className || config.actionToneClass,
+                )}
               >
                 {action.label}
               </Button>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
-import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
+import { Container } from '@/modules/modal';
 import { MODAL_LIST_ITEM_VARIANTS, MODAL_LIST_VARIANTS } from '@/modules/modal';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
@@ -19,7 +19,7 @@ import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+} from '@/domains/account/client';
 import { cn } from '@/ui/class-names';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Button } from '@/ui/primitives';
@@ -195,7 +195,7 @@ const NotificationRow = memo(function NotificationRow({
         isUnread ? 'bg-black' : 'hover:bg-black',
       )}
     >
-      <div className="center size-10 shrink-0 overflow-hidden rounded-[14px] ring-1 ring-inset ring-white/5 bg-white/5">
+      <div className="center size-10 shrink-0 overflow-hidden rounded-[14px] bg-white/5 ring-1 ring-white/5 ring-inset">
         {notification.actor ? (
           actorHref ? (
             <Link href={actorHref} onClick={onLinkClick} className="size-full">
@@ -427,11 +427,22 @@ export default function NotificationsModal({ close, header, data }) {
         right:
           notifications.length > 0 ? (
             <>
-              <Button type="button" onClick={handleDeleteAll} className={CANCEL_BUTTON_CLASS}>
+              <Button
+                type="button"
+                onClick={handleDeleteAll}
+                className="center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap text-white/70 uppercase ring-1 ring-white/10 ring-inset hover:bg-white hover:text-black hover:ring-transparent"
+              >
                 Clear all
               </Button>
               {hasUnread && (
-                <Button type="button" onClick={handleMarkAllRead} className={ACTION_BUTTON_CLASS}>
+                <Button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className={cn(
+                    'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/50 disabled:ring-white/5',
+                    INFO_ACTION_TONE_CLASS,
+                  )}
+                >
                   Mark all as read
                 </Button>
               )}

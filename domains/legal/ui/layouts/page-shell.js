@@ -14,7 +14,7 @@ export function LegalSection({ children, title }) {
 
 export function LegalDocument({ children }) {
   return (
-    <article className="space-y-8 ring-1 ring-inset ring-white/5 p-6 sm:p-8">{children}</article>
+    <article className="space-y-8 p-6 ring-1 ring-white/5 ring-inset sm:p-8">{children}</article>
   );
 }
 

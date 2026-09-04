@@ -44,8 +44,14 @@ export function RatingsLegend({ className }) {
       <p className="text-xs font-semibold text-white/50 uppercase">Rating Scale</p>
       <div className="flex flex-col gap-2">
         {RATING_LEGEND.map((item) => (
-          <div key={item.label} className="flex items-center gap-2.5 text-xs font-semibold text-white/70 uppercase">
-            <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${item.dotClass}`} />
+          <div
+            key={item.label}
+            className="flex items-center gap-2.5 text-xs font-semibold text-white/70 uppercase"
+          >
+            <span
+              aria-hidden="true"
+              className={`size-2.5 shrink-0 rounded-full ${item.dotClass}`}
+            />
             <span>{item.label}</span>
           </div>
         ))}
@@ -57,7 +63,7 @@ export function RatingsLegend({ className }) {
 function TvSeasonRatingsEmpty() {
   return (
     <section className="flex min-h-64 w-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <span className="center size-11 rounded-[14px] ring-1 ring-inset ring-white/10 bg-black/60 text-white/50">
+      <span className="center size-11 rounded-[14px] bg-black/60 text-white/50 ring-1 ring-white/10 ring-inset">
         <Icon icon="solar:chart-2-bold" size={20} />
       </span>
       <div>
@@ -79,7 +85,8 @@ function resolveGridScale(seasonsCount) {
       rowHeaderWidth: '2.5rem',
       gapClass: 'gap-2.5 sm:gap-3',
       seasonHeaderClass: 'center h-8 sm:h-9 text-xs sm:text-sm font-bold text-white/50 uppercase',
-      episodeLabelClass: 'center size-10 sm:size-12 self-center text-xs sm:text-sm font-bold text-white/50 uppercase tabular-nums',
+      episodeLabelClass:
+        'center size-10 sm:size-12 self-center text-xs sm:text-sm font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -91,7 +98,8 @@ function resolveGridScale(seasonsCount) {
       rowHeaderWidth: '2.25rem',
       gapClass: 'gap-2 sm:gap-2.5',
       seasonHeaderClass: 'center h-8 text-xs font-bold text-white/50 uppercase',
-      episodeLabelClass: 'center size-9 sm:size-10 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
+      episodeLabelClass:
+        'center size-9 sm:size-10 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -103,7 +111,8 @@ function resolveGridScale(seasonsCount) {
       rowHeaderWidth: '2rem',
       gapClass: 'gap-1.5 sm:gap-2',
       seasonHeaderClass: 'center h-7 text-xs font-bold text-white/50 uppercase',
-      episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
+      episodeLabelClass:
+        'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
     };
   }
 
@@ -114,7 +123,8 @@ function resolveGridScale(seasonsCount) {
     rowHeaderWidth: '2rem',
     gapClass: 'gap-1.5',
     seasonHeaderClass: 'center h-7 text-xs font-bold text-white/50 uppercase',
-    episodeLabelClass: 'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
+    episodeLabelClass:
+      'center size-8 self-center text-xs font-bold text-white/50 uppercase tabular-nums',
   };
 }
 
@@ -143,27 +153,24 @@ export default function TvSeasonRatings({ ratingsPromise }) {
     <section className="relative flex w-full flex-col">
       <div
         ref={scrollRef}
-        className="hide-scrollbar cursor-grab active:cursor-grabbing select-none overflow-x-auto pb-4 pt-1"
+        className="hide-scrollbar cursor-grab overflow-x-auto pt-1 pb-4 select-none active:cursor-grabbing"
       >
         <div
           className={cn('grid w-max', scale.gapClass)}
-          style={{ gridTemplateColumns: `${scale.rowHeaderWidth} repeat(${seasons.length}, ${scale.colWidth})` }}
+          style={{
+            gridTemplateColumns: `${scale.rowHeaderWidth} repeat(${seasons.length}, ${scale.colWidth})`,
+          }}
         >
           <div aria-hidden="true" />
           {seasons.map((season) => (
-            <div
-              key={season.seasonNumber}
-              className={scale.seasonHeaderClass}
-            >
+            <div key={season.seasonNumber} className={scale.seasonHeaderClass}>
               S{season.seasonNumber}
             </div>
           ))}
 
           {episodeNumbers.map((episodeNumber) => (
             <Fragment key={`episode-${episodeNumber}`}>
-              <div className={scale.episodeLabelClass}>
-                E{episodeNumber}
-              </div>
+              <div className={scale.episodeLabelClass}>E{episodeNumber}</div>
               {seasons.map((season) => {
                 const episode = episodeMap.get(season.seasonNumber)?.get(episodeNumber);
 
@@ -172,7 +179,10 @@ export default function TvSeasonRatings({ ratingsPromise }) {
                     <div
                       key={`${season.seasonNumber}-${episodeNumber}`}
                       aria-hidden="true"
-                      className={cn('ring-1 ring-inset ring-white/5 bg-white/5', scale.emptyCellClass)}
+                      className={cn(
+                        'bg-white/5 ring-1 ring-white/5 ring-inset',
+                        scale.emptyCellClass,
+                      )}
                     />
                   );
                 }
@@ -193,7 +203,7 @@ export default function TvSeasonRatings({ ratingsPromise }) {
                     aria-label={label}
                     title={label}
                     className={cn(
-                      'center tabular-nums transition-transform duration-150 hover:scale-110 hover:z-10',
+                      'center tabular-nums transition-transform duration-150 hover:z-10 hover:scale-110',
                       scale.cellClass,
                       tone.className,
                     )}

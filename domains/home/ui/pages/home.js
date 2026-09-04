@@ -41,7 +41,7 @@ function HomeContent({ homeData = {} }) {
     <>
       <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]" />
       <div
-        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-8 sm:gap-10 md:gap-12 px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 pb-16`}
+        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-8 px-4 pt-12 pb-16 sm:gap-10 sm:px-6 sm:pt-16 md:gap-12 lg:px-8`}
       >
         <DiscoverSection
           initialDiscoverItems={initialDiscoverItems}

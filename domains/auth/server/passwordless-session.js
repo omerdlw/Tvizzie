@@ -29,7 +29,9 @@ export async function createAuthenticatedEphemeralClient({ accessToken, refreshT
   });
 
   if (result.error || !result.data?.session?.access_token) {
-    throw new Error(result.error?.message || 'Temporary authentication session could not be established');
+    throw new Error(
+      result.error?.message || 'Temporary authentication session could not be established',
+    );
   }
 
   return { client, session: result.data.session };

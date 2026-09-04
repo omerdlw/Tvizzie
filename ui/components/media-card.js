@@ -4,11 +4,7 @@ import { forwardRef, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/ui/class-names';
-import {
-  resolveImageFetchPriority,
-  resolveImageLoading,
-  resolveImageQuality,
-} from '@/shared';
+import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
@@ -209,7 +205,7 @@ export default function MediaCard({
               />
             ) : (
               fallbackContent || (
-                <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5">
+                <div className="center h-full w-full rounded-[20px] bg-white/5 ring-1 ring-white/5 ring-inset">
                   <Icon
                     icon={fallbackIcon}
                     size={fallbackIconSize}

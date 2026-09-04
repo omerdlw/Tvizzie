@@ -7,9 +7,9 @@ import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
   fetchMediaCollectionStatus,
-} from '@/domains/account/client/collections';
+} from '@/domains/account/client';
 import { getSupabaseClient } from '@/infrastructure/http/client';
-import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client';
 import {
   createPollingSubscription,
   invalidatePollingSubscription,

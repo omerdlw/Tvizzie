@@ -120,7 +120,12 @@ export function createHudDefinition(input, config = {}) {
     renderMode: component ? NAV_HUD_RENDER_MODE.COMPONENT : NAV_HUD_RENDER_MODE.NODE,
     variant,
     component,
-    content: component ? null : (content ?? input),
+    content: component
+      ? null
+      : (content ??
+        (isValidElement(input) || typeof input === 'string' || typeof input === 'number'
+          ? input
+          : null)),
     props,
     isActive: Boolean(isActive),
     icon: descriptor?.icon ?? config?.icon ?? null,
@@ -157,14 +162,68 @@ export function resolveActiveHud(hudEntries) {
   }, null);
 }
 
+function areActionsEqual(a, b) {
+  if (Object.is(a, b)) return true;
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const itemA = a[i];
+    const itemB = b[i];
+    if (Object.is(itemA, itemB)) continue;
+    if (!itemA || !itemB || typeof itemA !== 'object' || typeof itemB !== 'object') return false;
+    if (
+      itemA.key !== itemB.key ||
+      itemA.label !== itemB.label ||
+      itemA.icon !== itemB.icon ||
+      Boolean(itemA.disabled) !== Boolean(itemB.disabled) ||
+      Boolean(itemA.isDestructive) !== Boolean(itemB.isDestructive)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function arePropsEqual(a, b) {
+  if (Object.is(a, b)) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (const key of keysA) {
+    if (!Object.hasOwn(b, key)) return false;
+    const valA = a[key];
+    const valB = b[key];
+    if (Object.is(valA, valB)) continue;
+    if (key === 'actions' && areActionsEqual(valA, valB)) continue;
+    if (typeof valA === 'function' && typeof valB === 'function') continue;
+    if (
+      typeof valA === 'object' &&
+      typeof valB === 'object' &&
+      areShallowCollectionsEqual(valA, valB)
+    )
+      continue;
+    return false;
+  }
+  return true;
+}
+
 /** Compares HUD definitions without treating recreated collections as state changes. */
 export function areHudDefinitionsEqual(currentDefinition, nextDefinition) {
+  if (Object.is(currentDefinition, nextDefinition)) return true;
   if (!currentDefinition || !nextDefinition) return false;
-  return Object.keys(nextDefinition).every((key) =>
-    key === 'props' || key === 'actions'
-      ? areShallowCollectionsEqual(currentDefinition[key], nextDefinition[key])
-      : Object.is(currentDefinition[key], nextDefinition[key]),
-  );
+
+  const nextKeys = Object.keys(nextDefinition);
+  for (const key of nextKeys) {
+    const currentVal = currentDefinition[key];
+    const nextVal = nextDefinition[key];
+    if (Object.is(currentVal, nextVal)) continue;
+    if (key === 'props' && arePropsEqual(currentVal, nextVal)) continue;
+    if (key === 'actions' && areActionsEqual(currentVal, nextVal)) continue;
+    if (typeof currentVal === 'function' && typeof nextVal === 'function') continue;
+    return false;
+  }
+  return true;
 }
 /** Adds a normalized HUD definition unless it is structurally unchanged. */
 export function upsertHudEntry(hudEntries, definition) {
@@ -505,6 +564,7 @@ export const NavHudView = memo(function NavHudView({ hud, clearHud, pathname }) 
 export function useNavHudLifecycle({ clearHud, descriptor, setHud }) {
   const wasActiveRef = useRef(false);
   const registeredIdRef = useRef(null);
+  const previousDefinitionRef = useRef(null);
 
   useEffect(() => {
     const definition = createHudDefinition(descriptor);
@@ -514,12 +574,21 @@ export function useNavHudLifecycle({ clearHud, descriptor, setHud }) {
         wasActiveRef.current = false;
         clearHud(registeredIdRef.current);
         registeredIdRef.current = null;
+        previousDefinitionRef.current = null;
       }
+      return;
+    }
+
+    if (
+      previousDefinitionRef.current &&
+      areHudDefinitionsEqual(previousDefinitionRef.current, definition)
+    ) {
       return;
     }
 
     wasActiveRef.current = true;
     registeredIdRef.current = definition.id;
+    previousDefinitionRef.current = definition;
     setHud(definition);
   }, [descriptor, setHud, clearHud]);
 

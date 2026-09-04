@@ -43,7 +43,7 @@ const Tooltip = forwardRef(
             sideOffset={sideOffset}
             collisionPadding={collisionPadding}
             className={cn(
-              'tooltip-content pointer-events-none z-(--z-tooltip) font-medium select-none rounded-full',
+              'tooltip-content pointer-events-none z-(--z-tooltip) rounded-full font-medium select-none',
               'bg-white px-2.5 py-1 text-xs font-semibold text-black shadow-lg shadow-black/60',
               classes.content,
               classes.root,

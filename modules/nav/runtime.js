@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { globalEvents } from '@/shared';
+import { EVENT_TYPES, globalEvents } from '@/shared';
 import {
   MAX_VISIBLE_STACKED_CARDS,
   NAV_ATTENTION_KIND,
@@ -400,6 +400,9 @@ export function useNavigationGuard(options = {}) {
   useEffect(() => {
     whenRef.current = when;
     setIsActive(Boolean(when));
+    if (!when) {
+      globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
+    }
   }, [when]);
 
   useEffect(() => {
@@ -411,6 +414,7 @@ export function useNavigationGuard(options = {}) {
 
     return () => {
       unregister();
+      globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
     };
   }, [message, onBlock]);
 
@@ -430,11 +434,15 @@ export function useNavigationGuard(options = {}) {
   const setGuard = useCallback((active) => {
     whenRef.current = active;
     setIsActive(Boolean(active));
+    if (!active) {
+      globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
+    }
   }, []);
 
   const clearGuard = useCallback(() => {
     whenRef.current = false;
     setIsActive(false);
+    globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
   }, []);
 
   return {
@@ -519,7 +527,6 @@ function useNavigationCore() {
   const { clearPreparedRouteReset, closeSurface, continuity, openSurface, prepareRouteReset } =
     useNavigationActions();
   const { startLoading, stopLoading } = useLoadingActions();
-  const { createGuardSurface } = useNavRuntimeRegistry();
   const previousLocationKeyRef = useRef(locationKey);
   const handleTransactionEvent = useCallback(({ transaction, type }) => {
     recordNavigationDiagnostic(NAVIGATION_DIAGNOSTIC_EVENTS.ROUTE_TRANSACTION, {
@@ -640,40 +647,30 @@ function useNavigationCore() {
 
   const openGuardConfirmation = useCallback(
     ({ href, from, message, routePolicy }) => {
-      const confirmNavigation = () =>
+      const confirmNavigation = () => {
+        globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
         commitNavigation({ from, href, routePolicy, source: 'guard-confirmation' });
-      const cancelNavigation = () =>
+      };
+      const cancelNavigation = () => {
+        globalEvents.emit(EVENT_TYPES.NAV_GUARD, { clear: true });
         closeSurface({ cancelled: true, reason: 'guard', success: false });
+      };
 
-      const surface = createGuardSurface?.({
+      globalEvents.emit(EVENT_TYPES.NAV_GUARD, {
         to: href,
         from,
-        message: message || 'You have unsaved changes. Are you sure you want to leave this page?',
+        title: 'Navigasyon Engellendi',
+        message:
+          message ||
+          'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+        icon: 'solar:danger-triangle-bold',
+        cancelText: 'Kal',
+        confirmText: 'Yine de Geç',
         onCancel: cancelNavigation,
         onConfirm: confirmNavigation,
       });
-
-      if (surface) {
-        openSurface(surface);
-        return;
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(
-          '[Navigation] Missing NAV_RUNTIME createGuardSurface; using browser confirmation.',
-        );
-      }
-
-      if (
-        typeof window !== 'undefined' &&
-        window.confirm(message || 'Are you sure you want to leave this page?')
-      ) {
-        confirmNavigation();
-      } else {
-        cancelNavigation();
-      }
     },
-    [closeSurface, commitNavigation, createGuardSurface, openSurface],
+    [closeSurface, commitNavigation],
   );
 
   const navigate = useCallback(

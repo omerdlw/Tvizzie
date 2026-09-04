@@ -51,7 +51,7 @@ export default function PersonTimeline({ person }) {
                     </span>
                   </div>
 
-                  <div className="absolute top-1 left-16 z-10 size-3 -translate-x-1/2 rounded-full ring-2 ring-inset ring-black bg-white shadow-sm sm:left-24" />
+                  <div className="absolute top-1 left-16 z-10 size-3 -translate-x-1/2 rounded-full bg-white shadow-sm ring-2 ring-black ring-inset sm:left-24" />
 
                   <div
                     className={`flex min-w-0 flex-1 flex-col gap-1 pl-4 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
@@ -69,7 +69,7 @@ export default function PersonTimeline({ person }) {
                         <Link
                           key={`${credit.credit_id || credit.id}-${credit.media_type}`}
                           href={`/${mediaType}/${credit.id}`}
-                          className="group flex cursor-pointer items-center gap-4 rounded-[20px] ring-1 ring-inset ring-transparent p-2 transition-all duration-300 ease-in-out hover:ring-white/10 hover:bg-white/10"
+                          className="group flex cursor-pointer items-center gap-4 rounded-[20px] p-2 ring-1 ring-transparent transition-all duration-300 ease-in-out ring-inset hover:bg-white/10 hover:ring-white/10"
                         >
                           <MediaThumb
                             poster={credit.poster_path}

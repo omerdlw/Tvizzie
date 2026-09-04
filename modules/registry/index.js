@@ -3,14 +3,7 @@
 // Public Registry entry point. State operations live in operations.js so React
 // adapters can depend on the implementation without importing this entry point.
 
-const REGISTRY_METADATA_KEYS = [
-  'cleanup',
-  'cleanupDelayMs',
-  'lifecycle',
-  'priority',
-  'source',
-  'validation',
-];
+import { REGISTRY_METADATA_KEYS } from './contracts';
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -108,6 +101,7 @@ export { createRouteRegistry, RegistryBootstrap } from './bootstrap';
 
 export {
   useBackgroundRegistration,
+  useControlsRegistration,
   useContextMenuRegistration,
   useLoadingRegistration,
   useModalRegistration,

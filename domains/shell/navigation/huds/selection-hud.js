@@ -33,7 +33,7 @@ export const SelectionHud = memo(function SelectionHud({
       className="flex w-full items-center justify-between gap-2.5 select-none"
     >
       <div className="flex items-center">
-        <div className="flex h-8 items-center gap-1.5 rounded-xl ring-1 ring-inset ring-white/10 bg-white/10 px-3 text-xs font-semibold text-white">
+        <div className="flex h-8 items-center gap-1.5 rounded-xl bg-white/10 px-3 text-xs font-semibold text-white ring-1 ring-white/10 ring-inset">
           <span className="font-bold text-white">{count}</span>
           <span className="text-white/70">{resolvedTitle}</span>
         </div>
@@ -61,10 +61,10 @@ export const SelectionHud = memo(function SelectionHud({
                     action.onClick?.(event);
                   }}
                   className={cn(
-                    'center h-8 cursor-pointer gap-1.5 rounded-xl ring-1 ring-inset px-3 text-xs font-semibold',
+                    'center h-8 cursor-pointer gap-1.5 rounded-xl px-3 text-xs font-semibold ring-1 ring-inset',
                     isDestructive
                       ? DESTRUCTIVE_ACTION_TONE_CLASS
-                      : 'ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
+                      : 'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10',
                     action.disabled && 'cursor-not-allowed opacity-50',
                   )}
                   aria-label={action.label}
@@ -91,7 +91,7 @@ export const SelectionHud = memo(function SelectionHud({
                   event.stopPropagation();
                   onCancel();
                 }}
-                className="center h-8 w-8 cursor-pointer rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/50 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                className="center h-8 w-8 cursor-pointer rounded-xl bg-white/5 text-white/50 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
                 aria-label="Cancel selection"
               >
                 <Icon icon="solar:close-circle-bold" size={16} />

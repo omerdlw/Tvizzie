@@ -5,10 +5,7 @@ import {
   delayMediaSkeletonPreview,
   loadMediaRouteData,
 } from '@/domains/media/server/title-route';
-import {
-  getPersonBase,
-  getPersonSecondary,
-} from '@/infrastructure/tmdb/server';
+import { getPersonBase, getPersonSecondary } from '@/infrastructure/tmdb/server';
 import { getPersonAwards } from '@/domains/media/server/person-awards';
 import PersonDetailView from '@/domains/media/ui/pages/person-detail';
 

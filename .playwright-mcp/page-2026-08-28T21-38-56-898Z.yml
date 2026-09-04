@@ -1,74 +1,74 @@
 - generic [active] [ref=f6e1]:
-  - main [ref=f6e3]:
-    - generic [ref=f6e7]:
-      - generic [ref=f6e13]:
-        - generic [ref=f6e14]:
-          - img "Jale Aydın" [ref=f6e17]
-          - generic [ref=f6e18]:
-            - heading "Jale Aydın" [level=1] [ref=f6e20]
-            - paragraph [ref=f6e22]:
-              - text: Qui aute laborum qui irure incididunt veniam sit non dolor ex sint mollit exercitation consectetur esse. Cillum mollit laboris dolore anim ut. Pariatur velit dolor i…
-              - button "Read More" [ref=f6e23] [cursor=pointer]
-        - generic [ref=f6e24]:
-          - button "4 Followers" [ref=f6e26] [cursor=pointer]:
-            - generic [ref=f6e27]: "4"
-            - generic [ref=f6e28]: Followers
-          - button "5 Following" [ref=f6e30] [cursor=pointer]:
-            - generic [ref=f6e31]: "5"
-            - generic [ref=f6e32]: Following
-      - navigation "Account sections" [ref=f6e35]:
-        - link "Overview" [ref=f6e36] [cursor=pointer]:
-          - /url: /account/seed_jale
-        - link "Activity" [ref=f6e45] [cursor=pointer]:
-          - /url: /account/seed_jale/activity
-        - link "Diary" [ref=f6e50] [cursor=pointer]:
-          - /url: /account/seed_jale/diary
-        - link "Likes (0)" [ref=f6e57] [cursor=pointer]:
-          - /url: /account/seed_jale/likes
-        - link "Watched (0)" [ref=f6e62] [cursor=pointer]:
-          - /url: /account/seed_jale/watched
-        - link "Watchlist (0)" [ref=f6e69] [cursor=pointer]:
-          - /url: /account/seed_jale/watchlist
-        - link "Reviews (0)" [ref=f6e74] [cursor=pointer]:
-          - /url: /account/seed_jale/reviews
-        - link "Lists (0)" [ref=f6e79] [cursor=pointer]:
-          - /url: /account/seed_jale/lists
-      - main [ref=f6e84]:
-        - generic [ref=f6e148]:
-          - article [ref=f6e149]
-          - article [ref=f6e159]
-          - article [ref=f6e169]
-          - article [ref=f6e179]
-          - article [ref=f6e189]
-          - article [ref=f6e199]
-  - button "Open Next.js Dev Tools" [ref=f6e314] [cursor=pointer]
-  - alert [ref=f6e318]
-  - generic [ref=f6e319]:
-    - button [ref=f6e320] [cursor=pointer]:
-      - generic [ref=f6e335]:
-        - heading "Account" [level=3] [ref=f6e338]
-        - paragraph [ref=f6e340]: Your favorites, watched, watchlist, and lists
-    - button "Tvizzie Discover titles" [ref=f6e341] [cursor=pointer]:
-      - generic:
-        - generic:
-          - generic:
+    - main [ref=f6e3]:
+        - generic [ref=f6e7]:
+            - generic [ref=f6e13]:
+                - generic [ref=f6e14]:
+                    - img "Jale Aydın" [ref=f6e17]
+                    - generic [ref=f6e18]:
+                        - heading "Jale Aydın" [level=1] [ref=f6e20]
+                        - paragraph [ref=f6e22]:
+                            - text: Qui aute laborum qui irure incididunt veniam sit non dolor ex sint mollit exercitation consectetur esse. Cillum mollit laboris dolore anim ut. Pariatur velit dolor i…
+                            - button "Read More" [ref=f6e23] [cursor=pointer]
+                - generic [ref=f6e24]:
+                    - button "4 Followers" [ref=f6e26] [cursor=pointer]:
+                        - generic [ref=f6e27]: '4'
+                        - generic [ref=f6e28]: Followers
+                    - button "5 Following" [ref=f6e30] [cursor=pointer]:
+                        - generic [ref=f6e31]: '5'
+                        - generic [ref=f6e32]: Following
+            - navigation "Account sections" [ref=f6e35]:
+                - link "Overview" [ref=f6e36] [cursor=pointer]:
+                    - /url: /account/seed_jale
+                - link "Activity" [ref=f6e45] [cursor=pointer]:
+                    - /url: /account/seed_jale/activity
+                - link "Diary" [ref=f6e50] [cursor=pointer]:
+                    - /url: /account/seed_jale/diary
+                - link "Likes (0)" [ref=f6e57] [cursor=pointer]:
+                    - /url: /account/seed_jale/likes
+                - link "Watched (0)" [ref=f6e62] [cursor=pointer]:
+                    - /url: /account/seed_jale/watched
+                - link "Watchlist (0)" [ref=f6e69] [cursor=pointer]:
+                    - /url: /account/seed_jale/watchlist
+                - link "Reviews (0)" [ref=f6e74] [cursor=pointer]:
+                    - /url: /account/seed_jale/reviews
+                - link "Lists (0)" [ref=f6e79] [cursor=pointer]:
+                    - /url: /account/seed_jale/lists
+            - main [ref=f6e84]:
+                - generic [ref=f6e148]:
+                    - article [ref=f6e149]
+                    - article [ref=f6e159]
+                    - article [ref=f6e169]
+                    - article [ref=f6e179]
+                    - article [ref=f6e189]
+                    - article [ref=f6e199]
+    - button "Open Next.js Dev Tools" [ref=f6e314] [cursor=pointer]
+    - alert [ref=f6e318]
+    - generic [ref=f6e319]:
+        - button [ref=f6e320] [cursor=pointer]:
+            - generic [ref=f6e335]:
+                - heading "Account" [level=3] [ref=f6e338]
+                - paragraph [ref=f6e340]: Your favorites, watched, watchlist, and lists
+        - button "Tvizzie Discover titles" [ref=f6e341] [cursor=pointer]:
             - generic:
-              - generic:
                 - generic:
-                  - generic:
                     - generic:
-                      - heading "Tvizzie" [level=3]
-                  - generic:
-                    - paragraph: Discover titles
-    - button "Tvizzie Discover titles" [ref=f6e342] [cursor=pointer]:
-      - generic:
-        - generic:
-          - generic:
+                        - generic:
+                            - generic:
+                                - generic:
+                                    - generic:
+                                        - generic:
+                                            - heading "Tvizzie" [level=3]
+                                    - generic:
+                                        - paragraph: Discover titles
+        - button "Tvizzie Discover titles" [ref=f6e342] [cursor=pointer]:
             - generic:
-              - generic:
                 - generic:
-                  - generic:
                     - generic:
-                      - heading "Tvizzie" [level=3]
-                  - generic:
-                    - paragraph: Discover titles
+                        - generic:
+                            - generic:
+                                - generic:
+                                    - generic:
+                                        - generic:
+                                            - heading "Tvizzie" [level=3]
+                                    - generic:
+                                        - paragraph: Discover titles

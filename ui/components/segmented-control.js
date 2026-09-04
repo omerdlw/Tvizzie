@@ -120,7 +120,7 @@ export default function SegmentedControl({
   }
 
   const defaultButtonPadding = 'px-3 py-1 text-xs';
-  const defaultIndicatorBg = 'bg-black shadow-sm';
+  const defaultIndicatorBg = 'bg-white/10 shadow-sm';
   const defaultWrapperBg = 'ring-1 ring-inset ring-white/5 bg-white/5 shadow-inner';
 
   return (
@@ -197,7 +197,7 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'relative isolate z-10 cursor-pointer appearance-none ring-0 bg-transparent whitespace-nowrap transition-colors duration-200',
+                  'relative isolate z-10 cursor-pointer appearance-none bg-transparent whitespace-nowrap ring-0 transition-colors duration-200',
                   fullWidth ? 'flex-1 justify-center' : '',
                   defaultButtonPadding,
                   roundedClasses.button,

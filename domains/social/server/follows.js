@@ -3,14 +3,8 @@ import 'server-only';
 import { normalizeTimestamp, normalizeValue } from '@/shared';
 import { readSessionFromRequest, requireProtectedSession } from '@/domains/auth/server/session.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.js';
-import {
-  createApiErrorResponse,
-  createApiSuccessResponse,
-} from '@/infrastructure/http/server';
-import {
-  getOrLoadCachedValue,
-  invalidateCachedValuesWhere,
-} from '@/infrastructure/http/server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/infrastructure/http/server';
+import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/infrastructure/http/server';
 import {
   createRouteErrorResponse,
   createRouteRequestMeta,
@@ -24,7 +18,7 @@ import {
   createPrivateProfileError,
   getAccountProfileByUserId,
   invalidateCachedAccountProfiles,
-} from '@/domains/account/server/profile';
+} from '@/domains/account/server';
 import { createEmptyRelationshipState } from '@/domains/social/utils/formatting';
 import { FOLLOW_SELECT, FOLLOW_STATUSES } from '@/domains/social/utils/constants';
 

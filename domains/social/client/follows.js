@@ -8,7 +8,7 @@ import {
 } from '@/infrastructure/realtime/client';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/client';
 import { requestApiJson } from '@/infrastructure/http/client';
-import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client';
 import { FOLLOW_STATUSES } from '@/domains/social/utils/constants';
 import {
   createEmptyRelationshipState,

@@ -9,19 +9,6 @@ const HomeRegistry = createRouteRegistry({
     nav: {
       action: <SearchAction />,
     },
-    ...(backgroundImage
-      ? {
-          background: {
-            image: backgroundImage,
-            overlay: true,
-          },
-        }
-      : {
-          background: {
-            image: null,
-            video: null,
-          },
-        }),
     loading: { isLoading },
   }),
 });

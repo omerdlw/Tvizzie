@@ -2,14 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
-import {
-  MODAL_BREAKPOINTS,
-  MODAL_CHROME,
-  MODAL_LABELS,
-  MODAL_POSITIONS,
-  MODAL_PRESETS,
-  resolveModalHeader,
-} from './config';
+import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_POSITIONS, resolveModalHeader } from './config';
 
 // ── Modal runtime ───────────────────────────────────────────────────────────
 // Stack bookkeeping, focus handling, and context fallbacks stay React-facing
@@ -164,17 +157,14 @@ export function ModalProvider({ children, modalRenderer: ModalRenderer = null })
         return true;
       });
 
-      const resolvedConfig = {
-        ...(MODAL_PRESETS[modalType] || {}),
-        ...config,
-      };
+      const resolvedConfig = config;
 
       const { position, responsivePosition } = normalizePositionConfig(
         positionInput,
         resolvedConfig,
       );
 
-      const resolvedHeader = resolveModalHeader(modalType, resolvedConfig);
+      const resolvedHeader = resolveModalHeader(resolvedConfig);
       const modalId = ++modalIdRef.current;
       const modalEntry = {
         id: modalId,
@@ -325,7 +315,14 @@ export function trapFocus(event, container) {
 }
 
 export function getModalLabel(modalType) {
-  return MODAL_LABELS[modalType] || modalType || 'Modal';
+  if (typeof modalType !== 'string' || !modalType.trim()) return 'Modal';
+
+  return modalType
+    .trim()
+    .toLowerCase()
+    .split(/[_-]+/)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
 }
 
 export function isSidePosition(position) {

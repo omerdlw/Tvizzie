@@ -96,7 +96,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
               return (
                 <span
                   key={genre}
-                  className="inline-flex min-h-[28px] max-w-full cursor-default items-center rounded-[12px] ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 uppercase hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                  className="inline-flex min-h-[28px] max-w-full cursor-default items-center rounded-[12px] bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
                 >
                   {genre}
                 </span>
@@ -109,7 +109,7 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
             {normalizedTags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex min-h-[28px] max-w-full cursor-default items-center rounded-[12px] ring-1 ring-inset ring-white/5 bg-white/5 px-2.5 py-1 text-xs text-white/70 uppercase hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                className="inline-flex min-h-[28px] max-w-full cursor-default items-center rounded-[12px] bg-white/5 px-2.5 py-1 text-xs text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
               >
                 {tag}
               </span>
@@ -246,7 +246,7 @@ export default function Sidebar({
             wrapperClassName="h-full w-full rounded-[20px]"
           />
         ) : (
-          <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/50">
+          <div className="center h-full w-full rounded-[20px] text-white/50 ring-1 ring-white/5 ring-inset">
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}

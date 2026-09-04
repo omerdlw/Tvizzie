@@ -41,6 +41,7 @@ export default function GallerySection({ images, type = 'movie' }) {
                     imageSrc={image.file_path ? `${TMDB_IMG}/w342${image.file_path}` : null}
                     onClick={() =>
                       openModal('PREVIEW_MODAL', 'center', {
+                        chrome: 'bare',
                         data: image,
                       })
                     }
@@ -64,6 +65,7 @@ export default function GallerySection({ images, type = 'movie' }) {
                   imageSrc={image.file_path ? `${TMDB_IMG}/original${image.file_path}` : null}
                   onClick={() =>
                     openModal('PREVIEW_MODAL', 'center', {
+                      chrome: 'bare',
                       data: image,
                     })
                   }

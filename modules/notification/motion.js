@@ -1,13 +1,11 @@
-import { MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
-
 // ── Notification motion contract ───────────────────────────────────────────
 // Toast motion is kept as data so the presentation layer consumes one
 // consistent language for enter, exit, drag, and press interactions.
 
 const NOTIFICATION_EASINGS = Object.freeze({
-  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
-  SOFT: MOTION_EASINGS.SOFT,
-  EXIT: MOTION_EASINGS.EXIT,
+  EMPHASIZED: Object.freeze([0.16, 1, 0.3, 1]),
+  SOFT: Object.freeze([0.22, 1, 0.36, 1]),
+  EXIT: Object.freeze([0.7, 0, 0.84, 0]),
 });
 
 const NOTIFICATION_TIERS = Object.freeze({
@@ -20,7 +18,12 @@ function toGpuTransform({ x = 0, y = 0, scale = 1 } = {}) {
   return `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
 }
 
-export const NOTIFICATION_MICRO_SPRING = MOTION_SPRINGS.PRESS;
+export const NOTIFICATION_MICRO_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 520,
+  damping: 30,
+  mass: 0.28,
+});
 export const NOTIFICATION_MICRO_TAP_SCALE = 0.97;
 
 export const NOTIFICATION_DRAG_CONSTRAINTS = Object.freeze({ left: 0, right: 0 });
@@ -32,8 +35,7 @@ export const NOTIFICATION_CLOSE_TAP = Object.freeze({
 export const NOTIFICATION_ACTION_TAP = Object.freeze({
   transform: toGpuTransform({ scale: NOTIFICATION_MICRO_TAP_SCALE }),
 });
-export const NOTIFICATION_ACTION_TRANSITION = MOTION_SPRINGS.PRESS;
-export const NOTIFICATION_SURFACE_TRANSITION_CLASS = 'transition-all duration-300 ease-in-out';
+export const NOTIFICATION_ACTION_TRANSITION = NOTIFICATION_MICRO_SPRING;
 
 export const notificationContentVariants = Object.freeze({
   hidden: { opacity: 0, filter: 'blur(4px)' },

@@ -1,32 +1,17 @@
 # Modules documentation
 
-Bu klasör, `modules/*` altındaki modüller için tek ve standart teknik referans
-yüzeyidir. Her modül belgesi aynı bilgi sırasını izler; böylece bir modülün
-yeteneklerini, public interface'ini, entegrasyon koşullarını ve doğrulama
-adımlarını başka bir belgeye geçmeden okuyabilirsiniz.
+Bu klasör, `modules/*` içindeki tekrar kullanılabilir çalışma zamanlarının teknik referansıdır. Ürün metinleri, route kararları ve domain politikaları modül belgelerine girmez.
 
-Modüller ürün markasından bağımsız tutulur. Ürün adı, ürün alanına ait route,
-logo, analytics veya domain politikası doğrudan `modules/*` altında yer almaz;
-bu tür kararlar consuming application katmanında kalır.
+## Rehberleri kullanma
 
-## Doküman standardı
+Her belge şu soruları yanıtlar:
 
-Her modül belgesi aşağıdaki başlıkları aynı sırayla taşımalıdır:
+1. Modül hangi sorunu çözer ve hangi kararı almaz?
+2. Uygulama kabuğunda nereye kurulur?
+3. Hangi public API, hangi iş için seçilir?
+4. Kayıt, cleanup ve hata sınırları nelerdir?
 
-1. **Genel bakış**: modülün ne çözdüğü ve hangi kullanıcıya hizmet ettiği
-2. **Sorumluluklar**: modülün sahip olduğu ve sahip olmadığı kararlar
-3. **Dosya sahipliği**: her dosyanın gerçek implementation rolü
-4. **Kurulum**: provider, context, root placement ve gerekli ön koşullar
-5. **Public interface**: export'ların grupları ve seçim rehberi
-6. **Sözleşmeler ve kullanım örnekleri**: config, hook, callback ve tam akışlar
-7. **Yaşam döngüsü**: state, cleanup, event sırası ve hata davranışı
-8. **Sınırlar**: erişilebilirlik, performans, SSR ve bilinen kısıtlar
-9. **Kurallar**: doğru kullanım ve anti-pattern'ler
-10. **Doğrulama**: ilgili test, lint, format ve build komutları
-
-Bir özellik public interface'i etkiliyorsa hem ilgili modül belgesindeki export
-tablosu hem de kullanım örneği güncellenmelidir. Sadece implementation dosyasını
-anlatmak yeterli değildir.
+Dosya envanteri yalnız gerçek bir sahiplik sınırını açıklıyorsa yer alır. Her export'u tekrar listelemek veya JSX ayrıntılarını belgelemek yerine, facade'dan seçilecek API ve çalışan bir entegrasyon örneği verilir.
 
 ## Modül rehberleri
 
@@ -34,6 +19,7 @@ anlatmak yeterli değildir.
 - [Auth](./auth.md)
 - [Background](./background.md)
 - [Context Menu](./context-menu.md)
+- [Controls](./controls.md)
 - [Error Boundary](./error-boundary.md)
 - [Loading](./loading.md)
 - [Modal](./modal.md)
@@ -41,13 +27,11 @@ anlatmak yeterli değildir.
 - [Notification](./notification.md)
 - [Registry](./registry.md)
 
-Dosya isimleri modül klasörleriyle aynı kebab-case sözleşmesini izler. Modül
-klasörlerinde ayrı `README.md` dosyası tutulmaz; kaynak kod ile teknik referans
-arasındaki sınır bu merkezde korunur.
+Uygulama kodu `@/modules/<module>` facade'ından import eder. Modülün kendi implementasyonu ve hedefli testleri, gerektiğinde iç dosyalara doğrudan erişebilir.
 
-## Ortak doğrulama
+## Değişiklik kontrolü
 
-Belge veya public interface değişikliklerinden sonra:
+Public API veya lifecycle değiştiğinde ilgili rehberdeki seçim tablosunu, örneği ve kuralı aynı değişiklikte güncelleyin.
 
 ```bash
 npx prettier --check modules/**/*.js modules/docs/*.md

@@ -21,18 +21,14 @@ function PrivacyView() {
         <div className={LEGAL_PAGE_CONTENT_CLASS}>
           <header className="mx-auto max-w-3xl space-y-4 py-24 text-center sm:py-28">
             <div className="space-y-3">
-              <h1 className="text-4xl font-semibold text-white sm:text-5xl">
-                Privacy Policy
-              </h1>
+              <h1 className="text-4xl font-semibold text-white sm:text-5xl">Privacy Policy</h1>
               <p className="mx-auto max-w-2xl text-sm leading-7 text-white/50">
                 This policy explains what information Tvizzie processes, why it is processed, and
                 what choices you have. It is written to reflect the current product and
                 infrastructure used by the app today.
               </p>
             </div>
-            <p className="text-xs text-white/50 uppercase">
-              Last updated {LAST_UPDATED}
-            </p>
+            <p className="text-xs text-white/50 uppercase">Last updated {LAST_UPDATED}</p>
           </header>
 
           <div

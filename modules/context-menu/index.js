@@ -7,9 +7,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Z_INDEX } from '@/shared';
 import Icon from '@/ui/primitives/icon';
 import {
-  CONTEXT_MENU_ICON_TRANSITION_CLASS,
   CONTEXT_MENU_ITEM_TAP,
-  CONTEXT_MENU_ITEM_TRANSITION_CLASS,
   CONTEXT_MENU_MICRO_SPRING,
   menuContentVariants,
   menuItemVariants,
@@ -31,10 +29,8 @@ import { ContextMenuProvider, useContextMenu, useContextMenuListener } from './r
 
 export {
   CONTEXT_MENU_CONTENT_VARIANTS,
-  CONTEXT_MENU_ICON_TRANSITION_CLASS,
   CONTEXT_MENU_ITEM_TAP,
   CONTEXT_MENU_ITEM_VARIANTS,
-  CONTEXT_MENU_ITEM_TRANSITION_CLASS,
   CONTEXT_MENU_MICRO_SPRING,
   CONTEXT_MENU_POP_VARIANTS,
   menuContentVariants,
@@ -124,8 +120,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/10 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-50',
-    CONTEXT_MENU_ITEM_TRANSITION_CLASS,
+    'group flex h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-medium text-white/70 transition-all duration-200 ease-in-out hover:bg-white/10 hover:text-white focus-visible:outline-none data-[active=true]:bg-white/10 data-[active=true]:text-white disabled:pointer-events-none disabled:opacity-50',
     classNames.item,
     item.className,
     item.danger &&
@@ -133,8 +128,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
     item.danger && classNames.itemDanger,
   );
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-white/50 group-hover:text-white/70',
-    CONTEXT_MENU_ICON_TRANSITION_CLASS,
+    'shrink-0 text-white/50 transition-colors duration-200 ease-in-out group-hover:text-white/70',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,

@@ -3,6 +3,7 @@
 export const REGISTRY_TYPES = Object.freeze({
   CONTEXT_MENU: 'CONTEXT_MENU',
   BACKGROUND: 'BACKGROUND',
+  CONTROLS: 'CONTROLS',
   LOADING: 'LOADING',
   MODAL: 'MODAL',
   NAV: 'NAV',
@@ -37,6 +38,15 @@ export const REGISTRY_VALIDATION_MODES = Object.freeze({
   STRICT: 'strict',
 });
 
+export const REGISTRY_METADATA_KEYS = Object.freeze([
+  'cleanup',
+  'cleanupDelayMs',
+  'lifecycle',
+  'priority',
+  'source',
+  'validation',
+]);
+
 export const REGISTRY_RESOLVERS = Object.freeze({
   [REGISTRY_TYPES.NAV]: 'merge',
   [REGISTRY_TYPES.NAV_RUNTIME]: 'merge',
@@ -54,6 +64,13 @@ export const REGISTRY_DEFINITIONS = Object.freeze({
     defaultCleanupDelayMs: 600,
     defaultLifecycle: REGISTRY_LIFECYCLES.IMMEDIATE,
     keyPolicy: 'singleton',
+    resolver: 'priority',
+    valueKind: 'object',
+  }),
+  [REGISTRY_TYPES.CONTROLS]: Object.freeze({
+    defaultCleanupDelayMs: null,
+    defaultLifecycle: REGISTRY_LIFECYCLES.IMMEDIATE,
+    keyPolicy: 'named',
     resolver: 'priority',
     valueKind: 'object',
   }),
@@ -105,6 +122,7 @@ export const REGISTRY_SOURCE_RANK = Object.freeze({
 
 const REGISTRY_FEATURE_KEYS = new Set([
   'background',
+  'controls',
   'contextMenu',
   'loading',
   'modal',

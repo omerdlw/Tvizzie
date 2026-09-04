@@ -1,6 +1,6 @@
 'use client';
 
-import { withRegistryMetadata } from './contracts';
+import { REGISTRY_METADATA_KEYS, withRegistryMetadata } from './contracts';
 import { usePageRegistry } from './hooks';
 
 // ── Feature-facing registration adapters ─────────────────────────────────────
@@ -13,7 +13,7 @@ function getMetadata(options) {
   if (!isObject(options)) return {};
 
   const metadata = {};
-  ['cleanup', 'cleanupDelayMs', 'lifecycle', 'priority', 'source', 'validation'].forEach((key) => {
+  REGISTRY_METADATA_KEYS.forEach((key) => {
     if (options[key] !== undefined) metadata[key] = options[key];
   });
 
@@ -43,6 +43,11 @@ export function useNavRegistration(config, options) {
 /** Register page background state without exposing the registry type. */
 export function useBackgroundRegistration(config, options) {
   usePageRegistry(createFeatureConfig('background', config, options));
+}
+
+/** Register one or more page controls without exposing the registry type. */
+export function useControlsRegistration(config, options) {
+  usePageRegistry(createFeatureConfig('controls', config, options));
 }
 
 /** Register page loading state with the standard graceful lifecycle. */

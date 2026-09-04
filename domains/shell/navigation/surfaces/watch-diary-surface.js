@@ -225,75 +225,75 @@ export default function WatchDiarySurface({ close, data }) {
 
       <div className="flex min-h-0 flex-col gap-2.5" aria-busy={isLoading} aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
-        {isLoading ? (
-          <motion.div
-            key="watch-diary-loading"
-            variants={textCrossfadeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={NAV_FADE_TRANSITION}
-            className="flex flex-col divide-y divide-white/10 rounded-[20px] ring-1 ring-inset ring-white/5"
-          >
-            {Array.from({ length: 2 }).map((_, index) => (
-              <motion.div
-                key={index}
-                variants={navListItemVariants}
-                initial="hidden"
-                animate="visible"
-                custom={index + 3}
-                className="flex animate-pulse flex-col gap-2.5 px-3 py-3"
-              >
-                <div className="skeleton-block h-3 w-24 rounded-full" />
-                <div className="skeleton-block-soft h-2.5 w-16 rounded-full" />
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : entries.length === 0 ? (
-          <motion.div
-            key="watch-diary-empty"
-            variants={textCrossfadeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={NAV_FADE_TRANSITION}
-            className="flex min-h-24 flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 px-4 text-center"
-          >
-            <Icon icon="solar:calendar-minimalistic-bold" size={20} className="text-white/50" />
-            <p className="text-sm text-white/50">
-              Your first entry for {episodeLabel ? `${title} · ${episodeLabel}` : title} starts
-              here.
-            </p>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="watch-diary-entries"
-            variants={textCrossfadeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={NAV_FADE_TRANSITION}
-            className="max-h-[min(38dvh,22rem)] divide-y divide-white/10 overflow-y-auto rounded-[20px] ring-1 ring-inset ring-white/5"
-          >
-            {entries.map((entry, index) => (
-              <motion.article
-                key={entry.id}
-                variants={navListItemVariants}
-                initial="hidden"
-                animate="visible"
-                custom={index + 3}
-                className="flex flex-col gap-1.5 px-3 py-3"
-              >
-                <time className="text-xs font-bold text-white/50 uppercase">
-                  {formatDiaryDate(entry.watchedOn || entry.watchedAt)}
-                </time>
-                <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-white/50 uppercase">
-                  {entry.isRewatch ? <span>Rewatch</span> : null}
-                </div>
-              </motion.article>
-            ))}
-          </motion.div>
-        )}
+          {isLoading ? (
+            <motion.div
+              key="watch-diary-loading"
+              variants={textCrossfadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={NAV_FADE_TRANSITION}
+              className="flex flex-col divide-y divide-white/10 rounded-[20px] ring-1 ring-white/5 ring-inset"
+            >
+              {Array.from({ length: 2 }).map((_, index) => (
+                <motion.div
+                  key={index}
+                  variants={navListItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={index + 3}
+                  className="flex animate-pulse flex-col gap-2.5 px-3 py-3"
+                >
+                  <div className="skeleton-block h-3 w-24 rounded-full" />
+                  <div className="skeleton-block-soft h-2.5 w-16 rounded-full" />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : entries.length === 0 ? (
+            <motion.div
+              key="watch-diary-empty"
+              variants={textCrossfadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={NAV_FADE_TRANSITION}
+              className="flex min-h-24 flex-col items-center justify-center gap-2.5 rounded-[20px] px-4 text-center ring-1 ring-white/10 ring-inset"
+            >
+              <Icon icon="solar:calendar-minimalistic-bold" size={20} className="text-white/50" />
+              <p className="text-sm text-white/50">
+                Your first entry for {episodeLabel ? `${title} · ${episodeLabel}` : title} starts
+                here.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="watch-diary-entries"
+              variants={textCrossfadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={NAV_FADE_TRANSITION}
+              className="max-h-[min(38dvh,22rem)] divide-y divide-white/10 overflow-y-auto rounded-[20px] ring-1 ring-white/5 ring-inset"
+            >
+              {entries.map((entry, index) => (
+                <motion.article
+                  key={entry.id}
+                  variants={navListItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={index + 3}
+                  className="flex flex-col gap-1.5 px-3 py-3"
+                >
+                  <time className="text-xs font-bold text-white/50 uppercase">
+                    {formatDiaryDate(entry.watchedOn || entry.watchedAt)}
+                  </time>
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-white/50 uppercase">
+                    {entry.isRewatch ? <span>Rewatch</span> : null}
+                  </div>
+                </motion.article>
+              ))}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </motion.div>

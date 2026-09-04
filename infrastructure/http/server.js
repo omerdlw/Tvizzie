@@ -249,8 +249,6 @@ export function isRecoverableRolloutError(
   );
 }
 
-
-
 export const CACHE_CONTROL = Object.freeze({
   NO_STORE: 'no-store',
   PRIVATE_USER_STATE: 'private, no-cache, no-store, must-revalidate',
@@ -271,8 +269,6 @@ export function cacheControlHeaders(policy) {
     'Cache-Control': policy,
   };
 }
-
-
 
 const DEFAULT_TTL_MS = 2000;
 const MAX_CACHE_ENTRIES = 400;
@@ -410,9 +406,6 @@ export async function getOrLoadCachedValue({
   return inFlightPromise;
 }
 
-
-
-
 const rateLimitWindows = new Map();
 const MAX_RATE_LIMIT_BUCKETS = 10000;
 
@@ -507,8 +500,6 @@ export function assertRateLimit(request, options = {}) {
 export function clearRateLimitMemory() {
   rateLimitWindows.clear();
 }
-
-
 
 function readHeader(request, headerName) {
   if (!request?.headers?.get) {
@@ -612,9 +603,6 @@ export function setResponseRequestMeta(response, requestMeta = {}) {
   return response;
 }
 
-
-
-
 export function createApiSuccessResponse(
   data = null,
   { status = 200, code = 'OK', message = 'OK', requestMeta, legacyPayload = null } = {},
@@ -663,7 +651,6 @@ export function createApiErrorResponse(
 
   return setResponseRequestMeta(response, requestMeta);
 }
-
 
 const UNAUTHORIZED_MESSAGE_PATTERNS = Object.freeze([
   'authentication session is required',
@@ -783,11 +770,6 @@ export function createRouteErrorResponse({
     },
   );
 }
-
-
-
-
-
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);

@@ -1,7 +1,7 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/client';
-import { requestAccountRead } from '@/domains/account/client/account-api';
+import { requestAccountRead } from '@/domains/account/client';
 import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/client';
 import { createMediaSnapshot } from '@/domains/media/utils/media-key';
 import { isTitleMediaType } from '@/domains/media/utils/media-key';

@@ -63,17 +63,20 @@ Modül teknik referansları: [modules/docs/README.md](modules/docs/README.md)
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/omerdlw/Tvizzie.git
    cd Tvizzie
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Set up environment variables:
+
    ```bash
    cp .env.example .env.local
    ```

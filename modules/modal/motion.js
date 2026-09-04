@@ -1,6 +1,3 @@
-import { INFO_ACTION_TONE_CLASS, MOTION_EASINGS, MOTION_SPRINGS } from '@/shared';
-import { cn } from '@/ui/class-names';
-
 import { MODAL_POSITIONS } from './config';
 
 // ── Modal motion contract ───────────────────────────────────────────────────
@@ -8,11 +5,12 @@ import { MODAL_POSITIONS } from './config';
 // facade re-exports this contract so feature code never imports implementation
 // details or invents a second motion language.
 
-const MODAL_EASINGS = Object.freeze({
-  CINEMATIC: MOTION_EASINGS.CINEMATIC,
-  EMPHASIZED: MOTION_EASINGS.EMPHASIZED,
-  SOFT: MOTION_EASINGS.SOFT,
-  EXIT: MOTION_EASINGS.EXIT,
+export const MODAL_EASINGS = Object.freeze({
+  CINEMATIC: Object.freeze([0.76, 0, 0.24, 1]),
+  EMPHASIZED: Object.freeze([0.16, 1, 0.3, 1]),
+  SOFT: Object.freeze([0.22, 1, 0.36, 1]),
+  EXIT: Object.freeze([0.7, 0, 0.84, 0]),
+  SOFT_EXIT: Object.freeze([0.4, 0, 0.2, 1]),
 });
 
 const MODAL_TIERS = Object.freeze({
@@ -23,9 +21,9 @@ const MODAL_TIERS = Object.freeze({
 });
 
 const MODAL_SPRINGS = Object.freeze({
-  MICRO: MOTION_SPRINGS.PRESS,
-  PANEL: MOTION_SPRINGS.PANEL,
-  BADGE: MOTION_SPRINGS.BADGE,
+  MICRO: Object.freeze({ type: 'spring', stiffness: 520, damping: 30, mass: 0.28 }),
+  PANEL: Object.freeze({ type: 'spring', stiffness: 180, damping: 24, mass: 0.8 }),
+  BADGE: Object.freeze({ type: 'spring', stiffness: 360, damping: 20, mass: 0.42 }),
 });
 
 function toCssDistance(value = 0) {
@@ -238,14 +236,3 @@ export function getModalTransition(position) {
 
 export const MODAL_BACKDROP_VARIANTS = modalBackdropVariants;
 export const MODAL_POSITION_VARIANTS = getModalPositionVariants;
-
-export const CANCEL_BUTTON_CLASS =
-  'center h-9 shrink-0 cursor-pointer rounded-xl ring-1 ring-inset ring-white/10 px-4 text-xs font-semibold whitespace-nowrap uppercase text-white/70 hover:ring-transparent hover:bg-white hover:text-black';
-
-export const ACTION_BUTTON_CLASS = cn(
-  'center h-9 shrink-0 cursor-pointer rounded-xl px-4 text-xs font-semibold whitespace-nowrap uppercase disabled:cursor-not-allowed disabled:ring-white/5 disabled:bg-white/10 disabled:text-white/50',
-  INFO_ACTION_TONE_CLASS,
-);
-
-export const MODAL_STACK_OVERLAY_CLASS =
-  'pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-white/10 transition-all duration-300 ease-in-out';

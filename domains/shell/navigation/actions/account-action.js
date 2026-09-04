@@ -200,12 +200,12 @@ export default function AccountAction(props) {
             type="button"
             onClick={onPreviousMonth}
             aria-label="Previous month"
-            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
+            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
           >
             <Icon icon="solar:arrow-left-linear" size={NAV_ACTION_STYLES.icon} />
           </Button>
         ) : null}
-        <p className="flex h-[38px] min-w-0 flex-1 items-center justify-center rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 px-3 text-center text-xs font-semibold text-white/70 uppercase">
+        <p className="flex h-[38px] min-w-0 flex-1 items-center justify-center rounded-[20px] bg-white/5 px-3 text-center text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset">
           {formatDiaryMonth(monthKey)}
         </p>
         {!isNextMonthHidden ? (
@@ -213,7 +213,7 @@ export default function AccountAction(props) {
             type="button"
             onClick={onNextMonth}
             aria-label="Next month"
-            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
+            className="center h-[38px] w-[38px] shrink-0 rounded-[20px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset"
           >
             <Icon icon="solar:arrow-right-linear" size={NAV_ACTION_STYLES.icon} />
           </Button>

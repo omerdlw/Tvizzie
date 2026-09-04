@@ -41,10 +41,10 @@ const PersonCard = memo(function PersonCard({ close, person }) {
     <Link
       href={`/person/${person.id}`}
       onClick={close}
-      className="group flex h-full w-full items-center gap-3 rounded-[16px] ring-1 ring-inset ring-white/5 bg-white/5 p-2 transition-all duration-300 ease-in-out hover:ring-white/10 hover:bg-white/10 focus:outline-none"
+      className="group flex h-full w-full items-center gap-3 rounded-[16px] bg-white/5 p-2 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset hover:bg-white/10 hover:ring-white/10 focus:outline-none"
       aria-label={`View details for ${person.name || 'Cast member'}`}
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[12px] ring-1 ring-inset ring-white/5 bg-white/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/5 ring-inset">
         {imageSrc ? (
           <AdaptiveImage
             fill

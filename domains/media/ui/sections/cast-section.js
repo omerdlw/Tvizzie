@@ -4,11 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { TMDB_IMG } from '@/shared';
 import { useModal } from '@/modules/modal';
-import {
-  resolveImageFetchPriority,
-  resolveImageLoading,
-  resolveImageQuality,
-} from '@/shared';
+import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
@@ -76,8 +72,8 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group isolation-isolate flex items-center gap-3 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out hover:ring-white/10 hover:bg-white/10',
-        compact ? 'h-10 min-w-0 flex-1 p-1 pr-2 rounded-[16px]' : 'h-[84px] p-1 pr-4',
+        'group isolation-isolate flex items-center gap-3 rounded-[20px] bg-white/5 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset hover:bg-white/10 hover:ring-white/10',
+        compact ? 'h-10 min-w-0 flex-1 rounded-[16px] p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
       <div
@@ -195,6 +191,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
           crew: crewEntries,
           initialTab: activeTab,
         },
+        title: 'Cast',
       },
     );
   };
@@ -236,7 +233,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center isolation-isolate size-10 shrink-0 cursor-pointer rounded-[16px] ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+              className="center isolation-isolate size-10 shrink-0 cursor-pointer rounded-[16px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </Button>
@@ -247,7 +244,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
   };
 
   return (
-    <section className="relative w-full flex flex-col">
+    <section className="relative flex w-full flex-col">
       <div className={MEDIA_DETAIL_SECTION_HEADER_CLASS}>
         <div className="flex shrink-0 items-center gap-2.5">
           <SegmentedControl

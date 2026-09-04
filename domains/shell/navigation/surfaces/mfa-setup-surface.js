@@ -33,7 +33,11 @@ function normalizeMfaOtpCode(value) {
 }
 
 function formatSetupKey(value) {
-  return String(value || '').match(/.{1,4}/g)?.join(' ') || '';
+  return (
+    String(value || '')
+      .match(/.{1,4}/g)
+      ?.join(' ') || ''
+  );
 }
 
 const MFA_SETUP_TIMEOUT_MS = 15_000;
@@ -101,11 +105,10 @@ function OtpBoxes({ code, disabled, inputRef, isFocused, setCode, setIsFocused }
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center h-14 rounded-[20px] ring-1 ring-inset ring-white/5 text-lg font-semibold text-white/70 transition-all duration-300 ease-in-out hover:text-white',
-                isActive &&
-                  !digit &&
-                  'bg-white/5 text-white hover:bg-white/10 hover:ring-white/10',
-                digit && 'bg-success/15 text-success ring-success/30 hover:bg-success/20 hover:ring-success/20',
+                'center h-14 rounded-[20px] text-lg font-semibold text-white/70 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset hover:text-white',
+                isActive && !digit && 'bg-white/5 text-white hover:bg-white/10 hover:ring-white/10',
+                digit &&
+                  'bg-success/15 text-success ring-success/30 hover:bg-success/20 hover:ring-success/20',
               )}
             >
               {digit ? (
@@ -271,7 +274,7 @@ export default function MfaSetupSurface({ close, data }) {
       className="flex flex-col gap-2.5"
     >
       {isPreparing ? (
-        <div className="flex min-h-14 items-center justify-center rounded-[20px] bg-white/5 px-4 text-sm text-white/50 ring-1 ring-inset ring-white/5">
+        <div className="flex min-h-14 items-center justify-center rounded-[20px] bg-white/5 px-4 text-sm text-white/50 ring-1 ring-white/5 ring-inset">
           Preparing authenticator setup
         </div>
       ) : null}

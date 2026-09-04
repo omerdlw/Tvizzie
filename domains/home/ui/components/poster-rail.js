@@ -22,7 +22,7 @@ export function PosterRail({ fallbackMediaType = 'movie', items = [], showRank =
             imageFetchPriority={index < 3 ? 'high' : undefined}
           />
           {showRank ? (
-            <span className="pointer-events-none absolute top-2 left-2 grid size-7 place-items-center rounded-xl ring-1 ring-inset ring-black/20 bg-white/70 text-xs font-black text-black shadow-md backdrop-blur-md">
+            <span className="pointer-events-none absolute top-2 left-2 grid size-7 place-items-center rounded-xl bg-white/70 text-xs font-black text-black shadow-md ring-1 ring-black/20 backdrop-blur-md ring-inset">
               {item.imdb_rank || index + 1}
             </span>
           ) : null}

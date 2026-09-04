@@ -583,6 +583,21 @@ export function createSupabaseAuthAdapter(options = {}) {
     async signIn(payload = {}) {
       const providerKey = resolveProviderKey(payload);
 
+      if (providerKey === 'mock' || payload.mockUser) {
+        const mockUser = payload.mockUser || {
+          id: 'mock_user_1',
+          email: payload.email || 'user@tvizzie.local',
+          displayName: 'Simulated User',
+          role: payload.role || 'user',
+        };
+        return {
+          user: mockUser,
+          provider: 'mock',
+          status: 'authenticated',
+          capabilities: mockUser.capabilities || ['content.read'],
+        };
+      }
+
       if (providerKey === 'passkey') {
         return signInWithPasskey();
       }

@@ -58,7 +58,7 @@ export default memo(function ListPreviewComposition({
   if (previewItems.length === 0) {
     return (
       <div className={cn('relative h-[68px] w-[82px] shrink-0', className)}>
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] ring-1 ring-inset  ring-white/10 bg-black text-white/50">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] bg-black text-white/50 ring-1 ring-white/10 ring-inset">
           <Icon icon={emptyIcon} size={20} />
         </div>
       </div>
@@ -75,7 +75,7 @@ export default memo(function ListPreviewComposition({
               item.mediaKey ||
               `${item.entityType || 'movie'}-${item.entityId || item.id || index}-${index}`
             }
-            className="ring-primary absolute bottom-0 overflow-hidden ring-1 ring-inset bg-black"
+            className="ring-primary absolute bottom-0 overflow-hidden bg-black ring-1 ring-inset"
             style={{
               width: '46px',
               height: `${68 - index * 6}px`,

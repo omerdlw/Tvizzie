@@ -1,6 +1,6 @@
 import { normalizeEmailValue, normalizeValue } from '@/shared';
 import { createAdminClient } from '@/infrastructure/supabase/server';
-import { validateUsername } from '@/domains/account/utils/validation';
+import { validateUsername } from '@/domains/account/server';
 import { ACCOUNT_LIFECYCLE_TABLE } from '@/domains/auth/utils/constants';
 
 export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({

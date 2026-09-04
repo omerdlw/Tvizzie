@@ -17,7 +17,7 @@ import {
 import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
-} from '@/domains/account/client/collections';
+} from '@/domains/account/client';
 
 function resolveMediaKey(media) {
   const snapshot = assertTitleMedia(media, 'Only movies and TV series can be added to the diary');

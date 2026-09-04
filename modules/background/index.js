@@ -9,7 +9,6 @@ import {
   BACKGROUND_ANIMATE_PRESENCE_MODE,
   BACKGROUND_EXIT_EASE,
   BACKGROUND_OVERLAY_TRANSITION_PROPERTY,
-  BACKGROUND_OVERLAY_TRANSITION_CLASS,
   BACKGROUND_WILL_CHANGE,
   getBackgroundMotionConfig,
   toCssDelay,
@@ -36,7 +35,6 @@ import {
 export {
   BACKGROUND_ANIMATE_PRESENCE_MODE,
   BACKGROUND_EXIT_EASE,
-  BACKGROUND_OVERLAY_TRANSITION_CLASS,
   BACKGROUND_OVERLAY_TRANSITION_PROPERTY,
   BACKGROUND_WILL_CHANGE,
   getBackgroundMotionConfig,
@@ -306,10 +304,7 @@ export function BackgroundOverlay() {
                       .catch((error) => console.warn('Autoplay prevented on load', error));
                   }
                 }}
-              >
-                <source src={video} type="video/mp4" />
-                <source src={video} type="video/webm" />
-              </video>
+              />
 
               {gradientSettings.leftOpacity > 0 && (
                 <div
@@ -356,8 +351,7 @@ export function BackgroundOverlay() {
               {hasCustomWidth && overlay && (
                 <div
                   className={cn(
-                    'pointer-events-none absolute inset-0',
-                    BACKGROUND_OVERLAY_TRANSITION_CLASS,
+                    'pointer-events-none absolute inset-0 transition-all duration-300 ease-in-out',
                   )}
                   style={{
                     opacity: overlayOpacity,
@@ -407,7 +401,7 @@ export function BackgroundOverlay() {
 
           {(!isVideo || !hasCustomWidth) && overlay && (
             <div
-              className={cn('absolute inset-0', BACKGROUND_OVERLAY_TRANSITION_CLASS)}
+              className="absolute inset-0 transition-all duration-300 ease-in-out"
               style={{
                 opacity: overlayOpacity,
                 backgroundColor: overlayColor,

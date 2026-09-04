@@ -11,7 +11,6 @@ import {
   resolveVerificationTimestamp,
 } from '@/domains/auth/utils/routes';
 import { resolveVerificationErrorMessage } from '@/domains/auth/utils/errors';
-import { resolveAuthVerificationHeader } from '@/modules/modal';
 import { NavSurfaceHeaderButton, useSurfaceHeader } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
 import { cn } from '@/ui/class-names';
@@ -90,13 +89,13 @@ function OtpBoxes({
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center text-white/70 h-14 rounded-[20px] ring-1 ring-inset ring-white/5 text-lg font-semibold transition-all duration-300 ease-in-out hover:text-white',
+                'center h-14 rounded-[20px] text-lg font-semibold text-white/70 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset hover:text-white',
                 hasError &&
                   digit &&
                   'ring-error/30 bg-error/15 text-error hover:ring-error/20 hover:bg-error/20 ring-1 ring-inset',
                 isActive &&
                   !digit &&
-                  'ring-1 ring-inset ring-white/5 bg-white/5 text-white hover:ring-white/10 hover:bg-white/10',
+                  'bg-white/5 text-white ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:ring-white/10',
                 digit &&
                   !hasError &&
                   'ring-success/30 bg-success/15 text-success hover:ring-success/20 hover:bg-success/20 ring-1 ring-inset',
@@ -402,17 +401,7 @@ export function AuthVerificationSurface({ close, data, header }) {
         setIsSubmitting(false);
       }
     },
-    [
-      challengeToken,
-      close,
-      code,
-      email,
-      isCodeExpired,
-      isSending,
-      isSubmitting,
-      purpose,
-      toast,
-    ],
+    [challengeToken, close, code, email, isCodeExpired, isSending, isSubmitting, purpose, toast],
   );
 
   useEffect(() => {
@@ -451,10 +440,6 @@ export function AuthVerificationSurface({ close, data, header }) {
   ]);
 
   const resolvedHeader = useMemo(() => {
-    const fallbackHeader = resolveAuthVerificationHeader({
-      data,
-    });
-
     const defaultDescription = header?.description || 'Enter the 6-digit code sent to your email';
     const dynamicDescription = meta?.isExpired
       ? 'Süre doldu'
@@ -465,7 +450,7 @@ export function AuthVerificationSurface({ close, data, header }) {
           : defaultDescription;
 
     return {
-      title: header?.title || fallbackHeader.title,
+      title: header?.title || 'Email Verification',
       description: dynamicDescription,
     };
   }, [
@@ -543,7 +528,7 @@ export function AuthVerificationSurface({ close, data, header }) {
       {statusMessage ? (
         <div
           className={cn(
-            'font-semibold-all rounded-[20px] ring-1 ring-inset px-3.5 py-2.5 text-center text-xs',
+            'font-semibold-all rounded-[20px] px-3.5 py-2.5 text-center text-xs ring-1 ring-inset',
             isStatusError
               ? 'bg-error/10 text-error ring-error/20'
               : 'bg-success/10 text-success ring-success/20',

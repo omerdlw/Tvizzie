@@ -3,7 +3,23 @@
 import { normalizeFeedbackText } from '@/shared';
 import { mergeReviewUser } from '@/domains/reviews/utils/formatting';
 import ReviewCard from './review-card';
-import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons';
+
+function ReviewCardsSkeletonList({ count = 4 }) {
+  return (
+    <div className="flex flex-col" aria-hidden="true">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="flex gap-3.5 border-b border-white/5 py-4 last:border-b-0">
+          <div className="skeleton-block aspect-2/3 w-16 shrink-0 rounded-[12px] sm:w-[72px]" />
+          <div className="flex min-w-0 flex-1 flex-col gap-2.5 py-1">
+            <div className="skeleton-block h-3 w-2/5 rounded-full" />
+            <div className="skeleton-block-soft h-3 w-3/5 rounded-full" />
+            <div className="skeleton-block-soft h-3 w-full rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ReviewList({
   baseDelay = 0,

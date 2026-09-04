@@ -21,9 +21,7 @@ function getMediaPath(item) {
 }
 
 function getOriginalImagePath(path) {
-  return path
-    ? path.replace(/\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i, '/t/p/original/')
-    : null;
+  return path ? path.replace(/\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i, '/t/p/original/') : null;
 }
 
 function getAwardCountLabel(count, singular, plural) {
@@ -35,7 +33,17 @@ function updateAwardStats(group, type) {
   else group.nominationsCount += 1;
 }
 
-function createAwardGroup({ id, projectId, project, mediaType, poster, year, organization, organizationId, logo }) {
+function createAwardGroup({
+  id,
+  projectId,
+  project,
+  mediaType,
+  poster,
+  year,
+  organization,
+  organizationId,
+  logo,
+}) {
   return {
     id,
     projectId,
@@ -141,9 +149,7 @@ function usePersonAwards({ personId, awardsPromise }) {
 }
 
 function getPrestigeHonor(items = [], winsCount = 0) {
-  const oscarWin = items.find(
-    (i) => i.type === 'Win' && /academy|oscar/i.test(i.organization),
-  );
+  const oscarWin = items.find((i) => i.type === 'Win' && /academy|oscar/i.test(i.organization));
   if (oscarWin) {
     return {
       title: 'Academy Award Winner',
@@ -163,9 +169,7 @@ function getPrestigeHonor(items = [], winsCount = 0) {
     };
   }
 
-  const globeWin = items.find(
-    (i) => i.type === 'Win' && /golden globe/i.test(i.organization),
-  );
+  const globeWin = items.find((i) => i.type === 'Win' && /golden globe/i.test(i.organization));
   if (globeWin) {
     return {
       title: 'Golden Globe Winner',
@@ -238,8 +242,7 @@ function groupByProject(items = []) {
   });
 
   return Array.from(groups.values()).sort(
-    (left, right) =>
-      right.winsCount - left.winsCount || right.awards.length - left.awards.length,
+    (left, right) => right.winsCount - left.winsCount || right.awards.length - left.awards.length,
   );
 }
 
@@ -264,12 +267,15 @@ function groupByYear(items = []) {
 
 function groupByOrganization(items = [], organizations = []) {
   const groups = new Map(
-    organizations.map((organization) => [organization.id, {
-      ...organization,
-      winsCount: 0,
-      nominationsCount: 0,
-      awards: [],
-    }]),
+    organizations.map((organization) => [
+      organization.id,
+      {
+        ...organization,
+        winsCount: 0,
+        nominationsCount: 0,
+        awards: [],
+      },
+    ]),
   );
 
   items.forEach((item) => {
@@ -295,8 +301,7 @@ function groupByOrganization(items = [], organizations = []) {
   return Array.from(groups.values())
     .filter((group) => group.awards.length > 0)
     .sort(
-      (left, right) =>
-        right.winsCount - left.winsCount || right.awards.length - left.awards.length,
+      (left, right) => right.winsCount - left.winsCount || right.awards.length - left.awards.length,
     );
 }
 
@@ -308,12 +313,12 @@ function PrestigeHeroHeader({ items = [], wins = 0, nominations = 0, organizatio
   }, [items]);
 
   return (
-    <div className="relative flex w-full flex-col text-left pt-2 pb-1">
-      <h2 className="font-zuume text-5xl font-bold uppercase sm:text-7xl lg:text-8xl text-white leading-none">
+    <div className="relative flex w-full flex-col pt-2 pb-1 text-left">
+      <h2 className="font-zuume text-5xl leading-none font-bold text-white uppercase sm:text-7xl lg:text-8xl">
         {honor.title}
       </h2>
 
-      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs sm:text-sm font-medium text-white/50">
+      <div className="mt-2.5 flex flex-wrap items-center justify-start gap-2.5 py-2.5 text-xs font-medium text-white/50 sm:text-sm">
         <span className="flex items-center gap-1.5 font-bold text-white">
           <Icon icon="solar:cup-bold" size={14} className="text-white" />
           {wins} {wins === 1 ? 'Win' : 'Wins'}
@@ -359,17 +364,19 @@ function OrganizationFilterRibbon({
             if (winsOnly) onToggleWinsOnly?.();
           }}
           className={cn(
-            'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+            'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
             !activeOrganizationId && !winsOnly
-              ? 'ring-white bg-white text-black font-bold shadow-sm'
-              : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+              ? 'bg-white font-bold text-black shadow-sm ring-white'
+              : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
           )}
         >
           <span>All Honors</span>
           <span
             className={cn(
               'rounded-full px-1.5 py-0.5 text-xs',
-              !activeOrganizationId && !winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
+              !activeOrganizationId && !winsOnly
+                ? 'bg-black/10 font-bold text-black'
+                : 'text-white/50',
             )}
           >
             {totalItemsCount}
@@ -381,10 +388,10 @@ function OrganizationFilterRibbon({
             type="button"
             onClick={() => onToggleWinsOnly?.()}
             className={cn(
-              'flex h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+              'flex h-[38px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
               winsOnly
-                ? 'ring-white bg-white text-black font-bold shadow-sm'
-                : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+                ? 'bg-white font-bold text-black shadow-sm ring-white'
+                : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
             )}
           >
             <Icon
@@ -396,7 +403,7 @@ function OrganizationFilterRibbon({
             <span
               className={cn(
                 'rounded-full px-1.5 py-0.5 text-xs',
-                winsOnly ? 'bg-black/10 text-black font-bold' : 'text-white/50',
+                winsOnly ? 'bg-black/10 font-bold text-black' : 'text-white/50',
               )}
             >
               {winsCount}
@@ -414,10 +421,10 @@ function OrganizationFilterRibbon({
               type="button"
               onClick={() => onSelectOrganization(isSelected ? null : org.id)}
               className={cn(
-                'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset px-3.5 text-xs font-semibold transition-all duration-200 ease-out',
+                'flex h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold ring-1 transition-all duration-200 ease-out ring-inset',
                 isSelected
-                  ? 'ring-white bg-white text-black font-bold shadow-sm'
-                  : 'ring-white/10 bg-white/5 text-white/70 hover:ring-white/15 hover:bg-white/10 hover:text-white',
+                  ? 'bg-white font-bold text-black shadow-sm ring-white'
+                  : 'bg-white/5 text-white/70 ring-white/10 hover:bg-white/10 hover:text-white hover:ring-white/15',
               )}
             >
               {logoSrc ? (
@@ -438,12 +445,12 @@ function OrganizationFilterRibbon({
                 />
               )}
 
-              <span className="truncate max-w-[140px] sm:max-w-[180px]">{org.title}</span>
+              <span className="max-w-[140px] truncate sm:max-w-[180px]">{org.title}</span>
 
               <span
                 className={cn(
                   'text-xs',
-                  isSelected ? 'text-black/60 font-semibold' : 'text-white/50',
+                  isSelected ? 'font-semibold text-black/60' : 'text-white/50',
                 )}
               >
                 {org.winsCount > 0 ? `${org.winsCount}W` : `${org.nominationsCount}N`}
@@ -462,7 +469,7 @@ function ProjectAwardCard({ group }) {
   return (
     <div className="flex w-full flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2.5 pb-1">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex min-w-0 items-center gap-2.5">
           {mediaPath ? (
             <Link
               href={mediaPath}
@@ -471,14 +478,14 @@ function ProjectAwardCard({ group }) {
               <MediaThumb
                 poster={group.poster}
                 alt={group.project}
-                className="w-12 sm:w-14 shrink-0 rounded-[6px] sm:rounded-[8px]"
+                className="w-12 shrink-0 rounded-[6px] sm:w-14 sm:rounded-[8px]"
               />
             </Link>
           ) : (
             <MediaThumb
               poster={group.poster}
               alt={group.project}
-              className="w-12 sm:w-14 shrink-0 rounded-[6px] sm:rounded-[8px]"
+              className="w-12 shrink-0 rounded-[6px] sm:w-14 sm:rounded-[8px]"
             />
           )}
 
@@ -486,7 +493,7 @@ function ProjectAwardCard({ group }) {
             {mediaPath ? (
               <Link
                 href={mediaPath}
-                className="group/title inline-flex items-center gap-1.5 text-lg sm:text-xl font-bold text-white transition-colors hover:text-white/70 truncate leading-snug"
+                className="group/title inline-flex items-center gap-1.5 truncate text-lg leading-snug font-bold text-white transition-colors hover:text-white/70 sm:text-xl"
               >
                 <span className="truncate">{group.project}</span>
                 <Icon
@@ -496,14 +503,14 @@ function ProjectAwardCard({ group }) {
                 />
               </Link>
             ) : (
-              <h3 className="text-lg sm:text-xl font-bold text-white truncate leading-snug">
+              <h3 className="truncate text-lg leading-snug font-bold text-white sm:text-xl">
                 {group.project}
               </h3>
             )}
 
             <div className="flex items-center gap-2 text-xs text-white/50">
               {group.winsCount > 0 && (
-                <span className="font-bold text-white flex items-center gap-1">
+                <span className="flex items-center gap-1 font-bold text-white">
                   <Icon icon="solar:cup-bold" size={12} className="text-white" />
                   {getAwardCountLabel(group.winsCount, 'Win', 'Wins')}
                 </span>
@@ -532,15 +539,15 @@ function ProjectAwardCard({ group }) {
                 <div className="flex flex-wrap items-center gap-1.5 text-xs">
                   <span className="font-semibold text-white/50">{award.year}</span>
                   <span className="text-white/15">•</span>
-                  <span className="text-white/70 font-medium truncate">{award.organization}</span>
+                  <span className="truncate font-medium text-white/70">{award.organization}</span>
                   {award.ceremony && award.ceremony !== award.organization ? (
-                    <span className="hidden text-white/50 sm:inline truncate">
+                    <span className="hidden truncate text-white/50 sm:inline">
                       ({award.ceremony})
                     </span>
                   ) : null}
                 </div>
 
-                <p className="text-sm sm:text-base font-semibold text-white leading-snug">
+                <p className="text-sm leading-snug font-semibold text-white sm:text-base">
                   {award.category}
                 </p>
               </div>
@@ -552,9 +559,7 @@ function ProjectAwardCard({ group }) {
                     Win
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-white/50 uppercase">
-                    Nominee
-                  </span>
+                  <span className="text-xs font-semibold text-white/50 uppercase">Nominee</span>
                 )}
               </div>
             </div>
@@ -570,22 +575,18 @@ function TimelineAwardGroup({ group }) {
     <div className="flex w-full flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2.5 pb-1">
         <div className="flex items-center gap-2.5">
-          <span className="font-zuume text-3xl font-bold text-white sm:text-4xl">
-            {group.year}
-          </span>
+          <span className="font-zuume text-3xl font-bold text-white sm:text-4xl">{group.year}</span>
           <div className="h-3.5 w-px bg-white/15" />
           <div className="flex items-center gap-1.5 text-xs text-white/50">
             {group.winsCount > 0 && (
-              <span className="font-bold text-white flex items-center gap-1">
+              <span className="flex items-center gap-1 font-bold text-white">
                 <Icon icon="solar:cup-bold" size={12} className="text-white" />
                 {getAwardCountLabel(group.winsCount, 'Win', 'Wins')}
               </span>
             )}
             {group.winsCount > 0 && group.nominationsCount > 0 && <span>•</span>}
             {group.nominationsCount > 0 && (
-              <span>
-                {getAwardCountLabel(group.nominationsCount, 'Nomination', 'Nominations')}
-              </span>
+              <span>{getAwardCountLabel(group.nominationsCount, 'Nomination', 'Nominations')}</span>
             )}
           </div>
         </div>
@@ -604,32 +605,38 @@ function TimelineAwardGroup({ group }) {
               <div className="flex min-w-0 flex-1 items-center gap-2.5">
                 {award.poster ? (
                   mediaPath ? (
-                    <Link href={mediaPath} className="shrink-0 transition-transform hover:scale-105">
+                    <Link
+                      href={mediaPath}
+                      className="shrink-0 transition-transform hover:scale-105"
+                    >
                       <MediaThumb
                         poster={award.poster}
                         alt={award.project || award.category}
-                        className="w-10 sm:w-11 shrink-0 rounded-[4px] sm:rounded-[6px]"
+                        className="w-10 shrink-0 rounded-[4px] sm:w-11 sm:rounded-[6px]"
                       />
                     </Link>
                   ) : (
                     <MediaThumb
                       poster={award.poster}
                       alt={award.project || award.category}
-                      className="w-10 sm:w-11 shrink-0 rounded-[4px] sm:rounded-[6px]"
+                      className="w-10 shrink-0 rounded-[4px] sm:w-11 sm:rounded-[6px]"
                     />
                   )
                 ) : award.organizationLogo ? (
-                  <div className="center size-10 sm:size-11 shrink-0 overflow-hidden rounded-[8px]">
+                  <div className="center size-10 shrink-0 overflow-hidden rounded-[8px] sm:size-11">
                     <AdaptiveImage
                       mode="img"
-                      src={award.organizationLogo.replace(/\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i, '/t/p/original/')}
+                      src={award.organizationLogo.replace(
+                        /\/t\/p\/(?:w\d+[^/]*|h\d+[^/]*)\//i,
+                        '/t/p/original/',
+                      )}
                       alt={award.organization}
                       className="size-full object-contain"
                       wrapperClassName="size-full"
                     />
                   </div>
                 ) : (
-                  <div className="center size-10 sm:size-11 shrink-0 rounded-[8px] text-white/50">
+                  <div className="center size-10 shrink-0 rounded-[8px] text-white/50 sm:size-11">
                     <Icon icon="solar:cup-star-bold" size={18} />
                   </div>
                 )}
@@ -643,7 +650,7 @@ function TimelineAwardGroup({ group }) {
                         {mediaPath ? (
                           <Link
                             href={mediaPath}
-                            className="font-medium text-white/70 hover:text-white truncate"
+                            className="truncate font-medium text-white/70 hover:text-white"
                           >
                             {award.project}
                           </Link>
@@ -654,7 +661,7 @@ function TimelineAwardGroup({ group }) {
                     )}
                   </div>
 
-                  <h4 className="text-sm sm:text-base font-semibold text-white leading-snug">
+                  <h4 className="text-sm leading-snug font-semibold text-white sm:text-base">
                     {award.category}
                   </h4>
                 </div>
@@ -667,9 +674,7 @@ function TimelineAwardGroup({ group }) {
                     Win
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-white/50 uppercase">
-                    Nominee
-                  </span>
+                  <span className="text-xs font-semibold text-white/50 uppercase">Nominee</span>
                 )}
               </div>
             </div>
@@ -685,7 +690,7 @@ function OrganizationAwardGroup({ group }) {
     <div className="flex w-full flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2.5 pb-1">
         <div className="flex items-center gap-2.5">
-          <div className="center size-11 sm:size-12 shrink-0 overflow-hidden rounded-[8px] sm:rounded-[10px]">
+          <div className="center size-11 shrink-0 overflow-hidden rounded-[8px] sm:size-12 sm:rounded-[10px]">
             {group.logo ? (
               <AdaptiveImage
                 mode="img"
@@ -700,9 +705,10 @@ function OrganizationAwardGroup({ group }) {
           </div>
 
           <div className="flex flex-col justify-center gap-0.5">
-            <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">{group.title}</h3>
-            <p className="text-xs font-medium text-white/50 leading-none">
-              {group.awards.length} {group.awards.length === 1 ? 'Total Nomination' : 'Total Honors'}
+            <h3 className="text-lg leading-tight font-bold text-white sm:text-xl">{group.title}</h3>
+            <p className="text-xs leading-none font-medium text-white/50">
+              {group.awards.length}{' '}
+              {group.awards.length === 1 ? 'Total Nomination' : 'Total Honors'}
             </p>
           </div>
         </div>
@@ -730,18 +736,21 @@ function OrganizationAwardGroup({ group }) {
               <div className="flex min-w-0 flex-1 items-center gap-2.5">
                 {award.poster ? (
                   mediaPath ? (
-                    <Link href={mediaPath} className="shrink-0 transition-transform hover:scale-105">
+                    <Link
+                      href={mediaPath}
+                      className="shrink-0 transition-transform hover:scale-105"
+                    >
                       <MediaThumb
                         poster={award.poster}
                         alt={award.project || award.category}
-                        className="w-10 sm:w-11 shrink-0 rounded-[4px] sm:rounded-[6px]"
+                        className="w-10 shrink-0 rounded-[4px] sm:w-11 sm:rounded-[6px]"
                       />
                     </Link>
                   ) : (
                     <MediaThumb
                       poster={award.poster}
                       alt={award.project || award.category}
-                      className="w-10 sm:w-11 shrink-0 rounded-[4px] sm:rounded-[6px]"
+                      className="w-10 shrink-0 rounded-[4px] sm:w-11 sm:rounded-[6px]"
                     />
                   )
                 ) : null}
@@ -755,7 +764,7 @@ function OrganizationAwardGroup({ group }) {
                         {mediaPath ? (
                           <Link
                             href={mediaPath}
-                            className="font-medium text-white/70 hover:text-white truncate"
+                            className="truncate font-medium text-white/70 hover:text-white"
                           >
                             {award.project}
                           </Link>
@@ -765,13 +774,13 @@ function OrganizationAwardGroup({ group }) {
                       </>
                     )}
                     {award.ceremony && award.ceremony !== award.organization ? (
-                      <span className="hidden text-white/50 sm:inline truncate">
+                      <span className="hidden truncate text-white/50 sm:inline">
                         ({award.ceremony})
                       </span>
                     ) : null}
                   </div>
 
-                  <p className="text-sm sm:text-base font-semibold text-white leading-snug">
+                  <p className="text-sm leading-snug font-semibold text-white sm:text-base">
                     {award.category}
                   </p>
                 </div>
@@ -784,9 +793,7 @@ function OrganizationAwardGroup({ group }) {
                     Win
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-white/50 uppercase">
-                    Nominee
-                  </span>
+                  <span className="text-xs font-semibold text-white/50 uppercase">Nominee</span>
                 )}
               </div>
             </div>
@@ -800,7 +807,7 @@ function OrganizationAwardGroup({ group }) {
 function AwardsEmptyFeedback({ children }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="center size-14 rounded-[16px] ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
+      <div className="center size-14 rounded-[16px] bg-white/5 text-white/50 ring-1 ring-white/10 ring-inset">
         <Icon icon="solar:cup-star-linear" size={30} />
       </div>
       <p className="mt-4 text-sm font-semibold text-white/50">{children}</p>
@@ -876,7 +883,7 @@ export default function PersonAwards({
 
       <div className="w-full">
         {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-12 text-center text-sm font-medium text-white/50">
+          <div className="flex flex-col items-center justify-center rounded-[20px] bg-white/5 p-12 text-center text-sm font-medium text-white/50 ring-1 ring-white/10 ring-inset">
             No matching awards found for the selected filter.
           </div>
         ) : viewMode === 'projects' ? (

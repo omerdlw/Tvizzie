@@ -104,6 +104,7 @@ export default function VideosSection({ videos, baseDelay = 0 }) {
                   }
                   onClick={() =>
                     openModal('VIDEO_PREVIEW_MODAL', 'center', {
+                      chrome: 'bare',
                       data: video,
                     })
                   }

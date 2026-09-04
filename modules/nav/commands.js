@@ -180,6 +180,7 @@ function useDefaultNavCommands() {
           }
           openModal('NOTIFICATIONS_MODAL', 'left', {
             data: { userId: user?.id ?? null },
+            title: 'Notifications',
           });
         },
       },

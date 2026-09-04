@@ -663,6 +663,8 @@ export function AuthProvider({ children, config = {} }) {
 
   const actionsValue = useMemo(
     () => ({
+      applySession,
+      setSession: applySession,
       updateProfile,
       refreshSession,
       registerPasskey,
@@ -686,6 +688,7 @@ export function AuthProvider({ children, config = {} }) {
       signOut,
     }),
     [
+      applySession,
       updateProfile,
       refreshSession,
       registerPasskey,

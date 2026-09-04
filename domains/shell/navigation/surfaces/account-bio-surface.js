@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
+import { getUserAvatarUrl } from '@/domains/account/client';
 import { navListItemVariants } from '@/modules/nav';
 
 function formatFollowCount(value) {

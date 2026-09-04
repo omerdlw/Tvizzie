@@ -24,13 +24,18 @@ function createRequest({ authorization = '', cookieToken = '', headerToken = '' 
 
 test('cookie sessions require matching CSRF tokens while bearer sessions bypass the check', () => {
   const validRequest = createRequest({ cookieToken: 'csrf-token-1', headerToken: 'csrf-token-1' });
-  const invalidRequest = createRequest({ cookieToken: 'csrf-token-1', headerToken: 'csrf-token-2' });
+  const invalidRequest = createRequest({
+    cookieToken: 'csrf-token-1',
+    headerToken: 'csrf-token-2',
+  });
 
   assert.equal(validateCsrfRequest(validRequest), true);
   assert.doesNotThrow(() => assertCsrfRequest(validRequest));
   assert.equal(validateCsrfRequest(invalidRequest), false);
   assert.throws(() => assertCsrfRequest(invalidRequest), /Invalid CSRF token/);
-  assert.doesNotThrow(() => assertCsrfRequestForCookieSession(createRequest({ authorization: 'Bearer token' })));
+  assert.doesNotThrow(() =>
+    assertCsrfRequestForCookieSession(createRequest({ authorization: 'Bearer token' })),
+  );
 });
 
 test('pending sign-in proofs contain challenge metadata only', () => {
@@ -58,5 +63,8 @@ test('pending sign-in proofs contain challenge metadata only', () => {
 
 test('sign-up domain allowlisting rejects lookalike providers', () => {
   assert.equal(validateAllowedEmailDomain('person@gmail.com'), 'person@gmail.com');
-  assert.throws(() => validateAllowedEmailDomain('person@outlook.eofqw.com'), /Only supported email domains/);
+  assert.throws(
+    () => validateAllowedEmailDomain('person@outlook.eofqw.com'),
+    /Only supported email domains/,
+  );
 });

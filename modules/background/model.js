@@ -215,7 +215,6 @@ const BACKGROUND_DEFAULT_MOTION = Object.freeze({
   exit: Object.freeze({ opacity: 0 }),
 });
 
-export const BACKGROUND_OVERLAY_TRANSITION_CLASS = 'transition-all duration-300 ease-in-out';
 export const BACKGROUND_EXIT_EASE = Object.freeze([0, 0, 0.2, 1]);
 export const BACKGROUND_OVERLAY_TRANSITION_PROPERTY = 'opacity';
 export const BACKGROUND_ANIMATE_PRESENCE_MODE = 'sync';

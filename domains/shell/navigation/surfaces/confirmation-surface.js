@@ -11,7 +11,8 @@ import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
 const BUTTON_TONES = Object.freeze({
   danger:
     'ring-1 ring-inset ring-error/20 bg-error/10 text-error hover:bg-error hover:text-black hover:ring-error',
-  muted: 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:text-white hover:bg-white/10',
+  muted:
+    'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:text-white hover:bg-white/10',
   primary:
     'ring-1 ring-inset ring-info/20 bg-info/10 text-info hover:bg-info hover:text-black hover:ring-info',
 });

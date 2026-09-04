@@ -42,13 +42,11 @@ export default function PersonFilmographySection({ person }) {
   }
 
   return (
-    <section className="relative w-full flex flex-col">
-      <div className="flex w-full items-center justify-between gap-4 mb-3 sm:mb-4">
+    <section className="relative flex w-full flex-col">
+      <div className="mb-3 flex w-full items-center justify-between gap-4 sm:mb-4">
         <div className="flex min-w-0 items-center gap-2">
           <Icon icon="solar:clapperboard-play-bold" size={20} className="text-white/70" />
-          <h2 className="min-w-0 text-xs font-semibold text-white/70 uppercase">
-            Filmography
-          </h2>
+          <h2 className="min-w-0 text-xs font-semibold text-white/70 uppercase">Filmography</h2>
         </div>
 
         {mediaTypeItems.length > 1 ? (
@@ -57,16 +55,14 @@ export default function PersonFilmographySection({ person }) {
               items={mediaTypeItems}
               value={activeTab}
               onChange={handleTabChange}
-              renderSuffix={(item) => (
-                <span className="text-xs text-white/50">({item.count})</span>
-              )}
+              renderSuffix={(item) => <span className="text-xs text-white/50">({item.count})</span>}
             />
           </div>
         ) : null}
       </div>
 
       <div className="w-full">
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5 xl:grid-cols-6">
           {activeCredits.map((credit, index) => (
             <FilmographyCard
               key={`${credit.media_type}-${credit.id}-${credit.credit_id || index}`}

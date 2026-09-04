@@ -1,6 +1,6 @@
 'use client';
 
-import { ACCOUNT_CLIENT } from '@/domains/account/client/profile';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { getOAuthProviderLabel } from '@/domains/auth/utils/oauth';
 import {
   AUTH_ROUTE_NOTICE,

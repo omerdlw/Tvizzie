@@ -7,16 +7,10 @@ import {
   buildUserMediaCollectionSubscriptionKey,
   fetchCollectionResource,
   fetchMediaCollectionStatus,
-} from '@/domains/account/client/collections';
-import {
-  fetchCurrentAccountProfile,
-  saveAccountProfile,
-} from '@/domains/account/client/profile-api';
-import { scheduleAccountSummaryRefresh } from '@/domains/account/client/profile';
-import {
-  assertSupabaseResult,
-  getSupabaseClient,
-} from '@/infrastructure/http/client';
+} from '@/domains/account/client';
+import { fetchCurrentAccountProfile, saveAccountProfile } from '@/domains/account/client';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/client';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/client';
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,

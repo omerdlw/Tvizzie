@@ -382,7 +382,6 @@ export function hasMediaAwards(awardsData) {
   }
   return Boolean(
     (awardsData.stats?.totalWins && awardsData.stats.totalWins > 0) ||
-      (awardsData.stats?.totalNominations && awardsData.stats.totalNominations > 0),
+    (awardsData.stats?.totalNominations && awardsData.stats.totalNominations > 0),
   );
 }
-

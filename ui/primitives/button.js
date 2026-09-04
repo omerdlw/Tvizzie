@@ -7,7 +7,6 @@ import { cn, resolveSlotClasses } from './primitive-support';
 import {
   DESTRUCTIVE_ACTION_TONE_CLASS,
   INFO_ACTION_TONE_CLASS,
-  MOTION_SPRINGS,
   SUCCESS_ACTION_TONE_CLASS,
   WARNING_ACTION_TONE_CLASS,
 } from '@/shared';
@@ -20,7 +19,12 @@ const SEMANTIC_VARIANT_CLASSES = Object.freeze({
   warning: WARNING_ACTION_TONE_CLASS,
 });
 
-const BUTTON_SPRING_TRANSITION = MOTION_SPRINGS.PRESS;
+const BUTTON_SPRING_TRANSITION = Object.freeze({
+  type: 'spring',
+  stiffness: 520,
+  damping: 30,
+  mass: 0.28,
+});
 
 function stripConflictingClasses(cls) {
   if (!cls || typeof cls !== 'string') return cls;
@@ -72,7 +76,9 @@ const Button = forwardRef(
     const isIconLike =
       variant.endsWith('-icon') ||
       variant === 'icon' ||
-      /\b(size-[0-9.]+|w-[0-9.]+\s+h-[0-9.]+|h-[0-9.]+\s+w-[0-9.]+)\b/.test(resolvedClassName || '');
+      /\b(size-[0-9.]+|w-[0-9.]+\s+h-[0-9.]+|h-[0-9.]+\s+w-[0-9.]+)\b/.test(
+        resolvedClassName || '',
+      );
 
     const isNavAction =
       variant === 'nav-action' ||

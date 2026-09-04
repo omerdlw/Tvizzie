@@ -9,7 +9,7 @@ import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+} from '@/domains/account/client';
 import { cn } from '@/ui/class-names';
 import { resolveImageLoading, resolveImageQuality } from '@/shared';
 import AdaptiveImage from '@/ui/components/adaptive-image';
@@ -27,7 +27,7 @@ import {
   textCrossfadeVariants,
 } from '@/modules/nav';
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';
-import { SEARCH_STYLES, SEARCH_TAB_ITEMS, navActionClass } from './constants';
+import { SEARCH_STYLES, SEARCH_TAB_ITEMS, getNavActionClass } from './constants';
 import {
   getDetailPath,
   getImagePath,
@@ -77,7 +77,7 @@ export function SearchResultPosterItem({ item, imageErrors = {}, onImageError, o
   const typeLabel = isTv ? 'TV' : 'Movie';
 
   const posterContent = (
-    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 transition-all duration-300 ease-in-out group-hover/poster:ring-white/50">
+    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px] bg-white/5 ring-1 ring-white/5 transition-all duration-300 ease-in-out ring-inset group-hover/poster:ring-white/50">
       {imagePath && !hasImageError ? (
         <AdaptiveImage
           fill
@@ -92,7 +92,7 @@ export function SearchResultPosterItem({ item, imageErrors = {}, onImageError, o
           wrapperClassName="h-full w-full rounded-[20px]"
         />
       ) : (
-        <div className="center h-full w-full text-error">
+        <div className="center text-error h-full w-full">
           <Icon icon="solar:gallery-bold" size={22} />
         </div>
       )}
@@ -173,7 +173,7 @@ export function SearchResultListItem({ item, imageErrors = {}, onImageError, onS
             wrapperClassName="h-full w-full"
           />
         ) : (
-          <div className="center h-full w-full text-error">
+          <div className="center text-error h-full w-full">
             <Icon
               icon={
                 item.media_type === SEARCH_TYPES.PERSON ? 'solar:user-bold' : 'solar:gallery-bold'
@@ -188,30 +188,22 @@ export function SearchResultListItem({ item, imageErrors = {}, onImageError, onS
         <div className="flex items-center gap-2.5">
           {year && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-xs font-bold text-white/70">
-                {year}
-              </span>
+              <span className="px-2 py-1 text-xs font-bold text-white/70">{year}</span>
             </div>
           )}
           {director && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-xs font-bold text-white/70">
-                {director}
-              </span>
+              <span className="px-2 py-1 text-xs font-bold text-white/70">{director}</span>
             </div>
           )}
           {item.media_type === SEARCH_TYPES.PERSON && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-xs font-bold text-white/70 uppercase">
-                Person
-              </span>
+              <span className="px-2 py-1 text-xs font-bold text-white/70 uppercase">Person</span>
             </div>
           )}
           {item.media_type === SEARCH_TYPES.USER && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-xs font-bold text-white/70 uppercase">
-                User
-              </span>
+              <span className="px-2 py-1 text-xs font-bold text-white/70 uppercase">User</span>
             </div>
           )}
         </div>
@@ -400,7 +392,7 @@ export function SearchActionControls({
             autoFocus={autoFocus}
             value={query}
             classNames={{
-              wrapper: navActionClass({
+              wrapper: getNavActionClass({
                 cn,
                 button: SEARCH_STYLES.input,
                 isActive: false,
@@ -457,7 +449,7 @@ export function SearchActionControls({
                     key={item.key}
                     type="button"
                     className={cn(
-                      navActionClass({
+                      getNavActionClass({
                         cn,
                         button: SEARCH_STYLES.tabButton,
                         isActive: isActiveTab,

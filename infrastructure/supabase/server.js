@@ -2,11 +2,7 @@ import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { normalizeValue } from '@/shared';
-import {
-  SUPABASE_AUTH_COOKIE_OPTIONS,
-  SUPABASE_PUBLISHABLE_KEY,
-  SUPABASE_URL,
-} from './client.js';
+import { SUPABASE_AUTH_COOKIE_OPTIONS, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './client.js';
 
 export * from './client.js';
 
@@ -55,4 +51,3 @@ export function createSupabaseResponseClient(request, response) {
     },
   });
 }
-

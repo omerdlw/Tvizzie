@@ -1,12 +1,9 @@
 import { normalizeValue, requestJson } from '@/shared';
 import { createAuthenticatedDataClient } from '@/infrastructure/supabase/client';
 
-
 export const RATE_LIMIT_FALLBACK_MODE = 'auto';
 export const ROLLOUT_DEFAULT_MODE = 'shadow';
 export const ROLLOUT_CANARY_PERCENT = 0;
-
-
 
 const DEFAULT_ERROR_CODE = 'INTERNAL_ERROR';
 const DEFAULT_ERROR_MESSAGE = 'Request failed';
@@ -45,8 +42,6 @@ export function normalizeErrorStatus(error, fallbackStatus = 500) {
   const status = Number(error?.status ?? error?.statusCode ?? fallbackStatus);
   return Number.isFinite(status) ? status : fallbackStatus;
 }
-
-
 
 export function buildApiSuccessResult(
   data = null,
@@ -140,8 +135,6 @@ export function unwrapApiResultEnvelope(value) {
   return normalized.data;
 }
 
-
-
 export async function requestApiJson(path, options = {}) {
   const payload = await requestJson(path, options);
   return isApiResultEnvelope(payload) ? normalizeApiResultEnvelope(payload).data : payload;
@@ -185,4 +178,3 @@ export function toIsoTimestamp(value) {
 
   return date.toISOString();
 }
-

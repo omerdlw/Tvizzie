@@ -9,8 +9,7 @@ export const BACKDROP_HERO_GRADIENT = [
   'linear-gradient(to bottom, transparent 0%, transparent 28%, rgba(0, 0, 0, 0.03) 38%, rgba(0, 0, 0, 0.10) 48%, rgba(0, 0, 0, 0.22) 58%, rgba(0, 0, 0, 0.42) 68%, rgba(0, 0, 0, 0.68) 78%, rgba(0, 0, 0, 0.88) 88%, rgba(0, 0, 0, 0.98) 95%, rgba(0, 0, 0, 1) 100%)',
 ].join(', ');
 
-export const BACKDROP_HERO_GRADIENT_CLASS =
-  'pointer-events-none absolute inset-0 z-10';
+export const BACKDROP_HERO_GRADIENT_CLASS = 'pointer-events-none absolute inset-0 z-10';
 
 export function BackdropHero({
   className,
@@ -29,7 +28,7 @@ export function BackdropHero({
       aria-hidden="true"
       className={cn(
         'relative isolate h-80 w-[calc(100%+2rem)] -translate-x-4 overflow-hidden sm:h-96 sm:w-[calc(100%+3rem)] sm:-translate-x-6 lg:h-[clamp(36rem,52vw,44rem)] lg:w-[calc(100%+16rem)] lg:-translate-x-32 xl:h-[clamp(40rem,56vw,48rem)] xl:w-[calc(100%+24rem)] xl:-translate-x-48',
-        className
+        className,
       )}
     >
       <div

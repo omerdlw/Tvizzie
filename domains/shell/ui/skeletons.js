@@ -26,13 +26,13 @@ export function ListPickerSkeleton({ count = 8 }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="flex h-24 animate-pulse items-center gap-2.5 rounded-[20px] ring-1 ring-inset ring-white/5 bg-white/5 p-2"
+          className="flex h-24 animate-pulse items-center gap-2.5 rounded-[20px] bg-white/5 p-2 ring-1 ring-white/5 ring-inset"
         >
           <div className="relative h-[68px] w-[82px] shrink-0">
             {[0, 1, 2, 3].map((stackIndex) => (
               <div
                 key={`stack-${index}-${stackIndex}`}
-                className={`absolute bottom-0 overflow-hidden rounded-[14px] ring-1 ring-inset ring-white/5 ${
+                className={`absolute bottom-0 overflow-hidden rounded-[14px] ring-1 ring-white/5 ring-inset ${
                   STACK_SKELETON_CLASSES[stackIndex] || 'skeleton-block-soft'
                 }`}
                 style={{

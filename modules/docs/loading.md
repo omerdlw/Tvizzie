@@ -1,174 +1,83 @@
-# Module: Loading
+# Loading
 
-> Registry ve manuel kaynaklardan gelen global loading state'ini, minimum görünürlük süresi ve overlay yaşam döngüsüyle yönetir.
+`modules/loading`, sayfa düzeyindeki loading durumunu tek provider'da toplar. Registry kaydı ve manuel action aynı state'i günceller; `LoadingOverlay` yalnız bu state'in görünümüdür.
 
-## 1. Genel bakış
+## Sınır
 
-`modules/loading`, page-level yükleme davranışı için tek state/action context'i
-ve tek overlay yüzeyi sağlar. Registry'deki `page-loading` kaydı ile manuel
-loading action'ları aynı provider'da birleşir. Feature içi küçük spinner veya
-Next.js route `loading.js` davranışı bu modülün yerine geçmez.
+Modül `minDuration`, skeleton, overlay görünürlüğü ve timer cleanup'ını yönetir. Route segment `loading.js` dosyalarını, istekleri veya feature'a ait progress arayüzünü yönetmez.
 
-## 2. Sorumluluklar
+`runtime.js` state modeli, option normalizasyonu, context'ler ve timer lifecycle'ını; `index.js` public facade ile overlay'i içerir. Ayrı bir config veya motion dosyası yoktur.
 
-### Sahip olduğu kararlar
+## Kurulum
 
-- Registry loading config'ini okumak
-- Manuel `startLoading` / `stopLoading` lifecycle'ını yürütmek
-- `minDuration` ile erken kapanmayı geciktirmek
-- Skeleton veya default Spinner render etmek
-- `showOverlay` ile state ve görsel overlay'i ayırmak
-- Fullscreen state aktifken global overlay'i gizlemek
-- Loading state/action hook'larını sunmak
-
-### Sahip olmadığı kararlar
-
-- Route segment loading dosyaları
-- Feature-specific progress UI
-- Hangi işin loading başlatacağı
-- Network request veya cache implementasyonu
-
-## 3. Dosya sahipliği
-
-| Dosya        | Sahip olduğu implementasyon                                     | Public mi? |
-| ------------ | --------------------------------------------------------------- | ---------- |
-| `index.js`   | `LoadingOverlay` ve Spinner/skeleton yüzeyi                     | Evet       |
-| `config.js`  | Default state ve options normalization                          | Dolaylı    |
-| `runtime.js` | Provider, context'ler, Registry/manual merge ve timer lifecycle | Dolaylı    |
-
-Loading hareket sözleşmesi küçük olduğu için ayrı `motion.js` yoktur.
-
-## 4. Kurulum
-
-Provider Registry provider'ın altında uygulama kökünde bir kez mount edilmelidir:
+`LoadingProvider`ı Registry'nin altında, `LoadingOverlay`i provider içinde bir kez render edin:
 
 ```jsx
 <RegistryProvider>
   <LoadingProvider>
-    <LoadingOverlay />
     {children}
+    <LoadingOverlay />
   </LoadingProvider>
 </RegistryProvider>
 ```
 
-`LoadingOverlay` yalnızca `LoadingProvider` altında render edilmelidir.
-Overlay kullanılmayacaksa provider yine state/action hook'ları için tek başına
-mount edilebilir.
+## API seçimi
 
-## 5. Public interface
+| İhtiyaç                       | API                                             |
+| ----------------------------- | ----------------------------------------------- |
+| Global görünümü kurmak        | `LoadingProvider`, `LoadingOverlay`             |
+| Loading durumunu okumak       | `useLoadingState`                               |
+| Bir işi manuel sarmalamak     | `useLoadingActions`                             |
+| Sayfa descriptor'ı yayınlamak | `useLoadingRegistration` veya `usePageRegistry` |
 
-| Export              | Sözleşme                                                                            |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `LoadingProvider`   | Loading state/action context'lerini kurar                                           |
-| `LoadingOverlay`    | Global skeleton veya Spinner yüzeyini render eder                                   |
-| `useLoadingState`   | `isLoading`, `isPageLoading`, `skeleton`, `minDuration`, `showOverlay` döndürür     |
-| `useLoadingActions` | `startLoading`, `stopLoading`, `setLoading`, `setIsLoading`, `setSkeleton` döndürür |
+`useLoadingState()` `isLoading`, `isPageLoading`, `skeleton`, `minDuration` ve `showOverlay` döndürür. `useLoadingActions()` `startLoading`, `stopLoading`, `setLoading`, `setIsLoading` ve `setSkeleton` döndürür.
 
-## 6. Sözleşmeler ve kullanım örnekleri
+## Kullanım
 
-### 6.1 Registry ile declarative loading
+Manuel işlerde `stopLoading`i `finally` içinde çağırın:
 
 ```jsx
-import { usePageRegistry } from '@/modules/registry';
-
-export function PageLoadingRegistration({ isFetching }) {
-  usePageRegistry({
-    registry: { source: 'media-page' },
-    loading: {
-      isLoading: isFetching,
-      minDuration: 300,
-      showOverlay: true,
-      skeleton: <MediaSkeleton />,
-    },
-  });
-
-  return null;
-}
-```
-
-### 6.2 Manuel lifecycle
-
-```jsx
-import { useLoadingActions } from '@/modules/loading';
-
-function SaveAction() {
+function SaveButton() {
   const { startLoading, stopLoading } = useLoadingActions();
 
   async function save() {
     startLoading({ minDuration: 250, showOverlay: false });
     try {
-      await persistChanges();
+      await saveChanges();
     } finally {
       stopLoading();
     }
   }
 
-  return <SaveButton onClick={save} />;
+  return <Button onClick={save}>Save</Button>;
 }
 ```
 
-`showOverlay: false`, state'in loading kalmasına rağmen global Spinner yüzeyini
-gizler. Feature kendi progress UI'sını gösteriyorsa bu tercih edilir.
+Sayfa verisine bağlı loading için kaydı component lifecycle'ına bağlayın:
 
-### 6.3 Action ayrıntıları
-
-- `startLoading(options)`: options normalize ederek loading başlatır
-- `stopLoading()`: aktif minimum süreyi bekleyip kapatır
-- `setLoading(optionsOrBoolean)`: boolean veya options ile state'i ayarlar
-- `setIsLoading(value)`: loading flag'ini doğrudan günceller
-- `setSkeleton(node)`: mevcut loading skeleton'ını değiştirir
-
-`setLoading(true)` default options ile başlar. Süre, skeleton veya overlay
-kontrolü gerekiyorsa `startLoading(options)` kullanın.
-
-## 7. Yaşam döngüsü
-
-```text
-Registry loading config veya manuel action
-  -> LoadingProvider
-     -> options normalization
-     -> loading state + minDuration timer
-  -> LoadingOverlay
-     -> fullscreen guard
-     -> skeleton veya Spinner
+```jsx
+function MediaLoading({ isFetching }) {
+  useLoadingRegistration({ isLoading: isFetching, minDuration: 300 }, { source: 'media-page' });
+  return null;
+}
 ```
 
-- `isLoading: true` yeni timer başlatır.
-- `isLoading: false`, aktif `minDuration` tamamlanmadan overlay'i kapatmaz.
-- Yeni loading başlangıcı bekleyen stop timer'ını iptal eder.
-- Registry source değişimi mevcut loading snapshot'ını yeni options ile birleştirir.
-- Provider unmount olduğunda timer temizlenir.
-- Registry kaydı yoksa manual state kullanılabilir.
+`showOverlay: false` loading state'i korur fakat global Spinner'ı gizler. Feature bu durumda kendi erişilebilir progress göstergesini sunmalıdır.
 
-## 8. Sınırlar, erişilebilirlik ve performans
+## Lifecycle ve kurallar
 
-- Overlay `role="status"`, `aria-busy="true"` ve `aria-label="Loading"` taşır.
-- Fullscreen state aktifken overlay render edilmez; loading state kaybolmaz.
-- Geçersiz veya negatif `minDuration` `0` olarak normalize edilir.
-- Skeleton verilmezse default Spinner kullanılır.
-- State ve action context'leri ayrıdır; action-only consumer gereksiz render almaz.
-- Timer race'i, yeni start ile eski stop timer'ının iptal edilmesiyle önlenir.
+- Yeni başlangıç bekleyen stop timer'ını iptal eder
+- `minDuration` geçmeden gelen stop isteği timer tamamlanınca state'i sıfırlar
+- Geçersiz veya negatif `minDuration`, `0` olur
+- Fullscreen state aktifken overlay gizlenir; loading state kaybolmaz
+- Provider unmount olduğunda timer temizlenir
 
-## 9. Kurallar
+Provider'ı ve overlay'i tekrar mount etmeyin. Aynı işi hem Registry hem manuel action ile source politikası olmadan başlatmayın.
 
-1. Global provider ve overlay'i uygulama kökünde tek kez mount edin.
-2. Feature request'lerini `try/finally` ile sarmalayın; `stopLoading` unutulmasın.
-3. Bir iş için hem Registry hem manual loading'i aynı source policy'siz başlatmayın.
-4. `showOverlay: false` kullanırken feature'ın kendi erişilebilir progress
-   göstergesini sağlayın.
-5. Route segment loading dosyalarını bu provider ile birleştirmeye çalışmayın.
-6. Yeni state alanı eklenirse `config.js`, runtime actions, facade ve bu belge
-   aynı değişiklikte güncellenmelidir.
-
-## 10. Doğrulama
+## Doğrulama
 
 ```bash
 npx prettier --check modules/loading/*.js modules/docs/loading.md
 npx eslint modules/loading/*.js
-npm test
-npm run build:webpack
+node --import ./scripts/register-alias.mjs --test tests/modules.test.js
 ```
-
-Test kapsamı: Registry/manual merge, default normalization, minDuration timer,
-stop/start race, skeleton fallback, fullscreen guard, overlay accessibility ve
-unmount cleanup.

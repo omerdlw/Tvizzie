@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ACCOUNT_CLIENT } from '@/domains/account/client/profile';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { AUTH_ROUTE_NOTICE } from '@/domains/auth/utils/routes';
 import {
   getOAuthProviderIcon,

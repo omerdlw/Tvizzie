@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { requestJson } from '@/shared';
-import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, TMDB_IMG, WARNING_ACTION_TONE_CLASS } from '@/shared';
+import {
+  INFO_ACTION_TONE_CLASS,
+  SUCCESS_ACTION_TONE_CLASS,
+  TMDB_IMG,
+  WARNING_ACTION_TONE_CLASS,
+} from '@/shared';
 import {
   DEFAULT_WATCH_REGION,
   normalizeWatchRegion,
@@ -32,19 +37,19 @@ const CATEGORY_CONFIG = Object.freeze({
     label: 'Stream',
     subtitle: 'Subscription',
     icon: 'solar:play-bold',
-    buttonClass: SUCCESS_ACTION_TONE_CLASS
+    buttonClass: SUCCESS_ACTION_TONE_CLASS,
   },
   RENT: {
     label: 'Rent',
     subtitle: 'Rent',
     icon: 'solar:tag-price-bold',
-    buttonClass: WARNING_ACTION_TONE_CLASS
+    buttonClass: WARNING_ACTION_TONE_CLASS,
   },
   BUY: {
     label: 'Buy',
     subtitle: 'Buy',
     icon: 'solar:bag-check-bold',
-    buttonClass: INFO_ACTION_TONE_CLASS
+    buttonClass: INFO_ACTION_TONE_CLASS,
   },
   FREE: {
     label: 'Free',
@@ -388,7 +393,14 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
       title: mediaTitle || 'Where to Watch',
       description,
     });
-  }, [setHeader, posterIcon, mediaTitle, resolvedRegion, filteredProviders.length, hasAnyProviders]);
+  }, [
+    setHeader,
+    posterIcon,
+    mediaTitle,
+    resolvedRegion,
+    filteredProviders.length,
+    hasAnyProviders,
+  ]);
 
   return (
     <div className="flex w-full flex-col gap-2.5 overflow-hidden">
@@ -396,7 +408,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
         <NavSurfaceExtension
           id="watch-providers-categories"
           align="left"
-          className="w-full flex-1 min-w-0"
+          className="w-full min-w-0 flex-1"
         >
           <div className="flex h-8 w-full min-w-0 flex-1 scrollbar-none items-center gap-1 overflow-x-auto">
             {availableCategories.map((cat) => {
@@ -463,7 +475,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
           data-lenis-prevent
           data-lenis-prevent-wheel
           onWheel={handleListWheel}
-          className="scrollbar-none max-h-[min(54dvh,24rem)] w-full touch-pan-y overflow-y-auto overscroll-contain rounded-[20px]"
+          className="max-h-[min(54dvh,24rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain rounded-[20px]"
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -540,7 +552,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                                 'background-color, color, border-color, box-shadow, opacity',
                             }}
                             className={cn(
-                              'inline-flex h-10 items-center gap-1.5 rounded-[20px] ring-1 ring-inset px-3.5 text-xs font-bold uppercase',
+                              'inline-flex h-10 items-center gap-1.5 rounded-[20px] px-3.5 text-xs font-bold uppercase ring-1 ring-inset',
                               config.buttonClass,
                             )}
                             title={`Open ${provider.name} (${config.label})`}
@@ -560,10 +572,10 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
       ) : (
         <div
           key={`empty-${resolvedRegion}-${activeCategory}`}
-          className="min-h-[6rem] w-full gap-3 rounded-[20px] ring-1 ring-inset ring-white/5 p-6 text-center"
+          className="min-h-[6rem] w-full gap-3 rounded-[20px] p-6 text-center ring-1 ring-white/5 ring-inset"
         >
           <div className="flex max-w-sm flex-col gap-1">
-            <p className="text-sm font-semibold text-white/90">
+            <p className="text-sm font-semibold text-white">
               {!hasAnyProviders
                 ? 'Not Yet Available to Stream'
                 : activeCategory !== 'ALL'
@@ -589,7 +601,7 @@ export default function WatchProvidersSurface({ close, data, providers, ...restP
                     setResolvedRegion(code);
                     setActiveCategory('ALL');
                   }}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:ring-white/20 hover:bg-white/10 hover:text-white transition-all duration-150"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 ring-1 ring-white/10 transition-all duration-150 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/15"
                 >
                   <span className="text-sm leading-none">{getRegionFlag(code)}</span>
                   <span>{getRegionDisplayName(code) || code}</span>

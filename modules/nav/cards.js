@@ -77,11 +77,33 @@ function renderIconNode(icon, size) {
  * @param {object} props - Component properties
  * @returns {React.ReactElement|null} Rendered navigation UI
  */
-export const NavDescription = memo(function NavDescription({ text, style, maxLines = 1 }) {
+export const NavDescription = memo(function NavDescription({
+  text,
+  style,
+  maxLines = 1,
+  animated = true,
+}) {
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
   const targetOpacity = typeof opacity === 'number' ? opacity : 0.7;
+
+  if (!animated) {
+    return (
+      <div className="relative min-h-[1.25rem] w-full overflow-hidden text-sm">
+        <p
+          className={cn(
+            isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
+            'text-white',
+            className,
+          )}
+          style={{ opacity: targetOpacity, ...getLineClampStyle(maxLines, restStyle) }}
+        >
+          {text}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-[1.25rem] w-full overflow-hidden text-sm">
@@ -180,13 +202,30 @@ export const NavIcon = memo(function NavIcon({
   style,
   onClick = null,
   ariaLabel = undefined,
+  animated = true,
 }) {
   const { className, inlineStyle } = splitStyle(style);
   const { size = 24, ...iconStyle } = inlineStyle;
   const isImageSource = isImageIconSource(icon);
   const iconKey = typeof icon === 'string' ? icon : 'icon-node';
 
-  const iconElement = (
+  const iconContent = isImageSource ? (
+    <div
+      className={cn('size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat', className)}
+      style={{
+        ...getImageIconStyle(iconStyle, icon),
+      }}
+    />
+  ) : (
+    <div
+      className={cn('center size-12 rounded-[20px] bg-white/5 text-white', className)}
+      style={iconStyle}
+    >
+      <span>{renderIconNode(icon, size)}</span>
+    </div>
+  );
+
+  const iconElement = animated ? (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={iconKey}
@@ -197,26 +236,11 @@ export const NavIcon = memo(function NavIcon({
         transition={NAV_ICON_TRANSITION}
         className="size-full"
       >
-        {isImageSource ? (
-          <div
-            className={cn(
-              'size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat',
-              className,
-            )}
-            style={{
-              ...getImageIconStyle(iconStyle, icon),
-            }}
-          />
-        ) : (
-          <div
-            className={cn('center size-12 rounded-[20px] bg-white/5 text-white', className)}
-            style={iconStyle}
-          >
-            <span>{renderIconNode(icon, size)}</span>
-          </div>
-        )}
+        {iconContent}
       </motion.div>
     </AnimatePresence>
+  ) : (
+    <div className="size-full">{iconContent}</div>
   );
 
   return (
@@ -243,8 +267,18 @@ export const NavIcon = memo(function NavIcon({
  * @param {object} props - Component properties
  * @returns {React.ReactElement|null} Rendered navigation UI
  */
-export const NavTitle = memo(function NavTitle({ text, style }) {
+export const NavTitle = memo(function NavTitle({ text, style, animated = true }) {
   const { className, inlineStyle } = splitStyle(style);
+
+  if (!animated) {
+    return (
+      <div className="relative overflow-hidden">
+        <h3 className={cn('truncate font-bold', className)} style={inlineStyle}>
+          {text}
+        </h3>
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden">
@@ -312,7 +346,7 @@ function useActionComponent(link, pathname, { isTop = false } = {}) {
   const { isVideo } = useBackgroundState();
 
   return useMemo(() => {
-    if (isLoading || isOverlay || link.isSurface) {
+    if (isLoading || (isOverlay && !link.isStatus) || link.isSurface) {
       return null;
     }
 
@@ -325,7 +359,7 @@ function useActionComponent(link, pathname, { isTop = false } = {}) {
     }
 
     return resolveInlineActionNode(action);
-  }, [action, isLoading, isOverlay, isTop, isVideo, link.isSurface, path, pathname]);
+  }, [action, isLoading, isOverlay, isTop, isVideo, link.isStatus, link.isSurface, path, pathname]);
 }
 
 function Badge({ badge }) {
@@ -379,7 +413,8 @@ function SurfaceStackItemContent({ link, surface, isActive }) {
     surface.dismissible === false
       ? null
       : surface.closeAllSurfaces || surface.closeSurface || link.onClose;
-  const onBack = surface.onBack || (surface.canGoBack ? surface.popStep || surface.closeSurface : null);
+  const onBack =
+    surface.onBack || (surface.canGoBack ? surface.popStep || surface.closeSurface : null);
 
   return (
     <div
@@ -432,9 +467,7 @@ function SurfaceStackItemContent({ link, surface, isActive }) {
 }
 
 function SurfaceItemContent({ link }) {
-  const surfaceStackEntries = link.surfaceStackEntries?.length
-    ? link.surfaceStackEntries
-    : [link];
+  const surfaceStackEntries = link.surfaceStackEntries?.length ? link.surfaceStackEntries : [link];
 
   return (
     <>
@@ -449,6 +482,105 @@ function SurfaceItemContent({ link }) {
     </>
   );
 }
+
+export const NavCardHeader = memo(function NavCardHeader({
+  link,
+  itemStyle,
+  badge,
+  showVideoIcon,
+  isPlaying,
+  effectiveIconOverlay,
+  isIconInteractive,
+  handleIconClick,
+  description,
+  isTop,
+  contextCommands,
+}) {
+  const headerKey = useMemo(() => {
+    const statusPart = link.isStatus
+      ? `status:${link.statusType || link.type || 'status'}`
+      : 'standard';
+    const identityPart = link.path || link.name || link.id || 'item';
+    const titlePart = link.title || link.name || '';
+    const descPart = description || '';
+    const iconPart = showVideoIcon
+      ? `video:${isPlaying ? 'pause' : 'play'}`
+      : link.icon || 'no-icon';
+    return `${statusPart}:${identityPart}:${iconPart}:${titlePart}:${descPart}`;
+  }, [
+    link.isStatus,
+    link.statusType,
+    link.type,
+    link.path,
+    link.name,
+    link.id,
+    link.title,
+    description,
+    showVideoIcon,
+    isPlaying,
+    link.icon,
+  ]);
+
+  return (
+    <div className="relative min-h-[48px] w-full">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div
+          key={headerKey}
+          variants={navHeaderSwapVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={NAV_HEADER_SWAP_TRANSITION}
+          className="relative flex w-full items-center gap-2.5"
+          style={{
+            ...NAV_COMPOSITOR_STYLE,
+          }}
+        >
+          <div className="center relative shrink-0">
+            {link.icon ? (
+              <NavIcon
+                animated={false}
+                icon={showVideoIcon ? (isPlaying ? 'mdi:pause' : 'mdi:play') : link.icon}
+                iconOverlay={effectiveIconOverlay}
+                style={itemStyle.icon}
+                onClick={isIconInteractive ? handleIconClick : null}
+                ariaLabel={
+                  isIconInteractive
+                    ? showVideoIcon
+                      ? isPlaying
+                        ? 'Pause video'
+                        : 'Play video'
+                      : 'Open'
+                    : undefined
+                }
+              />
+            ) : (
+              <div className="size-12" />
+            )}
+            {!showVideoIcon && !effectiveIconOverlay && <Badge badge={badge} />}
+          </div>
+
+          <div className="relative flex w-full flex-1 items-center justify-between gap-2.5 overflow-hidden">
+            <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <NavTitle
+                  animated={false}
+                  text={link.title || link.name}
+                  style={{
+                    ...itemStyle.title,
+                    className: cn(itemStyle.title?.className, 'text-base'),
+                  }}
+                />
+              </div>
+              <NavDescription animated={false} text={description} style={itemStyle.description} />
+            </div>
+            {isTop ? <NavCommandBar activeItem={link} contextCommands={contextCommands} /> : null}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+});
 
 function StandardItemContent({
   link,
@@ -496,46 +628,19 @@ function StandardItemContent({
 
   return (
     <div className="relative flex h-auto w-full flex-col gap-2.5">
-      <div className="relative flex w-full items-center gap-2.5">
-        <div className="center relative">
-          {link.icon ? (
-            <NavIcon
-              icon={showVideoIcon ? (isPlaying ? 'mdi:pause' : 'mdi:play') : link.icon}
-              iconOverlay={effectiveIconOverlay}
-              style={itemStyle.icon}
-              onClick={isIconInteractive ? handleIconClick : null}
-              ariaLabel={
-                isIconInteractive
-                  ? showVideoIcon
-                    ? isPlaying
-                      ? 'Pause video'
-                      : 'Play video'
-                    : 'Open'
-                  : undefined
-              }
-            />
-          ) : (
-            <div className="h-12" />
-          )}
-          {!showVideoIcon && !effectiveIconOverlay && <Badge badge={badge} />}
-        </div>
-
-        <div className="relative flex w-full flex-1 items-center justify-between gap-2.5 overflow-hidden">
-          <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <NavTitle
-                text={link.title || link.name}
-                style={{
-                  ...itemStyle.title,
-                  className: cn(itemStyle.title?.className, 'text-base'),
-                }}
-              />
-            </div>
-            <NavDescription text={description} style={itemStyle.description} />
-          </div>
-          {isTop ? <NavCommandBar activeItem={link} contextCommands={contextCommands} /> : null}
-        </div>
-      </div>
+      <NavCardHeader
+        link={link}
+        itemStyle={itemStyle}
+        badge={badge}
+        showVideoIcon={showVideoIcon}
+        isPlaying={isPlaying}
+        effectiveIconOverlay={effectiveIconOverlay}
+        isIconInteractive={isIconInteractive}
+        handleIconClick={handleIconClick}
+        description={description}
+        isTop={isTop}
+        contextCommands={contextCommands}
+      />
 
       {footerNode ? (
         <div key="nav-surface-footer" className="relative z-10 w-full overflow-visible">
@@ -756,6 +861,7 @@ export const NavCardItem = memo(
       <motion.div
         ref={ref}
         className={cardClassName}
+        data-controls-anchor={isTop ? 'true' : undefined}
         style={cardStyle}
         initial={false}
         animate={getNavItemAnimateValues({

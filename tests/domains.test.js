@@ -8,18 +8,30 @@ import {
   unwrapApiResultEnvelope,
 } from '@/infrastructure/http/client';
 import { hasMediaAwards } from '@/domains/media/utils/media-data';
+import NotFoundAction from '@/domains/shell/navigation/actions/not-found-action';
 
-const DOMAIN_NAMES = ['account', 'auth', 'home', 'legal', 'media', 'reviews', 'search', 'shell', 'social'];
+const DOMAIN_NAMES = [
+  'account',
+  'auth',
+  'home',
+  'legal',
+  'media',
+  'reviews',
+  'search',
+  'shell',
+  'social',
+];
 
 test('every domain has an explicit top-level boundary', async () => {
   const entries = await readdir('domains', { withFileTypes: true });
-  const directories = new Set(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name));
+  const directories = new Set(
+    entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name),
+  );
 
   for (const domainName of DOMAIN_NAMES) {
     assert.equal(directories.has(domainName), true, domainName);
   }
 });
-
 test('domain-facing API envelopes keep the stable success contract', () => {
   const data = { items: [{ id: 'item-1' }] };
   const result = buildApiSuccessResult(data, { code: ' READY ', requestId: ' request-1 ' });
@@ -74,3 +86,6 @@ test('hasMediaAwards correctly identifies media with and without awards', () => 
   );
 });
 
+test('NotFoundAction can be imported as a valid component function', () => {
+  assert.equal(typeof NotFoundAction, 'function');
+});

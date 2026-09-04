@@ -376,7 +376,6 @@ export default function SignUpSurface({ close, data }) {
                 </div>
               </>
             ) : null}
-
           </motion.div>
         </AnimatePresence>
       )}

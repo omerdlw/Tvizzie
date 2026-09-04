@@ -5,7 +5,12 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
-import { NavSurfaceExtension, navFadeVariants, navListItemVariants, useSurfaceHeader } from '@/modules/nav';
+import {
+  NavSurfaceExtension,
+  navFadeVariants,
+  navListItemVariants,
+  useSurfaceHeader,
+} from '@/modules/nav';
 import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
@@ -21,7 +26,7 @@ import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/domains/account/utils/avatar';
+} from '@/domains/account/client';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
@@ -236,7 +241,7 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, action, index }
         onClick={close}
         className="flex min-w-0 flex-1 items-center gap-2.5"
       >
-        <div className="relative size-10 shrink-0 overflow-hidden rounded-[20px] ring-1 ring-inset ring-white/5 bg-black">
+        <div className="relative size-10 shrink-0 overflow-hidden rounded-[20px] bg-black ring-1 ring-white/5 ring-inset">
           <AdaptiveImage
             mode="img"
             src={avatarSrc}
@@ -277,7 +282,7 @@ function LoadingList() {
               <div className="skeleton-block-soft h-2.5 w-16 rounded-full" />
             </div>
           </div>
-          <div className="skeleton-block-soft h-10 w-20 rounded-[20px] ring-1 ring-inset ring-white/5" />
+          <div className="skeleton-block-soft h-10 w-20 rounded-[20px] ring-1 ring-white/5 ring-inset" />
         </div>
       ))}
     </div>
@@ -288,8 +293,11 @@ export function createAccountSocialSurfaceEntry(data = {}, config = {}) {
   const tab = normalizeTab(data?.tab || data?.type);
   const profile = data?.profile || null;
   const username = data?.username || profile?.username || '';
-  const displayName = String(data?.displayName || profile?.displayName || username || 'Social').trim();
-  const icon = data?.avatarUrl || (profile ? getUserAvatarUrl(profile) : 'solar:users-group-rounded-bold');
+  const displayName = String(
+    data?.displayName || profile?.displayName || username || 'Social',
+  ).trim();
+  const icon =
+    data?.avatarUrl || (profile ? getUserAvatarUrl(profile) : 'solar:users-group-rounded-bold');
   const tabLabel =
     tab === TABS.INBOX ? 'Follow Requests' : tab === TABS.FOLLOWING ? 'Following' : 'Followers';
 
@@ -687,9 +695,9 @@ export default function AccountSocialSurface({ close, data }) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center"
+            className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/5 p-6 text-center ring-1 ring-white/10 ring-inset"
           >
-            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
+            <div className="center size-10 rounded-xl bg-white/5 text-white/50 ring-1 ring-white/10 ring-inset">
               <Icon icon="solar:danger-circle-bold" size={22} />
             </div>
             <div className="flex max-w-sm flex-col gap-1">
@@ -703,9 +711,9 @@ export default function AccountSocialSurface({ close, data }) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] ring-1 ring-inset  ring-white/10 bg-white/5 p-6 text-center"
+            className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/5 p-6 text-center ring-1 ring-white/10 ring-inset"
           >
-            <div className="center size-10 rounded-xl ring-1 ring-inset ring-white/10 bg-white/5 text-white/50">
+            <div className="center size-10 rounded-xl bg-white/5 text-white/50 ring-1 ring-white/10 ring-inset">
               <Icon icon="solar:users-group-rounded-linear" size={22} />
             </div>
             <div className="flex max-w-sm flex-col gap-1">
@@ -723,7 +731,7 @@ export default function AccountSocialSurface({ close, data }) {
             data-lenis-prevent
             data-lenis-prevent-wheel
             onWheel={handleListWheel}
-            className="scrollbar-none max-h-[min(54dvh,24rem)] w-full touch-pan-y overflow-y-auto overscroll-contain rounded-[20px]"
+            className="max-h-[min(54dvh,24rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain rounded-[20px]"
           >
             <motion.div
               key={`users-list-${activeTab}`}

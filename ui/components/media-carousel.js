@@ -102,7 +102,7 @@ export default function Carousel({
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth select-none rounded-[20px]',
+          'scrollbar-hide flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth rounded-[20px] select-none',
           className,
           gap,
         )}
@@ -123,7 +123,7 @@ export default function Carousel({
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
           className={cn(
-            'center absolute top-1/2 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full ring-1 ring-inset ring-black/10 bg-white/70 text-black shadow-md transition-colors duration-150 hover:bg-white sm:size-10',
+            'center absolute top-1/2 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full bg-white/70 text-black shadow-md ring-1 ring-black/10 transition-colors duration-150 ring-inset hover:bg-white sm:size-10',
             arrowPlacement === 'inset' ? 'left-2 sm:left-3' : 'left-1 md:-left-4',
             arrowClassName,
           )}
@@ -139,7 +139,7 @@ export default function Carousel({
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
           className={cn(
-            'center absolute top-1/2 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full ring-1 ring-inset ring-black/10 bg-white/70 text-black shadow-md transition-colors duration-150 hover:bg-white sm:size-10',
+            'center absolute top-1/2 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full bg-white/70 text-black shadow-md ring-1 ring-black/10 transition-colors duration-150 ring-inset hover:bg-white sm:size-10',
             arrowPlacement === 'inset' ? 'right-2 sm:right-3' : 'right-1 md:-right-4',
             arrowClassName,
           )}

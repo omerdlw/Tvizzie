@@ -1,7 +1,7 @@
 'use client';
 
 import { composeProviders } from '@/app/_shell/compose-providers';
-import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client/profile';
+import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';
 
@@ -15,11 +15,7 @@ const InteractiveProviders = composeProviders(
 );
 
 function SharedInteractiveFrame({ children }) {
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
 
 export function AuthInteractiveBoundary({ children }) {

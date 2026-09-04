@@ -11,9 +11,25 @@ import {
 } from 'react';
 
 import { useLoadingValue } from '../registry';
-import { DEFAULT_LOADING_STATE, normalizeLoadingOptions } from './config';
 
-// ── Loading provider and timer lifecycle ───────────────────────────────────────
+// ── Loading model and option normalization ─────────────────────────────────────
+
+const DEFAULT_LOADING_STATE = Object.freeze({
+  isLoading: false,
+  skeleton: null,
+  minDuration: 0,
+  showOverlay: true,
+});
+
+export function normalizeLoadingOptions(options = {}) {
+  const minDuration = Number(options?.minDuration);
+
+  return {
+    minDuration: Number.isFinite(minDuration) && minDuration > 0 ? minDuration : 0,
+    showOverlay: options?.showOverlay !== false,
+    skeleton: options?.skeleton ?? null,
+  };
+}
 
 const LoadingActionsContext = createContext(null);
 const LoadingStateContext = createContext(null);

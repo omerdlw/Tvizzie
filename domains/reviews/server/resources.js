@@ -2,10 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/infrastructure/supabase/server';
 import { getOrLoadCachedValue } from '@/infrastructure/http/server';
-import {
-  canViewerAccessUserContent,
-  createPrivateProfileError,
-} from '@/domains/account/server/profile';
+import { canViewerAccessUserContent, createPrivateProfileError } from '@/domains/account/server';
 import { normalizeTimestamp, normalizeValue } from '@/shared';
 import { TMDB_IMG } from '@/shared';
 import {

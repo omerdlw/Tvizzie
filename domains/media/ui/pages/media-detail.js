@@ -637,140 +637,138 @@ function MovieView({
         year={year}
       />
 
+      <div
+        className={`relative z-10 mx-auto flex w-full flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8 ${PAGE_SHELL_MAX_WIDTH_CLASS}`}
+      >
+        {hasInlineBackdrop ? <MediaBackdropHero image={backgroundImage} /> : null}
 
         <div
-          className={`relative z-10 mx-auto flex w-full flex-col px-4 sm:px-6 lg:px-8 pb-16 [overflow-anchor:none] ${PAGE_SHELL_MAX_WIDTH_CLASS}`}
+          className={`relative w-full ${
+            hasInlineBackdrop ? '-mt-32 sm:-mt-48 lg:-mt-64 xl:-mt-72' : 'pt-6 sm:pt-8 lg:pt-10'
+          } grid grid-cols-1 items-start gap-8 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[24rem_minmax(0,1fr)]`}
         >
-          {hasInlineBackdrop ? <MediaBackdropHero image={backgroundImage} /> : null}
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-auto">
+            <Sidebar
+              item={movie}
+              certification={certification}
+              creators={creators}
+              director={director}
+              genres={genres}
+              tags={tags}
+              hideTaxonomy={isRatingsView}
+              hideMetadata={isRatingsView}
+              bottomContent={isRatingsView ? <RatingsLegend /> : null}
+              topContent={
+                <CollectionActions
+                  media={collectionMedia}
+                  additionalActions={[
+                    ...(hasAwardsView
+                      ? [
+                          {
+                            active: isAwardsView,
+                            disabled: isCheckingAwards,
+                            icon: isAwardsView ? 'solar:arrow-left-bold' : 'solar:cup-star-bold',
+                            key: 'awards',
+                            label: isAwardsView ? 'Back to Details' : 'Awards',
+                            onClick: handleAwardsClick,
+                          },
+                        ]
+                      : []),
+                    ...(hasRatingsView
+                      ? [
+                          {
+                            active: isRatingsView,
+                            icon: isRatingsView ? 'solar:arrow-left-bold' : 'solar:chart-2-bold',
+                            key: 'ratings',
+                            label: isRatingsView ? 'Back to Details' : 'Ratings',
+                            onClick: () => setActiveView(isRatingsView ? 'main' : 'ratings'),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              }
+              writers={writers}
+            />
+          </aside>
 
-          <div
-            className={`relative w-full ${
-              hasInlineBackdrop ? '-mt-32 sm:-mt-48 lg:-mt-64 xl:-mt-72' : 'pt-6 sm:pt-8 lg:pt-10'
-            } grid grid-cols-1 items-start gap-8 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[24rem_minmax(0,1fr)]`}
-          >
-            <aside className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-auto">
-              <Sidebar
-                item={movie}
-                certification={certification}
-                creators={creators}
-                director={director}
-                genres={genres}
-                tags={tags}
-                hideTaxonomy={isRatingsView}
-                hideMetadata={isRatingsView}
-                bottomContent={isRatingsView ? <RatingsLegend /> : null}
-                topContent={
-                  <CollectionActions
-                    media={collectionMedia}
-                    additionalActions={[
-                      ...(hasAwardsView
-                        ? [
-                            {
-                              active: isAwardsView,
-                              disabled: isCheckingAwards,
-                              icon: isAwardsView ? 'solar:arrow-left-bold' : 'solar:cup-star-bold',
-                              key: 'awards',
-                              label: isAwardsView ? 'Back to Details' : 'Awards',
-                              onClick: handleAwardsClick,
-                            },
-                          ]
-                        : []),
-                      ...(hasRatingsView
-                        ? [
-                            {
-                              active: isRatingsView,
-                              icon: isRatingsView ? 'solar:arrow-left-bold' : 'solar:chart-2-bold',
-                              key: 'ratings',
-                              label: isRatingsView ? 'Back to Details' : 'Ratings',
-                              onClick: () => setActiveView(isRatingsView ? 'main' : 'ratings'),
-                            },
-                          ]
-                        : []),
-                    ]}
-                  />
-                }
-                writers={writers}
-              />
-            </aside>
+          <div className="flex w-full min-w-0 flex-col lg:w-auto">
+            <div className="flex w-full flex-col">
+              {!isAwardsView && !isRatingsView ? (
+                <div className="relative mb-8 flex w-full flex-col">
+                  <h1 className="font-zuume -mt-2 line-clamp-2 max-w-full overflow-hidden text-7xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:-mt-2.5 sm:text-8xl lg:-mt-3 lg:text-9xl">
+                    {mediaTitle}
+                  </h1>
 
-            <div className="flex w-full min-w-0 flex-col lg:w-auto">
-              <div className="flex w-full flex-col">
-                {!isAwardsView && !isRatingsView ? (
-                  <div className="relative mb-8 flex w-full flex-col">
-                    <h1 className="font-zuume -mt-2 line-clamp-2 max-w-full overflow-hidden text-7xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:-mt-2.5 sm:text-8xl lg:-mt-3 lg:text-9xl">
-                      {mediaTitle}
-                    </h1>
+                  {movie.tagline ? (
+                    <p className="mt-4 text-xs font-semibold text-white/70 uppercase sm:text-sm">
+                      {movie.tagline}
+                    </p>
+                  ) : null}
 
-                    {movie.tagline ? (
-                      <p className="mt-4 text-xs font-semibold text-white/70 uppercase sm:text-sm">
-                        {movie.tagline}
+                  {movie.overview ? (
+                    <div className="mt-3 flex w-full flex-col">
+                      <p className="max-w-[70ch] text-left text-sm leading-6 text-white/70 sm:text-base sm:leading-7">
+                        {movie.overview}
                       </p>
-                    ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
-                    {movie.overview ? (
-                      <div className="mt-3 flex w-full flex-col">
-                        <p className="max-w-[70ch] text-left text-sm leading-6 text-white/70 sm:text-base sm:leading-7">
-                          {movie.overview}
-                        </p>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                {isRatingsView ? (
-                  <div>
-                    <Suspense fallback={<TvSeasonRatingsSkeleton />}>
-                      <TvSeasonRatings ratingsPromise={ratingsPromise} />
-                    </Suspense>
-                  </div>
-                ) : isAwardsView ? (
-                  <div>
-                    <Suspense fallback={<MovieAwardsSkeleton />}>
-                      <MovieAwards
-                        mediaId={movie.id}
-                        mediaType={mediaType}
-                        awardsPromise={awardsPromise}
-                        onEmpty={() => setActiveView('main')}
-                      />
-                    </Suspense>
-                  </div>
-                ) : (
-                  <MovieSecondaryContent
-                    computed={computed}
-                    mediaType={mediaType}
-                    movie={movie}
-                    onSetMovieBackground={onSetMovieBackground}
-                    onSetMoviePoster={onSetMoviePoster}
-                    onResetMovieBackground={onResetMovieBackground}
-                    onResetMoviePoster={onResetMoviePoster}
-                    canResetMovieBackground={canResetMovieBackground}
-                    canResetMoviePoster={canResetMoviePoster}
-                    secondaryDataPromise={secondaryDataPromise}
-                  />
-                )}
-              </div>
+              {isRatingsView ? (
+                <div>
+                  <Suspense fallback={<TvSeasonRatingsSkeleton />}>
+                    <TvSeasonRatings ratingsPromise={ratingsPromise} />
+                  </Suspense>
+                </div>
+              ) : isAwardsView ? (
+                <div>
+                  <Suspense fallback={<MovieAwardsSkeleton />}>
+                    <MovieAwards
+                      mediaId={movie.id}
+                      mediaType={mediaType}
+                      awardsPromise={awardsPromise}
+                      onEmpty={() => setActiveView('main')}
+                    />
+                  </Suspense>
+                </div>
+              ) : (
+                <MovieSecondaryContent
+                  computed={computed}
+                  mediaType={mediaType}
+                  movie={movie}
+                  onSetMovieBackground={onSetMovieBackground}
+                  onSetMoviePoster={onSetMoviePoster}
+                  onResetMovieBackground={onResetMovieBackground}
+                  onResetMoviePoster={onResetMoviePoster}
+                  canResetMovieBackground={canResetMovieBackground}
+                  canResetMoviePoster={canResetMoviePoster}
+                  secondaryDataPromise={secondaryDataPromise}
+                />
+              )}
             </div>
           </div>
-
-          {!isRatingsView && !isAwardsView ? (
-            <div className="mt-12 w-full sm:mt-14 lg:mt-16">
-              <MediaReviews
-                entityId={movie.id}
-                entityType={mediaType}
-                title={mediaTitle}
-                headerTitle="Recent Reviews"
-                listMode="recent"
-                showBackdropGradient={false}
-                allReviewsHref={`/${mediaType}/${movie.id}/reviews`}
-                posterPath={movie.poster_path}
-                backdropPath={movie.backdrop_path}
-                onReviewStateChange={setReviewState}
-              />
-            </div>
-          ) : null}
         </div>
-        <NavHeightSpacer />
 
+        {!isRatingsView && !isAwardsView ? (
+          <div className="mt-12 w-full sm:mt-14 lg:mt-16">
+            <MediaReviews
+              entityId={movie.id}
+              entityType={mediaType}
+              title={mediaTitle}
+              headerTitle="Recent Reviews"
+              listMode="recent"
+              showBackdropGradient={false}
+              allReviewsHref={`/${mediaType}/${movie.id}/reviews`}
+              posterPath={movie.poster_path}
+              backdropPath={movie.backdrop_path}
+              onReviewStateChange={setReviewState}
+            />
+          </div>
+        ) : null}
+      </div>
+      <NavHeightSpacer />
     </>
   );
 }

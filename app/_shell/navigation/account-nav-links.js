@@ -1,4 +1,4 @@
-import { ACCOUNT_SECTION_KEYS } from '@/shared';
+import { ACCOUNT_SECTION_KEYS } from '@/domains/account/constants';
 
 const ACCOUNT_SECTION_KEYS_SET = new Set(ACCOUNT_SECTION_KEYS || []);
 

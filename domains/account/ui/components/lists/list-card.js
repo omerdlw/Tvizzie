@@ -3,13 +3,16 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { MOTION_EASINGS } from '@/shared';
 import { TMDB_IMG } from '@/shared';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-preferences';
 import Icon from '@/ui/primitives/icon';
+
+const MOTION_EASINGS = {
+  CINEMATIC: [0.76, 0, 0.24, 1],
+};
 
 const CARD_SCALE = 1.16;
 const BACK_PANEL_HEIGHT = Math.round(200 * CARD_SCALE);

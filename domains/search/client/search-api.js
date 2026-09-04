@@ -1,4 +1,4 @@
-import { ACCOUNT_CLIENT } from '@/domains/account/client/profile';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 
 import { normalizeString } from '@/domains/search/utils/text';
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils/constants';

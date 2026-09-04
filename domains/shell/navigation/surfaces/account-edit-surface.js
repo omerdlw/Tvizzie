@@ -5,8 +5,7 @@ import { useEffect } from 'react';
 
 import { AccountProfileSettingsForm } from '@/domains/account/ui/sections/edit/account-profile-settings-form';
 import { AccountEditSettings } from '@/domains/account/ui/sections/edit/account-edit-settings';
-import { NAV_FADE_TRANSITION, textCrossfadeVariants } from '@/modules/nav';
-import { useSurfaceHeader } from '@/modules/nav';
+import { NAV_FADE_TRANSITION, textCrossfadeVariants, useSurfaceHeader } from '@/modules/nav';
 
 const SETTING_META = {
   'avatar-banner': {
@@ -52,8 +51,11 @@ const SETTING_META = {
 };
 
 export function createAccountEditSurfaceEntry(settingKey, props = {}, config = {}) {
-  const meta =
-    SETTING_META[settingKey] || { icon: 'solar:settings-bold', title: 'Settings', description: '' };
+  const meta = SETTING_META[settingKey] || {
+    icon: 'solar:settings-bold',
+    title: 'Settings',
+    description: '',
+  };
 
   const isWide = settingKey === 'profile' || settingKey === 'avatar-banner';
 
@@ -100,7 +102,7 @@ function ProfileSurface({
   }, [setHeader, meta]);
 
   async function handleSubmitAndClose(event) {
-    await handleAccountSubmit(event);
+    await handleAccountSubmit?.(event);
     close?.();
   }
 
@@ -136,10 +138,6 @@ function ProfileSurface({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Security sub-surface
-// ---------------------------------------------------------------------------
-
 function SecuritySurface({ settingKey, close, ...securityProps }) {
   const setHeader = useSurfaceHeader();
 
@@ -164,14 +162,15 @@ function SecuritySurface({ settingKey, close, ...securityProps }) {
       transition={NAV_FADE_TRANSITION}
       className="flex flex-col gap-2.5"
     >
-      <AccountEditSettings section={settingKey} variant="surface" close={close} {...securityProps} />
+      <AccountEditSettings
+        section={settingKey}
+        variant="surface"
+        close={close}
+        {...securityProps}
+      />
     </motion.div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Root surface component — dispatches to the right sub-surface
-// ---------------------------------------------------------------------------
 
 export default function AccountEditSurface({ close, settingKey, ...rest }) {
   if (settingKey === 'profile' || settingKey === 'avatar-banner') {

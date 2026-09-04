@@ -189,8 +189,6 @@ export function parseSupabaseSessionAccessToken(cookieValue) {
   );
 }
 
-
-
 let clientInstance = null;
 let dataClientAccessToken = null;
 let dataClientInstance = null;
@@ -660,4 +658,3 @@ export async function updateSession(request) {
 
   return supabaseResponse;
 }
-

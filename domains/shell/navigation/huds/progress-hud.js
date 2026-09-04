@@ -40,12 +40,12 @@ export const ProgressHud = memo(function ProgressHud({
       className="flex w-full flex-col gap-2.5"
     >
       <div className="flex min-w-0 items-center gap-2.5">
-        <div className="relative flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-white/10 bg-white/10 text-white">
+        <div className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/10 ring-inset">
           {typeof icon === 'string' ? <Icon icon={icon} size={18} /> : icon}
           {isInProgress ? (
             <span
               aria-hidden="true"
-              className="bg-info absolute top-0 right-0 size-2 animate-pulse rounded-full ring-1 ring-inset ring-black/80 motion-reduce:animate-none"
+              className="bg-info absolute top-0 right-0 size-2 animate-pulse rounded-full ring-1 ring-black/80 ring-inset motion-reduce:animate-none"
             />
           ) : null}
         </div>
@@ -78,10 +78,10 @@ export const ProgressHud = memo(function ProgressHud({
                       action.onClick?.(event);
                     }}
                     className={cn(
-                      'flex h-8 items-center gap-1.5 rounded-xl ring-1 ring-inset px-2.5 text-xs font-medium',
+                      'flex h-8 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium ring-1 ring-inset',
                       isDestructive
-                        ? 'ring-red-500/20 bg-red-500/20 text-red-300 hover:bg-red-500/30'
-                        : 'ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white',
+                        ? 'bg-red-500/20 text-red-300 ring-red-500/20 hover:bg-red-500/30'
+                        : 'bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10',
                       action.disabled && 'pointer-events-none opacity-40',
                     )}
                     aria-label={action.label}
@@ -101,7 +101,7 @@ export const ProgressHud = memo(function ProgressHud({
                     event.stopPropagation();
                     onCancel(event);
                   }}
-                  className="flex size-8 items-center justify-center rounded-xl ring-1 ring-inset ring-white/5 bg-white/5 text-white/70 hover:ring-white/10 hover:bg-white/10 hover:text-white"
+                  className="flex size-8 items-center justify-center rounded-xl bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
                   aria-label="Cancel upload"
                 >
                   <Icon icon="solar:close-circle-bold" size={16} />

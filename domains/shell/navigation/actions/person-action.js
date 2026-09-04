@@ -38,7 +38,7 @@ export default function PersonAction({
             value={awardsViewMode}
             onChange={setAwardsViewMode}
             fullWidth
-            className="w-full ring-0! p-0!"
+            className="w-full p-0! ring-0!"
           />
         </motion.div>
       </AnimatePresence>
@@ -56,41 +56,41 @@ export default function PersonAction({
         transition={NAV_FADE_TRANSITION}
         className={NAV_ACTION_STYLES.row}
       >
-      <Button
-        type="button"
-        onClick={() => toggle('timeline')}
-        className={getNavActionClass({
-          className: 'flex-1',
-          isActive: activeView === 'timeline',
-        })}
-      >
-        <span className="flex items-center justify-center gap-2.5">
-          {activeView === 'timeline' ? (
-            <>
-              <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_STYLES.icon} />
-              Back
-            </>
-          ) : (
-            <>
-              <Icon icon="solar:sort-by-time-bold" size={NAV_ACTION_STYLES.icon} />
-              Timeline
-            </>
-          )}
-        </span>
-      </Button>
-      <Button
-        type="button"
-        onClick={() => toggle('awards')}
-        className={getNavActionClass({
-          className: 'flex-1',
-          isActive: activeView === 'awards',
-        })}
-      >
-        <span className="flex items-center justify-center gap-2.5">
-          <Icon icon="solar:cup-star-bold" size={NAV_ACTION_STYLES.icon} />
-          Awards
-        </span>
-      </Button>
+        <Button
+          type="button"
+          onClick={() => toggle('timeline')}
+          className={getNavActionClass({
+            className: 'flex-1',
+            isActive: activeView === 'timeline',
+          })}
+        >
+          <span className="flex items-center justify-center gap-2.5">
+            {activeView === 'timeline' ? (
+              <>
+                <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_STYLES.icon} />
+                Back
+              </>
+            ) : (
+              <>
+                <Icon icon="solar:sort-by-time-bold" size={NAV_ACTION_STYLES.icon} />
+                Timeline
+              </>
+            )}
+          </span>
+        </Button>
+        <Button
+          type="button"
+          onClick={() => toggle('awards')}
+          className={getNavActionClass({
+            className: 'flex-1',
+            isActive: activeView === 'awards',
+          })}
+        >
+          <span className="flex items-center justify-center gap-2.5">
+            <Icon icon="solar:cup-star-bold" size={NAV_ACTION_STYLES.icon} />
+            Awards
+          </span>
+        </Button>
       </motion.div>
     </AnimatePresence>
   );

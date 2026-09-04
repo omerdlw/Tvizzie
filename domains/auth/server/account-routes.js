@@ -36,10 +36,7 @@ import {
   setRecentReauthCookie,
 } from './security';
 import { buildInternalRequestMeta } from '@/infrastructure/http/server';
-import {
-  createApiErrorResponse,
-  createApiSuccessResponse,
-} from '@/infrastructure/http/server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/infrastructure/http/server';
 
 export const ACCOUNT_ACTIONS = Object.freeze({
   CHANGE_EMAIL: 'change-email',

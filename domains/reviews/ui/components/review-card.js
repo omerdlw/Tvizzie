@@ -6,7 +6,7 @@ import { TMDB_IMG } from '@/shared';
 import { canUseNextImageOptimization, resolveImageQuality } from '@/shared';
 import { cn } from '@/ui/class-names';
 import { formatDate } from '@/shared';
-import { getUserAvatarUrl } from '@/domains/account/utils/avatar';
+import { getUserAvatarUrl } from '@/domains/account/client';
 import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils/media-key';
 import {
   getPreferredMediaPosterSrc,

@@ -2,10 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { MOTION_EASINGS } from '@/shared';
-
+import { Container, MODAL_EASINGS } from '@/modules/modal';
 import { TMDB_IMG } from '@/shared';
-import { Container } from '@/modules/modal';
 import AdaptiveImage from '@/ui/components/adaptive-image';
 import { Spinner } from '@/ui/feedback/spinner';
 
@@ -49,7 +47,7 @@ export default function ImagePreviewModal({ close, data }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoaded ? 1 : 0 }}
-          transition={{ duration: 0.42, ease: MOTION_EASINGS.SOFT }}
+          transition={{ duration: 0.42, ease: MODAL_EASINGS.SOFT }}
           className="absolute inset-0 h-full w-full"
         >
           <AdaptiveImage
@@ -70,7 +68,7 @@ export default function ImagePreviewModal({ close, data }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.24, ease: MOTION_EASINGS.EMPHASIZED }}
+              transition={{ duration: 0.24, ease: MODAL_EASINGS.EMPHASIZED }}
               className="center absolute inset-0 rounded-[20px] bg-white/5"
             >
               <Spinner size={40} />

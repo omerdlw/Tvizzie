@@ -149,92 +149,92 @@ function PersonView({
         onResetPersonPoster={onResetPersonPoster}
         canResetPersonPoster={canResetPersonPoster}
       />
+      <div
+        className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
+      >
         <div
-          className={`relative z-10 mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col px-4 pb-16 [overflow-anchor:none] sm:px-6 lg:px-8`}
+          key={`person-scene-${activeView}`}
+          className="relative flex w-full flex-col items-center pt-8 sm:pt-12 lg:pt-16"
         >
-          <div
-            key={`person-scene-${activeView}`}
-            className="relative flex w-full flex-col items-center pt-8 sm:pt-12 lg:pt-16"
-          >
-            {activeView !== 'timeline' && activeView !== 'awards' && (
-              <div className="relative flex w-full flex-col items-center gap-6 pb-8 text-center sm:gap-7 sm:pb-10 lg:pb-12">
-                {person?.profile_path ? (
-                  <div
-                    data-context-menu-target="person-poster-card"
-                    data-poster-file-path={person.profile_path}
-                    className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px] lg:w-[20rem] xl:w-[24rem]"
-                  >
-                    <AdaptiveImage
-                      fill
-                      priority
-                      src={`${TMDB_IMG}/original${person.profile_path}`}
-                      alt={person.name}
-                      fetchPriority="high"
-                      sizes="(max-width: 1024px) 100vw, 400px"
-                      quality={resolveImageQuality('hero')}
-                      decoding="async"
-                      className="rounded-[20px] object-cover"
-                      wrapperClassName="h-full w-full rounded-[20px]"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px] lg:w-[20rem] xl:w-[24rem]">
-                    <div className="center h-full w-full rounded-[20px] ring-1 ring-inset ring-white/5 text-white/50">
-                      <Icon icon="solar:user-bold" size={40} />
-                    </div>
-                  </div>
-                )}
-
-                <h1 className="font-zuume max-w-full text-center text-7xl leading-[0.95] font-bold [overflow-wrap:anywhere] uppercase sm:text-8xl lg:text-9xl">
-                  {person.name}
-                </h1>
-
-                {person?.biography ? (
-                  <div className="mx-auto w-full max-w-[72ch]">
-                    <PersonBio biography={person.biography} person={person} />
-                  </div>
-                ) : null}
-
-                {person?.external_ids ? <SocialLinks externalIds={person.external_ids} /> : null}
-              </div>
-            )}
-
-            <div
-              className={`relative w-full text-left ${
-                activeView === 'main' ? '' : 'pt-4 sm:pt-6 lg:pt-8'
-              }`}
-              key={`person-view-${activeView}`}
-            >
-              {activeView === 'awards' ? (
-                <Suspense fallback={<PersonAwardsSkeleton />}>
-                  <PersonAwards
-                    personId={person.id}
-                    awardsPromise={awardsPromise}
-                    viewMode={awardsViewMode}
-                    onViewModeChange={setAwardsViewMode}
+          {activeView !== 'timeline' && activeView !== 'awards' && (
+            <div className="relative flex w-full flex-col items-center gap-6 pb-8 text-center sm:gap-7 sm:pb-10 lg:pb-12">
+              {person?.profile_path ? (
+                <div
+                  data-context-menu-target="person-poster-card"
+                  data-poster-file-path={person.profile_path}
+                  className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px] lg:w-[20rem] xl:w-[24rem]"
+                >
+                  <AdaptiveImage
+                    fill
+                    priority
+                    src={`${TMDB_IMG}/original${person.profile_path}`}
+                    alt={person.name}
+                    fetchPriority="high"
+                    sizes="(max-width: 1024px) 100vw, 400px"
+                    quality={resolveImageQuality('hero')}
+                    decoding="async"
+                    className="rounded-[20px] object-cover"
+                    wrapperClassName="h-full w-full rounded-[20px]"
                   />
-                </Suspense>
-              ) : activeView === 'timeline' ? (
-                <Suspense fallback={<PersonTimelineSkeleton />}>
-                  <PersonDeferredContent
-                    person={person}
-                    secondaryDataPromise={secondaryDataPromise}
-                    activeView={activeView}
-                  />
-                </Suspense>
+                </div>
               ) : (
-                <Suspense fallback={deferredFallback}>
-                  <PersonDeferredContent
-                    person={person}
-                    secondaryDataPromise={secondaryDataPromise}
-                    activeView={activeView}
-                  />
-                </Suspense>
+                <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px] lg:w-[20rem] xl:w-[24rem]">
+                  <div className="center h-full w-full rounded-[20px] text-white/50 ring-1 ring-white/5 ring-inset">
+                    <Icon icon="solar:user-bold" size={40} />
+                  </div>
+                </div>
               )}
+
+              <h1 className="font-zuume max-w-full text-center text-7xl leading-[0.95] font-bold [overflow-wrap:anywhere] uppercase sm:text-8xl lg:text-9xl">
+                {person.name}
+              </h1>
+
+              {person?.biography ? (
+                <div className="mx-auto w-full max-w-[72ch]">
+                  <PersonBio biography={person.biography} person={person} />
+                </div>
+              ) : null}
+
+              {person?.external_ids ? <SocialLinks externalIds={person.external_ids} /> : null}
             </div>
+          )}
+
+          <div
+            className={`relative w-full text-left ${
+              activeView === 'main' ? '' : 'pt-4 sm:pt-6 lg:pt-8'
+            }`}
+            key={`person-view-${activeView}`}
+          >
+            {activeView === 'awards' ? (
+              <Suspense fallback={<PersonAwardsSkeleton />}>
+                <PersonAwards
+                  personId={person.id}
+                  awardsPromise={awardsPromise}
+                  viewMode={awardsViewMode}
+                  onViewModeChange={setAwardsViewMode}
+                />
+              </Suspense>
+            ) : activeView === 'timeline' ? (
+              <Suspense fallback={<PersonTimelineSkeleton />}>
+                <PersonDeferredContent
+                  person={person}
+                  secondaryDataPromise={secondaryDataPromise}
+                  activeView={activeView}
+                />
+              </Suspense>
+            ) : (
+              <Suspense fallback={deferredFallback}>
+                <PersonDeferredContent
+                  person={person}
+                  secondaryDataPromise={secondaryDataPromise}
+                  activeView={activeView}
+                />
+              </Suspense>
+            )}
           </div>
         </div>
-        <NavHeightSpacer />
+      </div>
+      <NavHeightSpacer />
     </>
   );
 }

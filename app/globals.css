@@ -16,7 +16,7 @@
 
 @layer base {
   :root {
-    --white: #FCFCFB;
+    --white: #fcfcfb;
     --black: #000;
     --primary: #fff;
   }
@@ -49,8 +49,6 @@
 }
 
 @layer utilities {
-
-
   .center {
     display: flex;
     align-items: center;
