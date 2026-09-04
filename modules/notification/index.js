@@ -117,9 +117,13 @@ export function NotificationOverlay({ notification, onDismiss }) {
       role="alert"
       aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/80 p-2.5 ring-1 ring-white/10 backdrop-blur-lg transition-all duration-300 ease-in-out ring-inset',
+        'pointer-events-auto relative w-full overflow-hidden rounded-[30px] bg-black/75 p-2.5 ring-1 ring-white/10 backdrop-blur-xl transition-all duration-300 ease-in-out ring-inset',
         theme.surface,
       )}
+      style={{
+        WebkitBackdropFilter: 'blur(16px)',
+        backdropFilter: 'blur(16px)',
+      }}
     >
       <div className="relative flex h-auto w-full flex-col gap-2.5">
         <div className={cn('relative flex w-full items-center gap-2.5', showCloseButton && 'pr-9')}>

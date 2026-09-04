@@ -1,9 +1,18 @@
 'use client';
 
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 import { useBackgroundValue } from '../registry';
 import { DEFAULT_BACKGROUND, mergeBackgroundState } from './model';
+
+function useSafePathname() {
+  try {
+    return usePathname();
+  } catch {
+    return null;
+  }
+}
 
 // ── Background state and actions ───────────────────────────────────────────────
 
@@ -13,6 +22,8 @@ const BackgroundStateContext = createContext(null);
 export function BackgroundProvider({ children }) {
   const [background, setBackgroundState] = useState(DEFAULT_BACKGROUND);
   const registryBackground = useBackgroundValue();
+  const pathname = useSafePathname();
+  const previousPathnameRef = useRef(pathname);
 
   const setBackground = useCallback((nextBackground) => {
     setBackgroundState((prevState) => mergeBackgroundState(prevState, nextBackground));
@@ -91,6 +102,15 @@ export function BackgroundProvider({ children }) {
 
     resetBackground();
   }, [registryBackground, resetBackground, setBackgroundFromRegistry]);
+
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+    previousPathnameRef.current = pathname;
+
+    if (!registryBackground) {
+      resetBackground();
+    }
+  }, [pathname, registryBackground, resetBackground]);
 
   const stateValue = useMemo(
     () => ({

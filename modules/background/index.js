@@ -197,7 +197,10 @@ export function BackgroundOverlay() {
     baseStyle?.objectPosition || (typeof position === 'string' && position ? position : undefined);
 
   useEffect(() => {
-    if (!isVideo || !videoRef.current) return;
+    if (!isVideo || !videoRef.current) {
+      setVideoElement(null);
+      return undefined;
+    }
 
     const videoElement = videoRef.current;
     setVideoElement(videoElement);
@@ -208,6 +211,14 @@ export function BackgroundOverlay() {
       playbackRate,
       setVideoPlaying,
     });
+
+    return () => {
+      try {
+        videoElement.pause();
+      } catch {
+        // no-op
+      }
+    };
   }, [isVideo, video, isPlaying, isMuted, playbackRate, setVideoElement, setVideoPlaying]);
 
   useEffect(() => () => setVideoElement(null), [setVideoElement]);

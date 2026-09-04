@@ -1,55 +1,107 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBackgroundActions, useBackgroundState } from '@/modules/background';
 import { useBackgroundRegistration } from '@/modules/registry';
 import {
   ActionBtn,
+  CodeSnippet,
+  DemoCard,
+  FeatureChecklist,
   JsonViewer,
   LogConsole,
+  MetricPill,
+  NoticeBanner,
   Section,
+  SegmentedTabs,
   SelectInput,
   StateBadge,
   TextInput,
 } from './shared';
 
-const SAMPLE_IMAGES = [
+const PRESET_LIBRARY = [
   {
-    label: 'Interstellar Uzay Görseli',
-    value: 'https://image.tmdb.org/t/p/original/rAiYTnrLEhvF7zIjIzoHaDuSIu.jpg',
+    id: 'interstellar',
+    title: 'Interstellar - Deep Space',
+    category: 'Cinematic Space',
+    image: 'https://image.tmdb.org/t/p/original/rAiYTnrLEhvF7zIjIzoHaDuSIu.jpg',
+    overlayOpacity: 0.45,
+    overlayColor: 'rgba(0,0,0,0.7)',
+    leftGradient: 5,
+    rightGradient: 5,
+    fadeEdges: 24,
+    noiseOpacity: 0.05,
+    width: '100%',
+    fit: 'cover',
+    position: 'center',
+    badge: '4K Cosmic',
   },
   {
-    label: 'Blade Runner 2049 Şehir Görseli',
-    value: 'https://image.tmdb.org/t/p/original/ilRyASD5H1d5cI0mF8y37x0g0F0.jpg',
+    id: 'bladerunner',
+    title: 'Blade Runner 2049 - Cyberpunk Glow',
+    category: 'Sci-Fi Neon',
+    image: 'https://image.tmdb.org/t/p/original/ilRyASD5H1d5cI0mF8y37x0g0F0.jpg',
+    overlayOpacity: 0.35,
+    overlayColor: 'rgba(10,5,20,0.65)',
+    leftGradient: 7,
+    rightGradient: 3,
+    fadeEdges: 32,
+    noiseOpacity: 0.08,
+    width: '100%',
+    fit: 'cover',
+    position: 'center',
+    badge: 'Cyberpunk',
   },
   {
-    label: 'Oppenheimer Patlama Görseli',
-    value: 'https://image.tmdb.org/t/p/original/rLb2cwF3Pazuxaj0sRXQ037tGI1.jpg',
+    id: 'oppenheimer',
+    title: 'Oppenheimer - Fiery Ignition',
+    category: 'Dramatic Drama',
+    image: 'https://image.tmdb.org/t/p/original/rLb2cwF3Pazuxaj0sRXQ037tGI1.jpg',
+    overlayOpacity: 0.5,
+    overlayColor: 'rgba(20,5,0,0.75)',
+    leftGradient: 6,
+    rightGradient: 6,
+    fadeEdges: 28,
+    noiseOpacity: 0.1,
+    width: '100%',
+    fit: 'cover',
+    position: 'center',
+    badge: 'High Contrast',
+  },
+  {
+    id: 'minimal_dark',
+    title: 'Minimal Slate - Product Focus',
+    category: 'UI Spotlight',
+    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80',
+    overlayOpacity: 0.6,
+    overlayColor: 'rgba(5,7,12,0.85)',
+    leftGradient: 2,
+    rightGradient: 2,
+    fadeEdges: 16,
+    noiseOpacity: 0.04,
+    width: '85%',
+    fit: 'cover',
+    position: 'center',
+    badge: 'Subtle Slate',
   },
 ];
 
-const SAMPLE_VIDEO = '/video.mp4';
+const SAMPLE_VIDEO_SRC = '/video.mp4';
 
 export default function WorkbenchBackground() {
   const state = useBackgroundState();
   const actions = useBackgroundActions();
 
-  // İlk açılışta aktif bir arkaplan yoksa örnek görseli doğrudan arkaplan modülüne yükle
+  // Workbench unmount olduğunda veya modüller arası geçiş yapıldığında arka planı temizle
   useEffect(() => {
-    if (!state.hasBackground) {
-      actions.setBackground({
-        image: SAMPLE_IMAGES[0].value,
-        overlay: true,
-        overlayOpacity: 0.4,
-        leftGradient: 5,
-        rightGradient: 5,
-        fadeEdges: 24,
-        width: '100%',
-      });
-    }
-  }, []);
+    return () => {
+      actions.resetBackground();
+    };
+  }, [actions]);
 
+  const [activeTab, setActiveTab] = useState('demos');
   const [logs, setLogs] = useState([]);
+
   const addLog = (action, message, type = 'info') => {
     setLogs((prev) => [
       {
@@ -62,95 +114,126 @@ export default function WorkbenchBackground() {
     ]);
   };
 
-  // Image controls
-  const [selectedImage, setSelectedImage] = useState(SAMPLE_IMAGES[0].value);
+  // Visual studio interactive controls
+  const [activePresetId, setActivePresetId] = useState('interstellar');
   const [customImageUrl, setCustomImageUrl] = useState('');
   const [imageFit, setImageFit] = useState('cover');
   const [imagePosition, setImagePosition] = useState('center');
-
-  // Gradient & Overlay controls
   const [leftGradient, setLeftGradient] = useState(5);
   const [rightGradient, setRightGradient] = useState(5);
-  const [overlayOpacity, setOverlayOpacity] = useState(0.4);
+  const [overlayOpacity, setOverlayOpacity] = useState(0.45);
   const [overlayColor, setOverlayColor] = useState('rgba(0,0,0,0.7)');
   const [fadeEdges, setFadeEdges] = useState(24);
   const [width, setWidth] = useState('100%');
-  const [noiseOpacity, setNoiseOpacity] = useState(0.3);
+  const [noiseOpacity, setNoiseOpacity] = useState(0.05);
 
-  // Declarative registry registration toggle
-  const [isRegistryControlled, setIsRegistryControlled] = useState(false);
-  const [registryPriority, setRegistryPriority] = useState(150);
+  // Registry priority testing state
+  const [lowPriorityRegistered, setLowPriorityRegistered] = useState(false);
+  const [highPriorityRegistered, setHighPriorityRegistered] = useState(false);
 
-  // Register into Registry when toggled
+  // Declarative registry registrations for testing conflict resolution
   useBackgroundRegistration(
-    isRegistryControlled
+    lowPriorityRegistered
       ? {
-          image: customImageUrl || selectedImage,
+          image: PRESET_LIBRARY[0].image,
           overlay: true,
-          overlayOpacity: Number(overlayOpacity),
-          leftGradient: Number(leftGradient),
-          rightGradient: Number(rightGradient),
-          fadeEdges: Number(fadeEdges),
-          width,
+          overlayOpacity: 0.5,
+          leftGradient: 3,
+          rightGradient: 3,
+          fadeEdges: 15,
+          width: '100%',
         }
       : null,
-    { source: 'modules-workbench', priority: Number(registryPriority) },
+    { source: 'low-priority-card', priority: 50 },
   );
 
-  // Mevcut ayarları aktif olan moda (video veya resim) göre uygular
-  const handleApplyCurrentSettings = () => {
+  useBackgroundRegistration(
+    highPriorityRegistered
+      ? {
+          image: PRESET_LIBRARY[1].image,
+          overlay: true,
+          overlayOpacity: 0.3,
+          leftGradient: 8,
+          rightGradient: 8,
+          fadeEdges: 40,
+          width: '85%',
+        }
+      : null,
+    { source: 'high-priority-card', priority: 250 },
+  );
+
+  // Initialize initial background if empty
+  useEffect(() => {
+    if (!state.hasBackground) {
+      applyPreset(PRESET_LIBRARY[0]);
+    }
+  }, []);
+
+  const applyPreset = (preset) => {
     try {
-      const isVideoActive = state.isVideo && Boolean(state.video);
-      const targetSrc = customImageUrl.trim() || selectedImage;
+      setActivePresetId(preset.id);
+      setImageFit(preset.fit);
+      setImagePosition(preset.position);
+      setLeftGradient(preset.leftGradient);
+      setRightGradient(preset.rightGradient);
+      setOverlayOpacity(preset.overlayOpacity);
+      setOverlayColor(preset.overlayColor);
+      setFadeEdges(preset.fadeEdges);
+      setWidth(preset.width);
+      setNoiseOpacity(preset.noiseOpacity);
 
-      addLog(
-        'setBackground(Ayarlar)',
-        `Ayarlar uygulanıyor (Mod: ${isVideoActive ? 'Video' : 'Resim'}, Sol Gradient: ${leftGradient}, Sağ Gradient: ${rightGradient}, Opaklık: ${overlayOpacity})`,
-      );
+      actions.setBackground({
+        image: preset.image,
+        video: null,
+        fit: preset.fit,
+        position: preset.position,
+        overlay: true,
+        overlayOpacity: preset.overlayOpacity,
+        overlayColor: preset.overlayColor,
+        leftGradient: preset.leftGradient,
+        rightGradient: preset.rightGradient,
+        fadeEdges: preset.fadeEdges,
+        width: preset.width,
+        noiseStyle: { opacity: preset.noiseOpacity },
+      });
 
-      if (isVideoActive) {
-        // Video modundayken videoyu yeniden başlatmadan yalnızca stil ve gradientleri güncelle
-        actions.setBackground({
-          fit: imageFit,
-          position: imagePosition,
-          overlay: true,
-          overlayOpacity: Number(overlayOpacity),
-          overlayColor,
-          leftGradient: Number(leftGradient),
-          rightGradient: Number(rightGradient),
-          fadeEdges: Number(fadeEdges),
-          width,
-          noiseStyle: { opacity: Number(noiseOpacity) },
-        });
-      } else {
-        actions.setBackground({
-          image: targetSrc,
-          fit: imageFit,
-          position: imagePosition,
-          overlay: true,
-          overlayOpacity: Number(overlayOpacity),
-          overlayColor,
-          leftGradient: Number(leftGradient),
-          rightGradient: Number(rightGradient),
-          fadeEdges: Number(fadeEdges),
-          width,
-          noiseStyle: { opacity: Number(noiseOpacity) },
-        });
-      }
-
-      addLog('setBackground:başarılı', 'Ayarlar ve gradientler kesintisiz uygulandı', 'success');
+      addLog('applyPreset', `"${preset.title}" preseti başarıyla uygulandı`, 'success');
     } catch (err) {
-      addLog('setBackground:hata', err.message, 'error');
+      addLog('applyPreset:hata', err.message, 'error');
     }
   };
 
-  const handleApplyImage = (overrideUrl) => {
+  const handleApplyCustomUrl = () => {
+    if (!customImageUrl.trim()) {
+      addLog('applyCustomUrl', 'Geçerli bir görsel URL girilmedi', 'warning');
+      return;
+    }
     try {
-      const src = overrideUrl || customImageUrl.trim() || selectedImage;
-      addLog('setBackground(Resim)', `Resim arkaplanı uygulanıyor: ${src.slice(0, 40)}...`);
       actions.setBackground({
-        image: src,
+        image: customImageUrl.trim(),
         video: null,
+        fit: imageFit,
+        position: imagePosition,
+        overlay: true,
+        overlayOpacity,
+        overlayColor,
+        leftGradient,
+        rightGradient,
+        fadeEdges,
+        width,
+        noiseStyle: { opacity: noiseOpacity },
+      });
+      addLog('applyCustomUrl:başarılı', `Özel resim yüklendi: ${customImageUrl.slice(0, 35)}...`, 'success');
+    } catch (err) {
+      addLog('applyCustomUrl:hata', err.message, 'error');
+    }
+  };
+
+  const handleApplyLiveSettings = () => {
+    try {
+      const isVideoMode = state.isVideo && Boolean(state.video);
+      actions.setBackground({
+        ...(isVideoMode ? {} : { image: customImageUrl.trim() || state.image || PRESET_LIBRARY[0].image }),
         fit: imageFit,
         position: imagePosition,
         overlay: true,
@@ -162,43 +245,42 @@ export default function WorkbenchBackground() {
         width,
         noiseStyle: { opacity: Number(noiseOpacity) },
       });
-      addLog('setBackground:başarılı', 'Resim arkaplanı başarıyla uygulandı', 'success');
+      addLog('updateSettings', 'Tüm görsel ve overlay parametreleri güncellendi', 'info');
     } catch (err) {
-      addLog('setBackground:hata', err.message, 'error');
+      addLog('updateSettings:hata', err.message, 'error');
     }
   };
 
-  const handleApplyVideo = () => {
+  const handleStartTrailerVideo = () => {
     try {
-      addLog('setBackground(Video)', `Video kaynağı uygulanıyor: ${SAMPLE_VIDEO}`);
       actions.setBackground({
         image: null,
-        video: SAMPLE_VIDEO,
+        video: SAMPLE_VIDEO_SRC,
         videoClassName: 'bg-center bg-cover',
         isPlaying: true,
         overlay: true,
-        overlayOpacity: Number(overlayOpacity),
-        leftGradient: Number(leftGradient),
-        rightGradient: Number(rightGradient),
-        fadeEdges: Number(fadeEdges),
+        overlayOpacity,
+        leftGradient,
+        rightGradient,
+        fadeEdges,
         width,
         videoOptions: {
           autoplay: true,
           muted: true,
           loop: true,
+          playbackRate: 1,
         },
       });
-      addLog('setBackground:başarılı', 'Video arkaplanı başlatıldı', 'success');
+      addLog('startVideo', `Video arka planı başlatıldı (${SAMPLE_VIDEO_SRC})`, 'success');
     } catch (err) {
-      addLog('setBackground:hata', err.message, 'error');
+      addLog('startVideo:hata', err.message, 'error');
     }
   };
 
   const handleReset = () => {
     try {
-      addLog('resetBackground', 'Arkaplan sıfırlanıyor...');
       actions.resetBackground();
-      addLog('resetBackground:başarılı', 'Arkaplan temizlendi', 'success');
+      addLog('resetBackground', 'Tüm arka plan katmanları temizlendi', 'info');
     } catch (err) {
       addLog('resetBackground:hata', err.message, 'error');
     }
@@ -206,42 +288,428 @@ export default function WorkbenchBackground() {
 
   return (
     <div className="space-y-6">
-      {/* Arka Plan Durumu */}
-      <Section
-        title="Arka Plan Durumu"
-        badge={state.hasBackground ? (state.isVideo ? 'Video Aktif' : 'Resim Aktif') : 'Kapalı'}
-        actions={
-          <ActionBtn size="xs" onClick={handleReset} variant="danger">
-            Sıfırla
-          </ActionBtn>
-        }
-      >
-        <div className="mb-3 flex flex-wrap gap-2">
-          <StateBadge
-            label="Durum"
-            value={state.hasBackground ? (state.isVideo ? 'Video' : 'Resim') : 'Kapalı'}
-            variant={state.hasBackground ? 'success' : 'neutral'}
+      {/* Dynamic Header Metrics Ribbon */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-2">
+          <MetricPill
+            label="Aktif Katman"
+            value={state.hasBackground ? (state.isVideo ? 'Video Player' : 'Statik Resim') : 'Arka Plan Yok'}
+            variant={state.hasBackground ? 'emerald' : 'neutral'}
+          />
+          <MetricPill label="Genişlik Modu" value={state.width || '100%'} variant="indigo" />
+          <MetricPill
+            label="Overlay Opaklık"
+            value={`${Math.round((state.overlayOpacity ?? 0.4) * 100)}%`}
+            variant="cyan"
           />
           {state.isVideo && (
-            <>
-              <StateBadge
-                label="Oynatma"
-                value={state.isPlaying ? 'Oynatılıyor' : 'Duraklatıldı'}
-                variant={state.isPlaying ? 'success' : 'warning'}
-              />
-              <StateBadge
-                label="Ses"
-                value={state.videoOptions?.muted ? 'Sessiz' : 'Açık'}
-                variant={state.videoOptions?.muted ? 'neutral' : 'info'}
-              />
-            </>
+            <MetricPill
+              label="Oynatma / Ses"
+              value={`${state.isPlaying ? 'Oynatılıyor' : 'Durduruldu'} • ${state.videoOptions?.muted ? 'Sessiz' : 'Sesli'}`}
+              variant={state.isPlaying ? 'amber' : 'neutral'}
+            />
           )}
-          <StateBadge label="Sol Gradient" value={state.leftGradient || 0} variant="info" />
-          <StateBadge label="Sağ Gradient" value={state.rightGradient || 0} variant="info" />
-          <StateBadge label="Opaklık" value={state.overlayOpacity ?? 0.4} />
-          <StateBadge label="Genişlik" value={state.width || '100%'} />
         </div>
+        <div className="flex items-center gap-2">
+          <ActionBtn size="xs" variant="danger" icon="solar:trash-bin-trash-bold" onClick={handleReset}>
+            Sıfırla
+          </ActionBtn>
+        </div>
+      </div>
 
+      {/* Segmented Navigation Tabs */}
+      <SegmentedTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'demos', label: '1. Görsel & Medya Stüdyosu', icon: 'solar:gallery-bold' },
+          { id: 'edge_cases', label: '2. Registry & Öncelik Yarışı', icon: 'solar:shield-warning-bold' },
+          { id: 'code', label: '3. API & Kod Sözleşmesi', icon: 'solar:code-bold' },
+        ]}
+      />
+
+      {/* TAB 1: DEMOS */}
+      {activeTab === 'demos' && (
+        <div className="space-y-6">
+          <NoticeBanner
+            variant="info"
+            title="Sinematik Arka Plan Mimarisi"
+            description="Background modülü, sayfa arka planını z-index 0 katmanında Framer Motion geçişleriyle yönetir. Çoklu gradient, kenar yumuşatma (fadeEdges), gürültü dokusu (noise) ve video döngüsünü donanım hızlandırmalı olarak render eder."
+          />
+
+          {/* Preset Library Grid */}
+          <Section title="Hazır Sinematik Temalar" description="Önceden ayarlanmış görsel, gradient ve overlay kompozisyonları">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {PRESET_LIBRARY.map((preset) => {
+                const isActive = state.image === preset.image && !state.isVideo;
+                return (
+                  <DemoCard
+                    key={preset.id}
+                    title={preset.title}
+                    badge={preset.badge}
+                    description={`${preset.category} • Opaklık: ${Math.round(preset.overlayOpacity * 100)}% • Kenar Fade: ${preset.fadeEdges}px`}
+                  >
+                    <div className="space-y-3">
+                      <div className="relative h-28 overflow-hidden rounded-lg border border-white/10 bg-black/40">
+                        <img
+                          src={preset.image}
+                          alt={preset.title}
+                          className="h-full w-full object-cover opacity-80 transition-transform duration-500 hover:scale-105"
+                        />
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            backgroundColor: preset.overlayColor,
+                            opacity: preset.overlayOpacity,
+                          }}
+                        />
+                      </div>
+                      <ActionBtn
+                        fullWidth
+                        variant={isActive ? 'success' : 'primary'}
+                        icon={isActive ? 'solar:check-circle-bold' : 'solar:play-bold'}
+                        onClick={() => applyPreset(preset)}
+                      >
+                        {isActive ? 'Aktif Olarak Kullanılıyor' : 'Bu Temayı Uygula'}
+                      </ActionBtn>
+                    </div>
+                  </DemoCard>
+                );
+              })}
+            </div>
+          </Section>
+
+          {/* Video Trailer Mode */}
+          <Section
+            title="Video Arka Plan & Canlı Player"
+            description="Otomatik döngü, sessiz başlangıç ve donanım hızlandırmalı HTML5 Video element denetimi"
+            badge={state.isVideo ? 'VIDEO AKTİF' : 'BEKLEMEDE'}
+          >
+            <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="font-semibold text-white">4K Sinematik Fragman Oynatıcısı</div>
+                  <div className="text-xs text-white/50">
+                    Örnek video kaynağı: <code className="text-cyan-400">{SAMPLE_VIDEO_SRC}</code>
+                  </div>
+                </div>
+                <ActionBtn
+                  variant={state.isVideo ? 'danger' : 'primary'}
+                  icon={state.isVideo ? 'solar:stop-bold' : 'solar:videocamera-record-bold'}
+                  onClick={state.isVideo ? handleReset : handleStartTrailerVideo}
+                >
+                  {state.isVideo ? 'Videoyu Kapat' : 'Video Fragmanı Başlat'}
+                </ActionBtn>
+              </div>
+
+              {state.isVideo && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                  <ActionBtn
+                    size="sm"
+                    onClick={actions.toggleVideo}
+                    icon={state.isPlaying ? 'solar:pause-bold' : 'solar:play-bold'}
+                  >
+                    {state.isPlaying ? 'Durdur' : 'Oynat'}
+                  </ActionBtn>
+                  <ActionBtn
+                    size="sm"
+                    onClick={actions.toggleMute}
+                    icon={state.videoOptions?.muted ? 'solar:volume-cross-bold' : 'solar:volume-loud-bold'}
+                  >
+                    {state.videoOptions?.muted ? 'Sesi Aç' : 'Sessize Al'}
+                  </ActionBtn>
+                  <ActionBtn size="sm" onClick={actions.toggleLoop} icon="solar:restart-bold">
+                    {state.videoOptions?.loop ? 'Döngü Açık (Loop)' : 'Döngü Kapalı'}
+                  </ActionBtn>
+                </div>
+              )}
+            </div>
+          </Section>
+
+          {/* Live Visual Studio Sliders */}
+          <Section
+            title="Canlı Görsel Stüdyo & İnce Ayar"
+            description="Sol/sağ degrade ışık, overlay renk geçirgenliği, kenar maskeleri ve noise dokusu"
+          >
+            <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                <TextInput
+                  label="Sol Degrade (0-10)"
+                  type="number"
+                  value={leftGradient}
+                  onChange={(v) => setLeftGradient(Number(v))}
+                />
+                <TextInput
+                  label="Sağ Degrade (0-10)"
+                  type="number"
+                  value={rightGradient}
+                  onChange={(v) => setRightGradient(Number(v))}
+                />
+                <TextInput
+                  label="Overlay Opaklık (0.0 - 1.0)"
+                  type="number"
+                  step="0.05"
+                  value={overlayOpacity}
+                  onChange={(v) => setOverlayOpacity(Number(v))}
+                />
+                <TextInput
+                  label="Kenar Yumuşatma (px)"
+                  type="number"
+                  value={fadeEdges}
+                  onChange={(v) => setFadeEdges(Number(v))}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <SelectInput
+                  label="Genişlik Boyutu"
+                  value={width}
+                  onChange={setWidth}
+                  options={[
+                    { value: '100%', label: 'Tam Ekran (100%)' },
+                    { value: '85%', label: 'Odaklı (%85)' },
+                    { value: '70%', label: 'Kompakt (%70)' },
+                    { value: '1280px', label: 'Maksimum 1280px' },
+                  ]}
+                />
+                <SelectInput
+                  label="Sığdırma (Object Fit)"
+                  value={imageFit}
+                  onChange={setImageFit}
+                  options={[
+                    { value: 'cover', label: 'cover (Tam kapla)' },
+                    { value: 'contain', label: 'contain (Orantılı sığdır)' },
+                    { value: 'fill', label: 'fill (Esnet)' },
+                  ]}
+                />
+                <TextInput
+                  label="Overlay Rengi (CSS Color)"
+                  value={overlayColor}
+                  onChange={setOverlayColor}
+                  placeholder="rgba(0,0,0,0.7)"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <ActionBtn
+                  variant="primary"
+                  icon="solar:refresh-bold"
+                  onClick={handleApplyLiveSettings}
+                >
+                  Canlı Ayarları Uygula
+                </ActionBtn>
+                <div className="text-xs text-white/50">
+                  Ayarlar mevcut aktif arka plana anında kesintisiz transition ile uygulanır.
+                </div>
+              </div>
+
+              {/* Custom Image URL input */}
+              <div className="border-t border-white/10 pt-4">
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="min-w-[280px] flex-1">
+                    <TextInput
+                      label="Özel Görsel URL"
+                      placeholder="https://images.unsplash.com/..."
+                      value={customImageUrl}
+                      onChange={setCustomImageUrl}
+                    />
+                  </div>
+                  <ActionBtn
+                    variant="neutral"
+                    icon="solar:link-circle-bold"
+                    onClick={handleApplyCustomUrl}
+                  >
+                    Özel URL Yükle
+                  </ActionBtn>
+                </div>
+              </div>
+            </div>
+          </Section>
+        </div>
+      )}
+
+      {/* TAB 2: EDGE CASES & REGISTRY */}
+      {activeTab === 'edge_cases' && (
+        <div className="space-y-6">
+          <NoticeBanner
+            variant="warning"
+            title="Registry Öncelik Çakışması Kuralları"
+            description="Sayfadaki farklı bileşenler useBackgroundRegistration() çağırarak arka plan talep edebilir. Registry motoru en yüksek öncelik (priority) değerine sahip olanı BackgroundProvider'a enjekte eder."
+          />
+
+          <Section
+            title="Öncelik Çakışma Arenası (Priority Arena)"
+            description="İki farklı bileşenin registry'e farklı önceliklerle kayıt yapmasını simüle edin"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <DemoCard
+                title="Bileşen A (Düşük Öncelik)"
+                badge="Priority: 50"
+                description="Interstellar uzay görselini talep eder. Eğer daha yüksek öncelikli bir kayıt varsa devre dışı kalır."
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/60">Kayıt Durumu:</span>
+                    <StateBadge
+                      label="Durum"
+                      value={lowPriorityRegistered ? 'Kayıtlı' : 'Pasif'}
+                      variant={lowPriorityRegistered ? 'warning' : 'neutral'}
+                    />
+                  </div>
+                  <ActionBtn
+                    fullWidth
+                    variant={lowPriorityRegistered ? 'danger' : 'neutral'}
+                    onClick={() => {
+                      setLowPriorityRegistered((p) => !p);
+                      addLog('registryToggle', `Bileşen A (Priority 50) ${!lowPriorityRegistered ? 'kaydedildi' : 'kaldırıldı'}`);
+                    }}
+                  >
+                    {lowPriorityRegistered ? 'Kaydı Kaldır' : 'Öncelik 50 ile Kaydet'}
+                  </ActionBtn>
+                </div>
+              </DemoCard>
+
+              <DemoCard
+                title="Bileşen B (Yüksek Öncelik)"
+                badge="Priority: 250"
+                description="Blade Runner neon görselini talep eder. Önceliği 250 olduğu için Bileşen A'yı doğrudan ezer."
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/60">Kayıt Durumu:</span>
+                    <StateBadge
+                      label="Durum"
+                      value={highPriorityRegistered ? 'Kayıtlı' : 'Pasif'}
+                      variant={highPriorityRegistered ? 'success' : 'neutral'}
+                    />
+                  </div>
+                  <ActionBtn
+                    fullWidth
+                    variant={highPriorityRegistered ? 'danger' : 'primary'}
+                    onClick={() => {
+                      setHighPriorityRegistered((p) => !p);
+                      addLog('registryToggle', `Bileşen B (Priority 250) ${!highPriorityRegistered ? 'kaydedildi' : 'kaldırıldı'}`);
+                    }}
+                  >
+                    {highPriorityRegistered ? 'Kaydı Kaldır' : 'Öncelik 250 ile Kaydet'}
+                  </ActionBtn>
+                </div>
+              </DemoCard>
+            </div>
+          </Section>
+
+          <Section title="Background Modülü Doğrulama Matrisi">
+            <FeatureChecklist
+              items={[
+                { label: 'AnimatePresence ile kesintisiz crossfade geçişleri', checked: true },
+                { label: 'HTML5 Video arka planı (autoplay, muted, loop, playbackRate)', checked: true },
+                { label: 'Çift yönlü dinamik gradient maskeleri (leftGradient, rightGradient)', checked: true },
+                { label: 'Kenar yumuşatma gradyanı (fadeEdges) ve WebkitMaskImage desteği', checked: true },
+                { label: 'Noise dokusu (overlay mix-blend-mode ve opaklık kontrolü)', checked: true },
+                { label: 'Registry deklaratif öncelik çözümü (useBackgroundRegistration)', checked: true },
+                { label: 'Bileşen unmount olduğunda registry temizliği (cleanup)', checked: true },
+              ]}
+            />
+          </Section>
+        </div>
+      )}
+
+      {/* TAB 3: CODE SNIPPETS */}
+      {activeTab === 'code' && (
+        <div className="space-y-6">
+          <NoticeBanner
+            variant="success"
+            title="Kullanım Standartları & Best Practices"
+            description="Background modülü hem doğrudan eylem (imperative) hem de sayfa bazlı deklaratif (declarative registry) yaklaşımları destekler."
+          />
+
+          <CodeSnippet
+            title="1. Doğrudan Görsel & Overlay Tanımlama"
+            code={`import { useBackgroundActions } from '@/modules/background';
+
+function MediaHero() {
+  const { setBackground, resetBackground } = useBackgroundActions();
+
+  const handleOpenCinema = () => {
+    setBackground({
+      image: 'https://image.tmdb.org/t/p/original/...jpg',
+      fit: 'cover',
+      position: 'center',
+      overlay: true,
+      overlayOpacity: 0.5,
+      overlayColor: 'rgba(0,0,0,0.8)',
+      leftGradient: 6,
+      rightGradient: 6,
+      fadeEdges: 24,
+    });
+  };
+
+  return <button onClick={handleOpenCinema}>Sinematik Görseli Aç</button>;
+}`}
+          />
+
+          <CodeSnippet
+            title="2. Video Arka Planı ve Oynatma Kontrolleri"
+            code={`import { useBackgroundActions, useBackgroundState } from '@/modules/background';
+
+function TrailerSection() {
+  const state = useBackgroundState();
+  const { setBackground, toggleVideo, toggleMute } = useBackgroundActions();
+
+  const playTrailer = () => {
+    setBackground({
+      video: '/trailers/teaser.mp4',
+      isPlaying: true,
+      overlay: true,
+      overlayOpacity: 0.4,
+      videoOptions: {
+        autoplay: true,
+        muted: true,
+        loop: true,
+      },
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={playTrailer}>Fragmanı Arka Planda Başlat</button>
+      {state.isVideo && (
+        <button onClick={toggleMute}>
+          {state.videoOptions?.muted ? 'Sesi Aç' : 'Sessiz'}
+        </button>
+      )}
+    </div>
+  );
+}`}
+          />
+
+          <CodeSnippet
+            title="3. Sayfa Yaşam Döngüsünde Deklaratif Kayıt (useBackgroundRegistration)"
+            code={`import { useBackgroundRegistration } from '@/modules/registry';
+
+export default function MovieDetailPage({ movie }) {
+  // Sayfa mount olduğunda arka plan otomatik olarak kayıt edilir,
+  // sayfadan ayrılınca (unmount) arka plan otomatik temizlenir.
+  useBackgroundRegistration(
+    {
+      image: movie.backdropUrl,
+      overlay: true,
+      overlayOpacity: 0.45,
+      leftGradient: 4,
+      rightGradient: 4,
+      fadeEdges: 20,
+    },
+    { source: 'movie-detail-page', priority: 100 }
+  );
+
+  return <main>{movie.title}</main>;
+}`}
+          />
+        </div>
+      )}
+
+      {/* Live State Inspector */}
+      <Section title="Canlı Arka Plan Durumu (Telemetry)">
         <JsonViewer
           data={{
             resimUrl: state.image,
@@ -262,192 +730,9 @@ export default function WorkbenchBackground() {
         />
       </Section>
 
-      {/* Medya Seçimi */}
-      <Section title="Medya Seçimi">
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <SelectInput
-              label="Hazır Resim"
-              value={selectedImage}
-              onChange={(v) => {
-                setSelectedImage(v);
-                handleApplyImage(v);
-              }}
-              options={SAMPLE_IMAGES}
-            />
-            <SelectInput
-              label="Sığdırma"
-              value={imageFit}
-              onChange={(v) => {
-                setImageFit(v);
-                setTimeout(handleApplyCurrentSettings, 50);
-              }}
-              options={[
-                { value: 'cover', label: 'cover (Kapla)' },
-                { value: 'contain', label: 'contain (Sığdır)' },
-                { value: 'fill', label: 'fill (Doldur)' },
-              ]}
-            />
-            <SelectInput
-              label="Hizalama"
-              value={imagePosition}
-              onChange={(v) => {
-                setImagePosition(v);
-                setTimeout(handleApplyCurrentSettings, 50);
-              }}
-              options={[
-                { value: 'center', label: 'center (Orta)' },
-                { value: 'top', label: 'top (Üst)' },
-                { value: 'bottom', label: 'bottom (Alt)' },
-              ]}
-            />
-          </div>
-
-          <TextInput
-            label="Özel Resim URL"
-            value={customImageUrl}
-            onChange={setCustomImageUrl}
-            placeholder="https://..."
-          />
-
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <ActionBtn
-              onClick={() => handleApplyImage()}
-              variant="primary"
-              icon="solar:gallery-bold"
-            >
-              Resmi Uygula
-            </ActionBtn>
-            <ActionBtn onClick={handleApplyVideo} icon="solar:videocamera-record-bold">
-              Videoyu Başlat
-            </ActionBtn>
-            <ActionBtn onClick={handleReset} variant="danger" icon="solar:trash-bin-trash-bold">
-              Temizle
-            </ActionBtn>
-          </div>
-        </div>
-
-        {/* Video Oynatma Kontrolleri */}
-        {state.isVideo && (
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-3">
-            <ActionBtn
-              onClick={actions.toggleVideo}
-              icon={state.isPlaying ? 'solar:pause-bold' : 'solar:play-bold'}
-            >
-              {state.isPlaying ? 'Duraklat' : 'Oynat'}
-            </ActionBtn>
-            <ActionBtn
-              onClick={actions.toggleMute}
-              icon={
-                state.videoOptions?.muted ? 'solar:volume-cross-bold' : 'solar:volume-loud-bold'
-              }
-            >
-              {state.videoOptions?.muted ? 'Sesi Aç' : 'Sessiz'}
-            </ActionBtn>
-            <ActionBtn onClick={actions.toggleLoop} icon="solar:restart-bold">
-              {state.videoOptions?.loop ? 'Döngü Açık' : 'Döngü Kapalı'}
-            </ActionBtn>
-          </div>
-        )}
-      </Section>
-
-      {/* Görsel Ayarlar */}
-      <Section title="Görsel Ayarlar & Gradient">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <TextInput
-            label="Sol Gradient"
-            type="number"
-            value={leftGradient}
-            onChange={(v) => setLeftGradient(Number(v))}
-          />
-          <TextInput
-            label="Sağ Gradient"
-            type="number"
-            value={rightGradient}
-            onChange={(v) => setRightGradient(Number(v))}
-          />
-          <TextInput
-            label="Opaklık"
-            type="number"
-            value={overlayOpacity}
-            onChange={(v) => setOverlayOpacity(Number(v))}
-          />
-          <TextInput
-            label="Kenar Yumuşatma"
-            type="number"
-            value={fadeEdges}
-            onChange={(v) => setFadeEdges(Number(v))}
-          />
-          <SelectInput
-            label="Genişlik"
-            value={width}
-            onChange={setWidth}
-            options={[
-              { value: '100%', label: 'Tam Genişlik' },
-              { value: '85%', label: '%85' },
-              { value: '70%', label: '%70' },
-              { value: '1200px', label: '1200px' },
-            ]}
-          />
-          <TextInput
-            label="Noise"
-            type="number"
-            value={noiseOpacity}
-            onChange={(v) => setNoiseOpacity(Number(v))}
-          />
-          <div className="col-span-2">
-            <TextInput label="Overlay Rengi" value={overlayColor} onChange={setOverlayColor} />
-          </div>
-        </div>
-
-        <div className="pt-2">
-          <ActionBtn
-            onClick={handleApplyCurrentSettings}
-            variant="primary"
-            icon="solar:refresh-bold"
-          >
-            Stilleri Uygula
-          </ActionBtn>
-        </div>
-      </Section>
-
-      {/* Deklaratif Kayıt Testi */}
-      <Section
-        title="Kayıt Defteri (Registry) Entegrasyonu"
-        description="useBackgroundRegistration() hook'u ile arka planı dinamik öncelik değeriyle deklare edin"
-        badge={isRegistryControlled ? 'KAYITLI' : 'PASİF'}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/60 p-3">
-          <div className="space-y-1">
-            <div className="font-mono text-xs font-semibold text-white">
-              useBackgroundRegistration() Anahtarı
-            </div>
-            <div className="font-mono text-xs text-white/50">
-              Aktif edildiğinde, arka plan {registryPriority} önceliğiyle Registry havuzuna
-              yayınlanır
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-24">
-              <TextInput
-                label="Öncelik"
-                type="number"
-                value={registryPriority}
-                onChange={(v) => setRegistryPriority(Number(v))}
-              />
-            </div>
-            <ActionBtn
-              onClick={() => setIsRegistryControlled((prev) => !prev)}
-              variant={isRegistryControlled ? 'danger' : 'primary'}
-            >
-              {isRegistryControlled ? 'Kaydı Kaldır' : 'Deftere Kaydet'}
-            </ActionBtn>
-          </div>
-        </div>
-      </Section>
-
-      {/* Olay Günlüğü */}
+      {/* Log Console */}
       <LogConsole logs={logs} onClear={() => setLogs([])} title="Arka Plan Olay Günlüğü" />
     </div>
   );
 }
+

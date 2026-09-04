@@ -121,7 +121,7 @@ export {
 
 export { formatMediaTime, isValidComponentType } from './utils';
 export { NavMediaControls, NavMediaScrubber, NavSoundwave } from './media';
-export { NavCardHeader, NavDescription, NavIcon, NavTitle } from './cards';
+export { NavCardHeader, NavDescription, NavIcon, NavTitle, resolveNavHeaderKey } from './cards';
 export {
   BreadcrumbProvider,
   NavBreadcrumbsCard,
@@ -163,7 +163,10 @@ export {
 } from './surface';
 export {
   applyStatusOverlay,
+  createErrorStatus,
   createGuardStatus,
+  ErrorAction,
+  ErrorActions,
   getStatusTheme,
   GuardAction,
   GuardActions,
@@ -403,7 +406,7 @@ export default function Nav() {
 
   const visibleNavigationItems = expanded
     ? navigationItems
-    : navigationItems.slice(0, compact ? 1 : 3);
+    : navigationItems.slice(0, isStatusActive ? 1 : compact ? 1 : 3);
 
   const renderedNavItems = visibleNavigationItems.map((link, index) => {
     const position = index;
@@ -411,7 +414,7 @@ export default function Nav() {
     const isActive = getIsItemActive(link, activeItem);
     const isCompactCard = isTop && isCompactStack;
     const shouldSyncHover = compact;
-    const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded);
+    const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded) && !isStatusActive;
 
     const handleMouseEnter = () => {
       if (expanded) setFocusedIndex(index);
@@ -430,7 +433,7 @@ export default function Nav() {
     };
 
     const handleClick = () => {
-      if (link.isOverlay) return;
+      if (link.isOverlay || isStatusActive || link.isStatus) return;
 
       if (!expanded) {
         if (isTop) {

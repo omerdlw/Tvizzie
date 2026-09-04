@@ -31,54 +31,70 @@ import { cn } from '@/ui/class-names';
 import { Spinner } from '@/ui/feedback/spinner';
 import { Button } from '@/ui/primitives';
 
-function getStatusActionClass(className = '') {
-  return [
-    'center relative h-8 cursor-pointer rounded-xl px-3 text-xs font-bold whitespace-nowrap ring-1 ring-inset',
-    'bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
+export function ErrorActions({
+  onRetry,
+  onRefresh,
+  retryLabel = 'Retry',
+  refreshLabel = 'Refresh',
+  retryText,
+  refreshText,
+  className = '',
+}) {
+  const effectiveRetry = retryLabel || retryText || 'Retry';
+  const effectiveRefresh = refreshLabel || refreshText || 'Refresh';
 
-function ErrorActions({ onRetry, onRefresh }) {
   return (
-    <div className="flex w-full items-center gap-2.5">
+    <motion.div
+      variants={textCrossfadeVariants}
+      initial="hidden"
+      animate="visible"
+      transition={NAV_FADE_TRANSITION}
+      className={cn(NAV_ACTION_STYLES.row, className)}
+    >
       <Button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
-          onRetry();
+          onRefresh?.();
         }}
-        className={getStatusActionClass(DESTRUCTIVE_ACTION_TONE_CLASS)}
+        className={getNavActionClass({
+          variant: NAV_ACTION_STYLES.muted,
+          className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+        })}
       >
-        Retry
+        <span className="truncate">{effectiveRefresh}</span>
       </Button>
+
       <Button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
-          onRefresh();
+          onRetry?.();
         }}
-        className={getStatusActionClass(DESTRUCTIVE_ACTION_TONE_CLASS)}
+        className={getNavActionClass({
+          variant: DESTRUCTIVE_ACTION_TONE_CLASS,
+          className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+        })}
       >
-        Refresh
+        <span className="truncate">{effectiveRetry}</span>
       </Button>
-    </div>
+    </motion.div>
   );
 }
+
+export const ErrorAction = ErrorActions;
 
 export function GuardActions({
   onCancel,
   onConfirm,
-  cancelLabel = 'Kal',
-  confirmLabel = 'Yine de Geç',
+  cancelLabel = 'Stay',
+  confirmLabel = 'Leave',
   cancelText,
   confirmText,
   className = '',
 }) {
-  const effectiveCancel = cancelLabel || cancelText || 'Kal';
-  const effectiveConfirm = confirmLabel || confirmText || 'Yine de Geç';
+  const effectiveCancel = cancelLabel || cancelText || 'Stay';
+  const effectiveConfirm = confirmLabel || confirmText || 'Leave';
 
   return (
     <motion.div
@@ -291,7 +307,21 @@ function createOverlayStatus({
   };
 }
 
-function createErrorStatus({ type, title, description, icon, style, onRetry, clearStatus }) {
+export function createErrorStatus({
+  type,
+  title,
+  description,
+  icon,
+  style,
+  onRetry,
+  clearStatus,
+  action,
+  errorAction,
+  retryLabel,
+  refreshLabel,
+  retryText,
+  refreshText,
+}) {
   const retryHandler =
     typeof onRetry === 'function'
       ? () => {
@@ -302,6 +332,8 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
           window.location.reload();
         };
 
+  const ActionComponent = action || errorAction || ErrorActions;
+
   return createOverlayStatus({
     type,
     title,
@@ -310,7 +342,14 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
     style,
     isOverlay: true,
     action: () => (
-      <ErrorActions onRetry={retryHandler} onRefresh={() => window.location.reload()} />
+      <ActionComponent
+        onRetry={retryHandler}
+        onRefresh={() => window.location.reload()}
+        retryLabel={retryLabel}
+        refreshLabel={refreshLabel}
+        retryText={retryText}
+        refreshText={refreshText}
+      />
     ),
   });
 }
@@ -318,16 +357,16 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
 export function createGuardStatus({
   action,
   guardAction,
-  title = 'Navigasyon Engellendi',
-  description = 'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+  title = 'Navigation Blocked',
+  description = 'You have unsaved changes. Are you sure you want to leave?',
   icon = 'solar:danger-triangle-bold',
   style,
   onConfirm,
   onCancel,
   cancelLabel,
   confirmLabel,
-  cancelText = 'Kal',
-  confirmText = 'Yine de Geç',
+  cancelText = 'Stay',
+  confirmText = 'Leave',
   clearStatus,
 }) {
   const cancelHandler = () => {
@@ -759,18 +798,19 @@ function subscribeToGuardStatusEvents({ clearStatus, setStatus, updateStatus }) 
       createGuardStatus({
         action: eventData?.action,
         guardAction: eventData?.guardAction,
-        title: eventData?.title || 'Navigasyon Engellendi',
+        title: eventData?.title || 'Navigation Blocked',
         description:
           eventData?.message ||
-          'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+          eventData?.description ||
+          'You have unsaved changes. Are you sure you want to leave?',
         icon: eventData?.icon || 'solar:danger-triangle-bold',
         style: eventData?.style || getStatusTheme('GUARD'),
         onCancel: eventData?.onCancel,
         onConfirm: eventData?.onConfirm,
         cancelLabel: eventData?.cancelLabel,
         confirmLabel: eventData?.confirmLabel,
-        cancelText: eventData?.cancelText || 'Kal',
-        confirmText: eventData?.confirmText || 'Yine de Geç',
+        cancelText: eventData?.cancelText || 'Stay',
+        confirmText: eventData?.confirmText || 'Leave',
         clearStatus,
       }),
     );

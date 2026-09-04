@@ -1,6 +1,6 @@
 import { normalizeLowerValue, normalizeValue } from '@/shared';
 
-// Provider kimlikleri ve OAuth görünüm metadata'sı auth modülünün tek kaynağıdır.
+// Provider identities and OAuth appearance metadata are the single source of truth for the auth module.
 export const GITHUB_PROVIDER_ID = 'github';
 export const GOOGLE_PROVIDER_ID = 'google.com';
 export const X_PROVIDER_ID = 'x';
@@ -151,7 +151,7 @@ export function resolveAuthCapabilities({ providerIds = [], email = null } = {})
   };
 }
 
-// Redirect hedefleri yalnızca aynı origin içindeki güvenli path'lerden oluşabilir.
+// Redirect targets may only consist of safe paths within the same origin.
 export function sanitizeAuthNextPath(nextPath, fallback = '/account') {
   const rawValue = normalizeValue(nextPath);
   if (!rawValue || !rawValue.startsWith('/') || /^https?:\/\//i.test(rawValue)) return fallback;
@@ -210,7 +210,7 @@ export function buildOAuthCallbackUrl({
   return url.toString();
 }
 
-// Auth state sözleşmesi, storage ve session modelinin ortak temelidir.
+// Auth state contract is the shared foundation of storage and session model.
 export const AUTH_STATUS = Object.freeze({
   AUTHENTICATED: 'authenticated',
   REFRESHING: 'refreshing',

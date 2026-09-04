@@ -38,10 +38,9 @@ export const NOTIFICATION_ACTION_TAP = Object.freeze({
 export const NOTIFICATION_ACTION_TRANSITION = NOTIFICATION_MICRO_SPRING;
 
 export const notificationContentVariants = Object.freeze({
-  hidden: { opacity: 0, filter: 'blur(4px)' },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    filter: 'blur(0px)',
     transition: {
       duration: NOTIFICATION_TIERS.FAST.duration,
       ease: NOTIFICATION_EASINGS.SOFT,
@@ -50,7 +49,6 @@ export const notificationContentVariants = Object.freeze({
   },
   exit: {
     opacity: 0,
-    filter: 'blur(3px)',
     transition: { duration: 0.38, ease: NOTIFICATION_EASINGS.EXIT },
   },
 });
@@ -62,12 +60,10 @@ export const toastVariants = Object.freeze({
       x: NOTIFICATION_TIERS.STANDARD.distance,
       scale: 1 - NOTIFICATION_TIERS.STANDARD.scaleDelta,
     }),
-    filter: 'blur(6px)',
   },
   visible: {
     opacity: 1,
     transform: toGpuTransform(),
-    filter: 'blur(0px)',
     transition: {
       duration: NOTIFICATION_TIERS.FAST.duration,
       ease: NOTIFICATION_EASINGS.EMPHASIZED,
@@ -76,7 +72,6 @@ export const toastVariants = Object.freeze({
   exit: {
     opacity: 0,
     transform: toGpuTransform({ x: 28, scale: 0.976 }),
-    filter: 'blur(4px)',
     transition: { duration: 0.38, ease: NOTIFICATION_EASINGS.EXIT },
   },
 });

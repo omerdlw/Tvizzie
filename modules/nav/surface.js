@@ -1187,15 +1187,15 @@ export function useSurfaceStack({
 
       clearChoreographyTimers();
 
-      // Kapanış Koreografisi:
-      // Adım 1: COLLAPSING_BODY (Surface Body aşağı kayarak kaybolur, kart alçalır, Header görünür kalır)
+      // Closing Choreography:
+      // Step 1: COLLAPSING_BODY (Surface body collapses down, card lowers, header remains visible)
       updatePhase(NAV_SURFACE_PHASE.COLLAPSING_BODY);
 
-      // Adım 2: RESTORING_HEADER (Surface Body tamamen yok oldu; delayer sonrası Surface Header yerini Nav Header'a bırakır)
+      // Step 2: RESTORING_HEADER (Surface body is gone; after delay Surface Header is replaced with Nav Header)
       const t1 = setTimeout(() => {
         updatePhase(NAV_SURFACE_PHASE.RESTORING_HEADER);
 
-        // Adım 3 & 4: Geçiş tamamlandı, yalnızca Nav Header kalır, kaynaklar temizlenir
+        // Step 3 & 4: Transition complete, only Nav Header remains, resources cleaned up
         const t2 = setTimeout(() => {
           updatePhase(NAV_SURFACE_PHASE.IDLE);
           surfaceStackRef.current = [];
@@ -1346,19 +1346,19 @@ export function useSurfaceStack({
         );
         setSurfacePhase(NAV_SURFACE_PHASE.DISMISSING_ACTION);
 
-        // Açılış Koreografisi:
-        // Adım 1: DISMISSING_ACTION (Action Component kaybolur; kartta yalnızca Nav Header kalır)
+        // Opening Choreography:
+        // Step 1: DISMISSING_ACTION (Action component dismisses; only Nav Header remains on card)
         const t1 = setTimeout(() => {
-          // Adım 2: SWAPPING_HEADER (Nav Header, yerini Surface Header'a bırakır)
+          // Step 2: SWAPPING_HEADER (Nav Header is replaced with Surface Header)
           updatePhase(NAV_SURFACE_PHASE.SWAPPING_HEADER);
 
           const t2 = setTimeout(() => {
-            // Adım 3: EXPANDING_BODY (Kart yukarı yükselir ve Surface Body görünür hale gelir)
+            // Step 3: EXPANDING_BODY (Card expands upward and Surface Body becomes visible)
             updatePhase(NAV_SURFACE_PHASE.EXPANDING_BODY);
             dispatchSurfaceLifecycle({ type: NAVIGATION_EVENTS.SURFACE_MOUNTED });
 
             const t3 = setTimeout(() => {
-              // Adım 4: Açılış tamamlandı
+              // Step 4: Opening complete
               updatePhase(NAV_SURFACE_PHASE.OPEN);
             }, NAV_SURFACE_CHOREOGRAPHY_TIMINGS.BODY_ENTER_MS);
             choreographyTimersRef.current.push(t3);

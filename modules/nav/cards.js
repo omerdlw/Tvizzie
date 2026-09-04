@@ -64,8 +64,8 @@ import Iconify from '@/ui/primitives/icon';
 
 // ── Card presentation primitives ─────────────────────────────────────────────
 
-function shouldShowVideoIcon({ isActive, isVideo }) {
-  return Boolean(isActive && isVideo);
+function shouldShowVideoIcon({ isActive, isVideo, isStatus = false }) {
+  return Boolean(isActive && isVideo && !isStatus);
 }
 
 function renderIconNode(icon, size) {
@@ -350,6 +350,10 @@ function useActionComponent(link, pathname, { isTop = false } = {}) {
       return null;
     }
 
+    if (link.isStatus) {
+      return action ? resolveInlineActionNode(action) : null;
+    }
+
     if (isTop && isVideo) {
       return <NavMediaControls />;
     }
@@ -483,6 +487,17 @@ function SurfaceItemContent({ link }) {
   );
 }
 
+export function resolveNavHeaderKey({ link, description = '', showVideoIcon = false }) {
+  const statusPart = link?.isStatus
+    ? `status:${link.statusType || link.type || 'status'}`
+    : 'standard';
+  const identityPart = link?.path || link?.name || link?.id || 'item';
+  const titlePart = link?.title || link?.name || '';
+  const descPart = description || '';
+  const iconPart = showVideoIcon ? 'video' : link?.icon || 'no-icon';
+  return `${statusPart}:${identityPart}:${iconPart}:${titlePart}:${descPart}`;
+}
+
 export const NavCardHeader = memo(function NavCardHeader({
   link,
   itemStyle,
@@ -497,16 +512,7 @@ export const NavCardHeader = memo(function NavCardHeader({
   contextCommands,
 }) {
   const headerKey = useMemo(() => {
-    const statusPart = link.isStatus
-      ? `status:${link.statusType || link.type || 'status'}`
-      : 'standard';
-    const identityPart = link.path || link.name || link.id || 'item';
-    const titlePart = link.title || link.name || '';
-    const descPart = description || '';
-    const iconPart = showVideoIcon
-      ? `video:${isPlaying ? 'pause' : 'play'}`
-      : link.icon || 'no-icon';
-    return `${statusPart}:${identityPart}:${iconPart}:${titlePart}:${descPart}`;
+    return resolveNavHeaderKey({ link, description, showVideoIcon });
   }, [
     link.isStatus,
     link.statusType,
@@ -517,7 +523,6 @@ export const NavCardHeader = memo(function NavCardHeader({
     link.title,
     description,
     showVideoIcon,
-    isPlaying,
     link.icon,
   ]);
 
@@ -574,7 +579,9 @@ export const NavCardHeader = memo(function NavCardHeader({
               </div>
               <NavDescription animated={false} text={description} style={itemStyle.description} />
             </div>
-            {isTop ? <NavCommandBar activeItem={link} contextCommands={contextCommands} /> : null}
+            {isTop && !link.isStatus ? (
+              <NavCommandBar activeItem={link} contextCommands={contextCommands} />
+            ) : null}
           </div>
         </motion.div>
       </AnimatePresence>
@@ -597,7 +604,7 @@ function StandardItemContent({
 }) {
   const { isVideo, isPlaying } = useBackgroundState();
   const { toggleVideo } = useBackgroundActions();
-  const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo });
+  const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo, isStatus: link.isStatus });
   const description = link.description;
 
   const effectiveIconOverlay = showVideoIcon ? null : link.iconOverlay;
@@ -682,7 +689,7 @@ export const NavCardItem = memo(
 
     const { isVideo } = useBackgroundState();
     const isTopHudActive = Boolean(isTop && isHudActive);
-    const showVideoScrubber = Boolean(isTop && isVideo && !link.isSurface);
+    const showVideoScrubber = Boolean(isTop && isVideo && !link.isSurface && !link.isStatus);
 
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
     const ActionComponent = useActionComponent(link, pathname, { isTop });
@@ -720,7 +727,8 @@ export const NavCardItem = memo(
       [effectiveStyle, isActive, showBorder],
     );
 
-    const renderedActionNode = link.isSurface || isTopHudActive ? null : ActionComponent;
+    const renderedActionNode =
+      link.isSurface || isTopHudActive ? null : ActionComponent;
     const hasNestedInteractiveContent = Boolean(renderedActionNode || link.isSurface);
     const itemIdentity = link.path || link.name || link.type || 'standard';
     const contentKey = link.isSurface
@@ -849,7 +857,7 @@ export const NavCardItem = memo(
       cardStyle: itemStyle.card,
       cardScale: itemStyle.scale,
       isAnchoredToBottom: link.isSurface,
-      visibleCount: globalCompact && !isStackHovered ? 1 : 3,
+      visibleCount: (globalCompact || link.isStatus) && !isStackHovered ? 1 : 3,
     });
 
     const cardDelay = useMemo(
@@ -883,7 +891,7 @@ export const NavCardItem = memo(
             : undefined
         }
         title={compact ? 'Click again to expand navigation' : undefined}
-        tabIndex={link.isOverlay ? -1 : 0}
+        tabIndex={link.isOverlay || link.isStatus ? -1 : 0}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}

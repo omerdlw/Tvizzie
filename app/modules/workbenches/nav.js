@@ -19,7 +19,19 @@ import { useProgressHud } from '@/domains/shell/navigation/huds/progress-hud';
 import { useContextActionHud } from '@/domains/shell/navigation/huds/context-action-hud';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { ActionBtn, JsonViewer, LogConsole, Section, StateBadge, TextInput } from './shared';
+import {
+  ActionBtn,
+  CodeSnippet,
+  DemoCard,
+  FeatureChecklist,
+  JsonViewer,
+  LogConsole,
+  NoticeBanner,
+  Section,
+  SegmentedTabs,
+  StateBadge,
+  TextInput,
+} from './shared';
 
 // ── 1. Tekil Test Yüzeyi ───────────────────────────────────────────────────
 function TestNavSurface({ close, input }) {
@@ -118,7 +130,7 @@ function TrueMultiStepSurface({ close, input }) {
               onChange={(e) => setEnableTelemetry(e.target.checked)}
               className="cursor-pointer rounded border-white/10"
             />
-            Canlı Telemetri ve Teşhis Kayıtlarını Aç
+            <span>Geliştirici telemetrisi ve loglama aktif</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2 text-white/70">
             <input
@@ -127,30 +139,24 @@ function TrueMultiStepSurface({ close, input }) {
               onChange={(e) => setAutoSave(e.target.checked)}
               className="cursor-pointer rounded border-white/10"
             />
-            Değişiklikleri Otomatik Kaydet (Auto-Save)
+            <span>Değişiklikleri yerel tarayıcı hafızasına otomatik kaydet</span>
           </label>
         </div>
       )}
 
-      {/* Adım 3: Özet ve Tamamlama */}
+      {/* Adım 3: Özet ve Onay */}
       {currentStep === 3 && (
-        <div className="space-y-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-          <div className="font-semibold text-emerald-400">3. Adım: Yapılandırma Özeti ve Onay</div>
+        <div className="space-y-3 rounded-lg border border-white/10 bg-white/5 p-3">
+          <div className="font-semibold text-emerald-400">3. Adım: Kurulum Özeti</div>
           <div className="space-y-1 text-white/70">
             <div>
               Seçilen Tema: <strong className="text-white">{selectedTheme}</strong>
             </div>
             <div>
-              Telemetri:{' '}
-              <strong className="text-white">{enableTelemetry ? 'Açık' : 'Kapalı'}</strong>
+              Telemetri: <strong className="text-white">{enableTelemetry ? 'Açık' : 'Kapalı'}</strong>
             </div>
             <div>
-              Otomatik Kaydet:{' '}
-              <strong className="text-white">{autoSave ? 'Açık' : 'Kapalı'}</strong>
-            </div>
-            <div>
-              Başlangıç Parametresi:{' '}
-              <strong className="text-white">{input?.message || 'Yok'}</strong>
+              Otomatik Kayıt: <strong className="text-white">{autoSave ? 'Aktif' : 'Pasif'}</strong>
             </div>
           </div>
         </div>
@@ -212,6 +218,7 @@ const MULTI_STEP_FLOW = createSurfaceFlowDefinition({
 });
 
 export default function WorkbenchNav() {
+  const [currentTab, setCurrentTab] = useState('demos');
   const pathname = usePathname();
   const navState = useNavigationState();
   const navActions = useNavigationActions();
@@ -249,15 +256,28 @@ export default function WorkbenchNav() {
 
   // HUD Modu Seçimi: 'selection' | 'progress' | 'actions' | null
   const [activeHudMode, setActiveHudMode] = useState(null);
+  const [selectedItemCount, setSelectedItemCount] = useState(5);
+  const [progressPercent, setProgressPercent] = useState(65);
 
   // 1. Seçim HUD'ı
   const selectionActions = useMemo(
     () => [
       {
         key: 'select-all',
-        label: 'Tümünü Seç',
+        label: 'Tümünü Seç (24)',
         icon: 'solar:check-read-linear',
-        onClick: () => addLog('selectionHud:tumunuSec', 'Tümünü seç tıklandı', 'info'),
+        onClick: () => {
+          setSelectedItemCount(24);
+          addLog('selectionHud:tumunuSec', '24 öge seçildi', 'info');
+        },
+      },
+      {
+        key: 'bulk-export',
+        label: 'Dışa Aktar',
+        icon: 'solar:download-bold',
+        onClick: () => {
+          addLog('selectionHud:export', `${selectedItemCount} öge dışa aktarılıyor...`, 'success');
+        },
       },
       {
         key: 'bulk-delete',
@@ -265,18 +285,18 @@ export default function WorkbenchNav() {
         icon: 'solar:trash-bin-trash-bold',
         isDestructive: true,
         onClick: () => {
-          addLog('selectionHud:topluSil', 'Seçilenler silindi', 'error');
+          addLog('selectionHud:topluSil', `${selectedItemCount} öge silindi`, 'error');
           setActiveHudMode(null);
         },
       },
     ],
-    [],
+    [selectedItemCount],
   );
 
   useSelectionHud({
     isActive: activeHudMode === 'selection',
-    count: 5,
-    title: '5 öge seçildi',
+    count: selectedItemCount,
+    title: `${selectedItemCount} öge seçildi`,
     actions: selectionActions,
     onCancel: useCallback(() => {
       addLog('selectionHud:iptal', 'Seçim HUD kapatıldı', 'info');
@@ -288,11 +308,11 @@ export default function WorkbenchNav() {
   useProgressHud({
     isActive: activeHudMode === 'progress',
     title: 'İzleme Listesi Eşitleniyor...',
-    description: '14 film senkronize ediliyor',
-    progress: 65,
+    description: `%${progressPercent} tamamlandı`,
+    progress: progressPercent,
     icon: 'solar:refresh-circle-bold',
     onCancel: useCallback(() => {
-      addLog('progressHud:iptal', 'İlerleme HUD kapatıldı', 'warning');
+      addLog('progressHud:iptal', 'İlerleme HUD iptal edildi', 'warning');
       setActiveHudMode(null);
     }, []),
   });
@@ -303,6 +323,7 @@ export default function WorkbenchNav() {
       {
         key: 'filter-movies',
         label: 'Filmler',
+        icon: 'solar:clapperboard-bold',
         onClick: () => {
           addLog('contextHud:filmler', 'Filmler filtrelendi', 'success');
           setActiveHudMode(null);
@@ -311,8 +332,18 @@ export default function WorkbenchNav() {
       {
         key: 'filter-series',
         label: 'Diziler',
+        icon: 'solar:tv-bold',
         onClick: () => {
           addLog('contextHud:diziler', 'Diziler filtrelendi', 'success');
+          setActiveHudMode(null);
+        },
+      },
+      {
+        key: 'filter-anime',
+        label: 'Animasyon',
+        icon: 'solar:star-bold',
+        onClick: () => {
+          addLog('contextHud:animasyon', 'Animasyon filtrelendi', 'success');
           setActiveHudMode(null);
         },
       },
@@ -323,7 +354,7 @@ export default function WorkbenchNav() {
   useContextActionHud({
     isActive: activeHudMode === 'actions',
     title: 'Hızlı Filtre Eylemleri',
-    description: 'Nav dock üzerinden filtreleme yapın',
+    description: 'Nav dock üzerinden tek tıkla filtreleme',
     icon: 'solar:tuning-2-bold',
     actions: contextHudActions,
     onCancel: useCallback(() => {
@@ -338,7 +369,7 @@ export default function WorkbenchNav() {
   const handleGuardBlock = useCallback(({ to }) => {
     addLog(
       'koruma:engellendi',
-      `Sayfadan ayrılma engellendi! Hedef: ${to} (Nav status devreye girdi)`,
+      `Sayfadan ayrılma engellendi! Hedef: ${to} (Kaydedilmemiş değişiklikler var)`,
       'error',
     );
   }, []);
@@ -357,7 +388,7 @@ export default function WorkbenchNav() {
     if (!didNavigate) {
       addLog(
         'gezinme:bloke',
-        `Geçiş engellendi, Nav status aksiyon butonları gösteriliyor`,
+        `Geçiş engellendi! Nav guard devrede.`,
         'warning',
       );
     } else {
@@ -367,11 +398,13 @@ export default function WorkbenchNav() {
 
   // 5. Breadcrumb Override
   const [overrideBreadcrumb, setOverrideBreadcrumb] = useState(false);
+  const [breadcrumbCustomTitle, setBreadcrumbCustomTitle] = useState('Modül Geliştirici Stüdyosu');
+
   useRegisterBreadcrumbOverride(
     overrideBreadcrumb
       ? {
           path: pathname,
-          title: 'Özel Sayfa Yolu Başlığı',
+          title: breadcrumbCustomTitle,
           icon: 'solar:pin-bold',
         }
       : undefined,
@@ -381,23 +414,23 @@ export default function WorkbenchNav() {
   const [activeOpId, setActiveOpId] = useState(null);
 
   const handleStartOperation = () => {
-    const op = operations.start({ label: 'Veritabanı Yedeklemesi', progress: 0.1 });
+    const op = operations.start({ label: 'Veritabanı Yedeklemesi & Senkronizasyon', progress: 0.1 });
     setActiveOpId(op.id);
     addLog('operations.start', `Görev ID: ${op.id} başlatıldı`, 'info');
 
     let current = 0.1;
     const interval = setInterval(() => {
-      current += 0.3;
+      current += 0.25;
       if (current >= 1.0) {
         clearInterval(interval);
         operations.complete(op.id, { success: true });
         setActiveOpId(null);
-        addLog('operations.complete', `Görev ${op.id} başarıyla sonuçlandı`, 'success');
+        addLog('operations.complete', `Görev ${op.id} başarıyla sonuçlandı (%100)`, 'success');
       } else {
-        operations.update(op.id, { progress: Math.min(0.9, current) });
+        operations.update(op.id, { progress: Math.min(0.95, current) });
         addLog('operations.update', `İlerleme: %${Math.round(current * 100)}`);
       }
-    }, 500);
+    }, 400);
   };
 
   const handleOpenSurface = () => {
@@ -416,214 +449,319 @@ export default function WorkbenchNav() {
 
   return (
     <div className="space-y-6">
-      {/* Navigasyon Durumu */}
+      {/* Üst Sekmeler */}
+      <SegmentedTabs
+        tabs={[
+          { id: 'demos', label: 'İnteraktif Demolar', icon: 'solar:compass-bold', badge: '5' },
+          { id: 'edge_cases', label: 'Uç Durumlar & Koruma', icon: 'solar:shield-check-bold', badge: '3' },
+          { id: 'code', label: 'API & Kod Örnekleri', icon: 'solar:code-bold' },
+        ]}
+        activeTab={currentTab}
+        onChange={setCurrentTab}
+      />
+
+      {/* Navigasyon Durumu Paneli */}
       <Section
-        title="Navigasyon Durumu"
-        badge={activeHudMode ? `HUD: ${activeHudMode}` : 'Dock Aktif'}
+        title="Canlı Navigasyon Durumu"
+        badge={activeHudMode ? `HUD: ${activeHudMode}` : 'Dock Hazır'}
       >
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <StateBadge
-            label="HUD"
+            label="HUD Modu"
             value={activeHudMode || 'Yok'}
             variant={activeHudMode ? 'info' : 'neutral'}
           />
           <StateBadge
-            label="Yüzey"
+            label="Yüzey (Surface)"
             value={navState.activeSurface ? 'Açık' : 'Kapalı'}
             variant={navState.activeSurface ? 'success' : 'neutral'}
           />
           <StateBadge
-            label="Koruma"
+            label="Gezinme Koruması"
             value={hasUnsavedChanges ? 'Devrede' : 'Pasif'}
-            variant={hasUnsavedChanges ? 'warning' : 'neutral'}
+            variant={hasUnsavedChanges ? 'error' : 'neutral'}
           />
           <StateBadge
-            label="Görev"
-            value={activeOpId || 'Yok'}
+            label="Aktif Operasyon"
+            value={activeOpId ? 'Yürütülüyor' : 'Yok'}
             variant={activeOpId ? 'warning' : 'neutral'}
           />
         </div>
 
         <JsonViewer
           data={{
-            aktifYuzey: navState.activeSurface,
-            aktifHudModu: activeHudMode,
-            kaydedilmemisDegisiklikler: hasUnsavedChanges,
-            breadcrumbDegisimi: overrideBreadcrumb,
-            kayitliKart: { baslik: navTitle, aciklama: navDesc, ikon: navIcon },
+            activeSurface: navState.activeSurface,
+            activeHudMode,
+            hasUnsavedChanges,
+            activeOperationId: activeOpId,
+            breadcrumbOverride: overrideBreadcrumb ? breadcrumbCustomTitle : null,
           }}
-          title="Durum Verisi"
+          title="useNavigationState() Özeti"
         />
       </Section>
 
-      {/* Nav Kartı */}
-      <Section title="Nav Kartı">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <TextInput label="Başlık" value={navTitle} onChange={setNavTitle} />
-          <TextInput label="Açıklama" value={navDesc} onChange={setNavDesc} />
-          <TextInput label="İkon" value={navIcon} onChange={setNavIcon} />
-        </div>
-      </Section>
-
-      {/* HUD Modları */}
-      <Section title="HUD Modları">
-        <div className="flex flex-wrap gap-2">
-          <ActionBtn
-            onClick={() => {
-              setActiveHudMode((prev) => (prev === 'selection' ? null : 'selection'));
-              addLog('hud', 'Seçim HUD değiştirildi');
-            }}
-            variant={activeHudMode === 'selection' ? 'primary' : 'default'}
-            icon="solar:checklist-minimalistic-bold"
-          >
-            Seçim HUD (5 Öğe)
-          </ActionBtn>
-          <ActionBtn
-            onClick={() => {
-              setActiveHudMode((prev) => (prev === 'progress' ? null : 'progress'));
-              addLog('hud', 'İlerleme HUD değiştirildi');
-            }}
-            variant={activeHudMode === 'progress' ? 'primary' : 'default'}
-            icon="solar:upload-track-bold"
-          >
-            İlerleme HUD (%65)
-          </ActionBtn>
-          <ActionBtn
-            onClick={() => {
-              setActiveHudMode((prev) => (prev === 'actions' ? null : 'actions'));
-              addLog('hud', 'Hızlı Eylem HUD değiştirildi');
-            }}
-            variant={activeHudMode === 'actions' ? 'primary' : 'default'}
-            icon="solar:tuning-2-bold"
-          >
-            Eylem HUD
-          </ActionBtn>
-          {activeHudMode && (
-            <ActionBtn onClick={() => setActiveHudMode(null)} variant="danger">
-              Kapat
-            </ActionBtn>
-          )}
-        </div>
-      </Section>
-
-      {/* Yüzeyler */}
-      <Section title="Yüzeyler (Surfaces)">
-        <div className="flex flex-wrap gap-2">
-          <ActionBtn onClick={handleOpenSurface} variant="default" icon="solar:panel-bottom-bold">
-            Tekil Yüzey Aç
-          </ActionBtn>
-          <ActionBtn
-            onClick={handleOpenMultiStepFlow}
-            variant="primary"
-            icon="solar:round-transfer-horizontal-bold"
-          >
-            Çok Adımlı Akış Aç (3 Adım)
-          </ActionBtn>
-          <ActionBtn
-            onClick={() => navActions.closeSurface()}
-            variant="danger"
-            icon="solar:close-square-bold"
-          >
-            Kapat
-          </ActionBtn>
-        </div>
-      </Section>
-
-      {/* Gezinme Koruması */}
-      <Section title="Gezinme Koruması (Nav Guard)">
-        <div className="space-y-3">
-          <div
-            className={`rounded-xl border p-4 transition-all ${
-              hasUnsavedChanges
-                ? 'border-rose-500/40 bg-rose-500/10 text-rose-200'
-                : 'border-white/10 bg-white/5 text-white/70'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Icon
-                  icon={hasUnsavedChanges ? 'solar:lock-bold' : 'solar:lock-unlocked-bold'}
-                  size={18}
-                  className={hasUnsavedChanges ? 'text-rose-400' : 'text-white/50'}
-                />
-                <span className="text-xs font-medium">
-                  {hasUnsavedChanges
-                    ? 'Koruma devrede (kaydedilmemiş değişiklik var)'
-                    : 'Koruma pasif'}
-                </span>
-              </div>
-              <ActionBtn
-                onClick={() => {
-                  setHasUnsavedChanges((prev) => !prev);
-                  addLog(
-                    'koruma',
-                    `Navigasyon koruması ${!hasUnsavedChanges ? 'AÇILDI' : 'KAPATILDI'}`,
-                  );
-                }}
-                variant={hasUnsavedChanges ? 'danger' : 'primary'}
-                size="xs"
-              >
-                {hasUnsavedChanges ? 'Korumayı Kapat' : 'Korumayı Aç'}
-              </ActionBtn>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-white/50">Gezinmeyi dene:</span>
-            <ActionBtn
-              size="xs"
-              onClick={() => handleAttemptNavigate('/')}
-              icon="solar:home-2-bold"
+      {/* SEKME 1: İNTERAKTİF DEMOLAR */}
+      {currentTab === 'demos' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <DemoCard
+              title="Çoklu Seçim HUD'ı"
+              subtitle="useSelectionHud()"
+              badge="Selection"
+              badgeVariant="info"
+              icon="solar:check-square-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={() => setActiveHudMode((prev) => (prev === 'selection' ? null : 'selection'))}
+                  variant={activeHudMode === 'selection' ? 'danger' : 'primary'}
+                >
+                  {activeHudMode === 'selection' ? 'Kapat' : 'HUD Aç (5 Öge)'}
+                </ActionBtn>
+              }
             >
-              Ana Sayfa (/)
-            </ActionBtn>
-            <ActionBtn
-              size="xs"
-              onClick={() => handleAttemptNavigate('/account')}
-              icon="solar:user-bold"
-            >
-              Hesap (/account)
-            </ActionBtn>
-          </div>
-        </div>
-      </Section>
+              Dock üzerinde seçim sayacını, tümünü seçme ve toplu silme eylemlerini render eder.
+            </DemoCard>
 
-      {/* Operasyonlar & Breadcrumb */}
-      <Section title="Operasyonlar & Breadcrumb">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3.5">
-            <div className="text-xs font-medium text-white/70">Görev Takibi (Operations)</div>
-            <ActionBtn
-              onClick={handleStartOperation}
-              disabled={Boolean(activeOpId)}
-              className="w-full"
+            <DemoCard
+              title="İlerleme HUD'ı"
+              subtitle="useProgressHud()"
+              badge="Progress"
+              badgeVariant="warning"
+              icon="solar:refresh-circle-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={() => setActiveHudMode((prev) => (prev === 'progress' ? null : 'progress'))}
+                  variant={activeHudMode === 'progress' ? 'danger' : 'default'}
+                >
+                  {activeHudMode === 'progress' ? 'Kapat' : 'HUD Aç (%65)'}
+                </ActionBtn>
+              }
+            >
+              Senkronizasyon veya dosya transferi için dairesel/çubuklu ilerleme göstergesi sunar.
+            </DemoCard>
+
+            <DemoCard
+              title="Hızlı Filtre HUD'ı"
+              subtitle="useContextActionHud()"
+              badge="Context"
+              badgeVariant="success"
+              icon="solar:tuning-2-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={() => setActiveHudMode((prev) => (prev === 'actions' ? null : 'actions'))}
+                  variant={activeHudMode === 'actions' ? 'danger' : 'default'}
+                >
+                  {activeHudMode === 'actions' ? 'Kapat' : 'Filtreleri Göster'}
+                </ActionBtn>
+              }
+            >
+              Dock üzerinde anında yatay buton tepsisi açarak kategori ve medya filtreleri sunar.
+            </DemoCard>
+
+            <DemoCard
+              title="Tekil Nav Yüzeyi"
+              subtitle="openSurface()"
+              badge="Surface"
+              badgeVariant="purple"
+              icon="solar:panel-bottom-bold"
+              action={
+                <ActionBtn size="xs" onClick={handleOpenSurface} variant="default">
+                  Yüzey Aç
+                </ActionBtn>
+              }
+            >
+              Nav dock alanına doğrudan gömülen tam genişlikli geçici arayüz katmanı.
+            </DemoCard>
+
+            <DemoCard
+              title="Çok Adımlı Kurulum Sihirbazı"
+              subtitle="createSurfaceFlowDefinition()"
+              badge="3-Step Flow"
+              badgeVariant="success"
+              icon="solar:round-transfer-horizontal-bold"
+              action={
+                <ActionBtn size="xs" onClick={handleOpenMultiStepFlow} variant="primary">
+                  Sihirbazı Başlat
+                </ActionBtn>
+              }
+            >
+              Adım göstergeli, ileri/geri geçişli ve form durumunu saklayan gerçek 3 adımlı sihirbaz.
+            </DemoCard>
+
+            <DemoCard
+              title="Arka Plan Görev Takibi"
+              subtitle="useNavigationOperations()"
+              badge="Operations"
+              badgeVariant="info"
               icon="solar:play-circle-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={handleStartOperation}
+                  disabled={Boolean(activeOpId)}
+                  variant="default"
+                >
+                  {activeOpId ? 'Yürütülüyor...' : 'Görevi Başlat'}
+                </ActionBtn>
+              }
             >
-              {activeOpId ? 'Yürütülüyor' : 'Görevi Başlat'}
-            </ActionBtn>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3.5">
-            <div className="text-xs font-medium text-white/70">Breadcrumb Başlığı</div>
-            <ActionBtn
-              onClick={() => {
-                setOverrideBreadcrumb((prev) => !prev);
-                addLog(
-                  'breadcrumb',
-                  `Breadcrumb ${!overrideBreadcrumb ? 'uygulandı' : 'kaldırıldı'}`,
-                );
-              }}
-              variant={overrideBreadcrumb ? 'primary' : 'default'}
-              className="w-full"
-            >
-              {overrideBreadcrumb ? 'Özel Başlık Aktif' : 'Özel Başlık Uygula'}
-            </ActionBtn>
+              İlerleme bildiren uzun süreli arka plan görevlerini başlatır ve tamamlandığında kapatır.
+            </DemoCard>
           </div>
         </div>
-      </Section>
+      )}
+
+      {/* SEKME 2: UÇ DURUMLAR & KORUMA */}
+      {currentTab === 'edge_cases' && (
+        <div className="space-y-4">
+          <NoticeBanner
+            title="Navigasyon Koruması (Nav Guard)"
+            description="Kullanıcı sayfada kaydedilmemiş veri girmişse (kirli form durumu), sayfa geçişleri kilitlenir ve onay alınmadan yönlendirmeye izin verilmez."
+            variant="warning"
+            icon="solar:lock-bold"
+          />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <DemoCard
+              title="Gezinme Kilidi Anahtarı"
+              subtitle={hasUnsavedChanges ? 'Koruma Devrede (Kilitli)' : 'Koruma Pasif'}
+              badge={hasUnsavedChanges ? 'Kilitli' : 'Açık'}
+              badgeVariant={hasUnsavedChanges ? 'error' : 'neutral'}
+              icon="solar:shield-warning-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={() => {
+                    setHasUnsavedChanges((prev) => !prev);
+                    addLog('koruma', `Gezinme koruması ${!hasUnsavedChanges ? 'AÇILDI' : 'KAPATILDI'}`);
+                  }}
+                  variant={hasUnsavedChanges ? 'danger' : 'primary'}
+                >
+                  {hasUnsavedChanges ? 'Korumayı Kaldır' : 'Korumayı Aktif Et'}
+                </ActionBtn>
+              }
+            >
+              Koruma açıkken aşağıdaki rotalara gitmeyi deneyin. Sistem geçişi bloke edecektir:
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ActionBtn size="xs" onClick={() => handleAttemptNavigate('/')}>
+                  Ana Sayfa (/)
+                </ActionBtn>
+                <ActionBtn size="xs" onClick={() => handleAttemptNavigate('/account')}>
+                  Hesap (/account)
+                </ActionBtn>
+              </div>
+            </DemoCard>
+
+            <DemoCard
+              title="Dinamik Breadcrumb Başlığı"
+              subtitle="useRegisterBreadcrumbOverride()"
+              badge="Breadcrumb"
+              badgeVariant="info"
+              icon="solar:pin-bold"
+              action={
+                <ActionBtn
+                  size="xs"
+                  onClick={() => {
+                    setOverrideBreadcrumb((prev) => !prev);
+                    addLog('breadcrumb', `Özel başlık ${!overrideBreadcrumb ? 'aktif edildi' : 'kaldırıldı'}`);
+                  }}
+                  variant={overrideBreadcrumb ? 'primary' : 'default'}
+                >
+                  {overrideBreadcrumb ? 'Özel Başlık Aktif' : 'Özel Başlık Uygula'}
+                </ActionBtn>
+              }
+            >
+              <TextInput
+                label="Özel Segment Başlığı"
+                value={breadcrumbCustomTitle}
+                onChange={setBreadcrumbCustomTitle}
+              />
+            </DemoCard>
+          </div>
+
+          <Section title="Navigasyon Modülü Yetenek Matrisi">
+            <FeatureChecklist
+              features={[
+                { name: 'Dock Surface Mounting', desc: 'Nav dock üzerine tam entegre yüzey render etme', tested: true },
+                { name: 'Multi-Step Surface Flows', desc: 'createSurfaceFlowDefinition ile adımlı sihirbazlar', tested: true },
+                { name: 'Selection HUD', desc: 'Çoklu öge seçimi ve toplu işlem tepsisi', tested: true },
+                { name: 'Progress HUD', desc: 'Asenkron işler için dairesel ve çubuklu ilerleme gösterimi', tested: true },
+                { name: 'Navigation Guard', desc: 'Kaydedilmemiş değişikliklerde rota değişimini yakalama', tested: true },
+                { name: 'Breadcrumb Overrides', desc: 'Rota segment isimlerini dinamik olarak ezme', tested: true },
+              ]}
+            />
+          </Section>
+        </div>
+      )}
+
+      {/* SEKME 3: APİ & KOD ÖRNEKLERİ */}
+      {currentTab === 'code' && (
+        <div className="space-y-4">
+          <CodeSnippet
+            title="1. Seçim HUD'ı Kurulumu (Selection HUD)"
+            code={`import { useSelectionHud } from '@/domains/shell/navigation/huds/selection-hud';
+
+function MediaList({ selectedMovies, onClearSelection, onDeleteSelected }) {
+  useSelectionHud({
+    isActive: selectedMovies.length > 0,
+    count: selectedMovies.length,
+    title: \`\${selectedMovies.length} film seçildi\`,
+    actions: [
+      {
+        key: 'delete-all',
+        label: 'Seçilenleri Sil',
+        isDestructive: true,
+        onClick: onDeleteSelected,
+      },
+    ],
+    onCancel: onClearSelection,
+  });
+
+  return <div>Film Listesi...</div>;
+}`}
+          />
+
+          <CodeSnippet
+            title="2. Gezinme Koruması (Nav Guard)"
+            code={`import { useNavigationGuard } from '@/modules/nav';
+
+function MovieEditorForm({ isDirty }) {
+  useNavigationGuard({
+    when: isDirty,
+    message: 'Kaydedilmemiş değişiklikler kaybolacak. Çıkmak istediğinize emin misiniz?',
+    onBlock: ({ to }) => console.warn('Gezinme engellendi:', to),
+  });
+
+  return <form>Form Alanları...</form>;
+}`}
+          />
+
+          <CodeSnippet
+            title="3. Çok Adımlı Yüzey Akışı Başlatma"
+            code={`import { createSurfaceFlowDefinition, useNavigationActions } from '@/modules/nav';
+
+const WIZARD_FLOW = createSurfaceFlowDefinition({
+  id: 'setup-wizard',
+  createSurface: ({ input }) => ({
+    component: MyWizardComponent,
+    props: { initialStep: 1 },
+    title: 'Kurulum Sihirbazı',
+  }),
+});
+
+function TriggerButton() {
+  const { openSurfaceFlow } = useNavigationActions();
+  return <Button onClick={() => openSurfaceFlow(WIZARD_FLOW)}>Sihirbazı Başlat</Button>;
+}`}
+          />
+        </div>
+      )}
 
       {/* Olay Günlüğü */}
-      <LogConsole logs={logs} onClear={() => setLogs([])} title="Logs" />
+      <LogConsole logs={logs} onClear={() => setLogs([])} title="Navigasyon Yaşam Döngüsü & Olay Günlüğü" />
     </div>
   );
 }

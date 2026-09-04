@@ -42,15 +42,20 @@ import {
   createSurfaceFlowSession,
   createSurfaceReturnHandshake,
   getNavigationLocationKey,
+  createErrorStatus,
+  ErrorAction,
+  ErrorActions,
   GuardAction,
   GuardActions,
   navigationTransactionReducer,
   normalizeSurfaceExtension,
   registerGuard,
   resolveActiveHud,
+  resolveNavHeaderKey,
   updateSurfaceFlowSession,
   upsertHudEntry,
 } from '@/modules/nav';
+import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared';
 import {
   NAV_ACTION_MOTION_PROPS,
   NAV_ACTION_STYLES,
@@ -178,6 +183,9 @@ test('module public APIs complete their core flows in dependency order', async (
       rightPercent: 24,
     });
     assert.match(getEdgeFadeMask({ leftPercent: 18, rightPercent: 24 }), /^linear-gradient/);
+    assert.equal(DEFAULT_BACKGROUND.video, null);
+    assert.equal(DEFAULT_BACKGROUND.isPlaying, false);
+    assert.equal(Boolean(DEFAULT_BACKGROUND.video), false);
   });
 
   await t.test('05. context menus resolve the most specific usable definition', () => {
@@ -414,11 +422,11 @@ test('module public APIs complete their core flows in dependency order', async (
     unregisterGuard();
 
     const guardStatus = createGuardStatus({
-      title: 'Navigasyon Engellendi',
+      title: 'Navigation Blocked',
       description: 'Test guard message',
     });
     assert.equal(guardStatus.type, 'GUARD');
-    assert.equal(guardStatus.title, 'Navigasyon Engellendi');
+    assert.equal(guardStatus.title, 'Navigation Blocked');
     assert.equal(typeof guardStatus.action, 'function');
     assert.equal(typeof GuardAction, 'function');
     assert.equal(typeof GuardActions, 'function');
@@ -427,9 +435,59 @@ test('module public APIs complete their core flows in dependency order', async (
     const baseNavItem = { path: '/library', title: 'Library', icon: 'solar:bookmark-bold' };
     const overlayItem = applyStatusOverlay(baseNavItem, guardStatus);
     assert.equal(overlayItem.isStatus, true);
-    assert.equal(overlayItem.title, 'Navigasyon Engellendi');
+    assert.equal(overlayItem.title, 'Navigation Blocked');
     assert.equal(overlayItem.description, 'Test guard message');
     assert.equal(typeof overlayItem.action, 'function');
+
+    // Error boundary status: retry & refresh action buttons with getNavActionClass styling
+    assert.equal(typeof ErrorAction, 'function');
+    assert.equal(typeof ErrorActions, 'function');
+    assert.equal(ErrorAction, ErrorActions);
+
+    let retried = false;
+    const errorStatus = createErrorStatus({
+      type: 'APP_ERROR',
+      title: 'Render Exception',
+      description: 'Test crash',
+      onRetry: () => {
+        retried = true;
+      },
+    });
+    assert.equal(errorStatus.type, 'APP_ERROR');
+    assert.equal(errorStatus.title, 'Render Exception');
+    assert.equal(errorStatus.description, 'Test crash');
+    assert.equal(typeof errorStatus.action, 'function');
+
+    const errorActionElement = errorStatus.action();
+    assert.ok(errorActionElement);
+    assert.equal(errorActionElement.type, ErrorActions);
+    assert.equal(typeof errorActionElement.props.onRetry, 'function');
+    assert.equal(typeof errorActionElement.props.onRefresh, 'function');
+
+    // Test retry handler invocation
+    errorActionElement.props.onRetry();
+    assert.equal(retried, true);
+
+    const errorOverlayItem = applyStatusOverlay(baseNavItem, errorStatus);
+    assert.equal(errorOverlayItem.isStatus, true);
+    assert.equal(errorOverlayItem.type, 'APP_ERROR');
+    assert.equal(typeof errorOverlayItem.action, 'function');
+
+    // Button classes styled via getNavActionClass
+    const refreshBtnClass = getNavActionClass({
+      variant: NAV_ACTION_STYLES.muted,
+      className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+    });
+    assert.ok(refreshBtnClass.includes('whitespace-nowrap'));
+    assert.ok(refreshBtnClass.includes(NAV_ACTION_STYLES.muted));
+
+    const retryBtnClass = getNavActionClass({
+      variant: DESTRUCTIVE_ACTION_TONE_CLASS,
+      className: 'min-w-0 flex-1 justify-center whitespace-nowrap',
+    });
+    assert.ok(retryBtnClass.includes('whitespace-nowrap'));
+    assert.ok(retryBtnClass.includes('text-error'));
+    assert.ok(retryBtnClass.includes('bg-error/10'));
 
     // Navigation constants, semantic surface tokens, and action styling unification
     assert.ok(SEMANTIC_SURFACE_CLASSES.error.surface);
@@ -468,6 +526,13 @@ test('module public APIs complete their core flows in dependency order', async (
     const toneClass = getNavActionClass({ tone: 'error' });
     assert.ok(toneClass.includes('bg-error/10'));
     assert.ok(toneClass.includes('ring-error/50'));
+
+    // NavCardHeader key stability during video play/pause
+    const sampleLink = { path: '/demo', name: 'Demo', title: 'Tvizzie Demo', icon: 'solar:play-bold' };
+    const keyWithVideo = resolveNavHeaderKey({ link: sampleLink, description: 'Sample description', showVideoIcon: true });
+    assert.equal(keyWithVideo, 'standard:/demo:video:Tvizzie Demo:Sample description');
+    const keyWithoutVideo = resolveNavHeaderKey({ link: sampleLink, description: 'Sample description', showVideoIcon: false });
+    assert.equal(keyWithoutVideo, 'standard:/demo:solar:play-bold:Tvizzie Demo:Sample description');
   });
 
   await t.test('11. notifications persist critical state through the browser boundary', () => {

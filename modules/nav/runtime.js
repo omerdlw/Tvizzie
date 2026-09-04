@@ -659,13 +659,13 @@ function useNavigationCore() {
       globalEvents.emit(EVENT_TYPES.NAV_GUARD, {
         to: href,
         from,
-        title: 'Navigasyon Engellendi',
+        title: 'Navigation Blocked',
         message:
           message ||
-          'Modül test alanında kaydedilmemiş değişiklikler var. Sayfadan ayrılmak istiyor musunuz?',
+          'You have unsaved changes. Are you sure you want to leave?',
         icon: 'solar:danger-triangle-bold',
-        cancelText: 'Kal',
-        confirmText: 'Yine de Geç',
+        cancelText: 'Stay',
+        confirmText: 'Leave',
         onCancel: cancelNavigation,
         onConfirm: confirmNavigation,
       });
