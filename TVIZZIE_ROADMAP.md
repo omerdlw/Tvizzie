@@ -7,29 +7,34 @@
 
 ---
 
-## 🎯 Temel Amacımız
+## 🎯 Temel İlke: "Olduğu Gibi Geçirmek Yok; Geliştirmek, Güçlendirmek Var"
 
-Tvizzie'yi Base Framework'ün sağlam, tip-güvenli ve yüksek performanslı mimarisi üzerine adım adım taşımak.
+Eski kodları birebir kopyalamıyoruz. Tvizzie'nin medya ve arama omurgasını **daha hızlı, daha dayanıklı, akıllı algoritmalarla donatılmış ve tam tip güvenli** olarak yeniden inşa ediyoruz.
 
----
-
-## 🚀 Öncelikli Geliştirme Sırası
-
-1. **TMDB Mimarisi (İlk Adım):**
-   * Eski referans: `/Users/omerdlw/Documents/Tvizzie Codes/infrastructure/tmdb/`
-   * Yeni mimariye taşınacak: `src/infrastructure/tmdb/` (Server & Client adaptörleri, Result pattern uyumu, TypeScript tipleri).
-
-2. **Search-Action & Arama Deneyimi:**
-   * Film / Dizi arama Server Action'ları (`createSafeAction`).
-   * Arama input'u, debounced hızlı sonuçlar ve filtreler.
-
-3. **Movie & TV Sayfaları:**
-   * `/movie/[id]` ve `/tv/[id]` rotaları.
-   * Film/Dizi detay sayfaları, oyuncu kadrosu, sezon/bölüm listeleri, hero backdrop ve poster gösterimi.
+Şimdilik Account / Auth gibi yan konularla vakit kaybetmiyoruz. Tüm odak sadece 2 ana sistem üzerinde:
 
 ---
 
-## ⚠️ Kritik Kurallar
+## 🚀 İlk Yapılacak 2 Ana Sistem
 
-* **Account / Auth Şimdilik Pasif:** İlk aşamalarda account/auth altyapısına dokunulmayacak ve taşınmayacak. Tamamen TMDB ve medya gösterimine odaklanılacak.
-* **Core Dokunulmazdır:** `src/core/` içine kod yazılmaz. Tüm yeni kodlar `src/infrastructure/` ve `src/features/` içine eklenir.
+### 1. TMDB Mimarisi, Algoritması, Altyapısı ve Sistemi
+* **Referans:** `/Users/omerdlw/Documents/Tvizzie Codes/infrastructure/tmdb/`
+* **Geliştirme & Güçlendirme Hedefleri:**
+  - Sağlam, tip-güvenli ve hataya dayanıklı (resilient) TMDB API istemcisi.
+  - Akıllı önbellekleme (Edge / Memory caching), Rate-Limit koruması ve fallback stratejileri.
+  - Veri normalizasyonu ve tutarlı payload yapıları (Film, Dizi, Sezon, Bölüm, Oyuncu).
+  - Yüksek performanslı veri çekme algoritmaları (paralel istekler, gereksiz yüklerden arındırılmış sorgular).
+
+### 2. Search Mimarisi, Algoritması, Altyapısı ve Sistemi
+* **Referans:** `/Users/omerdlw/Documents/Tvizzie Codes/domains/search/`
+* **Geliştirme & Güçlendirme Hedefleri:**
+  - Akıllı arama algoritması (Fuzzy matching, alaka düzeyi/relevancy ranking, popülerlik ağırlığı).
+  - Çoklu arama desteği (Multi-search: Film, Dizi, Kişi/Oyuncu).
+  - Hızlı ve optimize arama altyapısı (Debounce, prefetch, stale-while-revalidate, sıfır gereksiz network trafiği).
+  - Hata toleranslı ve arama geçmişi/trend algoritmalarıyla zenginleştirilebilir altyapı.
+
+---
+
+## ⚠️ Temel Kurallar
+* **Account/Auth:** Şimdilik pasif, hiçbir efor harcanmayacak.
+* **Core Dokunulmazdır:** `src/core/` içine dokunulmaz. Tüm TMDB ve Search sistemleri `src/infrastructure/tmdb` ve `src/features/search` katmanlarında kurulur.
