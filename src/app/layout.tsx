@@ -5,9 +5,9 @@ import { geistSans, zuume } from "@/core/tokens/fonts";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  description: "Base Framework",
+  description: "Tvizzie",
   title: {
-    default: "Base Framework",
+    default: "Tvizzie",
     template: "%s",
   },
 };

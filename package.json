@@ -1,5 +1,5 @@
 {
-  "name": "base_framework",
+  "name": "tvizzie",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
     "modules:check": "node --experimental-strip-types --test 'tests/**/*.test.js'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "graph:update": "codebase-memory-mcp cli index_repository --repo-path . --persistence true && graphify extract . --code-only && graphify cluster-only . --no-label",
-    "graph:status": "codebase-memory-mcp cli index_status --project Users-omerdlw-Documents-Base-Framework",
+    "graph:update": "codebase-memory-mcp cli index_repository --repo-path . --name tvizzie --persistence true && graphify extract . --code-only && graphify cluster-only . --no-label",
+    "graph:status": "codebase-memory-mcp cli index_status --project tvizzie",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
