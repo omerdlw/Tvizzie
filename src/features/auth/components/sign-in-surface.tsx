@@ -1,0 +1,472 @@
+"use client";
+
+import Link from "next/link";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+
+import {
+  getAuthErrorMessage,
+  getAuthCallbackUrl,
+  OAUTH_PROVIDERS,
+  requestEmailAuth,
+  sanitizeNextPath,
+  signInWithOAuth,
+  signInWithPasskey,
+  useAuth,
+} from "@/features/auth";
+import {
+  useDockActionClass,
+  useDockActions,
+  type SurfaceEntry,
+} from "@omerdlw/base-framework/modules/dock";
+import { ACTION_TONE_CLASS } from "@omerdlw/base-framework/tokens";
+import { globalEvents } from "@omerdlw/base-framework/events";
+import { AUTH_EVENTS } from "../lib/constants";
+import { useToast } from "@omerdlw/base-framework/modules/notification";
+import { Button, Icon, Input } from "@/ui";
+import { createVerificationSurfaceEntry } from "./verification-surface";
+
+const DEFAULT_SURFACE_WIDTH = 250;
+const REDIRECT_TIMEOUT_MS = 12000;
+
+const PROVIDER_CONFIG = Object.freeze({
+  email: Object.freeze({ icon: "solar:letter-bold", label: "Email" }),
+  github: Object.freeze({ icon: "mdi:github", label: "GitHub" }),
+  google: Object.freeze({
+    icon: "flat-color-icons:google",
+    label: "Google",
+  }),
+  x: Object.freeze({ icon: "simple-icons:x", label: "Twitter" }),
+  passkey: Object.freeze({ icon: "solar:key-bold", label: "Passkey" }),
+} as Record<string, { icon: string; label: string }>);
+
+export const AUTH_INPUT_CLASS =
+  "h-10 w-full rounded-[20px] bg-white/5 px-4 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
+
+const PROVIDER_BUTTON_CLASS =
+  "group/btn center h-10 w-full cursor-pointer rounded-[20px] bg-white/5 px-4 text-xs @[280px]:text-sm text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
+
+const PROVIDER_GRID_BUTTON_CLASS =
+  "group/btn center h-10 w-full cursor-pointer rounded-[20px] bg-white/5 text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
+
+interface OAuthProviderButtonProps {
+  disabled?: boolean;
+  isBusy?: boolean;
+  onClick?: () => void;
+  provider: string;
+}
+
+function OAuthProviderButton({
+  disabled = false,
+  isBusy = false,
+  onClick,
+  provider,
+}: OAuthProviderButtonProps) {
+  const config = PROVIDER_CONFIG[provider] || PROVIDER_CONFIG.email;
+
+  return (
+    <Button
+      aria-label={`Continue with ${config.label}`}
+      className={PROVIDER_BUTTON_CLASS}
+      disabled={disabled}
+      loading={isBusy}
+      onClick={onClick}
+      type="button"
+    >
+      <span className="flex min-w-0 items-center justify-center gap-2">
+        <span className="center size-5 shrink-0 text-white/70 group-hover/btn:text-black ">
+          <Icon icon={config.icon} size={18} />
+        </span>
+        <span className="truncate font-medium">
+          Continue with {config.label}
+        </span>
+      </span>
+    </Button>
+  );
+}
+
+function OAuthProviderGridButton({
+  disabled = false,
+  isBusy = false,
+  onClick,
+  provider,
+}: OAuthProviderButtonProps) {
+  const config = PROVIDER_CONFIG[provider] || PROVIDER_CONFIG.email;
+
+  return (
+    <Button
+      aria-label={`Continue with ${config.label}`}
+      className={PROVIDER_GRID_BUTTON_CLASS}
+      disabled={disabled}
+      loading={isBusy}
+      onClick={onClick}
+      type="button"
+    >
+      <span className="center size-5 text-white/70 group-hover/btn:text-black ">
+        <Icon icon={config.icon} size={18} />
+      </span>
+    </Button>
+  );
+}
+
+interface OAuthProviderListProps {
+  activeProvider?: string | null;
+  disabled?: boolean;
+  includeEmail?: boolean;
+  includePasskey?: boolean;
+  onSelect?: (provider: string) => void;
+}
+
+function OAuthProviderList({
+  activeProvider = null,
+  disabled = false,
+  includeEmail = false,
+  includePasskey = false,
+  onSelect,
+}: OAuthProviderListProps) {
+  const gridProviders = [
+    ...(includeEmail ? ["email"] : []),
+    ...OAUTH_PROVIDERS,
+  ];
+
+  return (
+    <div className="flex w-full flex-col gap-2.5">
+      {includePasskey && (
+        <div className="w-full" key="passkey">
+          <OAuthProviderButton
+            disabled={disabled || Boolean(activeProvider)}
+            isBusy={activeProvider === "passkey"}
+            onClick={() => onSelect?.("passkey")}
+            provider="passkey"
+          />
+        </div>
+      )}
+
+      {gridProviders.length > 0 && (
+        <div className="grid w-full grid-cols-2 @[380px]:grid-cols-4 gap-2.5">
+          {gridProviders.map((provider, index) => (
+            <div className="w-full" key={provider}>
+              <OAuthProviderGridButton
+                disabled={disabled || Boolean(activeProvider)}
+                isBusy={activeProvider === provider}
+                onClick={() => onSelect?.(provider)}
+                provider={provider}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getCurrentPath(
+  pathname?: string | null,
+  searchParams?: URLSearchParams | null,
+): string {
+  const query = searchParams?.toString();
+  return `${pathname || "/"}${query ? `?${query}` : ""}`;
+}
+
+function usePostAuthRedirect(nextPath?: string | null): string {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  return useMemo(
+    () =>
+      sanitizeNextPath(nextPath || getCurrentPath(pathname, searchParams), "/"),
+    [nextPath, pathname, searchParams],
+  );
+}
+
+interface SignInData {
+  email?: string;
+  identifier?: string;
+  next?: string | null;
+  [key: string]: unknown;
+}
+
+function createSurfaceEntry(
+  Component: ComponentType<any>,
+  title: string,
+  data: SignInData = {},
+  config: Partial<SurfaceEntry> = {},
+): SurfaceEntry {
+  return {
+    component: Component,
+    title,
+    props: { data },
+    width: DEFAULT_SURFACE_WIDTH,
+    ...config,
+  };
+}
+
+export const createSignInSurfaceEntry = (
+  data: SignInData = {},
+  config: Partial<SurfaceEntry> = {},
+) => createSurfaceEntry(SignInSurface, "Sign In", data, config);
+
+const createEmailSignInSurfaceEntry = (
+  data: SignInData = {},
+  config: Partial<SurfaceEntry> = {},
+) => createSurfaceEntry(EmailSignInSurface, "Sign In", data, config);
+
+interface EmailSignInSurfaceProps {
+  close?: (result?: { success?: boolean }) => void;
+  data?: SignInData;
+}
+
+function EmailSignInSurface({ data = {} }: EmailSignInSurfaceProps) {
+  const auth = useAuth();
+  const { openSurface } = useDockActions();
+  const toast = useToast();
+
+  const [email, setEmail] = useState(() =>
+    String(data.email || data.identifier || "").trim(),
+  );
+  const postAuthRedirect = usePostAuthRedirect(data.next);
+
+  const actionClass = useDockActionClass();
+  const submitButtonClass = useMemo(
+    () =>
+      actionClass({
+        className: "h-10 disabled:cursor-not-allowed disabled:opacity-50",
+        variant: ACTION_TONE_CLASS,
+      }),
+    [actionClass],
+  );
+
+  const [emailAuthState, emailAuthAction, isEmailPending] = useActionState(
+    async (_prev: any, formData: FormData) => {
+      const targetEmail = ((formData?.get("email") as string) || email).trim();
+      if (!targetEmail) return { error: "Email is required", success: false };
+      try {
+        await requestEmailAuth(auth.client, {
+          createUser: true,
+          email: targetEmail,
+        });
+        return { email: targetEmail, success: true };
+      } catch (error: any) {
+        return {
+          error: getAuthErrorMessage(
+            error,
+            "Couldn't send your code. Please try again",
+          ),
+          success: false,
+        };
+      }
+    },
+    null,
+  );
+
+  useEffect(() => {
+    if (!emailAuthState) return;
+    if (emailAuthState.success && emailAuthState.email) {
+      openSurface(
+        createVerificationSurfaceEntry({
+          email: emailAuthState.email,
+          next: postAuthRedirect,
+        }),
+      );
+    } else if (emailAuthState.error) {
+      toast(emailAuthState.error);
+    }
+  }, [emailAuthState, openSurface, postAuthRedirect, toast]);
+
+  return (
+    <form action={emailAuthAction} className="flex flex-col gap-2.5">
+      <Input
+        name="email"
+        aria-label="Email"
+        autoComplete="email"
+        autoFocus
+        className={AUTH_INPUT_CLASS}
+        disabled={isEmailPending}
+        id="surface-email-sign-in-input"
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="Email"
+        required
+        type="email"
+        value={email}
+      />
+      <div className="flex w-full items-center gap-2 @[280px]:gap-2.5">
+        <Button
+          className={submitButtonClass}
+          disabled={isEmailPending}
+          loading={isEmailPending}
+          type="submit"
+        >
+          <span className="truncate">Continue with email</span>
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+interface SignInSurfaceProps {
+  close?: (result?: { success?: boolean }) => void;
+  data?: SignInData;
+}
+
+function SignInSurface({ close, data = {} }: SignInSurfaceProps) {
+  const auth = useAuth();
+  const { openSurface } = useDockActions();
+  const toast = useToast();
+
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
+  const completionInFlight = useRef(false);
+  const timeoutRef = useRef<number | null>(null);
+
+  const postAuthRedirect = usePostAuthRedirect(data.next);
+  const isBusy = Boolean(activeProvider);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const completeAuthentication = useCallback(async () => {
+    if (completionInFlight.current) return;
+    completionInFlight.current = true;
+
+    try {
+      const nextState = await auth.refresh();
+      const user = nextState?.user || auth.user;
+      const session =
+        nextState?.session || auth.session || (user ? { user } : null);
+
+      if (user) {
+        globalEvents.emit(AUTH_EVENTS.AUTH_SIGN_IN, {
+          session,
+          userId: user.id,
+        });
+      }
+
+      close?.({ success: true });
+      window.location.replace(postAuthRedirect);
+    } catch (error) {
+      completionInFlight.current = false;
+      throw error;
+    }
+  }, [auth, close, postAuthRedirect]);
+
+  async function handleProviderSignIn(provider: string) {
+    if (isBusy) return;
+    setActiveProvider(provider);
+
+    const isPasskey = provider === "passkey";
+    const providerName = isPasskey
+      ? "passkey"
+      : `${provider.charAt(0).toUpperCase() + provider.slice(1)}`;
+
+    globalEvents.emit(AUTH_EVENTS.AUTH_FEEDBACK, {
+      description: isPasskey
+        ? "Preparing passkey sign-in"
+        : `Redirecting to ${providerName} sign-in`,
+      flow: "login",
+      phase: "start",
+      priority: 110,
+      statusType: "LOGIN",
+      themeType: "LOGIN",
+      title: "Signing In",
+    });
+
+    let isRedirecting = false;
+    try {
+      if (isPasskey) {
+        await signInWithPasskey(auth.client);
+        await completeAuthentication();
+        return;
+      }
+
+      await signInWithOAuth(auth.client, {
+        provider,
+        redirectTo: getAuthCallbackUrl(postAuthRedirect),
+      });
+
+      isRedirecting = true;
+
+      timeoutRef.current = window.setTimeout(() => {
+        globalEvents.emit(AUTH_EVENTS.AUTH_FEEDBACK, {
+          flow: "login",
+          phase: "clear",
+          statusType: "LOGIN",
+        });
+      }, REDIRECT_TIMEOUT_MS);
+    } catch (error: any) {
+      globalEvents.emit(AUTH_EVENTS.AUTH_FEEDBACK, {
+        flow: "login",
+        phase: "failure",
+        statusType: "LOGIN",
+      });
+      toast(
+        getAuthErrorMessage(error, "Couldn't sign you in. Please try again"),
+      );
+    } finally {
+      if (!isRedirecting) setActiveProvider(null);
+    }
+  }
+
+  function handleMethodSelect(provider: string) {
+    if (provider === "email") {
+      openSurface(
+        createEmailSignInSurfaceEntry({
+          email: String(data.email || data.identifier || "").trim(),
+          next: postAuthRedirect,
+        }),
+      );
+      return;
+    }
+    handleProviderSignIn(provider);
+  }
+
+  if (!auth.isConfigured) {
+    return (
+      <p className="rounded-[20px] bg-white/5 px-4 py-3 text-sm text-white/70 ring-1 ring-inset ring-white/5">
+        Configure the Supabase variables in .env.local first
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <OAuthProviderList
+        activeProvider={activeProvider}
+        disabled={isBusy}
+        includeEmail
+        includePasskey
+        onSelect={handleMethodSelect}
+      />
+      <p className="px-1 text-center text-xs leading-5 text-white/50">
+        By continuing you agree to the{" "}
+        <Link
+          className="underline underline-offset-2 hover:text-white"
+          href="/terms"
+          onClick={() => close?.()}
+          prefetch={false}
+        >
+          Terms
+        </Link>{" "}
+        and the{" "}
+        <Link
+          className="underline underline-offset-2 hover:text-white"
+          href="/privacy"
+          onClick={() => close?.()}
+          prefetch={false}
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}

@@ -1,0 +1,181 @@
+"use client";
+
+import { useActionState, useEffect, useMemo, useState } from "react";
+
+import { completeSignUpAction } from "../../server/actions";
+import {
+  sanitizeNextPath,
+  useAuth,
+  AUTH_INPUT_CLASS,
+  AUTH_EVENTS,
+} from "@/features/auth";
+import {
+  useDockActionClass,
+  type SurfaceEntry,
+} from "@omerdlw/base-framework/modules/dock";
+import { ACTION_TONE_CLASS } from "@omerdlw/base-framework/tokens";
+import { globalEvents } from "@omerdlw/base-framework/events";
+import { useToast } from "@omerdlw/base-framework/modules/notification";
+import { Button, Input } from "@/ui";
+
+const DEFAULT_REDIRECT = "/account";
+
+interface AccountSetupData {
+  displayName?: string;
+  next?: string | null;
+  username?: string;
+  [key: string]: unknown;
+}
+
+function getAccountPath(
+  username?: string | null,
+  fallback = DEFAULT_REDIRECT,
+): string {
+  return username
+    ? `/account/${encodeURIComponent(username)}`
+    : sanitizeNextPath(fallback, DEFAULT_REDIRECT);
+}
+
+interface AccountSetupSurfaceProps {
+  close?: (result?: { success?: boolean }) => void;
+  data?: AccountSetupData;
+}
+
+function AccountSetupSurface({ close, data = {} }: AccountSetupSurfaceProps) {
+  const actionClass = useDockActionClass();
+  const SUBMIT_BUTTON_CLASS = actionClass({ variant: ACTION_TONE_CLASS });
+  const auth = useAuth();
+  const toast = useToast();
+
+  const {
+    username: initialUsername,
+    displayName: initialDisplayName,
+    next,
+  } = data;
+
+  const postAuthRedirect = useMemo(
+    () => sanitizeNextPath(next, DEFAULT_REDIRECT),
+    [next],
+  );
+
+  const [username, setUsername] = useState(() =>
+    String(initialUsername || "").trim(),
+  );
+  const [displayName, setDisplayName] = useState(() =>
+    String(
+      initialDisplayName || auth.user?.user_metadata?.full_name || "",
+    ).trim(),
+  );
+
+  const [setupState, formAction, isPending] = useActionState(
+    async (_prev: any, formData: FormData) => {
+      const formUsername = (
+        (formData?.get("username") as string) || username
+      ).trim();
+      const formDisplayName = (
+        (formData?.get("displayName") as string) || displayName
+      ).trim();
+
+      if (!formUsername) {
+        return { error: "Username is required", success: false };
+      }
+
+      const result = await completeSignUpAction({
+        displayName: formDisplayName || formUsername,
+        username: formUsername,
+      });
+
+      if (!result.success) {
+        return {
+          error:
+            result.error ||
+            "Couldn't finish setting up your account. Try a different username",
+          success: false,
+        };
+      }
+
+      const resolvedUsername = result.account?.username || formUsername;
+      const nextState = await auth.refresh();
+      const user = nextState?.user || auth.user;
+      const session =
+        nextState?.session || auth.session || (user ? { user } : null);
+
+      if (user) {
+        globalEvents.emit(AUTH_EVENTS.AUTH_SIGN_IN, {
+          account: result.account,
+          session,
+          userId: user.id,
+        });
+      }
+
+      return {
+        resolvedUsername,
+        success: true,
+      };
+    },
+    null,
+  );
+
+  useEffect(() => {
+    if (!setupState) return;
+    if (setupState.success && setupState.resolvedUsername) {
+      close?.({ success: true });
+      window.location.replace(
+        getAccountPath(setupState.resolvedUsername, postAuthRedirect),
+      );
+    } else if (setupState.error) {
+      toast(setupState.error);
+    }
+  }, [close, postAuthRedirect, setupState, toast]);
+
+  return (
+    <form action={formAction} className="flex flex-col gap-2.5">
+      <Input
+        name="username"
+        aria-label="Username"
+        autoComplete="username"
+        autoFocus
+        className={AUTH_INPUT_CLASS}
+        disabled={isPending}
+        id="account-setup-username"
+        onChange={(event) => setUsername(event.target.value)}
+        placeholder="Username"
+        required
+        type="text"
+        value={username}
+      />
+      <Input
+        name="displayName"
+        aria-label="Display name"
+        autoComplete="name"
+        className={AUTH_INPUT_CLASS}
+        disabled={isPending}
+        id="account-setup-display-name"
+        onChange={(event) => setDisplayName(event.target.value)}
+        placeholder="Display name (optional)"
+        type="text"
+        value={displayName}
+      />
+      <Button
+        className={SUBMIT_BUTTON_CLASS}
+        disabled={isPending || !username.trim()}
+        loading={isPending}
+        type="submit"
+      >
+        Continue
+      </Button>
+    </form>
+  );
+}
+
+export function createAccountSetupSurfaceEntry(
+  data: AccountSetupData = {},
+  config: Partial<SurfaceEntry> = {},
+): SurfaceEntry {
+  return {
+    component: AccountSetupSurface,
+    title: "Set up account",
+    props: { data },
+    ...config,
+  };
+}
