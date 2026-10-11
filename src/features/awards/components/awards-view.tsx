@@ -11,7 +11,7 @@ import {
 import { cn } from "@omerdlw/base-framework/utils";
 import { movieHref, personHref } from "@/config/routes";
 import { PosterThumb } from "@/features/artwork";
-import { Button, Icon, SegmentedControl, Select } from "@/ui";
+import { AdaptiveImage, Button, Icon, SegmentedControl, Select } from "@/ui";
 import { useDockLinkClick } from "@/motion";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { AwardRecipient, Awards } from "@/infrastructure/tmdb/types";
@@ -237,13 +237,11 @@ function AwardGroupBlock({
           />
         ) : null}
         {logo ? (
-          <img
+          <AdaptiveImage
             alt=""
-            className="size-7 shrink-0 rounded-lg bg-white/10 object-contain p-0.5"
-            height={28}
-            loading="lazy"
+            className="object-contain p-0.5"
             src={logo}
-            width={28}
+            wrapperClassName="size-7 shrink-0 rounded-lg bg-white/10"
           />
         ) : null}
         <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-white">

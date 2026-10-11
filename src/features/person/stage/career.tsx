@@ -9,7 +9,6 @@ import {
   useTransform,
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
-import { Icon } from "@/ui";
 import { SCENE, careerGap } from "../lib/motion";
 import type { CareerYear } from "../lib/types";
 import { EASE } from "../lib/tempo";
@@ -90,7 +89,7 @@ export function Career({
   return (
     <div onPointerLeave={() => setActive(peak)}>
       <Cascade className="flex flex-col gap-5" gap={gap}>
-        <Item className="flex min-h-14 items-end justify-between gap-6">
+        <Item className="flex min-h-14 items-end gap-6">
           <div className="flex min-w-0 items-end gap-5">
             <span className="font-zuume text-5xl leading-[0.8] font-bold text-white tabular-nums sm:text-6xl">
               <Roll year={current.year} />
@@ -112,14 +111,6 @@ export function Career({
               </span>
             </span>
           </div>
-          <button
-            className="cine-fade hidden shrink-0 cursor-pointer items-center gap-1.5 pb-1 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase outline-none hover:text-white focus-visible:text-white sm:flex"
-            onClick={() => onOpen(current.year)}
-            type="button"
-          >
-            In the timeline
-            <Icon icon="solar:alt-arrow-right-linear" size={14} />
-          </button>
         </Item>
 
         <div

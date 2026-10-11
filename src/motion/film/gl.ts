@@ -75,3 +75,11 @@ export function fitCanvas(canvas: HTMLCanvasElement, cap: number) {
   canvas.height = height;
   return true;
 }
+
+// TMDB sends its CORS header only to a request that carries an Origin, and its
+// cache does not vary on it: a picture first shown by a plain <img> is kept
+// without the header, and a CORS read of the same address is then refused from
+// that copy until the cache is bypassed. Pictures read into a canvas or a
+// texture are asked for under their own name, so they never meet it.
+export const readable = (src: string) =>
+  `${src}${src.includes("?") ? "&" : "?"}gl`;

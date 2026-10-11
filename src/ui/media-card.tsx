@@ -104,6 +104,7 @@ export function MediaCard({
     card = (
       <LinkCard
         className={classes}
+        data-cursor="card"
         href={href}
         label={label}
         onNavigated={onNavigated}
@@ -119,6 +120,7 @@ export function MediaCard({
         {...rest}
         aria-label={label}
         className={cn(classes, "cursor-pointer text-left")}
+        data-cursor="card"
         onClick={onClick}
         style={style}
         type="button"

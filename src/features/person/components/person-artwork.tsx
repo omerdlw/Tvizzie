@@ -86,13 +86,18 @@ export function PersonBackdropHero({
   const image = tmdbImageUrl("backdrop", path, "original");
   return image ? (
     <Backdrop>
-      <Grade source={tmdbImageUrl("backdrop", path, "w300")} />
-      <Projection
-        defocusAt={defocusAt}
-        halation={SCENE.film.halation}
-        position="center 20%"
-        src={image}
-      />
+      {(reveal) => (
+        <>
+          <Grade source={tmdbImageUrl("backdrop", path, "w300")} />
+          <Projection
+            defocusAt={defocusAt}
+            halation={SCENE.film.halation}
+            onReady={reveal}
+            position="center 20%"
+            src={image}
+          />
+        </>
+      )}
     </Backdrop>
   ) : null;
 }

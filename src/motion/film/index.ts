@@ -15,5 +15,7 @@ export { Foil } from "./foil";
 export { useHouseDown, useShowing } from "./house";
 export { Intermission } from "./intermission";
 export { Magnet } from "./magnet";
+export { readable } from "./gl";
 export { Projection } from "./projector";
+export { Cursor } from "./reticle";
 export { RoomGrain } from "./room-grain";

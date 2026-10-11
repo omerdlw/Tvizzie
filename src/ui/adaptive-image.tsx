@@ -99,6 +99,7 @@ function AdaptiveImage({
     <div
       className={cn(
         theme.slots.adaptiveImageFrame,
+        !hasLoaded && !hasFailed && "skeleton-block",
         skeletonClassName,
         wrapperClassName,
       )}

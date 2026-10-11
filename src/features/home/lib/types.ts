@@ -8,8 +8,9 @@ export interface HomeMovie {
   year: number | null;
 }
 
-export interface ReelMovie extends HomeMovie {
-  note: string;
+export interface TrendingMovie extends HomeMovie {
+  backdropPath: string;
+  logline: string | null;
 }
 
 export interface PulseMovie extends HomeMovie {
@@ -19,56 +20,18 @@ export interface PulseMovie extends HomeMovie {
   watchers: number;
 }
 
-export interface HomePerson {
-  id: number;
-  name: string;
-}
-
 export interface HomeFeed {
-  discover: HomeMovie[];
-  names: HomePerson[];
-  reel: ReelMovie[];
-  pulse: PulseMovie[];
   soon: HomeMovie[];
   theatres: HomeMovie[];
+  // The day the feed was cut, as an ISO date.
+  today: string;
+  trending: TrendingMovie[];
+  // The seven days the chart covers, as ISO dates.
+  week: { from: string; to: string };
 }
 
 export interface DiscoverResponse {
   hasMore: boolean;
   movies: HomeMovie[];
   page: number;
-}
-
-export interface HomeList {
-  description: string;
-  id: string;
-  itemsCount: number;
-  likesCount: number;
-  owner: { displayName: string; username: string };
-  previews: (string | null)[];
-  reviewsCount: number;
-  slug: string;
-  title: string;
-  updatedAt: string;
-}
-
-export interface HomeReview {
-  author: { avatarUrl: string | null; displayName: string; username: string };
-  excerpt: string;
-  id: string;
-  likesCount: number;
-  posterPath: string | null;
-  title: string;
-  tmdbId: number;
-  year: number | null;
-}
-
-export interface CommunityPicks {
-  lists: HomeList[];
-  reviews: HomeReview[];
-}
-
-export interface HomeCommunity {
-  following: CommunityPicks | null;
-  everyone: CommunityPicks;
 }

@@ -5,6 +5,7 @@ import { useTheme } from "@omerdlw/base-framework/theme";
 import { cn } from "@omerdlw/base-framework/utils";
 import { primitivesTheme } from "./theme";
 import { getInitials, resolveSlotClasses } from "./utils";
+import { AdaptiveImage } from "./adaptive-image";
 import { AvatarProps } from "./types";
 
 function Avatar({
@@ -38,7 +39,7 @@ function Avatar({
       {...props}
     >
       {hasValidImage ? (
-        <img
+        <AdaptiveImage
           src={src as string}
           alt={alt || name || "Avatar"}
           onError={() => setFailedSrc(src as string)}

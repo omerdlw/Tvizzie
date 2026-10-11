@@ -416,6 +416,7 @@ export function Carousel({
           "flex cursor-grab touch-pan-y gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-[20px] select-none data-[dragging=true]:cursor-grabbing",
           className,
         )}
+        data-cursor="drag"
         onDragStart={(event) => event.preventDefault()}
         onPointerDown={stopGlide}
         onScroll={sync}

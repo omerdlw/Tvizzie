@@ -16,6 +16,9 @@ interface ScrollToOptions {
   offset?: number;
   immediate?: boolean;
   duration?: number;
+  // A heavier glide for this one move, in seconds; the page's own feel comes
+  // back with the next wheel.
+  glide?: number;
 }
 
 interface Glide {
@@ -55,7 +58,10 @@ const clamp = (value: number, min: number, max: number) =>
 const easeInOutQuart = (t: number) =>
   t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2;
 
-function scrollsNatively(target: EventTarget | null, deltaY: number): boolean {
+export function scrollsNatively(
+  target: EventTarget | null,
+  deltaY: number,
+): boolean {
   let element = target instanceof Element ? target : null;
   while (
     element &&
@@ -81,7 +87,7 @@ function scrollsNatively(target: EventTarget | null, deltaY: number): boolean {
   return false;
 }
 
-function pageIsLocked(): boolean {
+export function pageIsLocked(): boolean {
   const root = getComputedStyle(document.documentElement).overflowY;
   const body = getComputedStyle(document.body).overflowY;
   return root === "hidden" || body === "hidden" || root === "clip";
@@ -92,8 +98,8 @@ type Listener = (y: number) => void;
 export class SmoothScroll {
   readonly scrollY = motionValue(0);
 
-  private readonly response: number;
-  private readonly wheelMultiplier: number;
+  private response: number;
+  private wheelMultiplier: number;
   private readonly listeners = new Set<Listener>();
   private current = 0;
   private velocity = 0;
@@ -110,6 +116,7 @@ export class SmoothScroll {
   private reduceMotion: MediaQueryList | null = null;
   private coarsePointer: MediaQueryList | null = null;
   private lingering: ReturnType<typeof setTimeout> | null = null;
+  private carried: number | null = null;
 
   constructor({
     response = 0.11,
@@ -161,6 +168,21 @@ export class SmoothScroll {
     this.scrollY.set(y);
   }
 
+  // A page can ask for a heavier or lighter glide while it is open; the
+  // returned function puts the previous feel back.
+  tune({ response, wheelMultiplier }: SmoothScrollOptions): () => void {
+    const previous = {
+      response: this.response,
+      wheelMultiplier: this.wheelMultiplier,
+    };
+    if (response !== undefined) this.response = response;
+    if (wheelMultiplier !== undefined) this.wheelMultiplier = wheelMultiplier;
+    return () => {
+      this.response = previous.response;
+      this.wheelMultiplier = previous.wheelMultiplier;
+    };
+  }
+
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -168,7 +190,12 @@ export class SmoothScroll {
 
   scrollTo(
     destination: number | Element,
-    { duration, immediate = false, offset = 0 }: ScrollToOptions = {},
+    {
+      duration,
+      glide: carried,
+      immediate = false,
+      offset = 0,
+    }: ScrollToOptions = {},
   ): void {
     if (typeof window === "undefined") return;
     const top =
@@ -183,7 +210,8 @@ export class SmoothScroll {
       this.adopt(window.scrollY);
       return;
     }
-    this.current = this.adoptable();
+    if (!this.running) this.current = this.adoptable();
+    this.carried = carried ?? null;
     this.target = to;
     this.tween =
       duration !== undefined
@@ -236,6 +264,7 @@ export class SmoothScroll {
 
   private halt(): void {
     this.tween = null;
+    this.carried = null;
     if (this.running) {
       this.running = false;
       cancelFrame(this.tick);
@@ -260,6 +289,7 @@ export class SmoothScroll {
     const start = this.running ? this.target : this.adoptable();
     if (!this.running) this.current = this.adoptable();
     this.tween = null;
+    this.carried = null;
     this.target = clamp(
       start + wheelPixels(event, window.innerHeight) * this.wheelMultiplier,
       0,
@@ -299,7 +329,7 @@ export class SmoothScroll {
         { position: this.current, velocity: this.velocity },
         this.target,
         dt,
-        this.response,
+        this.carried ?? this.response,
       );
       next = state.position;
       this.velocity = state.velocity;
@@ -325,6 +355,7 @@ export class SmoothScroll {
     }
 
     if (settled) {
+      this.carried = null;
       this.running = false;
       cancelFrame(this.tick);
     }

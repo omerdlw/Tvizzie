@@ -1,10 +1,11 @@
 interface Pointer {
+  at: number;
   x: number;
   y: number;
   present: boolean;
 }
 
-const pointer: Pointer = { present: false, x: 0, y: 0 };
+const pointer: Pointer = { at: 0, present: false, x: 0, y: 0 };
 
 let users = 0;
 
@@ -13,6 +14,7 @@ const move = (event: PointerEvent) => {
   pointer.x = event.clientX;
   pointer.y = event.clientY;
   pointer.present = true;
+  pointer.at = performance.now();
 };
 const leave = () => {
   pointer.present = false;
@@ -36,4 +38,8 @@ export function pointerFromCentre(): [number, number] {
     (pointer.x / window.innerWidth) * 2 - 1,
     (pointer.y / window.innerHeight) * 2 - 1,
   ];
+}
+
+export function pointerSample(): Readonly<Pointer> {
+  return pointer;
 }

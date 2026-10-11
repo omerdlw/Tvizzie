@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -188,8 +189,22 @@ export function Body({
   );
 }
 
-export function Backdrop({ children }: { children: ReactNode }) {
+const REVEAL_PATIENCE = 2500;
+
+export function Backdrop({
+  children,
+}: {
+  children: ReactNode | ((reveal: () => void) => ReactNode);
+}) {
   const scrollY = useScrollY();
+  const [ready, setReady] = useState(false);
+  const reveal = useCallback(() => setReady(true), []);
+
+  useEffect(() => {
+    const timer = setTimeout(reveal, REVEAL_PATIENCE);
+    return () => clearTimeout(timer);
+  }, [reveal]);
+
   const y = useTransform(scrollY, [0, 900], [0, 240]);
   const dim = useTransform(scrollY, [0, 720], [1, 0.2]);
   const push = useTransform(scrollY, [0, 900], [1, 1 + SCENE.scrub.push]);
@@ -204,6 +219,17 @@ export function Backdrop({ children }: { children: ReactNode }) {
       ? "none"
       : `${focus((backdrop.blur / 2) * p)} brightness(${1 - (1 - backdrop.brightness) * p})`,
   );
+  const hidden = {
+    filter: `${blur(backdrop.blur)} brightness(${backdrop.brightness})`,
+    opacity: 0,
+    scale: backdrop.scaleFrom,
+  };
+  const shown = {
+    filter: `${blur(0)} brightness(1)`,
+    opacity: 1,
+    scale: 1,
+    transitionEnd: FOCUSED,
+  };
 
   return (
     <div className="relative">
@@ -218,23 +244,16 @@ export function Backdrop({ children }: { children: ReactNode }) {
       >
         <motion.div style={{ filter, opacity, scale }}>
           <motion.div
-            animate={{
-              filter: `${blur(0)} brightness(1)`,
-              opacity: 1,
-              scale: 1,
-              transitionEnd: FOCUSED,
-            }}
-            initial={{
-              filter: `${blur(backdrop.blur)} brightness(${backdrop.brightness})`,
-              opacity: 0,
-              scale: backdrop.scaleFrom,
-            }}
+            animate={ready ? shown : hidden}
+            initial={hidden}
             transition={{
               ...first,
               ease: EASE.glide,
             }}
           >
-            <div className="relative">{children}</div>
+            <div className="relative">
+              {typeof children === "function" ? children(reveal) : children}
+            </div>
           </motion.div>
         </motion.div>
       </motion.div>

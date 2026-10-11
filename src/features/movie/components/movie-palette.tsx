@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cancelFrame, frame } from "motion/react";
 import { useModal } from "@omerdlw/base-framework/modules/modal";
+import { readable } from "@/motion/film";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieImage } from "@/infrastructure/tmdb/types";
 import { Cascade, Header, Item, Section, Trace } from "../stage";
@@ -81,7 +82,7 @@ function useStills(images: MovieImage[], near: boolean) {
               );
             };
             image.onerror = () => resolve(null);
-            image.src = src;
+            image.src = readable(src);
           }),
       ),
     ).then((read) => {
@@ -114,6 +115,7 @@ function Strip({
     const weights = new Float32Array(count).fill(1);
     const targets = new Float32Array(count).fill(1);
     let running = false;
+    let pressed = false;
 
     const write = () => {
       element.style.setProperty(
@@ -141,6 +143,7 @@ function Strip({
       }
     };
     const aim = (at: number | null) => {
+      if (pressed) return;
       for (let i = 0; i < count; i++) {
         const distance = at === null ? Infinity : (i + 0.5 - at) / SPREAD.reach;
         targets[i] = 1 + SPREAD.gain * Math.exp(-(distance * distance));
@@ -157,23 +160,43 @@ function Strip({
       aim(((event.clientX - rect.left) / rect.width) * count);
     };
     const leave = () => aim(null);
+    const press = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      pressed = true;
+      targets.set(weights);
+      running = false;
+      cancelFrame(step);
+    };
+    const release = () => {
+      pressed = false;
+    };
     const focus = (event: FocusEvent) => {
+      if (!(event.target as Element).matches(":focus-visible")) return;
       const index = bars.current.findIndex((bar) =>
         bar?.contains(event.target as Node),
       );
       if (index >= 0) aim(index + 0.5);
     };
+    const blur = () => {
+      if (!element.matches(":hover")) aim(null);
+    };
     element.addEventListener("pointermove", move);
     element.addEventListener("pointerleave", leave);
+    element.addEventListener("pointerdown", press);
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
     element.addEventListener("focusin", focus);
-    element.addEventListener("focusout", leave);
+    element.addEventListener("focusout", blur);
     write();
     return () => {
       cancelFrame(step);
       element.removeEventListener("pointermove", move);
       element.removeEventListener("pointerleave", leave);
+      element.removeEventListener("pointerdown", press);
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
       element.removeEventListener("focusin", focus);
-      element.removeEventListener("focusout", leave);
+      element.removeEventListener("focusout", blur);
     };
   }, [count]);
 

@@ -228,21 +228,30 @@ export function Words({
 
 const GLYPHS = {
   digit: "0123456789",
-  lower: "abcdefghijklmnopqrstuvwxyz",
-  upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  letter: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 };
-const GLYPH_HOLD = 55;
-const GLYPH_LIFE = 0.45;
+const GLYPH_HOLD = [34, 92] as const;
+const GLYPH_LIFE = 0.42;
+const GLYPH_SCATTER = 0.14;
+const GLYPH_DIM = 0.3;
+const GLYPH_BRIGHT = 0.9;
 
-function glyphFor(char: string): string | null {
+const hold = () =>
+  GLYPH_HOLD[0] + Math.random() * (GLYPH_HOLD[1] - GLYPH_HOLD[0]);
+
+function glyphFor(char: string, last?: string): string | null {
   const pool = /\d/.test(char)
     ? GLYPHS.digit
-    : char !== char.toLowerCase()
-      ? GLYPHS.upper
-      : char !== char.toUpperCase()
-        ? GLYPHS.lower
-        : null;
-  return pool ? pool[Math.floor(Math.random() * pool.length)] : null;
+    : char.toLowerCase() !== char.toUpperCase()
+      ? GLYPHS.letter
+      : null;
+  if (!pool) return null;
+  const same = char.toUpperCase();
+  let next = pool[Math.floor(Math.random() * pool.length)];
+  for (let tries = 0; tries < 4 && (next === same || next === last); tries++) {
+    next = pool[Math.floor(Math.random() * pool.length)];
+  }
+  return next;
 }
 
 interface Cell {
@@ -250,6 +259,8 @@ interface Cell {
   element: HTMLSpanElement;
   fixed: boolean;
   from: number;
+  glyph?: string;
+  swapAt: number;
   to: number;
 }
 
@@ -280,13 +291,19 @@ function typeset(node: Node, glyphs: HTMLElement, text: string): Cell[] {
       top: `${box.top - origin.top}px`,
       width: `${box.width}px`,
     });
-    const from = (order / Math.max(letters, 1)) * (1 - GLYPH_LIFE) * 0.9;
+    const span = 1 - GLYPH_LIFE;
+    const lead = (order / Math.max(letters - 1, 1)) * span;
+    const from = Math.min(
+      span,
+      Math.max(0, lead + (Math.random() - 0.5) * GLYPH_SCATTER),
+    );
     cells.push({
       char,
       element,
       fixed: glyphFor(char) === null,
       from,
-      to: from + GLYPH_LIFE + Math.random() * 0.08,
+      swapAt: 0,
+      to: Math.min(1, from + GLYPH_LIFE * (0.85 + Math.random() * 0.3)),
     });
     order += 1;
   }
@@ -294,12 +311,7 @@ function typeset(node: Node, glyphs: HTMLElement, text: string): Cell[] {
   return cells;
 }
 
-function paint(
-  cells: Cell[],
-  progress: number,
-  unmake: boolean,
-  swap: boolean,
-) {
+function paint(cells: Cell[], progress: number, unmake: boolean, now: number) {
   for (const cell of cells) {
     const { element } = cell;
     if (progress < cell.from) {
@@ -312,16 +324,18 @@ function paint(
     if (cell.fixed || progress >= cell.to) {
       element.textContent = cell.char;
       element.style.opacity = unmake ? "0" : "1";
-    } else {
-      if (
-        swap ||
-        element.style.opacity === "0" ||
-        element.style.opacity === "1"
-      ) {
-        element.textContent = glyphFor(cell.char) ?? cell.char;
-      }
-      element.style.opacity = "0.55";
+      continue;
     }
+    if (now >= cell.swapAt) {
+      cell.glyph = glyphFor(cell.char, cell.glyph) ?? cell.char;
+      element.textContent = cell.glyph;
+      cell.swapAt = now + hold();
+    }
+    const near = (progress - cell.from) / (cell.to - cell.from);
+    const level = unmake
+      ? GLYPH_BRIGHT - (GLYPH_BRIGHT - GLYPH_DIM) * near
+      : GLYPH_DIM + (GLYPH_BRIGHT - GLYPH_DIM) * near;
+    element.style.opacity = level.toFixed(2);
   }
 }
 
@@ -350,7 +364,6 @@ export function Decode({
   const real = useRef<HTMLSpanElement>(null);
   const layer = useRef<HTMLSpanElement>(null);
   const cells = useRef<Cell[] | null>(null);
-  const swapped = useRef(0);
   const settled = useRef(false);
   const unmaking = useRef(false);
   const replaying = useRef<ReturnType<typeof animate> | null>(null);
@@ -371,11 +384,8 @@ export function Decode({
   };
 
   const draw = (progress: number, unmake: boolean) => {
-    const now = performance.now();
-    const swap = now - swapped.current > GLYPH_HOLD;
-    if (swap) swapped.current = now;
     const laid = lay();
-    if (laid) paint(laid, progress, unmake, swap);
+    if (laid) paint(laid, progress, unmake, performance.now());
   };
 
   const coming = (time: number) => {

@@ -1,11 +1,8 @@
-export const REEL_LENGTH = 7;
-export const REEL_SECONDS = 6.5;
-export const BOARD_LENGTH = 12;
-export const TICKER_LENGTH = 16;
+export const TRENDING_LENGTH = 10;
+export const SHOWING_LENGTH = 10;
 export const DISCOVER_PAGE_SIZE = 12;
 export const PULSE_LENGTH = 9;
 export const PULSE_MINIMUM = 4;
-export const CANON_PREVIEW = 20;
 
 export const GENRE_LABELS: Readonly<Record<number, string>> = {
   12: "Adventure",

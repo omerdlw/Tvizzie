@@ -7,41 +7,27 @@ import {
   discoverMovies,
   getMovieList,
   getTrendingMovies,
-  getTrendingPeople,
 } from "@/infrastructure/tmdb/server";
 import type {
   FeaturedMovie,
   FeaturedMoviePage,
-  PersonSearchPage,
   TmdbError,
 } from "@/infrastructure/tmdb/types";
 import {
-  BOARD_LENGTH,
   DISCOVER_PAGE_SIZE,
   GENRE_LABELS,
-  REEL_LENGTH,
-  TICKER_LENGTH,
+  SHOWING_LENGTH,
+  TRENDING_LENGTH,
 } from "../lib/constants";
 import type {
   DiscoverResponse,
   HomeFeed,
   HomeMovie,
-  HomePerson,
-  PulseMovie,
-  ReelMovie,
+  TrendingMovie,
 } from "../lib/types";
-import {
-  byPopularity,
-  distinct,
-  notable,
-  rankTrending,
-  spreadGenres,
-} from "../lib/curate";
-import { getCommunityPopular } from "./popular";
+import { byPopularity, distinct } from "../lib/curate";
 
-const THEATRES_MIN_VOTES = 25;
-const TRENDING_MIN_VOTES = 120;
-const REEL_COMMUNITY_MAX = 4;
+const DAY = 24 * 60 * 60 * 1000;
 
 function toHomeMovie(movie: FeaturedMovie): HomeMovie {
   return {
@@ -57,109 +43,85 @@ function toHomeMovie(movie: FeaturedMovie): HomeMovie {
   };
 }
 
+const hasPoster = (movie: FeaturedMovie) => movie.posterPath !== null;
+const THEATRES_MIN_VOTES = 25;
+
 const results = (
   outcome: Result<FeaturedMoviePage, TmdbError>,
 ): FeaturedMovie[] => (outcome.success ? outcome.data.results : []);
 
-const hasPoster = (movie: FeaturedMovie) => movie.posterPath !== null;
-const canLead = (movie: FeaturedMovie) =>
-  movie.backdropPath !== null && movie.posterPath !== null;
+const LOGLINE_LENGTH = 170;
 
-function names(outcome: Result<PersonSearchPage, TmdbError>): HomePerson[] {
-  if (!outcome.success) return [];
-  return outcome.data.results
-    .slice(0, TICKER_LENGTH)
-    .map((person) => ({ id: person.id, name: person.name }));
+function loglineOf(overview: string | null | undefined): string | null {
+  const flat = overview?.replace(/\s+/g, " ").trim();
+  if (!flat) return null;
+  // A sentence ends at a stop followed by a capital, so "L.A." and "Dr." do
+  // not cut a logline short.
+  const sentences = flat.match(/.+?[.!?](?=\s+["“‘']?[A-Z]|$)|.+$/g) ?? [flat];
+  let line = "";
+  for (const sentence of sentences) {
+    const next = `${line} ${sentence.trim()}`.trim();
+    if (line && next.length > LOGLINE_LENGTH) break;
+    line = next;
+    if (line.length >= 60) break;
+  }
+  if (line.length <= LOGLINE_LENGTH) return line;
+  return `${line.slice(0, LOGLINE_LENGTH).replace(/\s+\S*$/, "")}…`;
 }
 
-function communityNote(movie: PulseMovie): string {
-  if (movie.reviewers >= 2)
-    return `${movie.reviewers} wrote about it this week`;
-  if (movie.watchers >= 1) return `${movie.watchers} watched it this week`;
-  if (movie.likers >= 1) return `${movie.likers} liked it this week`;
-  return `${movie.listers} want to watch it`;
-}
-
-function buildReel(
-  community: readonly PulseMovie[],
-  trending: readonly FeaturedMovie[],
-  genresById: ReadonlyMap<number, string[]>,
-): ReelMovie[] {
-  const picked = community
-    .filter((movie) => movie.backdropPath && movie.posterPath)
-    .slice(0, REEL_COMMUNITY_MAX)
-    .map<ReelMovie>((movie) => ({
-      ...movie,
-      genres: genresById.get(movie.id) ?? [],
-      note: communityNote(movie),
-    }));
-  const taken = new Set(picked.map((movie) => movie.id));
-
-  const rest = spreadGenres(
-    rankTrending(
-      distinct(notable(trending.filter(canLead), TRENDING_MIN_VOTES)),
-    ),
-    { limit: 2, within: REEL_LENGTH },
-  )
-    .filter((movie) => !taken.has(movie.id))
-    .slice(0, REEL_LENGTH - picked.length)
-    .map<ReelMovie>((movie) => ({
-      ...toHomeMovie(movie),
-      note: "Trending this week",
-    }));
-
-  return [...picked, ...rest];
-}
-
-const today = () => new Date().toISOString().slice(0, 10);
+const isoDate = (time: number) => new Date(time).toISOString().slice(0, 10);
 
 export const getHomeFeed = cache(async (): Promise<HomeFeed> => {
-  const [week, day, nowPlaying, upcoming, popular, people, community] =
-    await Promise.all([
-      getTrendingMovies("week"),
-      getTrendingMovies("day"),
-      getMovieList("now_playing"),
-      getMovieList("upcoming"),
-      discoverMovies({ sort: "popularity.desc" }),
-      getTrendingPeople(),
-      getCommunityPopular(),
-    ]);
-
-  const trending = distinct([...results(week), ...results(day)]);
-  const genresById = new Map<number, string[]>();
-  for (const movie of [
-    ...trending,
-    ...results(nowPlaying),
-    ...results(popular),
-  ]) {
-    genresById.set(movie.id, toHomeMovie(movie).genres);
-  }
+  const [week, playing, upcoming, upcomingNext] = await Promise.all([
+    getTrendingMovies("week"),
+    getMovieList("now_playing"),
+    getMovieList("upcoming"),
+    getMovieList("upcoming", { page: 2 }),
+  ]);
+  const now = Date.now();
+  const today = isoDate(now);
 
   return {
-    discover: results(popular)
-      .filter(hasPoster)
-      .slice(0, DISCOVER_PAGE_SIZE)
-      .map(toHomeMovie),
-    names: names(people),
-    pulse: community.slice(0, 9).filter((movie) => movie.posterPath),
-    reel: buildReel(community, trending, genresById),
-    soon: byPopularity(
+    // The ten most watched films that have opened, by popularity.
+    theatres: byPopularity(
       distinct(
-        results(upcoming).filter(
-          (movie) => hasPoster(movie) && (movie.releaseDate ?? "") >= today(),
+        results(playing).filter(
+          (movie) =>
+            hasPoster(movie) &&
+            movie.voteCount >= THEATRES_MIN_VOTES &&
+            (movie.releaseDate ?? "") <= today,
         ),
       ),
     )
-      .slice(0, BOARD_LENGTH)
-      .sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""))
+      .slice(0, SHOWING_LENGTH)
       .map(toHomeMovie),
-    theatres: byPopularity(
+    // The ten most awaited films still to open, in the order they open.
+    soon: byPopularity(
       distinct(
-        notable(results(nowPlaying).filter(hasPoster), THEATRES_MIN_VOTES),
+        [...results(upcoming), ...results(upcomingNext)].filter(
+          (movie) => hasPoster(movie) && (movie.releaseDate ?? "") > today,
+        ),
       ),
     )
-      .slice(0, BOARD_LENGTH)
+      .slice(0, SHOWING_LENGTH)
+      .sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""))
       .map(toHomeMovie),
+    today,
+    // TMDB's own weekly order: the chart is theirs, not a curation of ours.
+    trending: distinct(results(week))
+      .flatMap<TrendingMovie>((movie) =>
+        movie.backdropPath
+          ? [
+              {
+                ...toHomeMovie(movie),
+                backdropPath: movie.backdropPath,
+                logline: loglineOf(movie.overview),
+              },
+            ]
+          : [],
+      )
+      .slice(0, TRENDING_LENGTH),
+    week: { from: isoDate(now - 6 * DAY), to: today },
   };
 });
 

@@ -14,6 +14,7 @@ import {
   Dust,
   RoomGrain,
   isCarriedTo,
+  readable,
   useCarryingFrom,
   useHouseDown,
 } from "@/motion/film";
@@ -56,7 +57,7 @@ export function Grade({ source }: { source: string | null }) {
       const tone = toneOf(context.getImageData(0, 0, READ_WIDTH, height).data);
       if (tone) set(tone.join(" "));
     };
-    image.src = source;
+    image.src = readable(source);
     return () => {
       live = false;
       image.onload = null;

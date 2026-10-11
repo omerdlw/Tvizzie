@@ -40,3 +40,4 @@ yarn-error.log*
 /CLAUDE.md
 /AGENTS.md
 /.remember
+/.playwright-mcp

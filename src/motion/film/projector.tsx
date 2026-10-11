@@ -1,14 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
-import { cancelFrame, frame, useReducedMotion } from "motion/react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from "react";
+import {
+  cancelFrame,
+  frame,
+  motion,
+  useReducedMotion,
+  useTransform,
+} from "motion/react";
 import { useTheme } from "@omerdlw/base-framework/theme";
 import { cn } from "@omerdlw/base-framework/utils";
 import { BACKDROP_HERO_MASK } from "../../ui/backdrop-hero";
 import { primitivesTheme } from "../../ui/theme";
 import { useScrollY } from "../scroll";
-import { bindFullscreen, createProgram, fitCanvas, uniforms } from "./gl";
-import { pointerFromCentre, watchPointer } from "./pointer";
+import {
+  bindFullscreen,
+  createProgram,
+  fitCanvas,
+  readable,
+  uniforms,
+} from "./gl";
+import { pointerFromCentre, pointerSample, watchPointer } from "./pointer";
 
 const FRAGMENT = `#version 300 es
 precision highp float;
@@ -22,6 +40,9 @@ uniform vec2 uImageSize;
 uniform vec2 uFocus;
 uniform vec2 uWeave;
 uniform vec2 uParallax;
+uniform vec2 uPool;
+uniform vec2 uMotion;
+uniform float uRack;
 uniform float uDefocus;
 uniform float uVelocity;
 uniform float uHalation;
@@ -32,7 +53,7 @@ uniform vec3 uScratch;
 in vec2 vUv;
 out vec4 outColor;
 
-const float OVERSCAN = 1.04;
+const float OVERSCAN = 1.07;
 const float DRAIN = 0.94;
 
 vec2 cover(vec2 uv) {
@@ -41,7 +62,7 @@ vec2 cover(vec2 uv) {
   vec2 visible = canvasAspect > imageAspect
     ? vec2(1.0, imageAspect / canvasAspect)
     : vec2(canvasAspect / imageAspect, 1.0);
-  visible /= OVERSCAN;
+  visible /= OVERSCAN * (1.0 + uRack * 0.012);
   return uFocus * (1.0 - visible) + uv * visible;
 }
 
@@ -51,35 +72,92 @@ float hash(vec2 p) {
   return fract((q.x + q.y) * q.z);
 }
 
-vec3 pic(vec2 st) {
-  float p = uDefocus * 3.0;
-  if (p < 0.002) return texture(uImage, st).rgb;
-  if (p < 1.0) return mix(texture(uImage, st).rgb, texture(uLevel1, st).rgb, p);
-  if (p < 2.0) return mix(texture(uLevel1, st).rgb, texture(uLevel2, st).rgb, p - 1.0);
-  return mix(texture(uLevel2, st).rgb, texture(uLevel3, st).rgb, min(p - 2.0, 1.0));
+// The picture's slopes, taken once outside any branch: the focus now differs
+// from pixel to pixel, and sampling a mipmapped texture inside a branch whose
+// edge cuts through a 2x2 block of pixels would draw that edge as a seam.
+vec2 slopeX;
+vec2 slopeY;
+
+vec3 look(sampler2D source, vec2 st) {
+  return textureGrad(source, st, slopeX, slopeY).rgb;
+}
+
+vec3 pic(vec2 st, float defocus) {
+  float p = defocus * 3.0;
+  if (p < 0.002) return look(uImage, st);
+  if (p < 1.0) return mix(look(uImage, st), look(uLevel1, st), p);
+  if (p < 2.0) return mix(look(uLevel1, st), look(uLevel2, st), p - 1.0);
+  return mix(look(uLevel2, st), look(uLevel3, st), min(p - 2.0, 1.0));
 }
 
 void main() {
   vec2 uv = vUv + uWeave / uCanvas;
+
+  // The camera turns with the hand: the frame slides, and the side it turns
+  // towards comes a little nearer.
+  vec2 centred = uv - 0.5;
+  centred /= 1.0 + dot(centred, uParallax * vec2(0.05, 0.035));
+  uv = centred + 0.5;
   float depth = mix(0.35, 1.0, vUv.y);
-  uv -= uParallax * depth * vec2(0.014, 0.008);
+  uv -= uParallax * depth * vec2(0.02, 0.012);
   vec2 st = cover(uv);
+  slopeX = dFdx(st);
+  slopeY = dFdy(st);
 
-  vec3 color = pic(st);
+  // A focus puller follows the cursor: sharp where it rests, the rest of the
+  // frame falls away from it, and the light gathers round it.
+  float aspect = uCanvas.x / uCanvas.y;
+  float reach = length((vUv - uPool) * vec2(aspect, 1.0));
+  float away = smoothstep(0.1, 0.6, reach) * uRack;
+  float pool = (1.0 - smoothstep(0.0, 0.5, reach)) * uRack;
 
-  float split = uVelocity * 0.007;
-  if (split > 0.0002) {
-    vec2 away = st - vec2(0.5);
-    color.r = pic(st + away * split).r;
-    color.b = pic(st - away * split).b;
+  float focus = uDefocus + away * 0.2;
+
+  vec3 color;
+  float shutter = length(uMotion);
+  if (shutter > 0.0003) {
+    color = vec3(0.0);
+    for (int i = 0; i < 9; i++) {
+      color += pic(st + uMotion * (float(i) / 8.0 - 0.5), focus);
+    }
+    color /= 9.0;
+  } else {
+    color = pic(st, focus);
   }
 
-  // Light from the brightest parts, blurred once into its own picture.
+  float split = uVelocity * 0.007 + shutter * 0.6;
+  if (split > 0.0002) {
+    vec2 outward = st - vec2(0.5);
+    color.r = pic(st + outward * split, focus).r;
+    color.b = pic(st - outward * split, focus).b;
+  }
+
+  // Light from the brightest parts, blurred once into its own picture; it
+  // swells out of focus and where the cursor rests.
   float halo = dot(texture(uHalo, st).rgb, vec3(0.3333));
-  color += vec3(1.0, 0.36, 0.16) * halo * uHalation;
+  color += vec3(1.0, 0.36, 0.16) * halo * uHalation * (1.0 + away * 0.9 + pool * 0.6);
+
+  // Anamorphic streaks: the highlights near the cursor are drawn out sideways.
+  if (pool > 0.002) {
+    vec3 streak = vec3(0.0);
+    float total = 0.0;
+    for (int i = -12; i <= 12; i++) {
+      float f = float(i) / 12.0;
+      float w = exp(-abs(f) * 3.0);
+      streak += texture(uHalo, st + vec2(f * 0.24, 0.0)).rgb * w;
+      total += w;
+    }
+    float lit = dot(streak / total, vec3(0.3333));
+    color += vec3(0.32, 0.6, 1.0) * lit * pool * pool * 7.0;
+  }
 
   float grey = dot(color, vec3(0.299, 0.587, 0.114));
-  color = mix(color, vec3(grey), uDefocus * DRAIN);
+  color = mix(color, vec3(grey), uDefocus * DRAIN + away * 0.12);
+
+  // A pool of warm light under the cursor; the rest of the room gives way.
+  float lift = pool * pool;
+  color *= 1.0 + lift * 0.2 - (uRack - pool) * 0.07;
+  color += vec3(1.0, 0.5, 0.2) * grey * lift * 0.05;
 
   // Grain, in the picture only and at the canvas's own pixels: still, like the
   // room's, so the picture moves under it and it never boils; strongest in
@@ -89,7 +167,6 @@ void main() {
   float luma = dot(color, vec3(0.299, 0.587, 0.114));
   color += n * uGrain * (0.6 + 0.4 * (1.0 - abs(luma * 2.0 - 1.0)));
 
-  float aspect = uCanvas.x / uCanvas.y;
   for (int i = 0; i < 3; i++) {
     vec4 dust = uDust[i];
     if (dust.w <= 0.0) continue;
@@ -142,6 +219,9 @@ const NAMES = [
   "uFocus",
   "uWeave",
   "uParallax",
+  "uPool",
+  "uMotion",
+  "uRack",
   "uDefocus",
   "uVelocity",
   "uHalation",
@@ -161,7 +241,33 @@ interface Speck {
   y: number;
 }
 
+interface Mass {
+  vx: number;
+  vy: number;
+  x: number;
+  y: number;
+}
+
+function pull(
+  mass: Mass,
+  tx: number,
+  ty: number,
+  dt: number,
+  stiffness: number,
+  damping: number,
+) {
+  mass.vx += ((tx - mass.x) * stiffness - mass.vx * damping) * dt;
+  mass.vy += ((ty - mass.y) * stiffness - mass.vy * damping) * dt;
+  mass.x += mass.vx * dt;
+  mass.y += mass.vy * dt;
+}
+
 const FRAME_MS = 1000 / 24;
+const CAMERA = { damping: 8.6, stiffness: 48 };
+const LENS = { damping: 21.5, stiffness: 160 };
+const LINGER = 4000;
+const SHUTTER: [number, number] = [0.0026, 0.0016];
+const SHUTTER_MAX = 0.012;
 const MAX_TEXTURE = 2560;
 const DEVICE_CAP = 1.5;
 const FAST = 4200;
@@ -187,7 +293,9 @@ interface Options {
   defocusAt: RefObject<((y: number) => number) | undefined>;
   focus: [number, number];
   halation: number;
+  onFail: () => void;
   onLive: (live: boolean) => void;
+  onRestore: () => void;
   reduced: boolean;
   scrollY: ReturnType<typeof useScrollY>;
 }
@@ -195,7 +303,16 @@ interface Options {
 function project(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
-  { defocusAt, focus, halation, onLive, reduced, scrollY }: Options,
+  {
+    defocusAt,
+    focus,
+    halation,
+    onFail,
+    onLive,
+    onRestore,
+    reduced,
+    scrollY,
+  }: Options,
 ): () => void {
   const gl = canvas.getContext("webgl2", {
     alpha: false,
@@ -204,9 +321,15 @@ function project(
     powerPreference: "high-performance",
     stencil: false,
   });
-  if (!gl) return () => {};
+  if (!gl) {
+    onFail();
+    return () => {};
+  }
   const program = createProgram(gl, FRAGMENT);
-  if (!program) return () => {};
+  if (!program) {
+    onFail();
+    return () => {};
+  }
   gl.useProgram(program);
   const mainVao = gl.createVertexArray();
   gl.bindVertexArray(mainVao);
@@ -218,12 +341,20 @@ function project(
   let ready = false;
   let softened: WebGLTexture[] = [];
   let disposed = false;
+  let lost = false;
   let visible = true;
   let running = false;
   let resized = true;
   let tick = -1;
   let weave: [number, number] = [0, 0];
   let parallax: [number, number] = [0, 0];
+  let shutter: [number, number] = [0, 0];
+  let rack = 0;
+  let poolAt: [number, number] = [0.5, 0.5];
+  let scrolled = scrollY.get();
+  const camera: Mass = { vx: 0, vy: 0, x: 0, y: 0 };
+  const lens: Mass = { vx: 0, vy: 0, x: 0, y: 0 };
+  let lensSeen = false;
   let velocity = 0;
   let defocus = -1;
   let flicker = 1;
@@ -284,6 +415,16 @@ function project(
     gl.uniform2f(u.uFocus, focus[0], focus[1]);
     gl.uniform2f(u.uWeave, weave[0], weave[1]);
     gl.uniform2f(u.uParallax, parallax[0], parallax[1]);
+    if (rack > 0.001) {
+      const box = canvas.getBoundingClientRect();
+      poolAt = [
+        (lens.x - box.left) / box.width,
+        (lens.y - box.top) / box.height,
+      ];
+    }
+    gl.uniform2f(u.uPool, poolAt[0], poolAt[1]);
+    gl.uniform2f(u.uMotion, shutter[0], shutter[1]);
+    gl.uniform1f(u.uRack, rack);
     gl.uniform1f(u.uDefocus, Math.max(0, defocus));
     gl.uniform1f(u.uVelocity, velocity);
     gl.uniform1f(u.uHalation, halation);
@@ -303,7 +444,7 @@ function project(
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
-  const step = ({ timestamp }: { timestamp: number }) => {
+  const step = ({ delta, timestamp }: { delta: number; timestamp: number }) => {
     if (!ready) return;
     let dirty = resized;
 
@@ -331,13 +472,61 @@ function project(
         dirty = dirty || defocus < 0.98;
       }
 
+      const dt = Math.min(delta / 1000, 1 / 30);
+      const sample = pointerSample();
       const [px, py] = pointerFromCentre();
-      const nx = parallax[0] + (px - parallax[0]) * 0.045;
-      const ny = parallax[1] + (py - parallax[1]) * 0.045;
-      if (Math.abs(nx - parallax[0]) + Math.abs(ny - parallax[1]) > 1e-5) {
-        parallax = [nx, ny];
+
+      // The camera has weight: it leans after the hand and settles with a
+      // little overshoot, and a quick flick leaves a smear of motion.
+      pull(camera, px, py, dt, CAMERA.stiffness, CAMERA.damping);
+      const [ax, ay] = [
+        Math.max(-1.15, Math.min(1.15, camera.x)),
+        Math.max(-1.15, Math.min(1.15, camera.y)),
+      ];
+      const swing = Math.abs(camera.vx) + Math.abs(camera.vy);
+      const nextShutter: [number, number] = [
+        Math.max(-SHUTTER_MAX, Math.min(SHUTTER_MAX, camera.vx * SHUTTER[0])),
+        Math.max(-SHUTTER_MAX, Math.min(SHUTTER_MAX, camera.vy * SHUTTER[1])),
+      ];
+      if (
+        Math.abs(ax - parallax[0]) + Math.abs(ay - parallax[1]) > 1e-5 ||
+        swing > 1e-3 ||
+        shutter[0] !== 0 ||
+        shutter[1] !== 0
+      ) {
+        parallax = [ax, ay];
+        shutter =
+          Math.abs(nextShutter[0]) + Math.abs(nextShutter[1]) < 2e-4
+            ? [0, 0]
+            : nextShutter;
         dirty = true;
       }
+
+      // The focus puller: the lens follows the cursor a beat behind, holds
+      // while it moves, and lets go when the hand has been still a while.
+      if (sample.present && !lensSeen) {
+        lens.x = sample.x;
+        lens.y = sample.y;
+        lensSeen = true;
+      }
+      const alive = sample.present && timestamp - sample.at < LINGER;
+      if (lensSeen && sample.present) {
+        pull(lens, sample.x, sample.y, dt, LENS.stiffness, LENS.damping);
+      }
+      const nextRack =
+        rack +
+        ((alive ? 1 : 0) - rack) * (1 - Math.exp(-dt * (alive ? 5 : 1.6)));
+      const nowScrolled = scrollY.get();
+      if (
+        Math.abs(nextRack - rack) > 5e-4 ||
+        (rack > 0.001 &&
+          (Math.abs(lens.vx) + Math.abs(lens.vy) > 0.05 ||
+            nowScrolled !== scrolled))
+      ) {
+        rack = nextRack < 0.002 && !alive ? 0 : nextRack;
+        dirty = true;
+      }
+      scrolled = nowScrolled;
 
       const speed = Math.min(1, Math.abs(scrollY.getVelocity()) / FAST);
       const nextVelocity = velocity + (speed - velocity) * 0.18;
@@ -459,9 +648,11 @@ function project(
     try {
       await image.decode();
     } catch {
+      if (!disposed) onFail();
       return;
     }
-    if (disposed || !image.naturalWidth) return;
+    if (disposed) return;
+    if (!image.naturalWidth) return onFail();
     const width = Math.min(image.naturalWidth, MAX_TEXTURE);
     const source: ImageBitmap | HTMLImageElement =
       width < image.naturalWidth && typeof createImageBitmap === "function"
@@ -473,7 +664,7 @@ function project(
             resizeWidth: width,
           })
         : image;
-    if (disposed) {
+    if (disposed || lost || gl.isContextLost()) {
       if (source instanceof ImageBitmap) source.close();
       return;
     }
@@ -492,7 +683,7 @@ function project(
     size = [source.width, source.height];
     if (source instanceof ImageBitmap) source.close();
     const baked = bake(size);
-    if (!baked) return;
+    if (!baked || lost || gl.isContextLost()) return;
     softened = [...baked.levels, baked.halo];
     resized = true;
     ready = true;
@@ -516,11 +707,14 @@ function project(
   document.addEventListener("visibilitychange", onVisibility);
   const onLost = (event: Event) => {
     event.preventDefault();
+    lost = true;
     ready = false;
     run();
     onLive(false);
   };
+  const onRestored = () => onRestore();
   canvas.addEventListener("webglcontextlost", onLost);
+  canvas.addEventListener("webglcontextrestored", onRestored);
   const releasePointer = reduced ? () => {} : watchPointer();
 
   void upload();
@@ -534,6 +728,7 @@ function project(
     releasePointer();
     document.removeEventListener("visibilitychange", onVisibility);
     canvas.removeEventListener("webglcontextlost", onLost);
+    canvas.removeEventListener("webglcontextrestored", onRestored);
     gl.deleteTexture(texture);
     softened.forEach((target) => gl.deleteTexture(target));
     gl.deleteProgram(program);
@@ -545,6 +740,8 @@ interface ProjectionProps {
   className?: string;
   defocusAt?: (scrollY: number) => number;
   halation?: number;
+  mask?: CSSProperties;
+  onReady?: () => void;
   position?: string;
   src: string;
 }
@@ -553,6 +750,8 @@ export function Projection({
   className,
   defocusAt,
   halation = 0.55,
+  mask = BACKDROP_HERO_MASK,
+  onReady,
   position = "center 20%",
   src,
 }: ProjectionProps) {
@@ -562,12 +761,25 @@ export function Projection({
   const image = useRef<HTMLImageElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const focusRef = useRef(defocusAt);
+  const readyRef = useRef(onReady);
   const [live, setLive] = useState(false);
   const [plain, setPlain] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const softened = useTransform(scrollY, (y) => {
+    const amount = reduced ? 0 : (focusRef.current?.(y) ?? 0);
+    return amount < 0.002
+      ? "none"
+      : `blur(${(amount * 14).toFixed(2)}px) saturate(${(1 - amount * 0.35).toFixed(3)})`;
+  });
 
   useEffect(() => {
     focusRef.current = defocusAt;
-  }, [defocusAt]);
+    readyRef.current = onReady;
+  }, [defocusAt, onReady]);
+
+  useEffect(() => {
+    if (live) readyRef.current?.();
+  }, [live]);
 
   useEffect(() => {
     if (plain || !image.current || !canvas.current) return;
@@ -576,7 +788,9 @@ export function Projection({
       defocusAt: focusRef,
       focus: [x, y],
       halation,
+      onFail: () => setPlain(true),
       onLive: setLive,
+      onRestore: () => setAttempt((count) => count + 1),
       reduced,
       scrollY,
     });
@@ -584,22 +798,31 @@ export function Projection({
       stop();
       setLive(false);
     };
-  }, [halation, plain, position, reduced, scrollY, src]);
+  }, [attempt, halation, plain, position, reduced, scrollY, src]);
 
   return (
-    <div aria-hidden="true" className={cn(theme.slots.backdropHero, className)}>
-      <div className="absolute inset-0" style={BACKDROP_HERO_MASK}>
-        <img
+    <div
+      aria-hidden="true"
+      className={cn(theme.slots.backdropHero, className)}
+      data-cursor-stage=""
+    >
+      <div className="absolute inset-0" style={mask}>
+        <motion.img
           alt=""
           className="absolute inset-0 size-full object-cover"
           crossOrigin={plain ? undefined : "anonymous"}
           decoding="async"
           fetchPriority="high"
           key={plain ? "plain" : "read"}
-          onError={() => setPlain(true)}
+          onError={() => {
+            if (plain) onReady?.();
+            else setPlain(true);
+          }}
+          onLoad={plain ? onReady : undefined}
           ref={image}
-          src={src}
+          src={plain ? src : readable(src)}
           style={{
+            filter: live ? undefined : softened,
             objectPosition: position,
             visibility: live ? "hidden" : undefined,
           }}
