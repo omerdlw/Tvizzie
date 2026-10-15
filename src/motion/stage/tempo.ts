@@ -19,14 +19,24 @@ export const settle = (i: number, n: number, total: number, bend = 1.7) =>
 
 type Bezier = [number, number, number, number];
 
+// Curves are chosen by when the eye can follow them. An expo out covers half
+// its way in the first tenth of its run and reads as a cut; the curves things
+// arrive on cover half by the first quarter, so a run is seen as long as it is.
 export const EASE = {
   // Arrivals below the fold: leaves gently instead of with a jolt, and takes
   // the long, soft way to rest.
   cream: [0.3, 0.85, 0.3, 1] as Bezier,
   // A camera move between two points: eases out of rest and settles slowly.
+  // Sweeps across a header ride it, so the light starts and stops like a pan.
   dolly: [0.45, 0, 0.15, 1] as Bezier,
   expo: [0.16, 1, 0.3, 1] as Bezier,
+  // Light coming up: no step at the start, half-lit about where a pour is
+  // half-way, so a thing is never seen moving while still unseen.
+  fade: [0.4, 0, 0.2, 1] as Bezier,
   glide: [0.65, 0, 0.35, 1] as Bezier,
+  // How things arrive: out of rest without a kick, half-way at a quarter of
+  // the run, and a long settle that is still visibly moving.
+  pour: [0.33, 0.35, 0.15, 1] as Bezier,
   silk: [0.22, 1, 0.36, 1] as Bezier,
 };
 
@@ -44,68 +54,62 @@ export const exposure = (level: number) =>
 export const wordCount = (text: string) =>
   text.split(/\s+/).filter(Boolean).length;
 
-const arrived = (n: number) => ({
-  filter: "brightness(1)",
-  opacity: 1,
-  transition: { duration: size(n), ease: EASE.cream },
-  transitionEnd: FOCUSED,
-});
+// An arrival moves for a long step and comes into light over the step before
+// it, so it is fully lit a little before it comes to rest.
+export const ARRIVE = { light: size(2), run: size(3) } as const;
+
+type Target = Record<string, number>;
+
+const arriving =
+  (to: Target, run: number = ARRIVE.run, light: number = ARRIVE.light) =>
+  (delay: number = 0) => ({
+    ...to,
+    opacity: 1,
+    transition: {
+      delay,
+      duration: run,
+      ease: EASE.pour,
+      opacity: { delay, duration: light, ease: EASE.fade },
+    },
+  });
 
 export type ItemKind =
-  "dot" | "grow" | "left" | "print" | "right" | "scale" | "up";
+  "dot" | "grow" | "left" | "right" | "light" | "scale" | "still" | "up";
 
-const RUNS: Record<ItemKind, number> = {
-  dot: 2,
-  grow: 3,
-  left: 3,
-  print: 3,
-  right: 3,
-  scale: 3,
-  up: 3,
-};
-
+// Content travels, and only a little: far enough to be seen settling, never
+// so far it reads as flying in. The chrome around it never travels at all.
 export const ITEMS: Record<ItemKind, Variants> = {
   dot: {
     hidden: { opacity: 0, scale: 0 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: size(RUNS.dot), ease: EASE.cream },
-    },
+    visible: arriving({ scale: 1 }, size(2), size(1)),
   },
   grow: {
-    hidden: { filter: exposure(DIM), opacity: 0, scaleY: 0 },
-    visible: { ...arrived(RUNS.grow), scaleY: 1 },
+    hidden: { opacity: 0, scaleY: 0 },
+    visible: arriving({ scaleY: 1 }),
   },
   left: {
-    hidden: { filter: exposure(DIM), opacity: 0, x: -22 },
-    visible: { ...arrived(RUNS.left), x: 0 },
+    hidden: { opacity: 0, x: -20 },
+    visible: arriving({ x: 0 }),
   },
-  // Printed in, as the facts are: a flash of too much light that settles to
-  // the picture.
-  print: {
-    hidden: { filter: "brightness(2.6) saturate(0.15)", opacity: 0 },
-    visible: {
-      filter: "brightness(1) saturate(1)",
-      opacity: 1,
-      transition: {
-        duration: size(RUNS.print),
-        ease: EASE.expo,
-        opacity: { duration: size(RUNS.print - 2), ease: EASE.expo },
-      },
-      transitionEnd: FOCUSED,
-    },
+  // Comes up where it stands, on light alone. Nothing under it moves, so its
+  // words and pictures are drawn once, on whole pixels, and never redrawn
+  // as they slide: the arrival runs on the compositor and cannot shimmer.
+  light: {
+    hidden: { opacity: 0 },
+    visible: arriving({}),
   },
   right: {
-    hidden: { filter: exposure(DIM), opacity: 0, x: 22 },
-    visible: { ...arrived(RUNS.right), x: 0 },
+    hidden: { opacity: 0, x: 20 },
+    visible: arriving({ x: 0 }),
   },
   scale: {
-    hidden: { filter: exposure(DIM), opacity: 0, scale: 0.9, y: 14 },
-    visible: { ...arrived(RUNS.scale), scale: 1, y: 0 },
+    hidden: { opacity: 0, scale: 0.94, y: 10 },
+    visible: arriving({ scale: 1, y: 0 }),
   },
+  // Arrives in place: whatever is inside reveals itself on the item's clock.
+  still: { hidden: {}, visible: {} },
   up: {
-    hidden: { filter: exposure(DIM), opacity: 0, scale: 0.96, y: 44 },
-    visible: { ...arrived(RUNS.up), scale: 1, y: 0 },
+    hidden: { opacity: 0, y: 24 },
+    visible: arriving({ y: 0 }),
   },
 };

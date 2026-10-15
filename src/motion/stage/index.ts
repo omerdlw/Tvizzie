@@ -13,6 +13,7 @@ export {
   useProgress,
 } from "./clock";
 export { useCue } from "./cue";
+export { Develop } from "./develop";
 export { Grade, GradeContext } from "./frame";
 export { GRAMMAR, sinceBase, undoGap, type Opening } from "./grammar";
 export { Hairline, Line } from "./lines";
@@ -23,3 +24,4 @@ export { Beat, Cascade, Header, Item, Section, Swap, Trace } from "./section";
 export { trackSpotlight } from "./spotlight";
 export * from "./tempo";
 export { Count, Expose, Title, Words } from "./type";
+export { WaveContext, useArrival, useArrivalClock, useWave } from "./wave";

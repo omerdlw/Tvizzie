@@ -27,7 +27,7 @@ import { createSignInSurfaceEntry, useAuth } from "@/features/auth";
 import { Button, Icon } from "@/ui";
 import { Magnet } from "@/motion/film";
 import { SCENE } from "../lib/motion";
-import { Rise, trackSpotlight } from "../stage";
+import { Fade, Item, trackSpotlight } from "../stage";
 import { useMovieView } from "./movie-views";
 import { createListPickerSurfaceEntry } from "./surfaces/list-picker-surface";
 
@@ -44,8 +44,6 @@ const ACTIVE =
 interface ActionProps {
   active: boolean;
   disabled: boolean;
-  from: "left" | "right";
-  order: number;
   grow?: boolean;
   hoverLabel?: string;
   icon: { off: string; on: string };
@@ -56,26 +54,23 @@ interface ActionProps {
   shortLabel?: string;
 }
 
+// Actions arrive as the content does, on the sidebar's wave, once they are in
+// view: the frame comes up where it stands, then what it says inside it. The
+// sidebar fades them as it leaves, so they keep no fade of their own.
 function Action({
   active,
   disabled,
-  from,
   hoverLabel,
   icon,
   label,
   loading,
   onClick,
-  order,
   secondary = false,
   shortLabel,
   grow,
 }: ActionProps): JSX.Element {
   return (
-    <Rise
-      at={SCENE.buttons.at + order * SCENE.buttons.gap}
-      className={cn("min-w-0", grow && "flex-1")}
-      from={from}
-    >
+    <Item className={cn("min-w-0", grow && "flex-1")} exit={false} from="light">
       <Button
         aria-label={secondary && shortLabel ? label : undefined}
         aria-pressed={active}
@@ -85,42 +80,51 @@ function Action({
         onClick={onClick}
         onPointerMove={trackSpotlight}
       >
-        <Magnet className="gap-2.5">
-          <span
-            className={cn(
-              "inline-flex shrink-0 transition-[scale] duration-slow ease-out-expo",
-              active ? "scale-110" : "group-hover:scale-110",
-            )}
-          >
-            <Icon
-              icon={active ? icon.on : icon.off}
-              size={secondary ? 14 : 16}
-            />
-          </span>
-          <span className="relative">
+        <Fade
+          as="span"
+          className="flex min-w-0 items-center justify-center"
+          run={SCENE.action.run}
+          since={SCENE.action.content}
+        >
+          <Magnet className="gap-2.5">
             <span
-              className={cn(hoverLabel && "cine-fade group-hover:opacity-0")}
-            >
-              {shortLabel && secondary ? (
-                shortLabel
-              ) : shortLabel ? (
-                <>
-                  <span className="sm:max-xl:hidden">{label}</span>
-                  <span className="hidden sm:max-xl:inline">{shortLabel}</span>
-                </>
-              ) : (
-                label
+              className={cn(
+                "inline-flex shrink-0 transition-[scale] duration-slow ease-out-expo",
+                active ? "scale-110" : "group-hover:scale-110",
               )}
+            >
+              <Icon
+                icon={active ? icon.on : icon.off}
+                size={secondary ? 14 : 16}
+              />
             </span>
-            {hoverLabel ? (
-              <span className="cine-fade absolute inset-0 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
-                {hoverLabel}
+            <span className="relative">
+              <span
+                className={cn(hoverLabel && "cine-fade group-hover:opacity-0")}
+              >
+                {shortLabel && secondary ? (
+                  shortLabel
+                ) : shortLabel ? (
+                  <>
+                    <span className="sm:max-xl:hidden">{label}</span>
+                    <span className="hidden sm:max-xl:inline">
+                      {shortLabel}
+                    </span>
+                  </>
+                ) : (
+                  label
+                )}
               </span>
-            ) : null}
-          </span>
-        </Magnet>
+              {hoverLabel ? (
+                <span className="cine-fade absolute inset-0 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+                  {hoverLabel}
+                </span>
+              ) : null}
+            </span>
+          </Magnet>
+        </Fade>
       </Button>
-    </Rise>
+    </Item>
   );
 }
 
@@ -134,7 +138,7 @@ const ICONS = {
   awards: { off: "solar:cup-star-linear", on: "solar:cup-star-bold" },
 };
 
-export function AwardsAction({ order }: { order: number }): JSX.Element {
+export function AwardsAction(): JSX.Element {
   const { toggle, view } = useMovieView();
   const open = view === "awards";
 
@@ -142,12 +146,10 @@ export function AwardsAction({ order }: { order: number }): JSX.Element {
     <Action
       active={open}
       disabled={false}
-      from="right"
       hoverLabel={open ? "Back" : undefined}
       icon={ICONS.awards}
       label="Awards"
       onClick={() => toggle("awards")}
-      order={order}
       secondary
       grow
     />
@@ -284,8 +286,6 @@ export function MovieCollectionActions({
           <Action
             active={state.liked}
             disabled={disabled}
-            from="left"
-            order={0}
             hoverLabel={state.liked ? "Unlike" : undefined}
             icon={ICONS.like}
             label={state.liked ? "Liked" : "Like"}
@@ -294,8 +294,6 @@ export function MovieCollectionActions({
           <Action
             active
             disabled={disabled}
-            from="right"
-            order={1}
             hoverLabel="Unwatch"
             icon={ICONS.watched}
             label="Watched"
@@ -307,8 +305,6 @@ export function MovieCollectionActions({
           <Action
             active={false}
             disabled={disabled}
-            from="left"
-            order={0}
             icon={ICONS.watched}
             label="Mark watched"
             onClick={() => void toggle("watched")}
@@ -316,8 +312,6 @@ export function MovieCollectionActions({
           <Action
             active={state.watchlist}
             disabled={disabled}
-            from="right"
-            order={1}
             hoverLabel={state.watchlist ? "Remove" : undefined}
             icon={ICONS.watchlist}
             label={state.watchlist ? "In Watchlist" : "Watchlist"}
@@ -330,9 +324,7 @@ export function MovieCollectionActions({
         <Action
           active={false}
           disabled={!auth.isReady}
-          from="left"
           grow
-          order={2}
           icon={ICONS.list}
           label="Add to list"
           onClick={openLists}
@@ -342,9 +334,7 @@ export function MovieCollectionActions({
         <Action
           active={false}
           disabled={disabled}
-          from="right"
           grow
-          order={3}
           icon={ICONS.diary}
           label="Log to diary"
           loading={logging}

@@ -15,8 +15,8 @@ import {
   SIDEBAR_CLASS,
   SIDEBAR_FACTS_CLASS,
 } from "../lib/layout";
-import { SCENE, factsGap, undoGap } from "../lib/motion";
-import { Expose, Fade, Line, Sequence } from "../stage";
+import { SCENE, undoGap } from "../lib/motion";
+import { Expose, Fade, Item, Line, Sequence } from "../stage";
 import { MoviePoster } from "./movie-artwork";
 import { MovieSocialProof } from "@/features/social";
 import { MovieAwardsAction } from "./movie-awards";
@@ -28,38 +28,46 @@ const MAX_VISIBLE_PEOPLE = 2;
 const MAX_VISIBLE_GENRES = 3;
 const MAX_VISIBLE_TAGS = 2;
 
+// A fact row arrives in place, on the sidebar's wave, and reads like a header
+// in small: its rule is panned across on the row's own clock, the label is
+// exposed where the rule starts and the value where the rule reaches it.
 function Row({
-  at,
   children,
   label,
   out,
 }: {
-  at: number;
   children: ReactNode;
   label: string;
   out: number;
 }) {
+  const { line, value } = SCENE.row;
   return (
-    <div className="group/row relative flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
+    <Item
+      className="group/row relative flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0"
+      exit={false}
+      from="still"
+    >
       <dt className="shrink-0 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase">
-        <Expose at={at} hover out={out}>
+        <Expose hover out={out} since={0}>
           {label}
         </Expose>
       </dt>
       <Fade
         as="dd"
-        at={at + SCENE.facts.lag}
         className={`min-w-0 text-right ${FACT_ROW_TYPE} font-medium text-white tabular-nums`}
         out={out}
+        run={SCENE.facts.expose}
+        since={value}
       >
         {children}
       </Fade>
       <Line
-        at={at}
         className="absolute inset-x-0 bottom-0 bg-white/[0.06] group-last/row:hidden"
         out={out}
+        run={line}
+        since={0}
       />
-    </div>
+    </Item>
   );
 }
 
@@ -83,7 +91,7 @@ function Names({
     <>
       {visible.map((name, index) => {
         const text = (
-          <Expose at={when.at} hover out={when.out}>
+          <Expose hover out={when.out} since={when.since}>
             {name.text}
           </Expose>
         );
@@ -97,7 +105,7 @@ function Names({
               text
             )}
             {index < visible.length - 1 ? (
-              <Fade as="span" at={when.at} out={when.out}>
+              <Fade as="span" out={when.out} since={when.since}>
                 {", "}
               </Fade>
             ) : null}
@@ -120,7 +128,7 @@ function Names({
 
 function Text({ children, when }: { children: string; when: When }) {
   return (
-    <Expose at={when.at} hover out={when.out}>
+    <Expose hover out={when.out} since={when.since}>
       {children}
     </Expose>
   );
@@ -138,8 +146,8 @@ const capitalize = (text: string) =>
   );
 
 interface When {
-  at: number;
   out: number;
+  since: number;
 }
 
 interface Fact {
@@ -227,26 +235,29 @@ export function MovieSidebar({
   if (budget) {
     facts.push({
       label: "Budget",
-      value: (when) => <MoneyCount at={when.at} value={movie.budget ?? 0} />,
+      value: (when) => (
+        <MoneyCount since={when.since} value={movie.budget ?? 0} />
+      ),
     });
   }
   if (revenue) {
     facts.push({
       label: "Revenue",
-      value: (when) => <MoneyCount at={when.at} value={movie.revenue ?? 0} />,
+      value: (when) => (
+        <MoneyCount since={when.since} value={movie.revenue ?? 0} />
+      ),
     });
   }
 
-  const gap = factsGap(facts.length);
   const outGap = undoGap(facts.length);
 
   return (
-    <Sequence className={SIDEBAR_CLASS}>
+    <Sequence className={SIDEBAR_CLASS} wave={SCENE.buttons.at}>
       <div className="flex min-w-0 flex-col gap-3" data-exit="">
         <MoviePoster awards={awards} movie={movie} />
         <MovieCollectionActions movieId={movie.id} title={movie.title}>
           <Suspense fallback={null}>
-            <MovieAwardsAction awards={awards} order={4} />
+            <MovieAwardsAction awards={awards} />
           </Suspense>
         </MovieCollectionActions>
         <MovieSocialProof movieId={movie.id} title={movie.title} />
@@ -255,11 +266,10 @@ export function MovieSidebar({
       <div className={SIDEBAR_FACTS_CLASS} data-flow="">
         <dl className="flex flex-col" data-exit="">
           {facts.map((fact, index) => {
-            const at = SCENE.facts.at + index * gap;
             const out = index * outGap;
             return (
-              <Row at={at} key={fact.label} label={fact.label} out={out}>
-                {fact.value({ at: at + SCENE.facts.lag, out })}
+              <Row key={fact.label} label={fact.label} out={out}>
+                {fact.value({ out, since: SCENE.row.value })}
               </Row>
             );
           })}

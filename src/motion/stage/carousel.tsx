@@ -6,23 +6,22 @@ import {
   use,
   useCallback,
   useEffect,
-  useId,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import {
   animate,
-  motion,
   useReducedMotion,
   type AnimationPlaybackControls,
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { Button, Icon } from "@/ui";
 import { GRAMMAR } from "./grammar";
-import { EASE, LANDED, settle, size } from "./tempo";
-import { LeadContext, useSection } from "./cue";
+import { EASE, LANDED, size } from "./tempo";
+import { ClockContext } from "./clock";
+import { Develop } from "./develop";
+import { useArrival, useArrivalClock } from "./wave";
 
 const EDGE_TOLERANCE = 4;
 const DRAG_THRESHOLD = 5;
@@ -93,61 +92,37 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-const SlideContext = createContext<{
-  delays: Readonly<Record<number, number>>;
-  register: (index: number, element: HTMLElement | null) => void;
-} | null>(null);
+const SlideContext = createContext<((delay: number) => void) | null>(null);
 
-const SHUT = "inset(100% 0% 0% 0% round 20px)";
-const OPEN = "inset(0% 0% 0% 0% round 20px)";
-
+// A slide develops like any picture on the page, once it is in view: the
+// track's own clipping counts, so a slide dragged in from the side arrives
+// as it comes into the frame.
 function Slide({
   children,
   className,
-  index,
 }: {
   children: ReactNode;
   className?: string;
-  index: number;
 }) {
-  const stage = use(SlideContext);
-  const reduced = useReducedMotion();
+  const arrived = use(SlideContext);
+  const { delay, ref, shown } = useArrival<HTMLDivElement>();
+  const clock = useArrivalClock(shown, delay);
   const slide = GRAMMAR.slides;
-  const delay = stage?.delays[index];
-  const shown = delay !== undefined;
-  const instant = { duration: 0 };
+  useEffect(() => {
+    if (shown) arrived?.(delay);
+  }, [shown]);
   return (
-    <div
-      className={className}
-      ref={(element) => stage?.register(index, element)}
-    >
-      <motion.div
-        animate={
-          shown
-            ? { clipPath: OPEN, transitionEnd: { clipPath: "none" } }
-            : undefined
-        }
-        className="h-full rounded-[inherit]"
-        initial={{ clipPath: SHUT }}
-        transition={
-          reduced
-            ? instant
-            : { delay: delay ?? 0, duration: slide.run, ease: EASE.silk }
-        }
-      >
-        <motion.div
-          animate={shown ? { scale: 1 } : undefined}
-          className="h-full"
-          initial={{ scale: slide.zoom }}
-          transition={
-            reduced
-              ? instant
-              : { delay: delay ?? 0, duration: slide.run, ease: EASE.cream }
-          }
+    <div className={className} ref={ref}>
+      <ClockContext value={clock}>
+        <Develop
+          className="h-full rounded-[inherit]"
+          radius={20}
+          run={slide.run}
+          zoom={slide.zoom}
         >
           {children}
-        </motion.div>
-      </motion.div>
+        </Develop>
+      </ClockContext>
     </div>
   );
 }
@@ -210,29 +185,15 @@ export function Carousel({
 }: CarouselProps) {
   const reduced = useReducedMotion();
   const slide = GRAMMAR.slides;
-  const rowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const slides = useRef<(HTMLElement | null)[]>([]);
-  const rowOpen = useRef(false);
-  const opening = useRef(true);
-  const waiting = useRef(new Set<number>());
-  const seen = useRef(0);
-  const section = useSection();
-  const swapLead = use(LeadContext);
-  const sectionRef = useRef(section);
-  useEffect(() => {
-    sectionRef.current = section;
-  }, [section]);
-  const spanKey = useId();
   const glide = useRef<AnimationPlaybackControls | null>(null);
-  const [delays, setDelays] = useState<Readonly<Record<number, number>>>({});
   const [state, setState] = useState<ScrollState>({
     canScrollLeft: false,
     canScrollRight: false,
   });
+  // The arrows wait for the first slides to have all but landed.
   const [landedCards, setLandedCards] = useState(false);
   const landing = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const count = Children.count(children);
   useDragScroll(trackRef);
 
   const nearEnd = useRef(onNearEnd);
@@ -262,28 +223,12 @@ export function Carousel({
     return () => observer.disconnect();
   }, [sync, children]);
 
-  const register = useCallback((index: number, element: HTMLElement | null) => {
-    slides.current[index] = element;
-  }, []);
-
-  const release = useCallback(
-    (indexes: number[], lead: number) => {
-      if (indexes.length === 0) return;
-      const ordered = [...indexes].sort((a, b) => a - b);
-      const run = (ordered.length - 1) * slide.gap;
-      const arrival = lead + run + LANDED * slide.run;
-      setDelays((previous) => {
-        const next = { ...previous };
-        ordered.forEach((index, order) => {
-          next[index] ??=
-            lead + settle(order, ordered.length, run, GRAMMAR.items.bend);
-        });
-        return next;
-      });
-      if (landing.current) clearTimeout(landing.current);
+  const arrived = useCallback(
+    (delay: number) => {
+      if (landing.current) return;
       landing.current = setTimeout(
         () => setLandedCards(true),
-        (arrival + slide.arrow) * 1000,
+        (delay + LANDED * slide.run + slide.arrow) * 1000,
       );
     },
     [slide],
@@ -294,101 +239,6 @@ export function Carousel({
     },
     [],
   );
-
-  const openRow = useCallback(
-    (lead: number) => {
-      rowOpen.current = true;
-      if (waiting.current.size > 0) opening.current = false;
-      release([...waiting.current], lead);
-      waiting.current.clear();
-    },
-    [release],
-  );
-
-  const sectionShown = section?.opened != null;
-  useEffect(() => {
-    const element = rowRef.current;
-    if (!element) return;
-    if (section) {
-      if (sectionShown) {
-        openRow(Math.max(section.after(GRAMMAR.section.lead), swapLead));
-      }
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        observer.disconnect();
-        openRow(0);
-      },
-      { rootMargin: "0px 0px -6% 0px" },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [openRow, sectionShown]);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const arrived: number[] = [];
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          observer.unobserve(entry.target);
-          const index = slides.current.indexOf(entry.target as HTMLElement);
-          if (index < 0) continue;
-          if (rowOpen.current) arrived.push(index);
-          else waiting.current.add(index);
-        }
-        const held = sectionRef.current;
-        const lead = opening.current
-          ? Math.max(
-              held?.opened ? held.after(GRAMMAR.section.lead) : 0,
-              swapLead,
-            )
-          : 0;
-        if (arrived.length > 0) opening.current = false;
-        release(arrived, lead);
-      },
-      { root: track, threshold: SLIDE_THRESHOLD },
-    );
-    for (const element of slides.current.slice(0, count)) {
-      if (element) observer.observe(element);
-    }
-    return () => observer.disconnect();
-  }, [count, release, swapLead]);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    const report = sectionRef.current?.report;
-    if (!track || !report) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          observer.unobserve(entry.target);
-          seen.current += 1;
-        }
-        if (seen.current === 0) return;
-        report(
-          spanKey,
-          GRAMMAR.section.lead +
-            (seen.current - 1) * slide.gap +
-            GRAMMAR.section.tail,
-        );
-      },
-      { root: track, threshold: SLIDE_THRESHOLD },
-    );
-    for (const element of slides.current.slice(0, count)) {
-      if (element) observer.observe(element);
-    }
-    return () => {
-      observer.disconnect();
-      seen.current = 0;
-      report(spanKey, null);
-    };
-  }, [count, slide, spanKey]);
 
   const stopGlide = () => glide.current?.stop();
 
@@ -410,15 +260,12 @@ export function Carousel({
     });
   };
 
-  const stage = useMemo(() => ({ delays, register }), [delays, register]);
-
   return (
     <div
       aria-label={label}
       aria-roledescription="carousel"
       className="relative w-full"
       data-exit=""
-      ref={rowRef}
       role="group"
     >
       <div
@@ -434,14 +281,13 @@ export function Carousel({
         onWheel={stopGlide}
         ref={trackRef}
       >
-        <SlideContext value={stage}>
+        <SlideContext value={arrived}>
           {Children.toArray(children).map((child, index) => (
             <Slide
               className={cn(
                 "cine-slide shrink-0 rounded-[20px]",
                 itemClassName,
               )}
-              index={index}
               key={(child as { key?: string }).key ?? index}
             >
               {child}

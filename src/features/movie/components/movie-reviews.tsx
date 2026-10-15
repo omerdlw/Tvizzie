@@ -2,7 +2,7 @@
 
 import type { JSX } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useTransform } from "motion/react";
 import { useDockActions } from "@omerdlw/base-framework/modules/dock";
 import { AccountLink } from "@/features/account/components/browse/account-link";
 import {
@@ -16,8 +16,7 @@ import {
 } from "@/features/reviews";
 import { Avatar, Icon } from "@/ui";
 import { SCENE } from "../lib/motion";
-import { Cascade, Header, Item, Section } from "../stage";
-import { EASE } from "@/motion/stage";
+import { Cascade, Header, Item, Section, ease, useProgress } from "../stage";
 
 const DATE = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
@@ -25,12 +24,24 @@ const DATE = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
+// Each star lights in place, one after the next, on its review's own clock.
+function LitStar({ fill, index }: { fill: number; index: number }) {
+  const { at, gap, run } = SCENE.stars;
+  const lit = useProgress(at + index * gap, run, ease.pour);
+  const opacity = useTransform(lit, (p) => ease.fade(p));
+  const scale = useTransform(lit, (p) => 0.7 + 0.3 * p);
+  return (
+    <motion.span className="inline-flex" style={{ opacity, scale }}>
+      <Star fill={fill} size={14} />
+    </motion.span>
+  );
+}
+
 function LitStars({ rating }: { rating: number | null }): JSX.Element {
   if (rating === null || !Number.isFinite(rating) || rating <= 0) {
     return <RatingStars rating={rating} />;
   }
   const value = Math.min(5, Math.max(0, rating));
-  const { at, gap, run } = SCENE.stars;
   return (
     <span
       aria-label={`${value} out of 5`}
@@ -38,30 +49,9 @@ function LitStars({ rating }: { rating: number | null }): JSX.Element {
       role="img"
       title={`${value} out of 5`}
     >
-      {Array.from({ length: 5 }, (_, index) => {
-        const fill = value - index;
-        return (
-          <motion.span
-            className="inline-flex"
-            key={index}
-            variants={{
-              hidden: { opacity: 0, rotate: -40, scale: 0.2 },
-              visible: {
-                opacity: 1,
-                rotate: 0,
-                scale: 1,
-                transition: {
-                  delay: at + index * gap,
-                  duration: run,
-                  ease: EASE.expo,
-                },
-              },
-            }}
-          >
-            <Star fill={fill} size={14} />
-          </motion.span>
-        );
-      })}
+      {Array.from({ length: 5 }, (_, index) => (
+        <LitStar fill={value - index} index={index} key={index} />
+      ))}
     </span>
   );
 }
@@ -82,7 +72,7 @@ function Card({
   const profile = `/account/${encodeURIComponent(review.author.username)}`;
 
   return (
-    <Item as="li" className="flex py-6 first:pt-0 last:pb-0" from="up">
+    <Item as="li" className="flex py-6 first:pt-0 last:pb-0" from="light">
       <article className="flex w-full flex-col gap-3">
         <div className="flex items-center gap-3.5">
           <AccountLink className="flex shrink-0" href={profile}>

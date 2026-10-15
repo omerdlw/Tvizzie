@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { MotionValue } from "motion/react";
 import { imagesReady } from "./ready";
 import { TimelineContext } from "./clock";
 
@@ -11,10 +10,8 @@ interface Opened {
 }
 
 interface SectionState {
-  enter: MotionValue<number>;
   after: (step: number) => number;
   opened: Opened | null;
-  through: MotionValue<number>;
   report: (key: string, seconds: number | null) => void;
 }
 
@@ -25,8 +22,6 @@ export const GroupContext = createContext<{ opened: Opened | null } | null>(
 );
 
 export const useSection = () => useContext(SectionContext);
-
-export const LeadContext = createContext(0);
 
 export function remaining(opened: Opened, step: number, now: number) {
   return Math.max(0, (opened.at + (opened.delay + step) * 1000 - now) / 1000);

@@ -5,7 +5,8 @@ import { personHref } from "@/config/routes";
 import { useArtworkPath } from "@/features/artwork";
 import { MediaCard } from "@/ui";
 import { useDockLinkClick } from "@/motion";
-import { trackSpotlight } from "../stage";
+import { SCENE } from "../lib/motion";
+import { Develop, Expose, trackSpotlight } from "../stage";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { cn } from "@omerdlw/base-framework/utils";
 import type { PersonEntry } from "../lib/types";
@@ -45,29 +46,50 @@ export function PersonCard({
           : "h-[84px] p-1 pr-4",
       )}
     >
-      <MediaCard
-        aspect="free"
+      <Develop
+        at={SCENE.card.photo}
         className="shrink-0"
-        fallbackIcon="solar:user-bold"
-        fallbackIconSize={compact ? 14 : 20}
-        frameClassName={compact ? "size-8" : "h-[76px] w-14"}
-        framed={false}
-        image={{ sizes: compact ? "32px" : "56px", src }}
         radius={compact ? 12 : 16}
-      />
+      >
+        <MediaCard
+          aspect="free"
+          className="shrink-0"
+          fallbackIcon="solar:user-bold"
+          fallbackIconSize={compact ? 14 : 20}
+          frameClassName={compact ? "size-8" : "h-[76px] w-14"}
+          framed={false}
+          image={{ sizes: compact ? "32px" : "56px", src }}
+          radius={compact ? 12 : 16}
+        />
+      </Develop>
 
       {compact ? (
-        <span className="truncate text-xs font-semibold text-white">
+        <Expose
+          as="div"
+          className="min-w-0 truncate text-xs font-semibold text-white"
+          since={SCENE.card.name}
+          truncate
+        >
           {person.name}
-        </span>
+        </Expose>
       ) : (
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-white">
+          <Expose
+            as="div"
+            className="truncate text-sm font-semibold text-white"
+            since={SCENE.card.name}
+            truncate
+          >
             {person.name}
-          </span>
-          <span className="truncate text-[10px] font-semibold tracking-[0.14em] text-white/50 uppercase">
+          </Expose>
+          <Expose
+            as="div"
+            className="truncate text-[10px] font-semibold tracking-[0.14em] text-white/50 uppercase"
+            since={SCENE.card.role}
+            truncate
+          >
             {person.subtitle}
-          </span>
+          </Expose>
         </div>
       )}
     </Link>

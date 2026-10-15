@@ -19,27 +19,34 @@ export const GRAMMAR = {
   facts: { expose: size(1), gap: size(-1), lag: size(-1), replay: size(1) },
   count: { replay: size(2), run: size(3) },
   opening: { base: TITLE },
-  // Below the fold everything arrives slowly and from a little further, so
-  // the page pours in rather than snapping into place.
+  // Below the fold a section is opened like a shot. One light crosses its
+  // header from left to right and reveals each part where it passes: the icon
+  // comes up, the name is exposed, the rule is drawn under the light and the
+  // controls are wiped in as it reaches them. Nothing in a header travels.
+  // The content starts once the light is 1/φ² of the way through, and the
+  // next section may open at that same moment, so a page scrolled through
+  // quickly is never left waiting on a sweep.
   section: {
-    actions: { at: size(0), run: size(3) },
-    lead: size(0),
-    name: { at: 0, run: size(2) },
+    lead: size(1),
     patience: size(0),
-    rule: { at: size(-1), run: size(3) },
+    span: size(1),
     stride: size(-1),
-    tail: size(-1),
-    y: 26,
+    sweep: { feather: 96, run: size(3) },
   },
-  items: { bend: 1.35, cards: size(-1), gap: size(-2) },
+  // What is seen together arrives in reading order, a step apart; what comes
+  // into view later starts where the eye already is, waiting at most a beat
+  // for what came before it.
+  items: { bend: 1.35, cards: size(-1), gap: size(-2), wait: size(0) },
   slides: {
     arrow: size(-1),
     gap: size(-2),
     glide: size(3),
-    run: size(4),
-    zoom: 1.18,
+    run: size(3),
+    zoom: 1.14,
   },
-  swap: { lead: size(-2), leave: size(0) },
+  // A tab change is one breath: the old content lifts away quickly and the
+  // new one starts arriving as soon as it has gone.
+  swap: { lead: 0, leave: size(-1) },
   view: { enter: size(2), leave: size(0), lift: 20 },
   flow: { run: size(1) },
   scrub: {

@@ -1,4 +1,4 @@
-import { GRAMMAR, PHI, landed, size, spread } from "@/motion/stage";
+import { GRAMMAR, PHI, landed, size } from "@/motion/stage";
 
 const TITLE = GRAMMAR.opening.base;
 const RULE = TITLE + size(1);
@@ -7,9 +7,6 @@ const OVERVIEW = TAGLINE + size(-1);
 const OVERVIEW_WINDOW = size(1);
 const OVERVIEW_SWEEP = size(-2);
 const OVERVIEW_LANDED = OVERVIEW + OVERVIEW_WINDOW + OVERVIEW_SWEEP + landed(2);
-
-const { expose: EXPOSE, lag: VALUE_LAG } = GRAMMAR.facts;
-const FACTS_WINDOW = OVERVIEW_LANDED - EXPOSE - VALUE_LAG - TAGLINE;
 
 export const SCENE = {
   ...GRAMMAR,
@@ -28,14 +25,25 @@ export const SCENE = {
     sweep: OVERVIEW_SWEEP,
     window: OVERVIEW_WINDOW,
   },
-  buttons: { at: RULE, gap: size(-2) },
-  facts: { ...GRAMMAR.facts, at: TAGLINE, window: FACTS_WINDOW },
+  // The sidebar's actions and facts arrive on one wave that may begin as the
+  // rule is drawn, and below the fold wait there to be scrolled to.
+  buttons: { at: RULE },
+  // Inside a card, on the card's own clock: the frame comes first, the picture
+  // develops in it a step later, and its words are exposed as the picture is
+  // half open, name before role.
+  card: { name: size(0), photo: size(-1), role: size(0) + size(-2) },
+  // An action is a frame first; what it says comes up in it a step later.
+  action: { content: size(-1), run: size(2) },
+  // A fact row is a header in small: its rule is panned across, the label is
+  // exposed where the rule starts and the value where the rule reaches it.
+  row: { line: size(2), value: size(0) },
   opening: {
     base: TITLE,
     end: OVERVIEW_LANDED,
     length: OVERVIEW_LANDED - TITLE + size(1),
   },
-  stars: { at: size(1), gap: size(-2), run: size(2) },
+  // A rating lights star by star once its review has arrived.
+  stars: { at: size(0), gap: size(-2), run: size(1) },
   layers: {
     overview: { opacity: [1, 0.2], range: [60, 640] },
     rule: { opacity: [1, 0.15], range: [20, 520] },
@@ -45,6 +53,3 @@ export const SCENE = {
 } as const;
 
 export { sinceBase, undoGap } from "@/motion/stage";
-
-export const factsGap = (count: number) =>
-  spread(count, SCENE.facts.window, SCENE.facts.gap);

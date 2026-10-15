@@ -1,10 +1,17 @@
 "use client";
 
-import { motion, useTransform } from "motion/react";
+import { useContext, useRef } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { sinceBase } from "./grammar";
-import { size } from "./tempo";
-import { useExit, useProgress } from "./clock";
+import { EASE, size } from "./tempo";
+import { ClockContext, useClockStart, useExit, useProgress } from "./clock";
+import { bezier, play } from "./play";
 
 export function Hairline({
   at,
@@ -33,16 +40,27 @@ export function Hairline({
   );
 }
 
-export function Line({
-  at,
-  className,
-  out,
-}: {
-  at: number;
+interface LineProps {
+  at?: number;
   className?: string;
   out?: number;
-}) {
-  const entered = useProgress(sinceBase(at), size(3));
+  run?: number;
+  since?: number;
+}
+
+const RULE = "block h-px origin-left bg-white/10";
+
+export function Line(props: LineProps) {
+  return props.since === undefined ? (
+    <OpeningLine {...props} />
+  ) : (
+    <TimedLine {...props} since={props.since} />
+  );
+}
+
+// On the opening, a rule keeps the opening's curve and clock.
+function OpeningLine({ at = 0, className, out, run = size(3) }: LineProps) {
+  const entered = useProgress(sinceBase(at), run);
   const left = useExit(out ?? 1e6);
   const scaleX = useTransform(
     [entered, left],
@@ -51,7 +69,56 @@ export function Line({
   return (
     <motion.span
       aria-hidden="true"
-      className={cn("block h-px origin-left bg-white/10", className)}
+      className={cn(RULE, className)}
+      style={{ opacity: scaleX, scaleX }}
+    />
+  );
+}
+
+const DOLLY = bezier(EASE.dolly);
+
+// Timed on its own row, a rule is drawn like a pan, on the compositor, once
+// the row's clock starts.
+function TimedLine({
+  className,
+  out,
+  run = size(3),
+  since,
+}: LineProps & { since: number }) {
+  const reduced = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const clock = useContext(ClockContext);
+  const drawn = useMotionValue(clock ? 0 : 1);
+  const left = useExit(out ?? 1e6);
+  const scaleX = useTransform([drawn, left], ([a, b]: number[]) => a * (1 - b));
+  useClockStart((time) => {
+    const element = ref.current;
+    if (!element) return;
+    const rest = () => {
+      const kept = 1 - left.get();
+      element.style.opacity = String(kept);
+      element.style.transform = kept >= 1 ? "none" : `scaleX(${kept})`;
+      drawn.set(1);
+    };
+    const wait = since - time;
+    if (reduced || wait + run <= 0) {
+      rest();
+      return;
+    }
+    return [
+      play(
+        element,
+        { opacity: ["0", "1"], transform: ["scaleX(0)", "scaleX(1)"] },
+        { easing: DOLLY, run, wait },
+        rest,
+      ),
+    ];
+  });
+  return (
+    <motion.span
+      aria-hidden="true"
+      className={cn(RULE, className)}
+      ref={ref}
       style={{ opacity: scaleX, scaleX }}
     />
   );

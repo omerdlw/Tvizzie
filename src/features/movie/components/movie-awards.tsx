@@ -20,7 +20,7 @@ export async function MovieAwards({
   return (
     <Section className="flex w-full flex-col">
       <Header icon="solar:cup-star-bold" title="Awards" />
-      <Beat>
+      <Beat from="light">
         <AwardsView
           awards={resolved}
           groupings={["organizations", "timeline"]}
@@ -33,11 +33,9 @@ export async function MovieAwards({
 
 export async function MovieAwardsAction({
   awards,
-  order,
 }: {
   awards: AwardsRequest;
-  order: number;
 }): Promise<JSX.Element | null> {
   if (!hasAwards(await awards)) return null;
-  return <AwardsAction order={order} />;
+  return <AwardsAction />;
 }

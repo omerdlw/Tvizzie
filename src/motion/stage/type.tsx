@@ -17,6 +17,7 @@ import {
   useMotionValueEvent,
   useReducedMotion,
   useTransform,
+  type MotionValue,
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { useBeam } from "@/motion/film";
@@ -331,12 +332,12 @@ const HALATION =
   "0 0 0.3em rgb(var(--grade) / 0.95), 0 0 0.9em rgb(var(--grade) / 0.55)";
 const GLINT = 0.55;
 
-function setMask(element: HTMLElement, image: string) {
+export function setMask(element: HTMLElement, image: string) {
   element.style.setProperty("mask-image", image);
   element.style.setProperty("-webkit-mask-image", image);
 }
 
-function clearMask(element: HTMLElement) {
+export function clearMask(element: HTMLElement) {
   element.style.removeProperty("mask-image");
   element.style.removeProperty("-webkit-mask-image");
 }
@@ -360,6 +361,8 @@ export function Expose({
   out,
   run = GRAMMAR.facts.expose,
   since,
+  sweep,
+  truncate = false,
 }: {
   as?: "div" | "p" | "span";
   at?: number;
@@ -369,6 +372,10 @@ export function Expose({
   out?: number;
   run?: number;
   since?: number;
+  // Driven from outside instead of by time: 0 is dark, 1 printed. The edge
+  // of the light then stands exactly where the sweep has reached.
+  sweep?: MotionValue<number>;
+  truncate?: boolean;
 }) {
   const reduced = useReducedMotion();
   const clock = useContext(ClockContext);
@@ -391,11 +398,11 @@ export function Expose({
     l.style.opacity = "0";
   };
 
-  const expose = (progress: number, burning: boolean) => {
+  const expose = (progress: number, burning: boolean, linear = false) => {
     const p = print.current;
     const l = light.current;
     if (!p || !l) return;
-    const edge = edgeAt(progress);
+    const edge = linear ? (100 + EDGE) * progress : edgeAt(progress);
     setMask(
       p,
       burning
@@ -406,10 +413,9 @@ export function Expose({
     shine(l, edge, Math.sin(Math.PI * progress) ** 0.6);
   };
 
-  const coming = (time: number) => {
+  const develop = (progress: number, linear: boolean) => {
     const p = print.current;
     if (!p || glinting.current || phase.current === "burnt") return;
-    const progress = unit((time - start) / run);
     if (reduced || progress >= 1) {
       if (phase.current !== "printed") printed();
       return;
@@ -422,7 +428,11 @@ export function Expose({
       return;
     }
     phase.current = "exposing";
-    expose(progress, false);
+    expose(progress, false, linear);
+  };
+
+  const coming = (time: number) => {
+    if (!sweep) develop(unit((time - start) / run), false);
   };
 
   const going = (time: number) => {
@@ -443,10 +453,14 @@ export function Expose({
   };
 
   useMotionValueEvent(clock ?? still, "change", coming);
+  useMotionValueEvent(sweep ?? still, "change", (progress) => {
+    if (sweep) develop(progress, true);
+  });
   useMotionValueEvent(exit ?? still, "change", going);
 
   useEffect(() => {
-    if (clock) coming(clock.get());
+    if (sweep) develop(sweep.get(), true);
+    else if (clock) coming(clock.get());
     else printed();
   }, [text]);
 
@@ -496,7 +510,10 @@ export function Expose({
       </span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 select-none"
+        className={cn(
+          "pointer-events-none absolute inset-0 opacity-0 select-none",
+          truncate && "truncate",
+        )}
         ref={light}
         style={{ color: LIGHT, textShadow: HALATION }}
       >
@@ -507,20 +524,22 @@ export function Expose({
 }
 
 export function Count({
-  at,
+  at = 0,
   format,
   hover = false,
   run = GRAMMAR.count.run,
+  since,
   value,
 }: {
-  at: number;
+  at?: number;
   format: (value: number) => string;
   hover?: boolean;
   run?: number;
+  since?: number;
   value: number;
 }) {
   const reduced = useReducedMotion();
-  const progress = useProgress(sinceBase(at), run);
+  const progress = useProgress(since ?? sinceBase(at), run);
   const replay = useMotionValue(1);
   const text = useTransform([progress, replay], ([p, r]: number[]) =>
     format(Math.round(value * Math.min(p, ease.expo(r)))),

@@ -61,10 +61,16 @@ export function MoviePeople({ cast, crew }: MoviePeopleProps) {
         title="Cast & Crew"
       />
 
-      <Swap className="flex flex-col gap-3" id={tab}>
+      <Swap className="flex flex-col gap-3" fades id={tab}>
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {featured.map((person) => (
-            <Item as="li" className="min-w-0" from="print" key={person.key}>
+            <Item
+              as="li"
+              className="min-w-0"
+              exit={false}
+              from="light"
+              key={person.key}
+            >
               <PersonCard person={person} />
             </Item>
           ))}
@@ -78,13 +84,14 @@ export function MoviePeople({ cast, crew }: MoviePeopleProps) {
             {compact.map((person, index) => (
               <Item
                 className={`min-w-0 ${index > 1 ? "hidden sm:block" : ""}`}
-                from="scale"
+                exit={false}
+                from="light"
                 key={person.key}
               >
                 <PersonCard compact person={person} />
               </Item>
             ))}
-            <Item className="min-w-0" from="scale">
+            <Item className="min-w-0" exit={false} from="light">
               <Button
                 aria-label="Show full cast and crew"
                 className="cine-press center h-10 w-full cursor-pointer rounded-[16px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
