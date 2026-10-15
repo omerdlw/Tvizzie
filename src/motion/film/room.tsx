@@ -3,7 +3,6 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { cancelFrame, frame, useReducedMotion } from "motion/react";
 import {
-  BURN,
   bindFullscreen,
   createProgram,
   readable,
@@ -12,7 +11,8 @@ import {
 } from "./gl";
 
 // The light the picture throws on the room: far out of focus, a fraction of
-// the canvas's pixels, and cut from reel to reel the way the projector is.
+// the canvas's pixels, and dissolved from reel to reel the way the projector
+// is.
 const FRAGMENT = `#version 300 es
 precision highp float;
 uniform sampler2D uA;
@@ -21,12 +21,8 @@ uniform vec2 uCanvas;
 uniform vec2 uSizeA;
 uniform vec2 uSizeB;
 uniform float uCut;
-uniform float uSeed;
-uniform vec2 uFrom;
 in vec2 vUv;
 out vec4 outColor;
-
-${BURN}
 
 vec2 cover(vec2 uv, vec2 size) {
   float canvasAspect = uCanvas.x / uCanvas.y;
@@ -48,19 +44,16 @@ vec3 soft(sampler2D source, vec2 st) {
 }
 
 void main() {
-  float aspect = uCanvas.x / uCanvas.y;
   vec3 color = soft(uA, cover(vUv, uSizeA));
-  if (uCut > 0.0) {
-    vec2 burnt = burn(burnField(vUv, aspect, uFrom, uSeed), uCut);
-    color = mix(color, soft(uB, cover(vUv, uSizeB)), burnt.x);
-    color = burnLight(color, uCut, burnt);
-  }
+  if (uCut > 0.0) color = mix(color, soft(uB, cover(vUv, uSizeB)), uCut);
   float grey = dot(color, vec3(0.299, 0.587, 0.114));
   color = mix(vec3(grey), color, 1.05) * 0.5;
   outColor = vec4(color, 1.0);
 }`;
 
 const SCALE = 0.25;
+
+const dissolve = (progress: number) => progress * progress * (3 - 2 * progress);
 
 interface Slide {
   size: [number, number];
@@ -71,13 +64,11 @@ interface Slide {
 export function Room({
   className,
   cut = 1.1,
-  from = [0.5, 0.5],
   src,
   style,
 }: {
   className?: string;
   cut?: number;
-  from?: [number, number];
   src: string | null;
   style?: CSSProperties;
 }) {
@@ -85,11 +76,9 @@ export function Room({
   const reduced = useReducedMotion();
   const show = useRef<((src: string) => void) | null>(null);
   const run = useRef(cut);
-  const origin = useRef(from);
 
   useEffect(() => {
     run.current = reduced ? 0 : cut;
-    origin.current = from;
   });
 
   useEffect(() => {
@@ -114,8 +103,6 @@ export function Room({
       "uSizeA",
       "uSizeB",
       "uCut",
-      "uSeed",
-      "uFrom",
     ] as const);
 
     let current: Slide | null = null;
@@ -123,7 +110,6 @@ export function Room({
     let wanted: string | null = null;
     let progress = 0;
     let started: number | null = null;
-    let seed = 0;
     let looping = false;
     let gone = false;
 
@@ -149,10 +135,11 @@ export function Room({
       gl.uniform2f(u.uCanvas, element.width, element.height);
       gl.uniform2f(u.uSizeA, current.size[0], current.size[1]);
       gl.uniform2f(u.uSizeB, incoming.size[0], incoming.size[1]);
-      gl.uniform1f(u.uCut, next ? progress : 0);
-      gl.uniform1f(u.uSeed, seed);
-      gl.uniform2f(u.uFrom, origin.current[0], origin.current[1]);
+      gl.uniform1f(u.uCut, next ? dissolve(progress) : 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      // Until its first picture is drawn the canvas is opaque black; it is
+      // only shown once it has light to give.
+      element.style.visibility = "";
     };
 
     const step = ({ timestamp }: { timestamp: number }) => {
@@ -217,7 +204,6 @@ export function Room({
             return;
           }
           next = slide;
-          seed = Math.random() * 100;
           if (!looping) {
             looping = true;
             frame.render(step, true);
@@ -256,7 +242,7 @@ export function Room({
       aria-hidden="true"
       className={className}
       ref={canvas}
-      style={style}
+      style={{ ...style, visibility: "hidden" }}
     />
   );
 }

@@ -20,7 +20,6 @@ import { BACKDROP_HERO_MASK } from "../../ui/backdrop-hero";
 import { primitivesTheme } from "../../ui/theme";
 import { useScrollY } from "../scroll";
 import {
-  BURN,
   bindFullscreen,
   createProgram,
   fitCanvas,
@@ -45,8 +44,6 @@ uniform vec2 uCanvas;
 uniform vec2 uImageSize;
 uniform vec2 uImageSizeB;
 uniform float uCut;
-uniform vec2 uBurnFrom;
-uniform float uSeed;
 uniform vec2 uFocus;
 uniform vec2 uWeave;
 uniform vec2 uParallax;
@@ -65,8 +62,6 @@ out vec4 outColor;
 
 const float OVERSCAN = 1.07;
 const float DRAIN = 0.94;
-
-${BURN}
 
 vec2 cover(vec2 uv, vec2 imageSize) {
   float canvasAspect = uCanvas.x / uCanvas.y;
@@ -160,14 +155,12 @@ void main() {
   // swells out of focus and where the cursor rests.
   float halo = dot(texture(uHalo, st).rgb, vec3(0.3333));
 
-  // The next reel burns through: same lens, same light, only the picture
-  // behind the rim is new.
-  vec2 burnt = vec2(0.0);
+  // The next reel dissolves in: same lens, same light, only the picture is
+  // new.
   if (uCut > 0.0) {
-    burnt = burn(burnField(vUv, aspect, uBurnFrom, uSeed), uCut);
     vec3 next = reel(uImageB, uLevelB1, uLevelB2, uLevelB3, stB, focus);
-    color = mix(color, next, burnt.x);
-    halo = mix(halo, dot(texture(uHaloB, stB).rgb, vec3(0.3333)), burnt.x);
+    color = mix(color, next, uCut);
+    halo = mix(halo, dot(texture(uHaloB, stB).rgb, vec3(0.3333)), uCut);
   }
   color += vec3(1.0, 0.36, 0.16) * halo * uHalation * (1.0 + away * 0.9 + pool * 0.6);
 
@@ -211,8 +204,6 @@ void main() {
     float x = uScratch.x + sin(vUv.y * 9.0 + uScratch.z) * 0.002;
     color += smoothstep(1.5 / uCanvas.x, 0.0, abs(vUv.x - x)) * uScratch.y;
   }
-
-  if (uCut > 0.0) color = burnLight(color, uCut, burnt);
 
   outColor = vec4(color * uFlicker, 1.0);
 }`;
@@ -259,8 +250,6 @@ const NAMES = [
   "uImageSize",
   "uImageSizeB",
   "uCut",
-  "uBurnFrom",
-  "uSeed",
   "uFocus",
   "uWeave",
   "uParallax",
@@ -361,7 +350,9 @@ interface Options {
 }
 
 const UNPROJECTED: Projector = { show: () => {}, stop: () => {} };
-const BURN_FROM: [number, number] = [0.62, 0.38];
+
+// A dissolve that leaves and arrives softly, with no edge to its start or end.
+const dissolve = (progress: number) => progress * progress * (3 - 2 * progress);
 
 function project(
   canvas: HTMLCanvasElement,
@@ -407,8 +398,6 @@ function project(
   let pending: string | null = null;
   let cut = 0;
   let cutFrom: number | null = null;
-  let seed = 0;
-  let burnFrom: [number, number] = BURN_FROM;
   let ready = false;
   let disposed = false;
   let lost = false;
@@ -502,9 +491,7 @@ function project(
     gl.uniform2f(u.uCanvas, canvas.width, canvas.height);
     gl.uniform2f(u.uImageSize, current.size[0], current.size[1]);
     gl.uniform2f(u.uImageSizeB, incoming.size[0], incoming.size[1]);
-    gl.uniform1f(u.uCut, next ? cut : 0);
-    gl.uniform2f(u.uBurnFrom, burnFrom[0], burnFrom[1]);
-    gl.uniform1f(u.uSeed, seed);
+    gl.uniform1f(u.uCut, next ? dissolve(cut) : 0);
     gl.uniform2f(u.uFocus, focus[0], focus[1]);
     gl.uniform2f(u.uWeave, weave[0], weave[1]);
     gl.uniform2f(u.uParallax, parallax[0], parallax[1]);
@@ -811,9 +798,8 @@ function project(
     drain();
   };
 
-  // Another reel is threaded while this one runs; once it is ready it burns
-  // through from where the light is, and a request made meanwhile waits for
-  // the cut to finish.
+  // Another reel is threaded while this one runs; once it is ready it
+  // dissolves in, and a request made meanwhile waits for the cut to finish.
   const show = (name: string) => {
     if (!current || next || loading !== null) {
       pending = name;
@@ -832,8 +818,6 @@ function project(
       next = reel;
       cut = 0;
       cutFrom = null;
-      seed = Math.random() * 100;
-      burnFrom = rack > 0.05 ? [poolAt[0], poolAt[1]] : BURN_FROM;
       run();
     });
   };

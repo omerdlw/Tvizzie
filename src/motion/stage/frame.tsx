@@ -9,26 +9,10 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import {
-  CueMark,
-  Dust,
-  RoomGrain,
-  isCarriedTo,
-  readable,
-  useCarryingFrom,
-  useHouseDown,
-} from "@/motion/film";
-import { usePathname } from "next/navigation";
-import { handoffTo, useDeparture } from "@/motion/handoff";
+import { Dust, RoomGrain, readable, useHouseDown } from "@/motion/film";
 import { GRAMMAR } from "./grammar";
 import { EASE } from "./tempo";
-import {
-  ExitContext,
-  HeadContext,
-  TimelineContext,
-  skipped,
-  useExit,
-} from "./clock";
+import { PaceContext, TimelineContext, useExit } from "./clock";
 import { toneOf } from "./grade";
 
 export const GradeContext = createContext<{
@@ -73,24 +57,19 @@ export function Grade({ source }: { source: string | null }) {
   return null;
 }
 
+// The letterbox the film is shown in. A page opens out of it and closes back
+// into it, so from one film page to the next the frame is never lost: the bars
+// stand at the same height as one page leaves and the next opens.
 function Bars() {
   const reduced = useReducedMotion();
-  const pathname = usePathname();
   const { at, height, run, shut } = GRAMMAR.frame.bars;
   const left = useExit(GRAMMAR.exit.backdrop);
   const open = useMotionValue(reduced ? 1 : 0);
-  const head = useContext(HeadContext);
+  const pace = useContext(PaceContext);
   const timeline = useContext(TimelineContext);
-  const [veiled] = useState(
-    () => handoffTo(pathname) !== null && !isCarriedTo(pathname),
-  );
-  const departing = useDeparture(pathname) !== undefined;
-  const carrying = useCarryingFrom(pathname);
   const rest = height / shut;
-  const begin = veiled ? 1 : rest;
-  const end = departing && !carrying ? 1 : rest;
   const closed = useTransform([open, left], ([o, l]: number[]) =>
-    Math.max(begin * (1 - o), end * l),
+    Math.max(rest * (1 - o), rest * l),
   );
 
   // The bars part on the first frame of the picture, not on the page.
@@ -99,7 +78,8 @@ function Bars() {
     let controls: ReturnType<typeof animate> | null = null;
     const part = () => {
       controls = animate(open, 1, {
-        ...skipped(at, run, head),
+        delay: at / pace,
+        duration: run / pace,
         ease: EASE.glide,
       });
     };
@@ -108,7 +88,7 @@ function Bars() {
       cancel();
       controls?.stop();
     };
-  }, [at, head, open, reduced, run, timeline]);
+  }, [at, open, pace, reduced, run, timeline]);
 
   const bar = "pointer-events-none fixed inset-x-0 z-20 bg-black";
   const style = { height: `${shut}vh`, scaleY: closed } as const;
@@ -130,11 +110,16 @@ function Bars() {
   );
 }
 
+// Where the pointer last was, kept across pages: the light under it is the
+// same light on the next page, not one that goes out at the cut.
+let lastPointer: { x: number; y: number } | null = null;
+
 function Glow() {
   const radius = 380;
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const near = useMotionValue(0);
+  const [start] = useState(() => lastPointer);
+  const x = useMotionValue(start ? start.x - radius : 0);
+  const y = useMotionValue(start ? start.y - radius : 0);
+  const near = useMotionValue(start ? 1 : 0);
   const sx = useSpring(x, { damping: 26, mass: 0.9, stiffness: 70 });
   const sy = useSpring(y, { damping: 26, mass: 0.9, stiffness: 70 });
   const house = useHouseDown();
@@ -147,9 +132,10 @@ function Glow() {
   useEffect(() => lights.set(house ? 0 : 1), [house, lights]);
 
   useEffect(() => {
-    let placed = false;
+    let placed = start !== null;
     const move = (event: PointerEvent) => {
       if (event.pointerType !== "mouse") return;
+      lastPointer = { x: event.clientX, y: event.clientY };
       x.set(event.clientX - radius);
       y.set(event.clientY - radius);
       if (!placed) {
@@ -159,14 +145,17 @@ function Glow() {
       }
       near.set(1);
     };
-    const leave = () => near.set(0);
+    const leave = () => {
+      lastPointer = null;
+      near.set(0);
+    };
     window.addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("mouseleave", leave);
     return () => {
       window.removeEventListener("pointermove", move);
       document.documentElement.removeEventListener("mouseleave", leave);
     };
-  }, [near, sx, sy, x, y]);
+  }, [near, start, sx, sy, x, y]);
 
   return (
     <motion.div
@@ -205,9 +194,6 @@ function HouseLights() {
 export function Frame() {
   const grade = use(GradeContext);
   const reduced = useReducedMotion();
-  const out = useContext(ExitContext);
-  const { cue } = GRAMMAR.film;
-
   return (
     <>
       <motion.div
@@ -233,9 +219,6 @@ export function Frame() {
       {reduced ? null : <Glow />}
       <HouseLights />
       <Bars />
-      {out && !reduced ? (
-        <CueMark hold={cue.hold} marks={cue.marks} out={out} />
-      ) : null}
     </>
   );
 }

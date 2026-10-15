@@ -11,9 +11,9 @@ import { globalEvents } from "@omerdlw/base-framework/events";
 interface Trip {
   at: number;
   black: string;
+  grade: string | null;
   href: string;
   primary: string;
-  scene: string | null;
   to: string;
 }
 
@@ -43,12 +43,22 @@ const current = (): Trip | null =>
 const WARM_FOR = 4 * 60_000;
 const warmed = new Map<string, number>();
 
+// Whoever can get a page's picture ready ahead of it: told each film page that
+// is about to be gone to, as soon as there is reason to think it will be.
+const foreseers = new Set<(path: string) => void>();
+
+export function foresee(run: (path: string) => void): () => void {
+  foreseers.add(run);
+  return () => void foreseers.delete(run);
+}
+
 function warm(href: string, router: AppRouterInstance): void {
   if (!isFilmPage(href)) return;
   const key = pathOf(href);
   const at = warmed.get(key);
   if (at !== undefined && Date.now() - at < WARM_FOR) return;
   warmed.set(key, Date.now());
+  foreseers.forEach((run) => run(key));
   try {
     router.prefetch(href, { kind: "full" as PrefetchKind });
   } catch {
@@ -92,23 +102,54 @@ export function watchIntent(router: AppRouterInstance): () => void {
   };
 }
 
-function beginHandoff(
-  to: string,
-  router: AppRouterInstance,
-  scene: string | null,
-): void {
+function beginHandoff(to: string, router?: AppRouterInstance): void {
   if (!isFilmPage(to)) return;
   const style = getComputedStyle(document.documentElement);
+  const stage = document.querySelector("main[data-cinematic]");
   trip = {
     at: Date.now(),
     black: style.getPropertyValue("--black").trim(),
+    grade: stage
+      ? getComputedStyle(stage).getPropertyValue("--grade").trim() || null
+      : null,
     href: to,
     primary: style.getPropertyValue("--primary").trim(),
-    scene,
     to: pathOf(to),
   };
   settle();
-  warm(to, router);
+  if (router) warm(to, router);
+}
+
+// A step back or forward through history: the page it goes to is already in
+// hand, and it is arrived at as any other cut is.
+export function stepTo(to: string): void {
+  beginHandoff(to);
+}
+
+export const samePage = (a: string, b: string) => pathOf(a) === pathOf(b);
+
+// The first say over every step back or forward. The router hears of one only
+// after this gate, which has to be in place before the router is: it is set up
+// as this module loads, with the app.
+type Holder = (event: PopStateEvent) => boolean;
+
+let holder: Holder | null = null;
+
+export function holdSteps(hold: Holder): () => void {
+  holder = hold;
+  return () => {
+    if (holder === hold) holder = null;
+  };
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener(
+    "popstate",
+    (event) => {
+      if (holder?.(event)) event.stopImmediatePropagation();
+    },
+    { capture: true },
+  );
 }
 
 const ROUTED_PATIENCE = 20_000;
@@ -116,13 +157,9 @@ const ROUTED_PATIENCE = 20_000;
 export function depart(
   to: string,
   router: AppRouterInstance,
-  {
-    onReturn,
-    patience,
-    scene = null,
-  }: { onReturn: () => void; patience: number; scene?: string | null },
+  { onReturn, patience }: { onReturn: () => void; patience: number },
 ): () => void {
-  beginHandoff(to, router, scene);
+  beginHandoff(to, router);
   const target = pathOf(to);
   let timer = setTimeout(giveUp, patience);
   const unsubscribe = globalEvents.subscribe(
@@ -166,15 +203,15 @@ interface Palette {
 
 export function handoffTo(
   pathname: string,
-): { palette: Palette | null; scene: string | null } | null {
+): { grade: string | null; palette: Palette | null } | null {
   const now = current();
   if (!now || now.to !== pathOf(pathname)) return null;
   return {
+    grade: now.grade,
     palette:
       now.black && now.primary
         ? { black: now.black, primary: now.primary }
         : null,
-    scene: now.scene,
   };
 }
 

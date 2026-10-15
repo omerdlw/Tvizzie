@@ -7,7 +7,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 import {
@@ -17,6 +16,7 @@ import {
   useMotionValue,
   useReducedMotion,
   useTransform,
+  type MotionStyle,
 } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useOptionalDockActions } from "@omerdlw/base-framework/modules/dock";
@@ -24,21 +24,26 @@ import { cn } from "@omerdlw/base-framework/utils";
 import {
   dropCarry,
   liftCarry,
-  sceneFor,
   settleCarry,
   useTintedFavicon,
 } from "@/motion/film";
-import { depart, endHandoff, handoffTo, watchIntent } from "@/motion/handoff";
+import {
+  depart,
+  endHandoff,
+  handoffTo,
+  holdSteps,
+  samePage,
+  stepTo,
+  watchIntent,
+} from "@/motion/handoff";
 import { useScrollY, useSmoothScroll } from "@/motion/scroll";
 import { GRAMMAR, type Opening } from "./grammar";
 import { EASE, FOCUSED, blur, focus } from "./tempo";
 import {
   ExitContext,
-  HeadContext,
   OpeningContext,
   PaceContext,
   TimelineContext,
-  skipped,
   useExit,
 } from "./clock";
 import { Frame, GradeContext } from "./frame";
@@ -75,19 +80,18 @@ function remember(pathname: string) {
   }
 }
 
-// Where the opening starts, and how fast it runs: from the top for a film seen
-// for the first time, past the black when arriving from another film page, and
-// cut quicker still for one already seen this session.
-function useHead(pathname: string) {
-  const [cut] = useState(() => {
+// How fast the opening runs. It always runs whole and in its own order, the
+// picture first: at its own pace for a page seen for the first time, quicker
+// when cut to from another film page, and quicker still for one already seen
+// this session.
+function usePace(pathname: string) {
+  const [pace] = useState(() => {
     const { arrive, revisit } = GRAMMAR.film;
-    const handed = handoffTo(pathname) ? arrive : 0;
-    return seenList().includes(pathname)
-      ? { head: Math.max(handed, revisit.head), pace: revisit.pace }
-      : { head: handed, pace: 1 };
+    if (seenList().includes(pathname)) return revisit.pace;
+    return handoffTo(pathname) ? arrive.pace : 1;
   });
   useEffect(() => remember(pathname), [pathname]);
-  return cut;
+  return pace;
 }
 
 export function Stage({
@@ -102,10 +106,9 @@ export function Stage({
   picture?: boolean;
 }) {
   const pathname = usePathname();
-  const { head, pace } = useHead(pathname);
+  const pace = usePace(pathname);
   const [timeline] = useState(() =>
     createTimeline({
-      head,
       hold: picture,
       opening: opening.end / pace,
       patience: GRAMMAR.section.patience,
@@ -113,15 +116,14 @@ export function Stage({
     }),
   );
   const reduced = useReducedMotion();
-  const [tone, setTone] = useState<string | null>(null);
-  const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
-  const [arrival] = useState(() => handoffTo(pathname)?.scene ?? null);
-  const [lead, setLead] = useState<string | null>(null);
-  const [destination, setDestination] = useState<string | null>(null);
-  const room = useMemo(
-    () => ({ arrival, destination, lead, setLead }),
-    [arrival, destination, lead],
+  // Cut to from another film page, the room keeps that page's light until this
+  // one's own is read from its picture.
+  const [tone, setTone] = useState<string | null>(
+    () => handoffTo(pathname)?.grade ?? null,
   );
+  const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
+  const [lead, setLead] = useState<string | null>(null);
+  const room = useMemo(() => ({ lead, setLead }), [lead]);
 
   useEffect(() => timeline.serial(!reduced), [reduced, timeline]);
 
@@ -148,47 +150,74 @@ export function Stage({
 
   return (
     <TimelineContext value={timeline}>
-      <HeadContext value={head}>
-        <OpeningContext value={opening}>
-          <PaceContext value={pace}>
-            <MotionConfig reducedMotion="user">
-              <GradeContext value={grade}>
-                <RoomContext value={room}>
-                  <Leaving
-                    className={className}
-                    onDestination={setDestination}
-                    tone={tone}
-                  >
-                    {children}
-                  </Leaving>
-                </RoomContext>
-              </GradeContext>
-            </MotionConfig>
-          </PaceContext>
-        </OpeningContext>
-      </HeadContext>
+      <OpeningContext value={opening}>
+        <PaceContext value={pace}>
+          <MotionConfig reducedMotion="user">
+            <GradeContext value={grade}>
+              <RoomContext value={room}>
+                <Leaving className={className} tone={tone}>
+                  {children}
+                </Leaving>
+              </RoomContext>
+            </GradeContext>
+          </MotionConfig>
+        </PaceContext>
+      </OpeningContext>
     </TimelineContext>
   );
+}
+
+const NEUTRAL = [252, 252, 251];
+
+const channels = (tone: string | null) => {
+  const parts = tone?.split(/\s+/).map(Number) ?? [];
+  return parts.length === 3 && parts.every(Number.isFinite) ? parts : NEUTRAL;
+};
+
+// The grade every accent on the page is lit by. A new tone is not switched to
+// but drawn over, so nothing tinted by it ever jumps.
+function useGradeLight(tone: string | null) {
+  const reduced = useReducedMotion();
+  const light = useMotionValue(channels(tone).join(" "));
+
+  useEffect(() => {
+    const from = channels(light.get());
+    const to = channels(tone);
+    if (from.every((value, i) => value === to[i])) return;
+    const controls = animate(0, 1, {
+      duration: reduced ? 0 : GRAMMAR.film.cut,
+      ease: EASE.silk,
+      onUpdate: (progress) =>
+        light.set(
+          from
+            .map((value, i) => Math.round(value + (to[i] - value) * progress))
+            .join(" "),
+        ),
+    });
+    return () => controls.stop();
+  }, [light, reduced, tone]);
+
+  return light;
 }
 
 function Leaving({
   children,
   className,
-  onDestination,
   tone,
 }: {
   children: ReactNode;
   className?: string;
-  onDestination: (scene: string | null) => void;
   tone: string | null;
 }) {
   const dock = useOptionalDockActions();
   const router = useRouter();
+  const pathname = usePathname();
   const timeline = useContext(TimelineContext);
   const reduced = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
   const { wait } = GRAMMAR.exit;
   const out = useMotionValue(-1);
+  const grade = useGradeLight(tone);
 
   useEffect(() => {
     if (!leaving) return;
@@ -215,20 +244,14 @@ function Leaving({
     const unregister = dock.registerGuard({
       when: (to: string) =>
         new Promise<boolean>((resolve) => {
-          // The next scene's light comes into the room before the cut: what
-          // was clicked to get there is already showing as this page goes.
-          const scene = sceneFor(to);
-          onDestination(scene);
           setLeaving(true);
           waiting.add(
             depart(to, router, {
               onReturn: () => {
                 dropCarry();
-                onDestination(null);
                 setLeaving(false);
               },
               patience: wait * 1000 + 2500,
-              scene,
             }),
           );
           liftCarry(to, GRAMMAR.film.carry.run);
@@ -240,25 +263,72 @@ function Leaving({
       timers.forEach(clearTimeout);
       waiting.forEach((stop) => stop());
     };
-  }, [dock, onDestination, reduced, router, wait]);
+  }, [dock, reduced, router, wait]);
 
   useEffect(() => watchIntent(router), [router]);
+
+  // Back and forward leave the way a click does. The history step is held
+  // while the page goes, in the same one movement, and handed on at the cut;
+  // a step taken meanwhile replaces it.
+  useEffect(() => {
+    if (reduced) return;
+    let held: { state: unknown } | null = null;
+    let passing = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const pass = () => {
+      timer = null;
+      if (!held) return;
+      const { state } = held;
+      held = null;
+      passing = true;
+      window.dispatchEvent(new PopStateEvent("popstate", { state }));
+      passing = false;
+    };
+    const release = holdSteps((event) => {
+      if (passing) return false;
+      if (samePage(window.location.pathname, pathname)) {
+        // Stepped back onto this page before it was gone: it stays.
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+          held = null;
+          endHandoff();
+          setLeaving(false);
+        }
+        return false;
+      }
+      held = { state: event.state };
+      if (!timer) {
+        stepTo(window.location.pathname);
+        setLeaving(true);
+        timer = setTimeout(pass, wait * 1000);
+      }
+      return true;
+    });
+    return () => {
+      release();
+      if (timer) {
+        clearTimeout(timer);
+        pass();
+      }
+    };
+  }, [pathname, reduced, wait]);
 
   return (
     <LeavingContext value={leaving}>
       <ExitContext value={out}>
-        <main
+        <motion.main
           className={cn(
             "overflow-x-clip",
             className,
             leaving && "pointer-events-none",
           )}
           data-cinematic
-          style={{ "--grade": tone ?? "252 252 251" } as CSSProperties}
+          style={{ "--grade": grade } as MotionStyle}
         >
           <Frame />
           {children}
-        </main>
+        </motion.main>
       </ExitContext>
     </LeavingContext>
   );
@@ -307,7 +377,7 @@ export function Backdrop({
   const opacity = useTransform(left, (p) => 1 - p);
   const scale = useTransform(left, (p) => 1 - 0.1 * p);
   const { backdrop } = GRAMMAR;
-  const first = skipped(backdrop.at, backdrop.run, useContext(HeadContext));
+  const pace = useContext(PaceContext);
   const filter = useTransform(left, (p) =>
     p <= 0
       ? "none"
@@ -341,8 +411,11 @@ export function Backdrop({
             animate={ready ? shown : hidden}
             initial={hidden}
             transition={{
-              ...first,
-              ease: EASE.glide,
+              delay: backdrop.at / pace,
+              duration: backdrop.run / pace,
+              // Out of the black a picture develops slowly; cut to from
+              // another page it is there at once, and settles.
+              ease: pace > 1 ? EASE.silk : EASE.glide,
             }}
           >
             <div className="relative">

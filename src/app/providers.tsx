@@ -12,6 +12,7 @@ import {
   AccountGuard,
   SocialRealtimeSync,
 } from "@/features/account";
+import { PictureForesight } from "@/features/artwork";
 import { SearchDockCommand } from "@/features/search";
 import { SmoothScrollProvider } from "@/motion";
 import { Carry, Cursor } from "@/motion/film";
@@ -40,6 +41,7 @@ export function Providers({
       <AccountGuard />
       <SearchDockCommand />
       <SocialRealtimeSync />
+      <PictureForesight />
       <SmoothScrollProvider>{children}</SmoothScrollProvider>
       <Carry />
       <Cursor />

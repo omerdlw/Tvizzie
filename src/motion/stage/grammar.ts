@@ -45,22 +45,23 @@ export const GRAMMAR = {
     drift: 8,
     push: 0.12,
   },
+  // A page leaves in one movement: everything on it goes at once, and the
+  // cut comes as the last of it is gone.
   exit: {
-    art: size(-1),
-    backdrop: size(0),
-    body: size(0),
+    art: 0,
+    backdrop: 0,
+    body: 0,
     run: size(1),
-    wait: size(2),
-    window: size(0),
+    wait: size(1),
+    window: 0,
   },
   frame: {
     bars: { at: 0, height: 11, run: OPEN, shut: 50 },
     light: size(4),
   },
   film: {
-    arrive: size(3),
+    arrive: { pace: PHI },
     carry: { reveal: size(2), run: size(2) },
-    cue: { hold: size(-2), marks: [0, size(2) - size(-1)] },
     cut: size(2),
     halation: 0.55,
     house: { level: 0.8, run: size(3) },
@@ -70,7 +71,7 @@ export const GRAMMAR = {
       enter: size(4),
       leave: size(0),
     },
-    revisit: { head: OPEN - size(1), pace: PHI },
+    revisit: { pace: PHI * PHI },
   },
   undo: { cap: size(-2) },
 } as const;

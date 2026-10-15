@@ -1,7 +1,6 @@
 interface TimelineOptions {
   after?: (ms: number, run: () => void) => () => void;
   defer?: (run: () => void) => void;
-  head?: number;
   hold?: boolean;
   now?: () => number;
   opening: number;
@@ -44,7 +43,6 @@ export function createTimeline({
     return () => clearTimeout(timer);
   },
   defer = (run) => void setTimeout(run, 0),
-  head = 0,
   hold = false,
   now = () => performance.now(),
   opening,
@@ -62,7 +60,7 @@ export function createTimeline({
 
   const begin = () => {
     if (born === null) {
-      born = now() - head * 1000;
+      born = now();
       free = born + opening * 1000;
     }
     return born;

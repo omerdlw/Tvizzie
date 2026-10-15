@@ -50,14 +50,16 @@ export function Poster({
   }, [carried]);
   const opened = useTransform(unveiled, (p) => (landing.current ? 1 : p));
   const rested = useTransform(settled, (p) => (landing.current ? 1 : p));
-  const clipPath = useTransform([opened, folded], ([a, b]: number[]) =>
-    a >= 1 && b <= 0
+  // Leaving, it goes with the rest of the page in the same fade, drawing
+  // back only a touch.
+  const clipPath = useTransform(opened, (a) =>
+    a >= 1
       ? "none"
-      : `inset(${((1 - a) * 100).toFixed(2)}% 0% ${(b * 100).toFixed(2)}% 0% round 20px)`,
+      : `inset(${((1 - a) * 100).toFixed(2)}% 0% 0% 0% round 20px)`,
   );
   const zoom = useTransform(
     [rested, folded],
-    ([a, b]: number[]) => 1 + (1 - a) * 0.35 + b * 0.14,
+    ([a, b]: number[]) => 1 + (1 - a) * 0.35 + b * 0.04,
   );
   const shineX = useTransform(sweep, (p) => `${-140 + 280 * p}%`);
   const shineOpacity = useTransform(sweep, (p) =>

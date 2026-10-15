@@ -21,7 +21,6 @@ interface Rect {
 interface Picked {
   at: number;
   frame: HTMLElement;
-  image: HTMLImageElement;
   path: string;
   radius: number;
   rect: Rect;
@@ -51,8 +50,6 @@ const DECODE_LIMIT = 450;
 const ACROSS = "cubic-bezier(0.5, 0, 0.12, 1)";
 const DOWN = "cubic-bezier(0.72, 0, 0.24, 1)";
 const GROW = "cubic-bezier(0.6, 0, 0.2, 1)";
-const WASH = 0.6;
-const WASH_DIM = 0.68;
 
 let picked: Picked | null = null;
 let flight: Flight | null = null;
@@ -134,21 +131,12 @@ function onClick(event: MouseEvent) {
   picked = {
     at: Date.now(),
     frame,
-    image,
     path: pathOf(href),
     radius: radiusOf(frame),
     rect,
     src: image.currentSrc || image.src,
     zoom: image.getBoundingClientRect().width / rect.width || 1,
   };
-}
-
-// The picture that was clicked to go there: the next scene, before it is cut to.
-export function sceneFor(to: string): string | null {
-  const pick = picked;
-  return pick && pick.path === pathOf(to) && Date.now() - pick.at <= PICK_FRESH
-    ? pick.src
-    : null;
 }
 
 export function liftCarry(to: string, run: number): boolean {
@@ -171,7 +159,7 @@ export function settleCarry() {
   if (flight?.phase === "fly" && !flight.landing) dropCarry();
 }
 
-export function isCarriedTo(pathname: string): boolean {
+function isCarriedTo(pathname: string): boolean {
   return flight?.phase === "fly" && flight.path === pathOf(pathname);
 }
 
@@ -179,11 +167,6 @@ const getFlight = () => flight;
 
 function inCard(id: number, shown: boolean) {
   if (flight?.id === id) flight.frame.style.visibility = shown ? "" : "hidden";
-}
-
-export function useCarryingFrom(pathname: string): boolean {
-  const now = useSyncExternalStore(subscribe, getFlight, () => null);
-  return now?.phase === "fly" && now.path !== pathOf(pathname);
 }
 
 export function useLanding(
@@ -247,33 +230,10 @@ async function inPlace(image: HTMLImageElement, limit: number) {
   image.style.transition = "";
 }
 
-function paintWash(canvas: HTMLCanvasElement, image: HTMLImageElement) {
-  const width = 48;
-  const height = Math.max(
-    16,
-    Math.round((width * window.innerHeight) / window.innerWidth),
-  );
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context || !image.naturalWidth) return;
-  const scale =
-    Math.max(width / image.naturalWidth, height / image.naturalHeight) * 1.3;
-  const w = image.naturalWidth * scale;
-  const h = image.naturalHeight * scale;
-  if ("filter" in context) context.filter = "blur(4px) saturate(1.35)";
-  context.drawImage(image, (width - w) / 2, (height - h) / 2, w, h);
-  context.filter = "none";
-  context.fillStyle = `rgb(0 0 0 / ${WASH_DIM})`;
-  context.fillRect(0, 0, width, height);
-}
-
 const px = (value: number) => `${value.toFixed(3)}px`;
 
 export function Carry() {
   const now = useSyncExternalStore(subscribe, getFlight, () => null);
-  const wash = useRef<HTMLDivElement>(null);
-  const canvas = useRef<HTMLCanvasElement>(null);
   const across = useRef<HTMLDivElement>(null);
   const down = useRef<HTMLDivElement>(null);
   const grow = useRef<HTMLDivElement>(null);
@@ -294,19 +254,15 @@ export function Carry() {
 
   useLayoutEffect(() => {
     const parts = [
-      wash.current,
-      canvas.current,
       across.current,
       down.current,
       grow.current,
-      lift.current,
       crop.current,
       image.current,
     ];
     if (!now || now.phase !== "fly" || parts.some((part) => !part)) return;
     if (flying.current?.id === now.id) return;
-    const [room, light, x, y, scaler, pop, clip, picture] =
-      parts as HTMLElement[];
+    const [x, y, scaler, clip, picture] = parts as HTMLElement[];
     const { rect: from, slot } = now;
 
     const s0 = Math.max(from.width / slot.width, from.height / slot.height);
@@ -319,7 +275,6 @@ export function Carry() {
 
     scaler.style.width = px(slot.width);
     scaler.style.height = px(slot.height);
-    paintWash(light as HTMLCanvasElement, now.image);
     inCard(now.id, false);
 
     const timing = (easing: string): KeyframeAnimationOptions => ({
@@ -348,27 +303,6 @@ export function Carry() {
           [{ transform: `scale(${now.zoom})` }, { transform: "scale(1)" }],
           timing(GROW),
         ),
-        pop.animate(
-          [
-            { transform: "scale(1) rotate(0deg)" },
-            {
-              easing: "cubic-bezier(0.3, 0, 0.2, 1)",
-              offset: 0.28,
-              transform: "scale(1.07) rotate(-1.6deg)",
-            },
-            { transform: "scale(1) rotate(0deg)" },
-          ],
-          {
-            duration: now.run * 1000,
-            easing: "cubic-bezier(0.42, 0, 0.58, 1)",
-            fill: "forwards",
-          },
-        ),
-        room.animate([{ opacity: 0 }, { opacity: WASH }], {
-          duration: now.run * 1000 * 0.8,
-          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-          fill: "forwards",
-        }),
       ],
       id: now.id,
     };
@@ -378,10 +312,9 @@ export function Carry() {
     const scaler = grow.current;
     const x = across.current;
     const y = down.current;
-    const room = wash.current;
     const picture = image.current;
     if (!now || now.phase !== "fly" || !landing) return;
-    if (!scaler || !x || !y || !room || !picture) return;
+    if (!scaler || !x || !y || !picture) return;
     const { done, target } = landing;
     const running: Animation[] = [];
     let live = true;
@@ -460,14 +393,11 @@ export function Carry() {
 
   useEffect(() => {
     const shell = lift.current;
-    const room = wash.current;
-    if (!now || (phase !== "fade" && phase !== "drop") || !shell || !room)
-      return;
+    if (!now || (phase !== "fade" && phase !== "drop") || !shell) return;
     const forget = () => {
       if (flight?.id === now.id) set(null);
     };
     const reveal = phase === "fade" ? (now.landing?.reveal ?? 0) : 0;
-    const from = Number(getComputedStyle(room).opacity) || 0;
     const hold = reveal / (reveal + FADE);
     const animations = [
       shell.animate(
@@ -478,11 +408,6 @@ export function Carry() {
           fill: "forwards",
         },
       ),
-      room.animate([{ opacity: from }, { opacity: 0 }], {
-        duration: (reveal || FADE * 2) * 1000,
-        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-        fill: "forwards",
-      }),
     ];
     if (phase === "drop") inCard(now.id, true);
     let live = true;
@@ -511,16 +436,6 @@ export function Carry() {
       key={now.id}
       style={{ zIndex: Z_INDEX.DOCK_BACKDROP - 10 }}
     >
-      <div className="absolute inset-0 opacity-0" ref={wash}>
-        <canvas className="absolute inset-0 size-full" ref={canvas} />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 35%, rgb(0 0 0 / 0.55))",
-          }}
-        />
-      </div>
       <div className="absolute top-0 left-0 will-change-transform" ref={across}>
         <div className="will-change-transform" ref={down}>
           <div className="origin-top-left will-change-transform" ref={grow}>

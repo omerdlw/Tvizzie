@@ -24,7 +24,7 @@ const ReelContext = createContext<ReelState>({
 export const useReel = () => use(ReelContext);
 
 // A still chosen from the page is threaded onto the projector at the top:
-// the page rises back to the picture and the new reel burns through it.
+// the page rises back to the picture and the new reel dissolves in.
 export function ReelProvider({ children }: { children: ReactNode }) {
   const [reel, setReel] = useState<string | null>(null);
   const engine = useSmoothScroll();

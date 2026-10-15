@@ -17,17 +17,11 @@ export const TimelineContext = createContext<Timeline | null>(null);
 export const ClockContext = createContext<MotionValue<number> | null>(null);
 export const ExitContext = createContext<MotionValue<number> | null>(null);
 
-export const HeadContext = createContext(0);
-
 export const OpeningContext = createContext<Opening>({ end: 0, length: 0 });
 
-// How fast the opening runs: a film seen before is shown at a quicker cut.
+// How fast the opening runs: quicker cut to from another film page, and
+// quicker still for a page seen before.
 export const PaceContext = createContext(1);
-
-export const skipped = (at: number, run: number, head: number) => ({
-  delay: Math.max(0, at - head),
-  duration: Math.max(run - Math.max(0, head - at), 0),
-});
 
 const curve = (bezier: readonly number[]) =>
   cubicBezier(bezier[0], bezier[1], bezier[2], bezier[3]);

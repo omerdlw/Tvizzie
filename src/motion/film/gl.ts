@@ -84,52 +84,6 @@ export function fitCanvas(canvas: HTMLCanvasElement, cap: number) {
 export const readable = (src: string) =>
   `${src}${src.includes("?") ? "&" : "?"}gl`;
 
-// A cut between two reels, as film burns through in the gate: a hot rim
-// spreads from one point across the frame, the next picture behind it, and the
-// whole frame flashes over-exposed at its height.
-export const BURN = `
-float burnHash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-float burnNoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(
-    mix(burnHash(i), burnHash(i + vec2(1.0, 0.0)), u.x),
-    mix(burnHash(i + vec2(0.0, 1.0)), burnHash(i + vec2(1.0, 1.0)), u.x),
-    u.y
-  );
-}
-
-float burnField(vec2 uv, float aspect, vec2 from, float seed) {
-  vec2 p = uv * vec2(aspect, 1.0);
-  float n = burnNoise(p * 2.0 + seed) * 0.5
-    + burnNoise(p * 4.3 + seed * 1.7) * 0.3
-    + burnNoise(p * 9.1 - seed) * 0.2;
-  float reach = 1.0 - length((uv - from) * vec2(aspect, 1.0)) / (0.9 * max(aspect, 1.0));
-  return clamp(reach * 0.6 + n * 0.4, 0.0, 1.0);
-}
-
-// x: how much of the next reel shows; y: the heat of the burning rim.
-vec2 burn(float field, float cut) {
-  if (cut <= 0.0) return vec2(0.0);
-  if (cut >= 1.0) return vec2(1.0, 0.0);
-  float edge = 1.0 - cut * 1.3;
-  float shown = smoothstep(edge - 0.015, edge + 0.015, field);
-  float rim = 1.0 - smoothstep(0.0, 0.07, abs(field - edge));
-  return vec2(shown, rim);
-}
-
-vec3 burnLight(vec3 color, float cut, vec2 burnt) {
-  float flash = pow(sin(3.14159265 * clamp(cut, 0.0, 1.0)), 6.0);
-  color += vec3(1.0, 0.58, 0.24) * burnt.y * 1.4;
-  color += vec3(1.0, 0.93, 0.82) * flash * 0.28;
-  return color;
-}
-`;
-
 // The same picture at a size meant for light, not for looking at: a room
 // tint needs a few hundred pixels, whatever size the page showed it at.
 export const thumbnail = (src: string) =>
