@@ -31,28 +31,37 @@ import { depart, endHandoff, handoffTo, watchIntent } from "@/motion/handoff";
 import { useScrollY, useSmoothScroll } from "@/motion/scroll";
 import { SCENE } from "../lib/motion";
 import { EASE, FOCUSED, blur, focus } from "../lib/tempo";
-import { ExitContext, HeadContext, skipped, useExit } from "./clock";
+import {
+  ExitContext,
+  HeadContext,
+  TimelineContext,
+  skipped,
+  useExit,
+} from "./clock";
 import { Frame, GradeContext } from "./frame";
-import { createTimeline, type Timeline } from "./timeline";
-
-export const TimelineContext = createContext<Timeline | null>(null);
+import { createTimeline } from "./timeline";
 
 const LeavingContext = createContext(false);
 
 export const useLeaving = () => useContext(LeavingContext);
 
+const REVEAL_PATIENCE = 2500;
+
 export function Stage({
   children,
   className,
+  picture = false,
 }: {
   children: ReactNode;
   className?: string;
+  picture?: boolean;
 }) {
   const pathname = usePathname();
   const [head] = useState(() => (handoffTo(pathname) ? SCENE.film.arrive : 0));
   const [timeline] = useState(() =>
     createTimeline({
       head,
+      hold: picture,
       opening: SCENE.opening.end,
       patience: SCENE.section.patience,
       stride: SCENE.section.stride,
@@ -63,6 +72,19 @@ export function Stage({
   const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
 
   useEffect(() => timeline.serial(!reduced), [reduced, timeline]);
+
+  // The opening is cut to the picture: the backdrop rolls the timeline when the
+  // projector has its first frame. Without motion there is nothing to wait for,
+  // and a picture that never comes is not waited on past the backdrop's own
+  // patience.
+  useEffect(() => {
+    if (reduced) {
+      timeline.roll();
+      return;
+    }
+    const timer = setTimeout(timeline.roll, REVEAL_PATIENCE);
+    return () => clearTimeout(timer);
+  }, [reduced, timeline]);
 
   const smooth = useSmoothScroll();
   useEffect(() => {
@@ -189,16 +211,18 @@ export function Body({
   );
 }
 
-const REVEAL_PATIENCE = 2500;
-
 export function Backdrop({
   children,
 }: {
   children: ReactNode | ((reveal: () => void) => ReactNode);
 }) {
   const scrollY = useScrollY();
+  const timeline = useContext(TimelineContext);
   const [ready, setReady] = useState(false);
-  const reveal = useCallback(() => setReady(true), []);
+  const reveal = useCallback(() => {
+    setReady(true);
+    timeline?.roll();
+  }, [timeline]);
 
   useEffect(() => {
     const timer = setTimeout(reveal, REVEAL_PATIENCE);

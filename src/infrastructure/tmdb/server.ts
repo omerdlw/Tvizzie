@@ -64,6 +64,10 @@ export function discoverMovies(options?: DiscoverOptions) {
   return getTmdb().discover.discover(options);
 }
 
+export function findMovieByImdb(imdbId: string, options?: ListOptions) {
+  return getTmdb().discover.findByImdb(imdbId, options);
+}
+
 export function getTrendingPeople(options?: ListOptions) {
   return getTmdb().discover.trendingPeople(options);
 }

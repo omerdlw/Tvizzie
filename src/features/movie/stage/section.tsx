@@ -43,7 +43,7 @@ import {
   useCue,
   useSection,
 } from "./cue";
-import { Decode } from "./type";
+import { Expose } from "./type";
 
 const unit = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -279,9 +279,9 @@ function Name({ children }: { children: string }) {
       style={section && !reduced ? { color: ink } : undefined}
       suppressHydrationWarning
     >
-      <Decode run={name.run} since={name.at}>
+      <Expose run={name.run} since={name.at}>
         {children}
-      </Decode>
+      </Expose>
     </motion.h2>
   );
 }

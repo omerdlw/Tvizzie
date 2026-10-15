@@ -1,6 +1,15 @@
 "use client";
 
-import { useContext, useEffect, useRef, type ElementType } from "react";
+import {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ElementType,
+  type Ref,
+  type RefObject,
+} from "react";
 import {
   animate,
   motion,
@@ -147,12 +156,14 @@ function Word({
   children,
   ink,
   out,
+  ref,
   run,
 }: {
   at: number;
   children: string;
   ink: string;
   out: number;
+  ref?: Ref<HTMLSpanElement>;
   run: number;
 }) {
   const entered = useProgress(at, run);
@@ -170,6 +181,7 @@ function Word({
     <motion.span
       aria-hidden="true"
       className="inline-block"
+      ref={ref}
       style={{ color: ink, filter, opacity, transform }}
     >
       {children}
@@ -177,45 +189,128 @@ function Word({
   );
 }
 
+interface Placed {
+  across: number;
+  line: number;
+}
+
+// Where each word fell once the paragraph was set: which line, and how far
+// along it. Measured from the layout, so it follows the column, the font
+// arriving and every reflow after.
+function useLines(
+  box: RefObject<HTMLParagraphElement | null>,
+  words: RefObject<(HTMLSpanElement | null)[]>,
+  on: boolean,
+) {
+  const [placed, setPlaced] = useState<Placed[] | null>(null);
+
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (!on || !element) return;
+    const measure = () => {
+      const width = element.clientWidth || 1;
+      const next: Placed[] = [];
+      let line = -1;
+      let top = -Infinity;
+      let start = 0;
+      for (const word of words.current) {
+        if (!word) continue;
+        if (word.offsetTop > top + word.offsetHeight / 2) {
+          line += 1;
+          top = word.offsetTop;
+          start = word.offsetLeft;
+        }
+        next.push({ across: (word.offsetLeft - start) / width, line });
+      }
+      setPlaced((current) =>
+        current &&
+        current.length === next.length &&
+        current.every(
+          (place, index) =>
+            place.line === next[index].line &&
+            Math.abs(place.across - next[index].across) < 0.01,
+        )
+          ? current
+          : next,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    void document.fonts.ready.then(measure);
+    return () => observer.disconnect();
+  }, [box, on, words]);
+
+  return placed;
+}
+
 export function Words({
   alpha = 0.7,
   at,
+  by = "word",
   cap,
   children: text,
   className,
   run,
+  sweep = 0,
   window,
 }: {
   alpha?: number;
   at: number;
+  by?: "line" | "word";
   cap: number;
   children: string;
   className?: string;
   run: number;
+  sweep?: number;
   window: number;
 }) {
   const tokens = text.split(/(\s+)/);
   const count = wordCount(text);
-  const gap = spread(count, window, cap);
-  const out = undoGap(count);
+  const box = useRef<HTMLParagraphElement>(null);
+  const spans = useRef<(HTMLSpanElement | null)[]>([]);
+  const placed = useLines(box, spans, by === "line");
+  const lines = placed ? (placed[placed.length - 1]?.line ?? 0) + 1 : 1;
+  const steps = by === "line" ? lines : count;
+  const gap = spread(steps, window, cap);
+  const out = undoGap(steps);
   const start = sinceBase(at);
-  const color = useInk(start + Math.max(count - 1, 0) * gap + run * 0.5, alpha);
+  const tail = by === "line" ? sweep : 0;
+  const color = useInk(
+    start + Math.max(steps - 1, 0) * gap + tail + run * 0.5,
+    alpha,
+  );
   const ink = `rgb(252 252 251 / ${alpha})`;
   let index = 0;
 
+  // A paragraph is read by the line, so it comes into focus by the line: each
+  // line is pulled sharp in turn, with a short pass of light along it.
+  const cue = (order: number) => {
+    if (by === "word") return { at: start + order * gap, out: order * out };
+    const place = placed?.[order] ?? { across: 0, line: 0 };
+    return {
+      at: start + place.line * gap + place.across * sweep,
+      out: place.line * out,
+    };
+  };
+
   return (
-    <motion.p className={className} style={{ color }}>
+    <motion.p className={className} ref={box} style={{ color }}>
       <span className="sr-only">{text}</span>
       {tokens.map((token, position) => {
         if (!token) return null;
         if (/^\s+$/.test(token)) return token;
         const order = index++;
+        const timing = cue(order);
         return (
           <Word
-            at={start + order * gap}
+            at={timing.at}
             ink={ink}
             key={position}
-            out={order * out}
+            out={timing.out}
+            ref={(element) => {
+              spans.current[order] = element;
+            }}
             run={run}
           >
             {token}
@@ -226,127 +321,44 @@ export function Words({
   );
 }
 
-const GLYPHS = {
-  digit: "0123456789",
-  letter: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-};
-const GLYPH_HOLD = [34, 92] as const;
-const GLYPH_LIFE = 0.42;
-const GLYPH_SCATTER = 0.14;
-const GLYPH_DIM = 0.3;
-const GLYPH_BRIGHT = 0.9;
+// Exposure: a band of light crosses the words and leaves them printed behind
+// it, a little over-exposed where it passes, in the film's own grade. Leaving,
+// the same light burns them away.
+const EDGE = 24;
+const BAND = 34;
+const LIGHT = "rgb(255 253 247)";
+const HALATION =
+  "0 0 0.3em rgb(var(--grade) / 0.95), 0 0 0.9em rgb(var(--grade) / 0.55)";
+const GLINT = 0.55;
 
-const hold = () =>
-  GLYPH_HOLD[0] + Math.random() * (GLYPH_HOLD[1] - GLYPH_HOLD[0]);
-
-function glyphFor(char: string, last?: string): string | null {
-  const pool = /\d/.test(char)
-    ? GLYPHS.digit
-    : char.toLowerCase() !== char.toUpperCase()
-      ? GLYPHS.letter
-      : null;
-  if (!pool) return null;
-  const same = char.toUpperCase();
-  let next = pool[Math.floor(Math.random() * pool.length)];
-  for (let tries = 0; tries < 4 && (next === same || next === last); tries++) {
-    next = pool[Math.floor(Math.random() * pool.length)];
-  }
-  return next;
+function setMask(element: HTMLElement, image: string) {
+  element.style.setProperty("mask-image", image);
+  element.style.setProperty("-webkit-mask-image", image);
 }
 
-interface Cell {
-  char: string;
-  element: HTMLSpanElement;
-  fixed: boolean;
-  from: number;
-  glyph?: string;
-  swapAt: number;
-  to: number;
+function clearMask(element: HTMLElement) {
+  element.style.removeProperty("mask-image");
+  element.style.removeProperty("-webkit-mask-image");
 }
 
-function typeset(node: Node, glyphs: HTMLElement, text: string): Cell[] {
-  const origin = glyphs.getBoundingClientRect();
-  const range = document.createRange();
-  const cells: Cell[] = [];
-  const letters = [...text].filter((char) => !/\s/.test(char)).length;
-  let at = 0;
-  let order = 0;
-  for (const char of text) {
-    const index = at;
-    at += char.length;
-    if (/\s/.test(char)) continue;
-    range.setStart(node, index);
-    range.setEnd(node, index + char.length);
-    const box = range.getClientRects()[0];
-    if (!box) continue;
-    const element = document.createElement("span");
-    element.textContent = char;
-    Object.assign(element.style, {
-      height: `${box.height}px`,
-      left: `${box.left - origin.left}px`,
-      lineHeight: `${box.height}px`,
-      opacity: "0",
-      position: "absolute",
-      textAlign: "center",
-      top: `${box.top - origin.top}px`,
-      width: `${box.width}px`,
-    });
-    const span = 1 - GLYPH_LIFE;
-    const lead = (order / Math.max(letters - 1, 1)) * span;
-    const from = Math.min(
-      span,
-      Math.max(0, lead + (Math.random() - 0.5) * GLYPH_SCATTER),
-    );
-    cells.push({
-      char,
-      element,
-      fixed: glyphFor(char) === null,
-      from,
-      swapAt: 0,
-      to: Math.min(1, from + GLYPH_LIFE * (0.85 + Math.random() * 0.3)),
-    });
-    order += 1;
-  }
-  glyphs.replaceChildren(...cells.map((cell) => cell.element));
-  return cells;
+const edgeAt = (progress: number) => (100 + EDGE) * ease.silk(progress);
+
+function shine(light: HTMLElement, edge: number, level: number) {
+  setMask(
+    light,
+    `linear-gradient(90deg, transparent ${edge - BAND}%, #000 ${edge - EDGE * 0.4}%, transparent ${edge + 3}%)`,
+  );
+  light.style.opacity = level.toFixed(3);
 }
 
-function paint(cells: Cell[], progress: number, unmake: boolean, now: number) {
-  for (const cell of cells) {
-    const { element } = cell;
-    if (progress < cell.from) {
-      if (unmake) {
-        element.textContent = cell.char;
-        element.style.opacity = "1";
-      }
-      continue;
-    }
-    if (cell.fixed || progress >= cell.to) {
-      element.textContent = cell.char;
-      element.style.opacity = unmake ? "0" : "1";
-      continue;
-    }
-    if (now >= cell.swapAt) {
-      cell.glyph = glyphFor(cell.char, cell.glyph) ?? cell.char;
-      element.textContent = cell.glyph;
-      cell.swapAt = now + hold();
-    }
-    const near = (progress - cell.from) / (cell.to - cell.from);
-    const level = unmake
-      ? GLYPH_BRIGHT - (GLYPH_BRIGHT - GLYPH_DIM) * near
-      : GLYPH_DIM + (GLYPH_BRIGHT - GLYPH_DIM) * near;
-    element.style.opacity = level.toFixed(2);
-  }
-}
-
-export function Decode({
+export function Expose({
   as = "span",
   at = 0,
   children: text,
   className,
   hover = false,
   out,
-  run: duration = SCENE.facts.decode,
+  run = SCENE.facts.expose,
   since,
 }: {
   as?: "div" | "p" | "span";
@@ -361,66 +373,73 @@ export function Decode({
   const reduced = useReducedMotion();
   const clock = useContext(ClockContext);
   const exit = useContext(ExitContext);
-  const real = useRef<HTMLSpanElement>(null);
-  const layer = useRef<HTMLSpanElement>(null);
-  const cells = useRef<Cell[] | null>(null);
-  const settled = useRef(false);
-  const unmaking = useRef(false);
-  const replaying = useRef<ReturnType<typeof animate> | null>(null);
+  const print = useRef<HTMLSpanElement>(null);
+  const light = useRef<HTMLSpanElement>(null);
+  const phase = useRef<"burnt" | "dark" | "exposing" | "printed">("dark");
+  const glinting = useRef<ReturnType<typeof animate> | null>(null);
   const still = useMotionValue(-1);
   const Tag = as as ElementType;
   const start = since ?? sinceBase(at);
-  const run = SCENE.exit.run;
 
-  const lay = () => {
-    const word = real.current;
-    const glyphs = layer.current;
-    const node = word?.firstChild;
-    if (!word || !glyphs || !node || node.nodeType !== Node.TEXT_NODE) {
-      return null;
-    }
-    cells.current ??= typeset(node, glyphs, text);
-    return cells.current;
+  const printed = () => {
+    const p = print.current;
+    const l = light.current;
+    if (!p || !l) return;
+    phase.current = "printed";
+    clearMask(p);
+    p.style.opacity = "1";
+    l.style.opacity = "0";
   };
 
-  const draw = (progress: number, unmake: boolean) => {
-    const laid = lay();
-    if (laid) paint(laid, progress, unmake, performance.now());
+  const expose = (progress: number, burning: boolean) => {
+    const p = print.current;
+    const l = light.current;
+    if (!p || !l) return;
+    const edge = edgeAt(progress);
+    setMask(
+      p,
+      burning
+        ? `linear-gradient(90deg, transparent ${edge - EDGE}%, #000 ${edge}%)`
+        : `linear-gradient(90deg, #000 ${edge - EDGE}%, transparent ${edge}%)`,
+    );
+    p.style.opacity = "1";
+    shine(l, edge, Math.sin(Math.PI * progress) ** 0.6);
   };
 
   const coming = (time: number) => {
-    const word = real.current;
-    const glyphs = layer.current;
-    if (!word || !glyphs || replaying.current) return;
-    const progress = unit((time - start) / duration);
+    const p = print.current;
+    if (!p || glinting.current || phase.current === "burnt") return;
+    const progress = unit((time - start) / run);
     if (reduced || progress >= 1) {
-      if (!settled.current) {
-        settled.current = true;
-        word.style.color = "inherit";
-        glyphs.replaceChildren();
-        cells.current = null;
-      }
+      if (phase.current !== "printed") printed();
       return;
     }
-    settled.current = false;
     if (progress <= 0) {
-      word.style.color = "";
+      phase.current = "dark";
+      clearMask(p);
+      p.style.opacity = "";
+      if (light.current) light.current.style.opacity = "0";
       return;
     }
-    draw(progress, false);
+    phase.current = "exposing";
+    expose(progress, false);
   };
 
   const going = (time: number) => {
-    const word = real.current;
-    if (!word || out === undefined || reduced || time < 0) return;
-    if (!unmaking.current) {
-      replaying.current?.stop();
-      replaying.current = null;
-      unmaking.current = true;
-      cells.current = null;
-      word.style.color = "transparent";
+    if (out === undefined || reduced || time < 0) return;
+    if (phase.current !== "burnt") {
+      glinting.current?.stop();
+      glinting.current = null;
+      if (phase.current === "dark") return;
+      phase.current = "burnt";
     }
-    draw(unit((time - out) / run), true);
+    const progress = unit((time - out) / SCENE.exit.run);
+    if (progress <= 0) {
+      const p = print.current;
+      if (p) clearMask(p);
+      return;
+    }
+    expose(progress, true);
   };
 
   useMotionValueEvent(clock ?? still, "change", coming);
@@ -428,66 +447,61 @@ export function Decode({
 
   useEffect(() => {
     if (clock) coming(clock.get());
+    else printed();
   }, [text]);
 
   useEffect(() => {
-    const word = real.current;
-    if (!hover || reduced || !word) return;
-    const host = word.parentElement;
+    const element = print.current;
+    if (!hover || reduced || !element) return;
+    const host = element.parentElement;
     if (!host) return;
 
-    const settle = () => {
-      replaying.current = null;
-      settled.current = true;
-      word.style.color = "inherit";
-      layer.current?.replaceChildren();
-      cells.current = null;
-    };
-    const play = () => {
-      if (!settled.current || replaying.current || unmaking.current) return;
-      settled.current = false;
-      cells.current = null;
-      word.style.color = "transparent";
-      replaying.current = animate(0, 1, {
+    // A second look: the light passes over the words again without
+    // printing them anew.
+    const glint = () => {
+      const l = light.current;
+      if (phase.current !== "printed" || glinting.current || !l) return;
+      glinting.current = animate(0, 1, {
         duration: SCENE.facts.replay,
         ease: "linear",
-        onComplete: settle,
-        onUpdate: (progress) => draw(progress, false),
+        onComplete: () => {
+          glinting.current = null;
+          l.style.opacity = "0";
+        },
+        onUpdate: (progress) =>
+          shine(l, edgeAt(progress), Math.sin(Math.PI * progress) * GLINT),
       });
     };
-    host.addEventListener("pointerenter", play);
+    host.addEventListener("pointerenter", glint);
     return () => {
-      host.removeEventListener("pointerenter", play);
-      if (replaying.current) {
-        replaying.current.stop();
-        settle();
-      }
+      host.removeEventListener("pointerenter", glint);
+      glinting.current?.stop();
+      glinting.current = null;
+      if (light.current) light.current.style.opacity = "0";
     };
   }, [hover, reduced]);
 
   useEffect(() => {
     if (!exit) return;
     return exit.on("change", (time) => {
-      if (time >= 0 || !unmaking.current) return;
-      unmaking.current = false;
-      const word = real.current;
-      if (!word) return;
-      word.style.color = "inherit";
-      layer.current?.replaceChildren();
-      cells.current = null;
+      if (time >= 0 || phase.current !== "burnt") return;
+      printed();
     });
   }, [exit]);
 
   return (
     <Tag className={cn("relative", as === "span" && "inline-block", className)}>
-      <span className="text-transparent" ref={real}>
+      <span className="opacity-0" ref={print}>
         {text}
       </span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 select-none"
-        ref={layer}
-      />
+        className="pointer-events-none absolute inset-0 opacity-0 select-none"
+        ref={light}
+        style={{ color: LIGHT, textShadow: HALATION }}
+      >
+        {text}
+      </span>
     </Tag>
   );
 }

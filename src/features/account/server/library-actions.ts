@@ -134,6 +134,72 @@ export async function getMovieLibraryAction(
   }
 }
 
+export type LibraryMarksResult =
+  | {
+      signedIn: boolean;
+      success: true;
+      watched: number[];
+      watchlist: number[];
+    }
+  | { error: string; success: false };
+
+const MARKS_LIMIT = 250;
+
+// Which of a set of films the viewer has seen or saved, in one round trip per
+// list. Signed out, the answer is simply empty.
+export async function getLibraryMarksAction(
+  tmdbIds: number[],
+): Promise<LibraryMarksResult> {
+  try {
+    if (
+      !Array.isArray(tmdbIds) ||
+      tmdbIds.length > MARKS_LIMIT ||
+      !tmdbIds.every(isMovieId)
+    ) {
+      return { error: "Invalid request", success: false };
+    }
+
+    const user = await getOptionalUser();
+    if (!user || tmdbIds.length === 0) {
+      return {
+        signedIn: Boolean(user),
+        success: true,
+        watched: [],
+        watchlist: [],
+      };
+    }
+
+    const client = await createServerSupabaseClient();
+    const [watched, watchlist] = await Promise.all([
+      client
+        .from("account_watched")
+        .select("tmdb_id")
+        .eq("account_id", user.id)
+        .in("tmdb_id", tmdbIds),
+      client
+        .from("account_watchlist")
+        .select("tmdb_id")
+        .eq("account_id", user.id)
+        .in("tmdb_id", tmdbIds),
+    ]);
+    if (watched.error) throw watched.error;
+    if (watchlist.error) throw watchlist.error;
+
+    return {
+      signedIn: true,
+      success: true,
+      watched: watched.data.map((row) => row.tmdb_id),
+      watchlist: watchlist.data.map((row) => row.tmdb_id),
+    };
+  } catch (error) {
+    report("LibraryMarks read", error);
+    return {
+      error: toUserMessage(error, { fallback: "Could not load your library" }),
+      success: false,
+    };
+  }
+}
+
 export async function setMovieLibraryAction(
   tmdbId: number,
   kind: MovieLibraryKind,

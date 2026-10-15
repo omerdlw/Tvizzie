@@ -1,7 +1,8 @@
 // One full-screen pass draws the whole opening: the film seen through the
 // letters of the word, then the same film as a screen in a dark room, its
-// light thrown onto the walls and the floor, and the pane of reeded glass that
-// carries one film into the next.
+// light thrown onto the walls and the floor and through the haze and dust in
+// the projector's beam, and the pane of reeded glass that carries one film
+// into the next.
 
 export const OPENING_FRAGMENT = `#version 300 es
 precision highp float;
@@ -49,6 +50,17 @@ float hash(vec2 p) {
   vec3 q = fract(vec3(p.xyx) * 0.1031);
   q += dot(q, q.yzx + 33.33);
   return fract((q.x + q.y) * q.z);
+}
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
 }
 
 float inside01(vec2 uv) {
@@ -150,6 +162,50 @@ vec3 screenImage(vec2 su) {
   return c * (1.0 + glass * (0.06 * ridge - 0.12 * trough)) + glass * sheen * 0.035;
 }
 
+// The projector is high behind the audience, so from a seat its beam is a
+// column of lit haze that rises off the top of the screen and opens out as it
+// comes over our heads.
+float beam(vec2 px) {
+  float top = uFrame.y;
+  float rise = top - px.y;
+  if (rise <= 0.0) return 0.0;
+  vec2 apex = vec2(
+    uFrame.x + uFrame.z * (0.5 + uPointer.x * 0.04),
+    top + uFrame.w * 3.2
+  );
+  float open = (apex.y - px.y) / (apex.y - top);
+  float l = apex.x + (uFrame.x - apex.x) * open;
+  float r = apex.x + (uFrame.x + uFrame.z - apex.x) * open;
+  float soft = uFrame.z * 0.06;
+  float inside = smoothstep(l - soft, l + soft, px.x) * smoothstep(r + soft, r - soft, px.x);
+  float across = (px.x - apex.x) / max(apex.y - px.y, 1.0);
+  float shafts = 0.55 + 0.45 * noise(vec2(across * 22.0, uTime * 0.12));
+  vec2 q = px / uRes.y;
+  float haze = 0.5 + 0.5 * noise(q * vec2(3.0, 5.0) + vec2(uTime * 0.025, -uTime * 0.04));
+  float lift = smoothstep(0.0, uRes.y * 0.05, rise) * exp(-rise / (uRes.y * 0.42));
+  return inside * shafts * haze * lift;
+}
+
+// Dust turning over in the light: three depths of motes, the nearer ones
+// larger, quicker and pushed further by the pointer.
+float dust(vec2 px) {
+  float sum = 0.0;
+  for (int i = 0; i < 3; i++) {
+    float layer = float(i);
+    vec2 p = px / (uRes.y * (0.03 + 0.022 * layer));
+    p += vec2(uTime * (0.04 + 0.03 * layer), -uTime * (0.06 + 0.035 * layer));
+    p -= uPointer * (0.4 + 0.6 * layer);
+    vec2 cell = floor(p);
+    float h = hash(cell + layer * 19.7);
+    if (h < 0.86) continue;
+    vec2 at = vec2(hash(cell + 3.1), hash(cell + 7.7)) * 0.6 - 0.3;
+    float size = 0.035 + 0.05 * hash(cell + 1.3);
+    float twinkle = 0.45 + 0.55 * sin(uTime * (0.8 + h * 2.0) + h * 40.0);
+    sum += smoothstep(size, 0.0, length(fract(p) - 0.5 - at)) * twinkle * (0.5 + 0.25 * layer);
+  }
+  return sum;
+}
+
 float luma(vec3 c) {
   return dot(c, vec3(0.2126, 0.7152, 0.0722));
 }
@@ -175,7 +231,14 @@ void main() {
       if (uMix > 0.0) spill = mix(spill, glow(uImgB, uSizeB, uLight.y, su, 5.5, 0.12), blend);
       float reach = uRes.y * 0.2;
       float halo = exp(-max(d, 0.0) / reach);
-      room += spill * halo * 0.42;
+      // As the glass crosses the screen it throws a little more light about.
+      float glass = uMix > 0.0 ? sin(PI * uMix) : 0.0;
+      room += spill * halo * (0.42 + 0.2 * glass);
+
+      float shaft = beam(px);
+      vec3 lamp = spill * 1.6 + 0.04;
+      room += lamp * shaft * (0.075 + 0.03 * glass);
+      room += lamp * dust(px) * (halo * 0.5 + shaft * 1.3) * 0.32;
 
       // The floor: a dim, softening mirror of the screen.
       float below = (px.y - (uFrame.y + uFrame.w)) / uFrame.w;

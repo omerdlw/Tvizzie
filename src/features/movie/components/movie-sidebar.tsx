@@ -16,7 +16,7 @@ import {
   SIDEBAR_FACTS_CLASS,
 } from "../lib/layout";
 import { SCENE, factsGap, undoGap } from "../lib/motion";
-import { Decode, Fade, Line, Sequence } from "../stage";
+import { Expose, Fade, Line, Sequence } from "../stage";
 import { MoviePoster } from "./movie-artwork";
 import { MovieSocialProof } from "@/features/social";
 import { MovieAwardsAction } from "./movie-awards";
@@ -42,9 +42,9 @@ function Row({
   return (
     <div className="group/row relative flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
       <dt className="shrink-0 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase">
-        <Decode at={at} hover out={out}>
+        <Expose at={at} hover out={out}>
           {label}
-        </Decode>
+        </Expose>
       </dt>
       <Fade
         as="dd"
@@ -83,9 +83,9 @@ function Names({
     <>
       {visible.map((name, index) => {
         const text = (
-          <Decode at={when.at} hover out={when.out}>
+          <Expose at={when.at} hover out={when.out}>
             {name.text}
-          </Decode>
+          </Expose>
         );
         return (
           <span key={`${name.text}-${index}`}>
@@ -120,9 +120,9 @@ function Names({
 
 function Text({ children, when }: { children: string; when: When }) {
   return (
-    <Decode at={when.at} hover out={when.out}>
+    <Expose at={when.at} hover out={when.out}>
       {children}
-    </Decode>
+    </Expose>
   );
 }
 

@@ -20,6 +20,7 @@ const featuredMovieSchema = z
     overview: text,
     popularity: countOrZero,
     vote_count: countOrZero,
+    vote_average: z.number().nullish(),
     genre_ids: genreIds,
     video: z.boolean().nullish(),
   })
@@ -33,6 +34,7 @@ const featuredMovieSchema = z
     overview: m.overview,
     popularity: m.popularity,
     voteCount: m.vote_count,
+    voteAverage: m.vote_average ?? null,
     genreIds: m.genre_ids,
     video: m.video ?? false,
   }))
@@ -55,4 +57,10 @@ function pageSchema<S extends z.ZodType>(item: S) {
 }
 
 export const featuredMoviePageSchema = pageSchema(featuredMovieSchema);
+
+// `/find` answers with every kind of title an outside id might name; only
+// the films are kept.
+export const foundMoviesSchema = z
+  .object({ movie_results: lenientList(featuredMovieSchema) })
+  .transform((found) => found.movie_results);
 export const trendingPeoplePageSchema = pageSchema(personSummarySchema);

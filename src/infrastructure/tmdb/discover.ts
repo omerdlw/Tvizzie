@@ -1,4 +1,4 @@
-import { err, type Result } from "@omerdlw/base-framework/result";
+import { err, ok, type Result } from "@omerdlw/base-framework/result";
 import {
   TMDB_CACHE_TAG,
   TMDB_DEFAULT_LANGUAGE,
@@ -8,10 +8,15 @@ import {
 import { tmdbErrors, type TmdbError } from "./errors";
 import {
   featuredMoviePageSchema,
+  foundMoviesSchema,
   trendingPeoplePageSchema,
 } from "./schemas/discover";
 import type { TmdbTransport } from "./transport";
-import type { FeaturedMoviePage, PersonSearchPage } from "./types";
+import type {
+  FeaturedMovie,
+  FeaturedMoviePage,
+  PersonSearchPage,
+} from "./types";
 import { checkLanguage } from "./validation";
 
 export const MOVIE_LISTS = [
@@ -71,7 +76,13 @@ export interface DiscoverApi {
   trendingPeople(
     options?: ListOptions,
   ): Promise<Result<PersonSearchPage, TmdbError>>;
+  findByImdb(
+    imdbId: string,
+    options?: ListOptions,
+  ): Promise<Result<FeaturedMovie | null, TmdbError>>;
 }
+
+const IMDB_ID = /^tt\d{7,9}$/;
 
 function checkPage(page: number): TmdbError | null {
   return Number.isInteger(page) &&
@@ -173,6 +184,26 @@ export function createDiscoverApi(transport: TmdbTransport): DiscoverApi {
         tags: [discoverCacheTag()],
         signal,
       });
+    },
+
+    async findByImdb(
+      imdbId,
+      { language = TMDB_DEFAULT_LANGUAGE, signal } = {},
+    ) {
+      const invalid = checkLanguage(language);
+      if (invalid) return err(invalid);
+      if (!IMDB_ID.test(imdbId)) {
+        return err(tmdbErrors.invalidRequest(`Not an IMDb id: "${imdbId}"`));
+      }
+
+      const found = await transport.request({
+        path: `/find/${imdbId}`,
+        query: { external_source: "imdb_id", language },
+        schema: foundMoviesSchema,
+        revalidate: TMDB_REVALIDATE.movie,
+        signal,
+      });
+      return found.success ? ok(found.data[0] ?? null) : found;
     },
 
     async trendingPeople({

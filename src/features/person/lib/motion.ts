@@ -4,12 +4,13 @@ const OPEN = size(4);
 const TITLE = OPEN;
 const RULE = TITLE + size(1);
 const BIO = RULE + size(0);
-const BIO_WINDOW = size(3);
-const BIO_LANDED = BIO + BIO_WINDOW + landed(2);
+const BIO_WINDOW = size(1);
+const BIO_SWEEP = size(-2);
+const BIO_LANDED = BIO + BIO_WINDOW + BIO_SWEEP + landed(2);
 
-const DECODE = size(2);
+const EXPOSE = size(1);
 const VALUE_LAG = size(-1);
-const FACTS_WINDOW = BIO_LANDED - DECODE - VALUE_LAG - BIO;
+const FACTS_WINDOW = BIO_LANDED - EXPOSE - VALUE_LAG - BIO;
 
 const LINKS_RUN = size(2);
 const LINKS_WINDOW = size(1);
@@ -31,11 +32,18 @@ export const SCENE = {
     run: size(4),
     shine: { at: TITLE + size(4) / PHI, run: size(3) },
   },
-  bio: { at: BIO, cap: size(-2), run: size(2), window: BIO_WINDOW },
+  bio: {
+    at: BIO,
+    by: "line",
+    cap: size(-1),
+    run: size(2),
+    sweep: BIO_SWEEP,
+    window: BIO_WINDOW,
+  },
   buttons: { at: RULE, gap: size(-2) },
   facts: {
     at: BIO,
-    decode: DECODE,
+    expose: EXPOSE,
     gap: size(-1),
     lag: VALUE_LAG,
     replay: size(1),

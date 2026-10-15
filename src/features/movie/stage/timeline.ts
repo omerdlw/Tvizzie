@@ -2,6 +2,7 @@ interface TimelineOptions {
   after?: (ms: number, run: () => void) => () => void;
   defer?: (run: () => void) => void;
   head?: number;
+  hold?: boolean;
   now?: () => number;
   opening: number;
   patience: number;
@@ -23,6 +24,8 @@ export interface Timeline {
     span?: () => number,
   ) => Ticket;
   resume: () => void;
+  roll: () => void;
+  rolled: (run: () => void) => () => void;
   serial: (on: boolean) => void;
   until: (at: number) => number;
 }
@@ -42,19 +45,22 @@ export function createTimeline({
   },
   defer = (run) => void setTimeout(run, 0),
   head = 0,
+  hold = false,
   now = () => performance.now(),
   opening,
   patience,
   stride,
 }: TimelineOptions): Timeline {
   const waiting = new Set<Waiting>();
+  const rolling = new Set<() => void>();
   let born: number | null = null;
+  let held = hold;
   let free = 0;
   let ordered = true;
   let paused = false;
   let queued = false;
 
-  const start = () => {
+  const begin = () => {
     if (born === null) {
       born = now() - head * 1000;
       free = born + opening * 1000;
@@ -62,9 +68,13 @@ export function createTimeline({
     return born;
   };
 
+  // A held timeline has no first frame until the picture is up: nothing is
+  // timed from the page arriving, only from the projector starting to run.
+  const start = () => (held ? born : begin());
+
   const flush = () => {
     queued = false;
-    if (paused) return;
+    if (paused || start() === null) return;
     const batch = [...waiting]
       .map((entry) => ({ entry, top: entry.rank() }))
       .sort((a, b) => a.top - b.top);
@@ -89,7 +99,7 @@ export function createTimeline({
   };
 
   return {
-    elapsed: () => (now() - start()) / 1000,
+    elapsed: () => (now() - (start() ?? now())) / 1000,
     pause() {
       paused = true;
     },
@@ -126,11 +136,29 @@ export function createTimeline({
       paused = false;
       if (waiting.size > 0) schedule();
     },
+    roll() {
+      if (!held) return;
+      held = false;
+      begin();
+      const waiters = [...rolling];
+      rolling.clear();
+      waiters.forEach((run) => run());
+      if (waiting.size > 0) schedule();
+    },
+    rolled(run) {
+      if (start() !== null) {
+        run();
+        return () => {};
+      }
+      rolling.add(run);
+      return () => void rolling.delete(run);
+    },
     serial(on) {
       ordered = on;
     },
     until(at) {
-      return Math.max(0, at - (now() - start()) / 1000);
+      const from = start();
+      return from === null ? at : Math.max(0, at - (now() - from) / 1000);
     },
   };
 }

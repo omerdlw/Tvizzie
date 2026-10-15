@@ -6,12 +6,12 @@
 //           its light spilling onto the walls and the floor
 //   items   each film of the week holds, then the next one comes through a
 //           pane of reeded glass that slides across the screen
-//   outro   the screen goes dark
+//   outro   the screen goes dark while the next section dissolves in over it
 
 export const SPAN = {
   hold: 0.38,
   item: 1.35,
-  outro: 0.9,
+  outro: 0.8,
   settle: 1.15,
   zoom: 1.7,
 } as const;
@@ -111,7 +111,7 @@ export function sceneAt(s: number, films: number): Scene {
     scene.filmA = last;
     scene.filmB = last;
     scene.copy = 1 - ramp(o, 0, 0.45);
-    scene.exposure = 1 - ramp(o, 0.2, 1);
+    scene.exposure = 1 - ramp(o, 0.05, 0.62);
     return scene;
   }
 

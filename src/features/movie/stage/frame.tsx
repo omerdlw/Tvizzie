@@ -22,7 +22,13 @@ import { usePathname } from "next/navigation";
 import { handoffTo, useDeparture } from "@/motion/handoff";
 import { SCENE } from "../lib/motion";
 import { EASE } from "../lib/tempo";
-import { ExitContext, HeadContext, skipped, useExit } from "./clock";
+import {
+  ExitContext,
+  HeadContext,
+  TimelineContext,
+  skipped,
+  useExit,
+} from "./clock";
 import { toneOf } from "./grade";
 
 export const GradeContext = createContext<{
@@ -74,6 +80,7 @@ function Bars() {
   const left = useExit(SCENE.exit.backdrop);
   const open = useMotionValue(reduced ? 1 : 0);
   const head = useContext(HeadContext);
+  const timeline = useContext(TimelineContext);
   const [veiled] = useState(
     () => handoffTo(pathname) !== null && !isCarriedTo(pathname),
   );
@@ -86,14 +93,22 @@ function Bars() {
     Math.max(begin * (1 - o), end * l),
   );
 
+  // The bars part on the first frame of the picture, not on the page.
   useEffect(() => {
     if (reduced) return;
-    const controls = animate(open, 1, {
-      ...skipped(at, run, head),
-      ease: EASE.glide,
-    });
-    return () => controls.stop();
-  }, [at, head, open, reduced, run]);
+    let controls: ReturnType<typeof animate> | null = null;
+    const part = () => {
+      controls = animate(open, 1, {
+        ...skipped(at, run, head),
+        ease: EASE.glide,
+      });
+    };
+    const cancel = timeline ? timeline.rolled(part) : (part(), () => {});
+    return () => {
+      cancel();
+      controls?.stop();
+    };
+  }, [at, head, open, reduced, run, timeline]);
 
   const bar = "pointer-events-none fixed inset-x-0 z-20 bg-black";
   const style = { height: `${shut}vh`, scaleY: closed } as const;

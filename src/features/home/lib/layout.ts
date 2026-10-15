@@ -62,23 +62,36 @@ export function layWord(
   };
 }
 
+// Kept clear beneath the screen for the reel and the dock, which carries the
+// credits.
+const BELOW = 236;
+const BELOW_PORTRAIT = 212;
+
 // The screen the films play on: cinemascope on a wide window, a tall frame on
-// a phone, set high enough to leave room for the credits beneath it.
+// a phone, as large as the room under it allows.
 export function layScreen(width: number, height: number): Rect {
   if (width < 768 && height > width) {
     const w = width - gutterOf(width) * 2;
+    const top = Math.max(64, height * 0.1);
     return {
-      height: Math.min(w * 1.1, height * 0.42),
+      height: Math.max(
+        w * 0.75,
+        Math.min(w * 1.35, height - top - BELOW_PORTRAIT),
+      ),
       left: (width - w) / 2,
-      top: Math.max(64, height * 0.1),
+      top,
       width: w,
     };
   }
-  const w = Math.min(width * 0.8, height * 0.5 * SCOPE);
+  const top = Math.max(72, height * 0.11);
+  const w = Math.min(
+    width * 0.88,
+    Math.max(height * 0.4, height - top - BELOW) * SCOPE,
+  );
   return {
     height: w / SCOPE,
     left: (width - w) / 2,
-    top: Math.max(72, height * 0.14),
+    top,
     width: w,
   };
 }

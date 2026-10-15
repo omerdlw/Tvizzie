@@ -5,7 +5,7 @@ import { Tooltip } from "@/ui";
 import { movieHref } from "@/config/routes";
 import { FACT_ROW_TYPE } from "../lib/layout";
 import { SCENE, factsGap, undoGap } from "../lib/motion";
-import { Count, Decode, Fade, Line } from "../stage";
+import { Count, Expose, Fade, Line } from "../stage";
 import { PERSON_ALIAS_VISIBLE } from "../lib/constants";
 import { FactLink } from "./person-fact-link";
 
@@ -23,9 +23,9 @@ function Row({
   return (
     <div className="group/row relative flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
       <dt className="shrink-0 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase">
-        <Decode at={at} hover out={out}>
+        <Expose at={at} hover out={out}>
           {label}
-        </Decode>
+        </Expose>
       </dt>
       <Fade
         as="dd"
@@ -56,9 +56,9 @@ interface Fact {
 
 function Text({ children, when }: { children: string; when: When }) {
   return (
-    <Decode at={when.at} hover out={when.out}>
+    <Expose at={when.at} hover out={when.out}>
       {children}
-    </Decode>
+    </Expose>
   );
 }
 
@@ -157,9 +157,9 @@ export function PersonFacts({
         knownFor.map((film, index) => (
           <span key={film.id}>
             <FactLink href={movieHref(film.id)} label={film.title}>
-              <Decode at={when.at} hover out={when.out}>
+              <Expose at={when.at} hover out={when.out}>
                 {film.title}
-              </Decode>
+              </Expose>
             </FactLink>
             {index < knownFor.length - 1 ? (
               <Fade as="span" at={when.at} out={when.out}>

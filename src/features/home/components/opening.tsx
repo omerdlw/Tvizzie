@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type JSX } from "react";
+import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { preload } from "react-dom";
 import { cancelFrame, frame, useReducedMotion } from "motion/react";
 import { layoutTop } from "@/motion/flow";
@@ -13,6 +13,7 @@ import { layScreen, layWord, type Rect, type WordLayout } from "../lib/layout";
 import { OpeningRenderer } from "../lib/opening-renderer";
 import { sceneAt, stillness, timelineLength } from "../lib/timeline";
 import type { HomeFeed } from "../lib/types";
+import { FilmDock } from "./film-dock";
 import { NowShowing } from "./now-showing";
 import { ScrollCue } from "./scroll-cue";
 
@@ -26,6 +27,10 @@ const FEEL = { response: 0.24, wheelMultiplier: 0.55 } as const;
 // the glass is carried gently to the nearer side.
 const DETENT_MS = 320;
 const DETENT_S = 1.4;
+// Cueing a film from the reel cuts the scroll straight to it and runs one
+// pass of the glass from the film on the screen to the one asked for, however
+// many lie between them.
+const CUE_MS = 1500;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -34,6 +39,17 @@ const outCubic = (t: number) => 1 - (1 - t) ** 3;
 const follow = (from: number, to: number, rate: number, dt: number) =>
   from + (to - from) * (1 - Math.exp(-rate * dt));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+const inOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+
+interface Cue {
+  at: number;
+  from: number;
+  // Set once the scroll is seen at `y`.
+  settled: boolean;
+  to: number;
+  // Where the scroll was put; moving it from there hands control back.
+  y: number;
+}
 
 const sourcesOf = (film: HomeFeed["trending"][number]) =>
   [
@@ -52,8 +68,12 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
   const canvas = useRef<HTMLCanvasElement>(null);
   const heroLayer = useRef<HTMLDivElement>(null);
   const showLayer = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState({ direction: 1, index: 0 });
+  const [active, setActive] = useState(0);
+  const [inside, setInside] = useState(false);
   const [plain, setPlain] = useState(false);
+  const room = useRef({ top: 0, vh: 1 });
+  const cue = useRef<Cue | null>(null);
+  const position = useRef(0);
   const [generation, setGeneration] = useState(0);
   const scrollY = useScrollY();
   const engine = useSmoothScroll();
@@ -93,6 +113,7 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
     let visible = true;
     let cancelled = false;
     let lastActive = 0;
+    let lastInside = false;
     let lastS = 0;
     let lastY = -1;
     let stillSince = performance.now();
@@ -118,6 +139,7 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
       vw = stageEl.clientWidth;
       vh = stageEl.clientHeight;
       top = layoutTop(sectionEl);
+      room.current = { top, vh };
       const width = Math.max(1, Math.round(vw * dpr));
       const height = Math.max(1, Math.round(vh * dpr));
       if (canvasEl.width !== width) canvasEl.width = width;
@@ -183,7 +205,34 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
       const s = clamp((y - top) / vh, 0, length);
       const scene = sceneAt(s, films.length);
 
-      velocity = follow(velocity, clamp((s - lastS) / dt / 2, -1, 1), 8, dt);
+      const cued = cue.current;
+      if (cued) {
+        const there = Math.abs(y - cued.y) <= 2;
+        if (there) cued.settled = true;
+        if (reduced || (cued.settled ? !there : now - cued.at > 400)) {
+          cue.current = null;
+        }
+      }
+      const pass = cue.current
+        ? clamp((now - cue.current.at) / CUE_MS, 0, 1)
+        : 1;
+      if (cued && cue.current && pass < 1) {
+        const eased = inOutSine(pass);
+        const last = Math.max(1, films.length - 1);
+        scene.filmA = cued.from;
+        scene.filmB = cued.to;
+        scene.mix = eased;
+        scene.active = eased < 0.5 ? cued.from : cued.to;
+        scene.progress = mix(cued.from, cued.to, eased) / last;
+        lastY = y;
+        stillSince = now;
+      } else {
+        cue.current = null;
+      }
+
+      velocity = cue.current
+        ? follow(velocity, 0, 8, dt)
+        : follow(velocity, clamp((s - lastS) / dt / 2, -1, 1), 8, dt);
       lastS = s;
 
       if (y !== lastY) {
@@ -213,12 +262,18 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
           scene.copy > 0.6 ? "auto" : "none";
       }
       stageEl.style.setProperty("--progress", String(scene.progress));
+      position.current = scene.progress * Math.max(1, films.length - 1);
       stageEl.style.setProperty("--settle", String(scene.copy));
 
       if (scene.active !== lastActive) {
-        const direction = scene.active > lastActive ? 1 : -1;
         lastActive = scene.active;
-        setActive({ direction, index: scene.active });
+        setActive(scene.active);
+      }
+      // The dock carries the credits while the screen is up.
+      const within = lastInside ? scene.copy > 0.3 : scene.copy > 0.7;
+      if (within !== lastInside) {
+        lastInside = within;
+        setInside(within);
       }
 
       if (!renderer || !visible || cancelled || !wordLayout) return;
@@ -321,6 +376,28 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
     };
   }, [engine, films, generation, length, reduced, scrollY]);
 
+  const seek = useCallback(
+    (index: number) => {
+      if (index === active) return;
+      const { top, vh } = room.current;
+      const [from, to] = stillness(index);
+      const y = Math.round(top + ((from + to) / 2) * vh);
+      if (engine) engine.scrollTo(y, { immediate: true });
+      else window.scrollTo({ behavior: "instant", top: y });
+      if (reduced) return;
+      cue.current = {
+        at: performance.now(),
+        from: active,
+        settled: false,
+        to: index,
+        y,
+      };
+    },
+    [active, engine, reduced],
+  );
+
+  const current = films[active] ?? films[0];
+
   return (
     <section
       ref={section}
@@ -354,15 +431,18 @@ export function Opening({ films, week }: OpeningProps): JSX.Element {
         {films.length > 0 && (
           <div ref={showLayer} className="invisible absolute inset-0 opacity-0">
             <NowShowing
-              active={active.index}
-              direction={active.direction}
+              active={active}
               films={films}
+              onSeek={seek}
               plain={plain}
+              position={position}
               week={week}
             />
           </div>
         )}
       </div>
+
+      {current ? <FilmDock film={current} shown={inside} /> : null}
     </section>
   );
 }

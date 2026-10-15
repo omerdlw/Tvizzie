@@ -10,7 +10,9 @@ import {
 } from "motion/react";
 import { SCENE, sinceBase } from "../lib/motion";
 import { DIM, EASE, exposure, size } from "../lib/tempo";
+import type { Timeline } from "./timeline";
 
+export const TimelineContext = createContext<Timeline | null>(null);
 export const ClockContext = createContext<MotionValue<number> | null>(null);
 export const ExitContext = createContext<MotionValue<number> | null>(null);
 

@@ -9,45 +9,71 @@ import {
   frame,
   motion,
   useReducedMotion,
+  type Variants,
 } from "motion/react";
 import { movieHref } from "@config/routes";
 import { layoutTop } from "@/motion/flow";
 import { pointerSample, watchPointer } from "@/motion/film/pointer";
 import { useScrollY } from "@/motion/scroll";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
-import { formatDay, formatToday, untilLabel } from "../lib/format";
+import {
+  MONTH_NAMES,
+  WEEKDAY_NAMES,
+  calendarDay,
+  daysBetween,
+  formatDay,
+  relativeDay,
+} from "../lib/format";
 import { camera, insideQuad, project, type Vec3 } from "../lib/tunnel-camera";
+import { portal } from "../lib/portal";
+import { paintFloor } from "../lib/tunnel-floor";
 import { TunnelRenderer } from "../lib/tunnel-renderer";
 import {
+  OVERLAP,
   planTunnel,
   tunnelAt,
   type Chapter,
+  type Dated,
   type TunnelPlan,
 } from "../lib/tunnel-scene";
-import type { HomeMovie } from "../lib/types";
-import {
-  CreditTitle,
-  MONO,
-  OpenFilm,
-  creditLine,
-  usePresenceDirection,
-} from "./credits";
+import type { ShowingMovie } from "../lib/types";
+import { FilmDock } from "./film-dock";
+import { Count, Drum, Ticker } from "./odometer";
 
 const DEG = Math.PI / 180;
+// How far ahead a lightbox switches on, and how long the switching takes to
+// travel down the corridor, per unit of distance.
+const WAKE = 11;
+const CASCADE_MS = 95;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 const follow = (from: number, to: number, rate: number, dt: number) =>
   from + (to - from) * (1 - Math.exp(-rate * dt));
+const noise = (n: number) => {
+  const x = Math.sin(n * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+// A lightbox catching: a few stutters, then steady.
+function powerAt(elapsed: number, seed: number, reduced: boolean): number {
+  if (elapsed <= 0) return 0;
+  const t = elapsed / 1000;
+  if (reduced) return Math.min(1, t / 0.6);
+  if (t >= 0.85) return 1;
+  const settle = clamp((t - 0.4) / 0.45, 0, 1);
+  const stutter = noise(Math.floor(t * 21) + seed * 7.31) > 0.45 ? 1 : 0.08;
+  return Math.min(1, t / 0.03) * (stutter * (1 - settle) + settle);
+}
 
 interface Entry {
   chapter: Chapter;
-  film: HomeMovie;
+  film: ShowingMovie;
 }
 
 export interface TunnelProps {
-  soon: HomeMovie[];
-  theatres: HomeMovie[];
+  soon: ShowingMovie[];
+  theatres: ShowingMovie[];
   today: string;
 }
 
@@ -56,11 +82,12 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const chrome = useRef<HTMLDivElement>(null);
-  const labels = useRef<HTMLDivElement>(null);
   const hovered = useRef(-1);
   const quads = useRef<({ x: number; y: number }[] | null)[]>([]);
-  const [active, setActive] = useState({ direction: 1, index: 0 });
+  const [active, setActive] = useState(0);
+  const [day, setDay] = useState({ direction: 1, value: 0 });
   const [plain, setPlain] = useState(false);
+  const [inside, setInside] = useState(false);
   const [generation, setGeneration] = useState(0);
   const scrollY = useScrollY();
   const router = useRouter();
@@ -73,9 +100,23 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
     ],
     [soon, theatres],
   );
+  const dated = useMemo<Dated[]>(() => {
+    let previous = 0;
+    return entries.map(({ chapter, film }) => {
+      const days = film.releaseDate
+        ? daysBetween(today, film.releaseDate)
+        : null;
+      const value =
+        chapter === "theatres"
+          ? Math.min(0, days ?? previous)
+          : Math.max(1, days ?? previous + 1, previous);
+      previous = value;
+      return { chapter, day: value };
+    });
+  }, [entries, today]);
   // Depth along the tunnel does not depend on the window, so the scroll it
   // takes can be known before anything is measured.
-  const length = planTunnel(theatres.length, soon.length, 1.6).length;
+  const length = planTunnel(dated, 1.6).length;
 
   useEffect(() => {
     const sectionEl = section.current;
@@ -87,26 +128,56 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
     let vw = 1;
     let vh = 1;
     let top = 0;
-    let plan: TunnelPlan = planTunnel(theatres.length, soon.length, 1.6);
+    let plan: TunnelPlan = planTunnel(dated, 1.6);
     let visible = true;
     let cancelled = false;
-    let lastActive = 0;
+    let lastActive = -1;
+    let lastDay = Number.NaN;
+    let lastInside = false;
     let lastAt = performance.now();
     let lastZ = plan.start;
     let velocity = 0;
+    let fonts: { display: string; mono: string } | null = null;
+    let painted = 0;
     const look = { x: 0, y: 0 };
     const hover = entries.map(() => 0);
+    const litAt = entries.map(() => Number.NaN);
+    const power = entries.map(() => 0);
+    let gateAt = Number.NaN;
 
+    // The nearest poster fills most of a tall window; a large one needs the
+    // larger print to stay sharp.
+    const longest =
+      Math.max(window.innerWidth, window.innerHeight) *
+      Math.min(window.devicePixelRatio || 1, 1.75);
+    const print = longest > 1400 ? "w780" : "w500";
     const renderer = TunnelRenderer.create(
       canvasEl,
       entries.map(({ film }) =>
-        tmdbImageUrl("poster", film.posterPath, "w500"),
+        tmdbImageUrl("poster", film.posterPath, print),
       ),
     );
     if (!renderer) setPlain(true);
 
+    const paint = () => {
+      if (!renderer || !fonts || painted === plan.corridor.half) return;
+      const floor = paintFloor(
+        plan,
+        entries.map(({ chapter, film }) => ({
+          date: film.releaseDate,
+          soon: chapter === "soon",
+        })),
+        today,
+        fonts,
+        renderer.floorBudget.budget,
+        renderer.floorBudget.limit,
+      );
+      renderer.setFloor(floor);
+      painted = plan.corridor.half;
+    };
+
     const measure = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       vw = stageEl.clientWidth;
       vh = stageEl.clientHeight;
       top = layoutTop(sectionEl);
@@ -114,8 +185,25 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       const height = Math.max(1, Math.round(vh * dpr));
       if (canvasEl.width !== width) canvasEl.width = width;
       if (canvasEl.height !== height) canvasEl.height = height;
-      plan = planTunnel(theatres.length, soon.length, vw / vh);
+      plan = planTunnel(dated, vw / vh);
+      paint();
     };
+
+    const style = getComputedStyle(document.body);
+    const display =
+      style.getPropertyValue("--font-zuume").trim() || "sans-serif";
+    const mono =
+      style.getPropertyValue("--font-basel-mono").trim() || "monospace";
+    void Promise.all([
+      document.fonts.load(`700 100px ${display}`),
+      document.fonts.load(`400 100px ${mono}`),
+    ])
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled) return;
+        fonts = { display, mono };
+        paint();
+      });
 
     const stopPointer = watchPointer();
     const observer = new ResizeObserver(measure);
@@ -127,14 +215,12 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
     seen.observe(sectionEl);
     measure();
 
-    const labelEls = () =>
-      labels.current?.querySelectorAll<HTMLElement>("[data-label]") ?? [];
-
     const step = () => {
       const now = performance.now();
       const dt = clamp(now - lastAt, 1, 64) / 1000;
       lastAt = now;
-      const s = clamp((scrollY.get() - top) / vh, 0, length);
+      const raw = (scrollY.get() - top) / vh;
+      const s = Number.isFinite(raw) ? clamp(raw, 0, length) : 0;
       const state = tunnelAt(s, plan);
 
       velocity = follow(
@@ -145,21 +231,80 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       );
       lastZ = state.camZ;
 
+      // The tunnel dissolves in over the end of the opening.
+      const shown = state.dissolve;
+      stageEl.style.opacity = String(shown);
+      stageEl.style.visibility = shown > 0.001 ? "visible" : "hidden";
+      stageEl.style.pointerEvents = shown > 0.6 ? "" : "none";
+      // Past the last film the walk goes on into the dark, and the copy
+      // about the films goes with it.
+      const lastFilm = plan.posters[plan.posters.length - 1]?.z ?? plan.gate;
+      const past = clamp((lastFilm - state.camZ + 0.2) / 1.6, 0, 1);
       if (chrome.current) {
-        const shown = clamp(state.exposure * 1.4 - 0.3, 0, 1);
-        chrome.current.style.opacity = String(shown);
-        chrome.current.style.visibility = shown > 0.001 ? "visible" : "hidden";
+        const copy = clamp(shown * 2 - 1, 0, 1) * (1 - past);
+        chrome.current.style.opacity = String(copy);
+        chrome.current.style.visibility = copy > 0.001 ? "visible" : "hidden";
       }
-      stageEl.style.setProperty("--theatres", String(state.theatres));
-      stageEl.style.setProperty("--soon", String(state.soon));
+      // The dock takes over the film's credits once the corridor is lit, and
+      // gives the card back on the way out, either way.
+      const lit = shown * (1 - past);
+      const within = lastInside ? lit > 0.35 : lit > 0.75;
+      if (within !== lastInside) {
+        lastInside = within;
+        setInside(within);
+      }
 
       if (state.active !== lastActive) {
-        const direction = state.active > lastActive ? 1 : -1;
         lastActive = state.active;
-        setActive({ direction, index: state.active });
+        setActive(state.active);
+      }
+      const onDay = Math.round(state.day);
+      if (Number.isFinite(onDay) && onDay !== lastDay) {
+        const direction = Number.isNaN(lastDay) || onDay > lastDay ? 1 : -1;
+        lastDay = onDay;
+        setDay({ direction, value: onDay });
       }
 
-      if (!visible || cancelled) return;
+      portal.distance = state.camZ - plan.portal;
+      // The canon may show through the doorway only once this canvas covers
+      // the screen; while it is still dissolving in over the opening, the
+      // canon's black would show through it too.
+      portal.open = visible && !cancelled && shown >= 0.999;
+      if (!visible || cancelled || shown <= 0.001) {
+        // Off screen: the doorway is either still ahead or long behind.
+        const through = s >= length - 1e-3 ? 1 : 0;
+        portal.open = false;
+        portal.through = through;
+        portal.rect = through ? [0, 0, vw, vh] : [0, 0, 0, 0];
+        return;
+      }
+
+      // The lightboxes ahead switch on as the camera nears them, the nearest
+      // first, so on arrival the light runs away down the corridor.
+      plan.posters.forEach((poster, index) => {
+        const ahead = state.camZ - poster.z;
+        if (
+          Number.isNaN(litAt[index]!) &&
+          ahead > -1 &&
+          ahead < WAKE &&
+          shown > 0.15
+        ) {
+          litAt[index] = now + Math.max(0, ahead) * CASCADE_MS;
+        }
+        power[index] = Number.isNaN(litAt[index]!)
+          ? 0
+          : powerAt(now - litAt[index]!, index + 1, reduced);
+      });
+      const toGate = state.camZ - plan.gate;
+      if (Number.isNaN(gateAt) && toGate < WAKE + 2 && shown > 0.15) {
+        gateAt = now + Math.max(0, toGate) * CASCADE_MS;
+      }
+      const gatePower = Number.isNaN(gateAt)
+        ? 0
+        : powerAt(now - gateAt, 0.5, reduced);
+      // The doorway is clear in this canvas; the canon is drawn behind it.
+      // Its small copy only lends the doorway's light to the corridor.
+      renderer?.setBeyond(portal.beyond, portal.colour);
 
       const sample = pointerSample();
       const present = sample.present && !reduced;
@@ -167,21 +312,50 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       look.y = follow(look.y, present ? (sample.y / vh) * 2 - 1 : 0, 2.2, dt);
 
       const portrait = vw / vh < 0.9;
-      const drift = reduced ? 0 : Math.sin(now / 4200) * 0.012;
+      const drift = reduced ? 0 : Math.sin(now / 5200) * 0.01;
       const cam = camera(
         [0, 0, state.camZ],
-        -look.x * 0.075 + drift,
-        -look.y * 0.045,
-        ((portrait ? 72 : 58) + Math.abs(velocity) * 5) * DEG,
+        -look.x * 0.07 + drift,
+        -0.07 - look.y * 0.04,
+        ((portrait ? 70 : 56) + Math.abs(velocity) * 4) * DEG,
         vw / vh,
       );
 
-      // Where every poster lands on the page, for the pointer and the labels.
+      // Where the doorway lands on the page, for the canon beyond it.
+      const { ceiling, floor, half } = plan.corridor;
+      const jambs = (
+        [
+          [-half, ceiling],
+          [half, ceiling],
+          [half, floor],
+          [-half, floor],
+        ] as const
+      ).map(([x, y]) => project(cam, [x, y, plan.portal], vw, vh));
+      if (jambs.some((point) => !point)) {
+        portal.rect = [0, 0, vw, vh];
+        portal.through = 1;
+      } else {
+        const xs = jambs.map((point) => point!.x);
+        const ys = jambs.map((point) => point!.y);
+        const left = clamp(Math.min(...xs), 0, vw);
+        const right = clamp(Math.max(...xs), 0, vw);
+        const top_ = clamp(Math.min(...ys), 0, vh);
+        const bottom = clamp(Math.max(...ys), 0, vh);
+        portal.rect = [left, top_, right, bottom];
+        portal.through = ((right - left) * (bottom - top_)) / (vw * vh);
+      }
+
+      // Through the doorway the canon has the whole screen.
+      if (portal.through >= 1 && portal.distance < 0) {
+        stageEl.style.visibility = "hidden";
+        return;
+      }
+
+      // Where every poster lands on the page, for the pointer.
       let hit = -1;
-      const lit = labelEls();
-      let labelIndex = 0;
       quads.current = plan.posters.map((poster, index) => {
         const ahead = state.camZ - poster.z;
+        if (ahead < 0.6 || ahead > 16) return null;
         const cos = Math.cos(poster.yaw);
         const sin = Math.sin(poster.yaw);
         const corner = (dx: number, dy: number): Vec3 => [
@@ -189,27 +363,6 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           poster.y + dy * poster.h,
           poster.z - sin * dx * poster.w,
         ];
-
-        if (poster.chapter === "soon") {
-          const label = lit[labelIndex++];
-          if (label) {
-            const at = project(cam, corner(0, -0.5), vw, vh);
-            const fade =
-              at && ahead > 0.6
-                ? Math.exp(-Math.max(ahead - 1, 0) * 0.28) *
-                  clamp((ahead - 1.1) / 0.8, 0, 1) *
-                  state.exposure
-                : 0;
-            const shown = at && fade > 0.01;
-            label.style.opacity = shown ? String(fade) : "0";
-            if (shown) {
-              const scale = clamp(2.2 / at.depth, 0.35, 1.25);
-              label.style.transform = `translate(${at.x}px, ${at.y + 10 * scale}px) translateX(-50%) scale(${scale})`;
-            }
-          }
-        }
-
-        if (ahead < 0.3 || ahead > 16) return null;
         const quad = [
           corner(-0.5, 0.5),
           corner(0.5, 0.5),
@@ -220,6 +373,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
         const flat = quad as { x: number; y: number }[];
         if (
           present &&
+          shown > 0.6 &&
           state.exposure > 0.5 &&
           insideQuad(sample.x, sample.y, flat) &&
           (hit === -1 || poster.z > plan.posters[hit]!.z)
@@ -228,26 +382,6 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
         }
         return flat;
       });
-
-      const gateLabel =
-        labels.current?.querySelector<HTMLElement>("[data-gate]");
-      if (gateLabel) {
-        const at = project(cam, [0, 0.74, plan.gate], vw, vh);
-        const ahead = state.camZ - plan.gate;
-        const fade =
-          at && ahead > 0.5
-            ? (1 - clamp((ahead - 6) / 4, 0, 1)) *
-              clamp((ahead - 0.5) / 0.8, 0, 1) *
-              state.exposure
-            : 0;
-        // It gives way before it reaches the rail along the top.
-        const clear = at ? clamp((at.y - 110) / 90, 0, 1) : 0;
-        gateLabel.style.opacity = String(fade * clear);
-        if (at && fade * clear > 0.01) {
-          const scale = clamp(3 / at.depth, 0.4, 1.4);
-          gateLabel.style.transform = `translate(${at.x}px, ${at.y}px) translate(-50%, -100%) scale(${scale})`;
-        }
-      }
 
       if (hit !== hovered.current) {
         hovered.current = hit;
@@ -260,18 +394,21 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
         }
       }
       hover.forEach((value, index) => {
-        hover[index] = follow(value, index === hit ? 1 : 0, 9, dt);
+        hover[index] = follow(value, index === hit ? 1 : 0, 8, dt);
       });
 
       renderer?.draw(
         {
           camera: cam,
+          corridor: plan.corridor,
           exposure: state.exposure,
           gate: plan.gate,
-          grain: reduced ? 0.04 : 0.08,
+          gatePower,
+          grain: reduced ? 0.02 : 0.045,
+          portal: plan.portal,
           hover,
+          power,
           time: reduced ? 0 : now / 1000,
-          velocity: reduced ? 0 : velocity,
         },
         plan.posters,
       );
@@ -287,6 +424,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
 
     return () => {
       cancelled = true;
+      portal.open = false;
       cancelFrame(step);
       observer.disconnect();
       seen.disconnect();
@@ -294,15 +432,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       canvasEl.removeEventListener("webglcontextrestored", restore);
       renderer?.dispose();
     };
-  }, [
-    entries,
-    generation,
-    length,
-    reduced,
-    scrollY,
-    soon.length,
-    theatres.length,
-  ]);
+  }, [dated, entries, generation, length, reduced, scrollY, today]);
 
   const open = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
@@ -319,18 +449,21 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
   };
 
   if (entries.length === 0) return <></>;
-  const current = entries[active.index] ?? entries[0]!;
+  const current = entries[active] ?? entries[0]!;
 
   return (
     <section
       ref={section}
       aria-labelledby="tunnel-title"
       className="relative"
-      style={{ height: `${(length + 1) * 100}svh` }}
+      style={{
+        height: `${(length + 1) * 100}svh`,
+        marginTop: `${-(1 + OVERLAP) * 100}svh`,
+      }}
     >
       <div
         ref={stage}
-        className="sticky top-0 h-svh w-full overflow-hidden bg-black"
+        className="invisible sticky top-0 z-10 h-svh w-full overflow-hidden opacity-0"
       >
         <canvas
           ref={canvas}
@@ -338,40 +471,6 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           className="absolute inset-0 block size-full"
           onClick={open}
         />
-
-        <div
-          ref={labels}
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-        >
-          {entries.map(({ chapter, film }) =>
-            chapter === "soon" ? (
-              <div
-                key={film.id}
-                className="absolute top-0 left-0 flex origin-top flex-col items-center gap-1 whitespace-nowrap opacity-0 will-change-transform"
-                data-label
-              >
-                <span className="font-zuume text-[1.75rem] leading-none text-white uppercase">
-                  {film.releaseDate ? formatDay(film.releaseDate) : "Soon"}
-                </span>
-                {film.releaseDate ? (
-                  <span className={`${MONO} text-[rgb(140_195_255)]`}>
-                    {untilLabel(film.releaseDate, today)}
-                  </span>
-                ) : null}
-              </div>
-            ) : null,
-          )}
-          <div
-            className="absolute top-0 left-0 flex origin-bottom flex-col items-center gap-1.5 whitespace-nowrap opacity-0 will-change-transform"
-            data-gate
-          >
-            <span className={`${MONO} text-white/60`}>Today</span>
-            <span className="font-zuume text-[2.5rem] leading-none text-white uppercase">
-              {formatToday(today)}
-            </span>
-          </div>
-        </div>
 
         {plain ? <PlainShelf entries={entries} /> : null}
 
@@ -382,44 +481,18 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           <h2 id="tunnel-title" className="sr-only">
             In theatres and coming soon
           </h2>
-          <header
-            className={`absolute inset-x-(--gutter) top-[clamp(1.25rem,4svh,2.75rem)] flex items-center gap-3 sm:gap-5 ${MONO}`}
-          >
-            <span
-              className={
-                current.chapter === "theatres"
-                  ? "text-white/90"
-                  : "text-white/35"
-              }
-            >
-              In theatres
-            </span>
-            <Rail fill="var(--theatres)" tone="bg-[rgb(255_153_77)]" />
-            <span className="text-white/55">Today</span>
-            <Rail fill="var(--soon)" tone="bg-[rgb(107_179_255)]" />
-            <span
-              className={
-                current.chapter === "soon" ? "text-white/90" : "text-white/35"
-              }
-            >
-              Coming soon
-            </span>
-          </header>
 
           <div
             aria-hidden
-            className="absolute bottom-0 left-0 h-[70svh] w-[min(56rem,100%)] bg-[radial-gradient(ellipse_at_0%_100%,rgb(0_0_0/0.72),rgb(0_0_0/0.35)_45%,transparent_72%)]"
+            className="absolute inset-x-0 top-0 h-[38svh] bg-linear-to-b from-black/55 to-transparent"
           />
-          <div className="pointer-events-auto absolute bottom-[max(7rem,14svh)] left-(--gutter) grid w-[min(34rem,calc(100%-2*var(--gutter)))]">
-            <AnimatePresence custom={active.direction} initial={false}>
-              <TunnelCredit
-                key={current.film.id}
-                direction={active.direction}
-                entry={current}
-                today={today}
-              />
-            </AnimatePresence>
-          </div>
+
+          <ChapterHeading chapter={current.chapter} />
+          <Calendar
+            direction={day.direction}
+            offset={day.value}
+            today={today}
+          />
         </div>
 
         <ul className="sr-only">
@@ -435,75 +508,141 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           ))}
         </ul>
       </div>
+
+      <FilmDock film={current.film} shown={inside} />
     </section>
   );
 }
 
-function Rail({ fill, tone }: { fill: string; tone: string }): JSX.Element {
+const SETTLE = [0.22, 1, 0.36, 1] as const;
+
+const swap: Variants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    y: `${direction * 0.7}em`,
+  }),
+  leave: (direction: number) => ({
+    opacity: 0,
+    transition: { duration: 0.45, ease: [0.55, 0, 0.75, 0.2] },
+    y: `${direction * -0.7}em`,
+  }),
+  show: {
+    opacity: 1,
+    transition: { duration: 0.9, ease: SETTLE },
+    y: "0em",
+  },
+};
+
+// A word that changes by rolling out of the way of the next one.
+function Rolling({
+  className,
+  direction,
+  value,
+}: {
+  className?: string;
+  direction: number;
+  value: string;
+}): JSX.Element {
   return (
-    <span aria-hidden className="relative h-px min-w-6 flex-1 bg-white/12">
-      <span
-        className={`absolute inset-0 origin-left ${tone}`}
-        style={{ transform: `scaleX(${fill})` }}
-      />
+    <span className={`relative inline-grid overflow-hidden ${className ?? ""}`}>
+      <AnimatePresence custom={direction} initial={false}>
+        <motion.span
+          key={value}
+          animate="show"
+          className="[grid-area:1/1]"
+          custom={direction}
+          exit="leave"
+          initial="enter"
+          variants={swap}
+        >
+          {value}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 }
 
-function TunnelCredit({
+function ChapterHeading({ chapter }: { chapter: Chapter }): JSX.Element {
+  const soon = chapter === "soon";
+  return (
+    <header className="absolute top-[clamp(1.25rem,4.5svh,2.75rem)] left-(--gutter)">
+      <p className="font-martina text-[clamp(1.6rem,2.4vw,2.35rem)] leading-none font-light text-white">
+        <Rolling direction={soon ? 1 : -1} value={soon ? "Coming" : "In"} />{" "}
+        <Rolling
+          className="italic"
+          direction={soon ? 1 : -1}
+          value={soon ? "soon" : "theatres"}
+        />
+      </p>
+      <p className="mt-2.5 hidden max-w-[18rem] text-[13px] leading-snug text-white/45 sm:block">
+        <Rolling
+          direction={soon ? 1 : -1}
+          value={
+            soon
+              ? "The most awaited, in the order they open"
+              : "The most watched, in the order they opened"
+          }
+        />
+      </p>
+    </header>
+  );
+}
+
+function Calendar({
   direction,
-  entry,
+  offset,
   today,
 }: {
   direction: number;
-  entry: Entry;
+  offset: number;
   today: string;
 }): JSX.Element {
-  const way = usePresenceDirection(direction);
-  const { chapter, film } = entry;
-  const opens =
-    chapter === "soon" && film.releaseDate
-      ? `Opens ${formatDay(film.releaseDate)} · ${untilLabel(film.releaseDate, today)}`
-      : "In theatres now";
+  const { date, month, weekday } = calendarDay(today, offset);
+  const now = offset === 0;
+  const days = Math.abs(offset);
+  const counted = days >= 2;
 
   return (
-    <motion.article
-      animate="show"
-      className="min-w-0 [grid-area:1/1]"
-      custom={way}
-      exit="leave"
-      initial="enter"
+    <div
+      aria-hidden
+      className="absolute top-[clamp(1.25rem,4.5svh,2.75rem)] right-(--gutter) flex flex-col items-end"
     >
-      <motion.p
-        className={`mb-3 flex items-center gap-3 sm:mb-4 ${MONO}`}
-        custom={way}
-        variants={creditLine}
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="flex flex-col items-end gap-1 pt-[0.2rem] text-right sm:pt-1.5">
+          <Drum
+            align="end"
+            className="font-martina text-[15px] leading-none font-light text-white/75 italic sm:text-[17px]"
+            index={weekday}
+            items={WEEKDAY_NAMES}
+          />
+          <Drum
+            align="end"
+            className="text-[11px] leading-none tracking-[0.16em] text-white/45 uppercase sm:text-[12px]"
+            index={month}
+            items={MONTH_NAMES}
+          />
+        </div>
+        <span className="flex font-zuume text-[clamp(3.25rem,6.2vw,6.25rem)] leading-[0.8] text-white">
+          <Count pad places={2} value={date} width="0.42em" />
+        </span>
+      </div>
+      <p
+        className={`mt-3 flex items-center gap-2 text-[13px] transition-colors duration-slow ${now ? "text-[rgb(255_244_226)]" : "text-white/50"}`}
       >
         <span
-          aria-hidden
-          className={`size-1.5 rounded-full ${chapter === "soon" ? "bg-[rgb(107_179_255)]" : "bg-[rgb(255_153_77)]"}`}
+          className={`block h-px origin-right bg-current transition-[width] duration-cinematic ease-out-quint ${now ? "w-8" : "w-4"}`}
         />
-        <span className="text-white/85">{opens}</span>
-      </motion.p>
-      <CreditTitle
-        className="font-zuume text-[clamp(2.5rem,4.2vw,4.75rem)] leading-[0.9] text-balance text-white uppercase"
-        direction={way}
-        title={film.title}
-      />
-      <motion.div
-        className="mt-3 flex flex-col items-start gap-3 sm:mt-4"
-        custom={way}
-        variants={creditLine}
-      >
-        <p className={`flex flex-wrap gap-x-4 text-white/45 ${MONO}`}>
-          {film.year ? <span>{film.year}</span> : null}
-          {film.genres.length > 0 ? (
-            <span>{film.genres.join(" · ")}</span>
-          ) : null}
-        </p>
-        <OpenFilm id={film.id} />
-      </motion.div>
-    </motion.article>
+        {counted ? (
+          <span className="inline-flex items-baseline gap-[0.28em] tabular-nums">
+            {offset > 0 ? <span>In</span> : null}
+            <Count value={days} />
+            <span>{offset < 0 ? "days ago" : "days"}</span>
+          </span>
+        ) : (
+          <Ticker direction={direction} value={relativeDay(offset)} />
+        )}
+      </p>
+    </div>
   );
 }
 

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { MotionValue } from "motion/react";
 import { imagesReady } from "./ready";
-import { TimelineContext } from "./stage";
+import { TimelineContext } from "./clock";
 
 interface Opened {
   at: number;
@@ -80,8 +80,10 @@ export function useCue<T extends HTMLElement>({
           void imagesReady(element).then(() => {
             if (present) ticket.ready();
           });
+        } else if (timeline) {
+          withdraw = timeline.rolled(() => open(timeline.until(at)));
         } else {
-          open(timeline ? timeline.until(at) : 0);
+          open(0);
         }
       },
       { rootMargin: margin },

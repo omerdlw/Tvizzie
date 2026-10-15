@@ -9,4 +9,4 @@ export { Portrait } from "./portrait";
 export { Sequence } from "./sequence";
 export { Beat, Cascade, Header, Item, Section, Swap, Trace } from "./section";
 export { trackSpotlight } from "./spotlight";
-export { Count, Decode, Title, Words } from "./type";
+export { Count, Expose, Title, Words } from "./type";

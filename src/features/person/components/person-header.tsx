@@ -14,7 +14,7 @@ import {
 import { SCENE, linksGap } from "../lib/motion";
 import { size } from "../lib/tempo";
 import {
-  Decode,
+  Expose,
   Fade,
   Hairline,
   Layer,
@@ -42,9 +42,9 @@ function Rule({
     >
       {role ? (
         <span className={cn(LABEL_TYPE, "shrink-0 text-white/70")}>
-          <Decode at={SCENE.label.at} out={0} run={SCENE.label.run}>
+          <Expose at={SCENE.label.at} out={0} run={SCENE.label.run}>
             {role}
-          </Decode>
+          </Expose>
         </span>
       ) : null}
       <Hairline className="w-auto min-w-6 flex-1" />

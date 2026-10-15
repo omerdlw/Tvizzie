@@ -49,7 +49,7 @@ export function PersonView({
   const films = career?.years.reduce((sum, year) => sum + year.count, 0) ?? 0;
 
   return (
-    <Stage className={PAGE_CLASS}>
+    <Stage className={PAGE_CLASS} picture={Boolean(backdrop)}>
       <PersonProjection backdrop={backdropPath} person={person} />
       <div className={CONTAINER_CLASS}>
         {backdrop ? (

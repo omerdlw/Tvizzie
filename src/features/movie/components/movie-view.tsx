@@ -63,7 +63,7 @@ export function MovieView({
   }));
 
   return (
-    <Stage className={PAGE_CLASS}>
+    <Stage className={PAGE_CLASS} picture={Boolean(backdrop)}>
       <MovieProjection movie={movie} />
       <div className={CONTAINER_CLASS}>
         {backdrop ? <MovieBackdropHero movie={movie} /> : null}

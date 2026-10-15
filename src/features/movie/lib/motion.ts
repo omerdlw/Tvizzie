@@ -5,12 +5,13 @@ const TITLE = OPEN;
 const RULE = TITLE + size(1);
 const TAGLINE = RULE + size(0);
 const OVERVIEW = TAGLINE + size(-1);
-const OVERVIEW_WINDOW = size(3);
-const OVERVIEW_LANDED = OVERVIEW + OVERVIEW_WINDOW + landed(2);
+const OVERVIEW_WINDOW = size(1);
+const OVERVIEW_SWEEP = size(-2);
+const OVERVIEW_LANDED = OVERVIEW + OVERVIEW_WINDOW + OVERVIEW_SWEEP + landed(2);
 
-const DECODE = size(2);
+const EXPOSE = size(1);
 const VALUE_LAG = size(-1);
-const FACTS_WINDOW = OVERVIEW_LANDED - DECODE - VALUE_LAG - TAGLINE;
+const FACTS_WINDOW = OVERVIEW_LANDED - EXPOSE - VALUE_LAG - TAGLINE;
 
 export const SCENE = {
   backdrop: {
@@ -30,14 +31,16 @@ export const SCENE = {
   tagline: { at: TAGLINE, cap: size(-1), run: size(2), window: size(1) },
   overview: {
     at: OVERVIEW,
-    cap: size(-2),
+    by: "line",
+    cap: size(-1),
     run: size(2),
+    sweep: OVERVIEW_SWEEP,
     window: OVERVIEW_WINDOW,
   },
   buttons: { at: RULE, gap: size(-2) },
   facts: {
     at: TAGLINE,
-    decode: DECODE,
+    expose: EXPOSE,
     gap: size(-1),
     lag: VALUE_LAG,
     replay: size(1),
