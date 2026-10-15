@@ -115,7 +115,7 @@ export function MovieViews({
                 ? { duration: 0 }
                 : {
                     duration: open ? enter : leave,
-                    ease: open ? EASE.expo : EASE.glide,
+                    ease: open ? EASE.cream : EASE.glide,
                   }
             }
           >

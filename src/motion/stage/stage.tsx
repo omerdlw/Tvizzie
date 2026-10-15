@@ -80,17 +80,25 @@ function remember(pathname: string) {
   }
 }
 
+// Whether this document has shown a film page yet. A page loaded or reloaded
+// into the window is always opened in full, whatever the session has seen.
+let booted = false;
+
 // How fast the opening runs. It always runs whole and in its own order, the
-// picture first: at its own pace for a page seen for the first time, quicker
-// when cut to from another film page, and quicker still for one already seen
-// this session.
+// picture first: at its own pace for a page seen for the first time, a little
+// quicker when cut to from another film page, and quicker again for one
+// already seen this session.
 function usePace(pathname: string) {
   const [pace] = useState(() => {
     const { arrive, revisit } = GRAMMAR.film;
+    if (!booted) return 1;
     if (seenList().includes(pathname)) return revisit.pace;
     return handoffTo(pathname) ? arrive.pace : 1;
   });
-  useEffect(() => remember(pathname), [pathname]);
+  useEffect(() => {
+    booted = true;
+    remember(pathname);
+  }, [pathname]);
   return pace;
 }
 
@@ -146,6 +154,9 @@ export function Stage({
     settleCarry();
     smooth?.resync();
   }, [smooth]);
+  // A film page is read slowly: the page takes less from each turn of the
+  // wheel and glides on longer after it.
+  useEffect(() => smooth?.tune(GRAMMAR.scroll), [smooth]);
   useTintedFavicon(tone);
 
   return (

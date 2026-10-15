@@ -114,14 +114,17 @@ function Bars() {
 // same light on the next page, not one that goes out at the cut.
 let lastPointer: { x: number; y: number } | null = null;
 
+const GLOW_DRIFT = { damping: 19, mass: 1, stiffness: 36 };
+
 function Glow() {
   const radius = 380;
   const [start] = useState(() => lastPointer);
   const x = useMotionValue(start ? start.x - radius : 0);
   const y = useMotionValue(start ? start.y - radius : 0);
   const near = useMotionValue(start ? 1 : 0);
-  const sx = useSpring(x, { damping: 26, mass: 0.9, stiffness: 70 });
-  const sy = useSpring(y, { damping: 26, mass: 0.9, stiffness: 70 });
+  // A cloud of light, not a spotlight: it drifts after the hand.
+  const sx = useSpring(x, GLOW_DRIFT);
+  const sy = useSpring(y, GLOW_DRIFT);
   const house = useHouseDown();
   const lights = useMotionValue(1);
   const opacity = useSpring(near, { damping: 24, stiffness: 40 });

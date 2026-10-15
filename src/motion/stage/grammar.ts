@@ -19,40 +19,43 @@ export const GRAMMAR = {
   facts: { expose: size(1), gap: size(-1), lag: size(-1), replay: size(1) },
   count: { replay: size(2), run: size(3) },
   opening: { base: TITLE },
+  // Below the fold everything arrives slowly and from a little further, so
+  // the page pours in rather than snapping into place.
   section: {
-    actions: { at: size(0), run: size(2) },
+    actions: { at: size(0), run: size(3) },
     lead: size(0),
-    name: { at: 0, run: size(1) },
+    name: { at: 0, run: size(2) },
     patience: size(0),
-    rule: { at: size(-1), run: size(2) },
+    rule: { at: size(-1), run: size(3) },
     stride: size(-1),
     tail: size(-1),
-    y: 18,
+    y: 26,
   },
-  items: { bend: 1.35, cards: size(-1), gap: size(-3) },
+  items: { bend: 1.35, cards: size(-1), gap: size(-2) },
   slides: {
     arrow: size(-1),
-    gap: size(-3),
+    gap: size(-2),
     glide: size(3),
-    run: size(3),
+    run: size(4),
     zoom: 1.18,
   },
   swap: { lead: size(-2), leave: size(0) },
-  view: { enter: size(1), leave: size(0), lift: 20 },
+  view: { enter: size(2), leave: size(0), lift: 20 },
   flow: { run: size(1) },
   scrub: {
     defocus: { range: [24, 560] },
     drift: 8,
     push: 0.12,
   },
+  scroll: { response: 0.16, wheelMultiplier: 0.8 },
   // A page leaves in one movement: everything on it goes at once, and the
   // cut comes as the last of it is gone.
   exit: {
     art: 0,
     backdrop: 0,
     body: 0,
-    run: size(1),
-    wait: size(1),
+    run: size(1.5),
+    wait: size(1.5),
     window: 0,
   },
   frame: {
@@ -60,7 +63,7 @@ export const GRAMMAR = {
     light: size(4),
   },
   film: {
-    arrive: { pace: PHI },
+    arrive: { pace: Math.sqrt(PHI) },
     carry: { reveal: size(2), run: size(2) },
     cut: size(2),
     halation: 0.55,
@@ -71,7 +74,7 @@ export const GRAMMAR = {
       enter: size(4),
       leave: size(0),
     },
-    revisit: { pace: PHI * PHI },
+    revisit: { pace: PHI },
   },
   undo: { cap: size(-2) },
 } as const;

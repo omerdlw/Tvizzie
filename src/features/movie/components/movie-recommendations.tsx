@@ -25,7 +25,7 @@ export function MovieRecommendations({
           <MoviePosterLink
             key={item.id}
             caption={false}
-            original
+            carried
             movie={{
               id: item.id,
               posterPath: item.posterPath,

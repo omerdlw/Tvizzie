@@ -190,7 +190,7 @@ function Part({
       data-flow={flow ? "" : undefined}
       initial={{ filter: exposure(DIM), opacity: 0, y }}
       ref={ref}
-      transition={{ delay, duration: run, ease: EASE.expo }}
+      transition={{ delay, duration: run, ease: EASE.cream }}
     >
       {children}
     </motion.div>
@@ -207,7 +207,7 @@ function Rule() {
       className="h-px min-w-6 flex-1 origin-left bg-[rgb(var(--grade)/0.2)]"
       initial={{ opacity: 0, scaleX: 0 }}
       ref={ref}
-      transition={{ delay, duration: run, ease: EASE.expo }}
+      transition={{ delay, duration: run, ease: EASE.cream }}
     />
   );
 }
@@ -234,7 +234,7 @@ export function Trace({
       transition={{
         delay,
         duration: GRAMMAR.section.rule.run,
-        ease: EASE.expo,
+        ease: EASE.cream,
       }}
     />
   );
@@ -255,7 +255,9 @@ function Bar({
   return (
     <motion.div
       className={className}
-      style={section && !reduced ? { y } : undefined}
+      // Its own layer: the drift moves it every scrolled frame, and moving a
+      // layer costs nothing where repainting its text would.
+      style={section && !reduced ? { willChange: "transform", y } : undefined}
       suppressHydrationWarning
     >
       {children}

@@ -142,7 +142,7 @@ function Slide({
           transition={
             reduced
               ? instant
-              : { delay: delay ?? 0, duration: slide.run, ease: EASE.expo }
+              : { delay: delay ?? 0, duration: slide.run, ease: EASE.cream }
           }
         >
           {children}
@@ -165,6 +165,9 @@ interface CarouselProps {
   className?: string;
   itemClassName?: string;
   label?: string;
+  // Called as the track comes within a view of its end, so a long row can be
+  // laid out a stretch at a time instead of all at once.
+  onNearEnd?: () => void;
 }
 
 function slideEdges(track: HTMLElement): number[] {
@@ -203,6 +206,7 @@ export function Carousel({
   className,
   itemClassName,
   label,
+  onNearEnd,
 }: CarouselProps) {
   const reduced = useReducedMotion();
   const slide = GRAMMAR.slides;
@@ -231,9 +235,15 @@ export function Carousel({
   const count = Children.count(children);
   useDragScroll(trackRef);
 
+  const nearEnd = useRef(onNearEnd);
+  useEffect(() => {
+    nearEnd.current = onNearEnd;
+  }, [onNearEnd]);
   const sync = useCallback(() => {
     const element = trackRef.current;
     if (!element) return;
+    const { clientWidth, scrollLeft, scrollWidth } = element;
+    if (scrollLeft + clientWidth * 2 >= scrollWidth) nearEnd.current?.();
     const next = readScrollState(element);
     setState((previous) =>
       previous.canScrollLeft === next.canScrollLeft &&
@@ -393,7 +403,7 @@ export function Carousel({
     }
     glide.current = animate(element.scrollLeft, target, {
       duration: slide.glide,
-      ease: EASE.expo,
+      ease: EASE.dolly,
       onUpdate: (value) => {
         element.scrollLeft = value;
       },

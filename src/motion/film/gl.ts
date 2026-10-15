@@ -12,6 +12,9 @@ function compile(gl: WebGL2RenderingContext, type: number, source: string) {
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error(gl.getShaderInfoLog(shader));
+    }
     gl.deleteShader(shader);
     return null;
   }

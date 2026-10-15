@@ -69,7 +69,7 @@ export function Poster({
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const glow = useMotionValue(0);
-  const spring = { damping: 18, mass: 0.8, stiffness: 90 };
+  const spring = { damping: 17, mass: 1, stiffness: 52 };
   const sx = useSpring(x, spring);
   const sy = useSpring(y, spring);
   const rotateY = useTransform(sx, [-0.5, 0.5], [-9, 9]);

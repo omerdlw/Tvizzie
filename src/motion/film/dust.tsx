@@ -77,7 +77,9 @@ export function Dust({
     const context = element?.getContext("2d");
     const dot = sprite();
     if (!element || !context || !dot) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    // Motes are soft points of light: they need no more than one and a half
+    // device pixels per pixel, and the canvas is redrawn every frame.
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
     const box = radius * 2;
     element.width = box * ratio;
     element.height = box * ratio;
@@ -104,7 +106,14 @@ export function Dust({
     let last = 0;
     let cleared = true;
     let calm = 1;
+    let beat = false;
     const step = ({ timestamp }: { timestamp: number }) => {
+      // Under a still beam the motes drift a few pixels a second, which reads
+      // the same at half the frame rate; a moving beam is drawn every frame.
+      beat = !beat;
+      const still =
+        Math.abs(x.getVelocity()) + Math.abs(y.getVelocity()) < 8 && !cleared;
+      if (still && beat) return;
       const dt = last === 0 ? 0 : Math.min(0.05, (timestamp - last) / 1000);
       last = timestamp;
       const scrolling = document.documentElement.hasAttribute("data-scrolling");

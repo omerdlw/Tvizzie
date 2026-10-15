@@ -1,7 +1,9 @@
 import type { Variants } from "motion/react";
 
 export const PHI = (1 + Math.sqrt(5)) / 2;
-const BEAT = 0.42;
+// The film pages' unit of time. Everything on them is measured in golden steps
+// of it, so lengthening the beat slows the whole page in proportion.
+const BEAT = 0.5;
 
 export const size = (n: number) => BEAT * PHI ** n;
 export const hand = (n: number) => size(n - 2);
@@ -18,6 +20,11 @@ export const settle = (i: number, n: number, total: number, bend = 1.7) =>
 type Bezier = [number, number, number, number];
 
 export const EASE = {
+  // Arrivals below the fold: leaves gently instead of with a jolt, and takes
+  // the long, soft way to rest.
+  cream: [0.3, 0.85, 0.3, 1] as Bezier,
+  // A camera move between two points: eases out of rest and settles slowly.
+  dolly: [0.45, 0, 0.15, 1] as Bezier,
   expo: [0.16, 1, 0.3, 1] as Bezier,
   glide: [0.65, 0, 0.35, 1] as Bezier,
   silk: [0.22, 1, 0.36, 1] as Bezier,
@@ -40,7 +47,7 @@ export const wordCount = (text: string) =>
 const arrived = (n: number) => ({
   filter: "brightness(1)",
   opacity: 1,
-  transition: { duration: size(n), ease: EASE.expo },
+  transition: { duration: size(n), ease: EASE.cream },
   transitionEnd: FOCUSED,
 });
 
@@ -48,12 +55,12 @@ export type ItemKind =
   "dot" | "grow" | "left" | "print" | "right" | "scale" | "up";
 
 const RUNS: Record<ItemKind, number> = {
-  dot: 1,
-  grow: 2,
-  left: 2,
+  dot: 2,
+  grow: 3,
+  left: 3,
   print: 3,
-  right: 2,
-  scale: 2,
+  right: 3,
+  scale: 3,
   up: 3,
 };
 
@@ -63,7 +70,7 @@ export const ITEMS: Record<ItemKind, Variants> = {
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: size(RUNS.dot), ease: EASE.expo },
+      transition: { duration: size(RUNS.dot), ease: EASE.cream },
     },
   },
   grow: {
@@ -71,7 +78,7 @@ export const ITEMS: Record<ItemKind, Variants> = {
     visible: { ...arrived(RUNS.grow), scaleY: 1 },
   },
   left: {
-    hidden: { filter: exposure(DIM), opacity: 0, x: -16 },
+    hidden: { filter: exposure(DIM), opacity: 0, x: -22 },
     visible: { ...arrived(RUNS.left), x: 0 },
   },
   // Printed in, as the facts are: a flash of too much light that settles to
@@ -90,7 +97,7 @@ export const ITEMS: Record<ItemKind, Variants> = {
     },
   },
   right: {
-    hidden: { filter: exposure(DIM), opacity: 0, x: 16 },
+    hidden: { filter: exposure(DIM), opacity: 0, x: 22 },
     visible: { ...arrived(RUNS.right), x: 0 },
   },
   scale: {
@@ -98,7 +105,7 @@ export const ITEMS: Record<ItemKind, Variants> = {
     visible: { ...arrived(RUNS.scale), scale: 1, y: 0 },
   },
   up: {
-    hidden: { filter: exposure(DIM), opacity: 0, scale: 0.97, y: 36 },
+    hidden: { filter: exposure(DIM), opacity: 0, scale: 0.96, y: 44 },
     visible: { ...arrived(RUNS.up), scale: 1, y: 0 },
   },
 };

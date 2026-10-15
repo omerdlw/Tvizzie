@@ -16,7 +16,7 @@ export function Magnet({
   const ref = useRef<HTMLSpanElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const spring = { damping: 16, mass: 0.6, stiffness: 180 };
+  const spring = { damping: 17, mass: 0.8, stiffness: 110 };
   const sx = useSpring(x, spring);
   const sy = useSpring(y, spring);
 

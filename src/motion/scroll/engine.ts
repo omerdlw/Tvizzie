@@ -6,6 +6,11 @@ const SETTLE_SPEED = 30;
 const MAX_FRAME_MS = 64;
 const SCROLLING_ATTRIBUTE = "data-scrolling";
 const SCROLLING_LINGER_MS = 140;
+// A wheel gesture keeps to what it first scrolled: an inner list it started in,
+// or the page.
+const LATCH_MS = 160;
+// Under the dock and everything the framework floats over the pages.
+const SHIELD_Z = 90;
 
 export interface SmoothScrollOptions {
   response?: number;
@@ -116,7 +121,24 @@ export class SmoothScroll {
   private reduceMotion: MediaQueryList | null = null;
   private coarsePointer: MediaQueryList | null = null;
   private lingering: ReturnType<typeof setTimeout> | null = null;
+  private restAt = 0;
   private carried: number | null = null;
+  // The page's height and lock are read from the layout only when something
+  // may have changed them, never once a frame.
+  private extent: number | null = null;
+  private locked: boolean | null = null;
+  private sizing: ResizeObserver | null = null;
+  private locking: MutationObserver | null = null;
+  private latch = {
+    at: 0,
+    native: false,
+    sign: 0,
+    target: null as EventTarget | null,
+  };
+  // While the page glides, a clear pane over it takes the pointer, so nothing
+  // under a still cursor lights up as it passes. Switching one element is
+  // free; switching hit-testing off for the whole page restyled all of it.
+  private shield: HTMLDivElement | null = null;
 
   constructor({
     response = 0.11,
@@ -144,6 +166,25 @@ export class SmoothScroll {
     this.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     this.coarsePointer = window.matchMedia("(pointer: coarse)");
     this.adopt(window.scrollY);
+    this.sizing = new ResizeObserver(() => {
+      this.extent = null;
+    });
+    this.sizing.observe(document.documentElement);
+    this.sizing.observe(document.body);
+    this.locking = new MutationObserver(() => {
+      this.locked = null;
+    });
+    for (const element of [document.documentElement, document.body]) {
+      this.locking.observe(element, {
+        attributeFilter: ["class", "style"],
+        attributes: true,
+      });
+    }
+    const shield = document.createElement("div");
+    shield.setAttribute("aria-hidden", "true");
+    shield.style.cssText = `position:fixed;inset:0;z-index:${SHIELD_Z};pointer-events:none;`;
+    document.body.append(shield);
+    this.shield = shield;
     window.addEventListener("wheel", this.onWheel, { passive: false });
     window.addEventListener("scroll", this.onScroll, { passive: true });
     window.addEventListener("resize", this.onResize, { passive: true });
@@ -154,6 +195,10 @@ export class SmoothScroll {
     this.started = false;
     this.halt();
     this.rest();
+    this.sizing?.disconnect();
+    this.locking?.disconnect();
+    this.shield?.remove();
+    this.shield = null;
     window.removeEventListener("wheel", this.onWheel);
     window.removeEventListener("scroll", this.onScroll);
     window.removeEventListener("resize", this.onResize);
@@ -221,10 +266,16 @@ export class SmoothScroll {
   }
 
   private limit(): number {
-    return Math.max(
+    this.extent ??= Math.max(
       0,
       document.documentElement.scrollHeight - window.innerHeight,
     );
+    return this.extent;
+  }
+
+  private isLocked(): boolean {
+    this.locked ??= pageIsLocked();
+    return this.locked;
   }
 
   private snap(value: number): number {
@@ -232,16 +283,45 @@ export class SmoothScroll {
     return Math.round(value * ratio) / ratio;
   }
 
+  // One timer for the whole glide: each frame only pushes the moment it may
+  // rest back, instead of clearing and setting a timer.
   private moving(): void {
-    if (this.lingering) clearTimeout(this.lingering);
-    else document.documentElement.setAttribute(SCROLLING_ATTRIBUTE, "");
-    this.lingering = setTimeout(() => this.rest(), SCROLLING_LINGER_MS);
+    this.restAt = performance.now() + SCROLLING_LINGER_MS;
+    if (this.lingering) return;
+    document.documentElement.setAttribute(SCROLLING_ATTRIBUTE, "");
+    if (this.shield && document.querySelector("[data-cinematic]")) {
+      this.shield.style.pointerEvents = "auto";
+    }
+    const wait = () => {
+      const left = this.restAt - performance.now();
+      if (left > 0) this.lingering = setTimeout(wait, left);
+      else this.rest();
+    };
+    this.lingering = setTimeout(wait, SCROLLING_LINGER_MS);
   }
 
   private rest(): void {
     if (this.lingering) clearTimeout(this.lingering);
     this.lingering = null;
     document.documentElement.removeAttribute(SCROLLING_ATTRIBUTE);
+    if (this.shield) this.shield.style.pointerEvents = "none";
+  }
+
+  private scrollsInside(event: WheelEvent): boolean {
+    const now = event.timeStamp;
+    const latch = this.latch;
+    const sign = Math.sign(event.deltaY);
+    if (
+      latch.target !== event.target ||
+      latch.sign !== sign ||
+      now - latch.at > LATCH_MS
+    ) {
+      latch.native = scrollsNatively(event.target, event.deltaY);
+      latch.sign = sign;
+      latch.target = event.target;
+    }
+    latch.at = now;
+    return latch.native;
   }
 
   private adoptable(): number {
@@ -282,10 +362,13 @@ export class SmoothScroll {
     if (this.disabled() || event.deltaY === 0) return;
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
     if (event.shiftKey) return;
-    if (scrollsNatively(event.target, event.deltaY)) return;
-    if (pageIsLocked()) return;
+    if (this.scrollsInside(event)) return;
+    if (this.isLocked()) return;
 
     event.preventDefault();
+    // A new gesture reads the page's height afresh, in case it grew without
+    // its box changing.
+    if (!this.running) this.extent = null;
     const start = this.running ? this.target : this.adoptable();
     if (!this.running) this.current = this.adoptable();
     this.tween = null;
@@ -307,6 +390,7 @@ export class SmoothScroll {
   };
 
   private readonly onResize = (): void => {
+    this.extent = null;
     if (!this.running) this.adopt(window.scrollY);
   };
 

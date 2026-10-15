@@ -159,6 +159,14 @@ const regionalReleases = z
   })
   .transform((r) => ({ region: r.iso_3166_1, releases: r.release_dates }));
 
+// Every picture TMDB keeps for a film, in every language: the gallery shows
+// them all, where the page's own picture is chosen from the localised set.
+export const movieImagesSchema = z.object({
+  backdrops: lenientList(imageSchema),
+  posters: lenientList(imageSchema),
+  logos: lenientList(imageSchema),
+});
+
 export const movieSummarySchema = z
   .object({
     id,

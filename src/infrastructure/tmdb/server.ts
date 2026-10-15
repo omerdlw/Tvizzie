@@ -28,6 +28,10 @@ export const getMovieDetails = cache(
     getTmdb().movies.getDetails(id, { language }),
 );
 
+export const getMovieImages = cache((id: number) =>
+  getTmdb().movies.getImages(id),
+);
+
 export function searchMovies(query: string, options?: MovieSearchOptions) {
   return getTmdb().movies.search(query, options);
 }

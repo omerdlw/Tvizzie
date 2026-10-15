@@ -92,7 +92,7 @@ export function PersonFilmography({
               <MoviePosterLink
                 caption={false}
                 detail={credit.role}
-                original
+                carried
                 movie={{
                   id: credit.id,
                   posterPath: credit.posterPath,

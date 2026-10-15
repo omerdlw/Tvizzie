@@ -25,7 +25,9 @@ export function PersonCard({
     "poster",
     person.profilePath,
   );
-  const src = tmdbImageUrl("profile", photoPath, "original");
+  // A card shows a thumbnail, but the photo it carries to the person's page
+  // lands on their portrait, so it is fetched at the portrait's height.
+  const src = tmdbImageUrl("profile", photoPath, "h632");
   const href = personHref(person.id);
   const handleClick = useDockLinkClick(href, onNavigated);
 

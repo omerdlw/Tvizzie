@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { movieDetailsSchema } from "./schemas/movie";
+import type { movieDetailsSchema, movieImagesSchema } from "./schemas/movie";
 import type { personDetailsSchema } from "./schemas/person";
 import type { featuredMoviePageSchema } from "./schemas/discover";
 import type {
@@ -22,6 +22,7 @@ export type PersonImage = PersonDetails["images"]["profiles"][number];
 export type PersonExternalIds = PersonDetails["externalIds"];
 
 export type MovieImage = MovieDetails["images"]["posters"][number];
+export type MovieImages = z.output<typeof movieImagesSchema>;
 export type MovieVideo = MovieDetails["videos"][number];
 
 export type { TmdbError } from "./errors";

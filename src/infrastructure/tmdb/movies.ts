@@ -5,10 +5,10 @@ import {
   TMDB_REVALIDATE,
 } from "./constants";
 import { tmdbErrors, type TmdbError } from "./errors";
-import { movieDetailsSchema } from "./schemas/movie";
+import { movieDetailsSchema, movieImagesSchema } from "./schemas/movie";
 import { movieSearchPageSchema } from "./schemas/search";
 import type { TmdbTransport } from "./transport";
-import type { MovieDetails, MovieSearchPage } from "./types";
+import type { MovieDetails, MovieImages, MovieSearchPage } from "./types";
 import { checkLanguage, checkSearchInput } from "./validation";
 
 export interface MovieDetailsOptions {
@@ -44,6 +44,10 @@ export interface MoviesApi {
     id: number,
     options?: MovieDetailsOptions,
   ): Promise<Result<MovieDetails, TmdbError>>;
+  getImages(
+    id: number,
+    options?: Pick<MovieDetailsOptions, "signal">,
+  ): Promise<Result<MovieImages, TmdbError>>;
   search(
     query: string,
     options?: MovieSearchOptions,
@@ -69,6 +73,22 @@ export function createMoviesApi(transport: TmdbTransport): MoviesApi {
           include_image_language: `${language.slice(0, 2)},null`,
         },
         schema: movieDetailsSchema,
+        revalidate: TMDB_REVALIDATE.movie,
+        tags: [movieCacheTag(id)],
+        signal,
+      });
+    },
+
+    // Asked for without a language, TMDB sends the pictures of every one.
+    async getImages(id, { signal } = {}) {
+      if (!isMovieId(id)) {
+        return err(
+          tmdbErrors.invalidRequest("Movie id must be a positive integer"),
+        );
+      }
+      return transport.request({
+        path: `/movie/${id}/images`,
+        schema: movieImagesSchema,
         revalidate: TMDB_REVALIDATE.movie,
         tags: [movieCacheTag(id)],
         signal,

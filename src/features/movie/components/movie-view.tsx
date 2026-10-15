@@ -1,7 +1,11 @@
 import { StickyAside } from "@/ui";
 import { Suspense, type JSX } from "react";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
-import type { Awards, MovieDetails } from "@/infrastructure/tmdb/types";
+import type {
+  Awards,
+  MovieDetails,
+  MovieImages,
+} from "@/infrastructure/tmdb/types";
 import {
   AFTER_TAGLINE,
   ASIDE_CLASS,
@@ -22,14 +26,13 @@ import {
   getCast,
   getCrew,
   getGalleryImages,
-  getPaletteImages,
+  getLogoImages,
   getPosterImages,
   getVideoTypes,
 } from "../lib/utils";
 import { MovieBackdropHero } from "./movie-artwork";
 import { MovieAwards } from "./movie-awards";
 import { MovieGallery } from "./movie-gallery";
-import { MoviePalette } from "./movie-palette";
 import { MoviePeople } from "./movie-people";
 import { MovieProjection } from "./movie-projection";
 import { MovieRecommendations } from "./movie-recommendations";
@@ -41,9 +44,11 @@ import { MovieVideos } from "./movie-videos";
 
 export function MovieView({
   awards,
+  images,
   movie,
 }: {
   awards: Promise<Awards | null>;
+  images: MovieImages;
   movie: MovieDetails;
 }): JSX.Element {
   const backdrop = tmdbImageUrl("backdrop", movie.backdropPath, "original");
@@ -126,10 +131,10 @@ export function MovieView({
                     overview: (
                       <>
                         <MoviePeople cast={cast} crew={crew} />
-                        <MoviePalette stills={getPaletteImages(movie)} />
                         <MovieGallery
-                          backdrops={getGalleryImages(movie)}
-                          posters={getPosterImages(movie)}
+                          backdrops={getGalleryImages(images)}
+                          logos={getLogoImages(images)}
+                          posters={getPosterImages(images)}
                           title={movie.title}
                         />
                         <MovieVideos

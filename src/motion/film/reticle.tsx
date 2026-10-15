@@ -14,6 +14,7 @@ import { pointerSample, watchPointer } from "./pointer";
 type Mode = "action" | "card" | "drag" | "frame" | "idle" | "none" | "text";
 
 interface Reading {
+  corner?: number;
   label: string;
   mode: Mode;
   target: HTMLElement | null;
@@ -116,14 +117,20 @@ const tune = (stiffness: number, ratio: number): Tune => ({
   damping: 2 * ratio * Math.sqrt(stiffness),
   stiffness,
 });
-const FOLLOW = tune(420, 0.8);
-const GRIP = tune(540, 0.92);
-const HUNT = tune(300, 0.5);
-const FADE = tune(320, 1);
-const PRESS = tune(560, 0.5);
-const TURN = 14;
+// The lens trails the hand by a breath and never snaps: the dot keeps the
+// exact point, so the glass can take its time.
+const FOLLOW = tune(190, 0.9);
+const GRIP = tune(360, 0.96);
+const HUNT = tune(130, 0.78);
+const FADE = tune(170, 1);
+const PRESS = tune(420, 0.62);
+const TURN = 9;
+// Below this every spring is where it is going, to the eye.
+const STILL = 0.01;
 
 const spring = (x = 0): Spring => ({ v: 0, x });
+
+const IDLE: Reading = { label: "", mode: "idle", target: null };
 
 function pull(s: Spring, to: number, dt: number, { damping, stiffness }: Tune) {
   s.v += ((to - s.x) * stiffness - s.v * damping) * dt;
@@ -170,7 +177,10 @@ function read(x: number, y: number): Reading {
     const fits = (limit: readonly [number, number]) =>
       box.width <= limit[0] && box.height <= limit[1];
     if (fits(SNAP_MAX) || fits(ROW_MAX)) {
-      return { label: "", mode: "action", target: own };
+      const corner = Number.parseFloat(
+        getComputedStyle(own).borderTopLeftRadius,
+      );
+      return { corner, label: "", mode: "action", target: own };
     }
   }
 
@@ -236,12 +246,42 @@ function Reticle() {
     let seen = { x: 0, y: 0 };
     let owed = 0;
     let raf = 0;
+    // Each style is written only when it changes, so a lens at rest, or one
+    // only gliding, costs the page no style work beyond its transform.
+    const written = new Map<string, string>();
+    const put = (
+      element: HTMLElement,
+      key: string,
+      property:
+        | "background"
+        | "borderRadius"
+        | "boxShadow"
+        | "color"
+        | "height"
+        | "opacity"
+        | "transform"
+        | "width",
+      value: string,
+    ) => {
+      if (written.get(key) === value) return;
+      written.set(key, value);
+      element.style[property] = value;
+    };
 
+    // The loop sleeps once the lens has come to rest under a still pointer,
+    // and anything that could move it wakes it.
+    const wake = () => {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
     const mark = () => {
       dirty = true;
+      wake();
     };
     const down = () => {
       pressed = true;
+      wake();
     };
     const up = () => {
       pressed = false;
@@ -275,7 +315,15 @@ function Reticle() {
       if (elapsed <= 0) return;
 
       const pointer = pointerSample();
-      if (dirty && pointer.present) resolve(now, pointer.x, pointer.y);
+      // While the page glides the pointer is over the pane that shields it, so
+      // nothing under it is read: the lens rests as a bead until it settles.
+      const scrolling = html.hasAttribute("data-scrolling");
+      if (scrolling) {
+        if (reading.mode !== "none") reading = IDLE;
+        dirty = true;
+      } else if (dirty && pointer.present) {
+        resolve(now, pointer.x, pointer.y);
+      }
 
       const px = pointer.x;
       const py = pointer.y;
@@ -297,9 +345,7 @@ function Reticle() {
 
       if (snap) {
         const box = reading.target!.getBoundingClientRect();
-        const corner = parseFloat(
-          getComputedStyle(reading.target!).borderTopLeftRadius,
-        );
+        const corner = reading.corner ?? Number.NaN;
         const mx = box.left + box.width / 2;
         const my = box.top + box.height / 2;
         const lean = (to: number, from: number) =>
@@ -338,22 +384,25 @@ function Reticle() {
       const height = Math.max(edge.b.x - edge.t.x, 0);
       const inset = 12 / Math.max(width, height, 1);
 
+      const goals: [Spring, number, Tune][] = [
+        [edge.l, cx - tw / 2, travel],
+        [edge.r, cx + tw / 2, travel],
+        [edge.t, cy - th / 2, travel],
+        [edge.b, cy + th / 2, travel],
+        [radius, tr, travel],
+        [weights.bead, mode === "idle" ? 1 : 0, FADE],
+        [weights.bracket, shape.bracket, FADE],
+        [weights.dot, shape.dot, FADE],
+        [weights.glass, shape.glass, FADE],
+        [weights.label, shape.label, FADE],
+        [weights.solid, shape.solid, FADE],
+        [weights.presence, hidden ? 0 : 1, FADE],
+        [press, pressed ? 1 - Math.min(inset, 0.14) : 1, PRESS],
+      ];
       owed += elapsed;
       while (owed >= STEP) {
         owed -= STEP;
-        pull(edge.l, cx - tw / 2, STEP, travel);
-        pull(edge.r, cx + tw / 2, STEP, travel);
-        pull(edge.t, cy - th / 2, STEP, travel);
-        pull(edge.b, cy + th / 2, STEP, travel);
-        pull(radius, tr, STEP, travel);
-        pull(weights.bead, mode === "idle" ? 1 : 0, STEP, FADE);
-        pull(weights.bracket, shape.bracket, STEP, FADE);
-        pull(weights.dot, shape.dot, STEP, FADE);
-        pull(weights.glass, shape.glass, STEP, FADE);
-        pull(weights.label, shape.label, STEP, FADE);
-        pull(weights.solid, shape.solid, STEP, FADE);
-        pull(weights.presence, hidden ? 0 : 1, STEP, FADE);
-        pull(press, pressed ? 1 - Math.min(inset, 0.14) : 1, STEP, PRESS);
+        for (const [state, to, feel] of goals) pull(state, to, STEP, feel);
       }
 
       // The bead stretches along its own motion, not the pointer's: it is the
@@ -379,23 +428,71 @@ function Reticle() {
       const ink = Math.round(255 * (1 - solid));
       const scale = Math.max(press.x, 0);
 
-      host.style.opacity = String(presence);
-      lens.style.width = `${width}px`;
-      lens.style.height = `${height}px`;
-      lens.style.borderRadius = `${Math.max(radius.x, 0)}px`;
-      lens.style.transform = `translate3d(${edge.l.x}px, ${edge.t.x}px, 0) rotate(${angle}rad) scale(${along * scale}, ${across * scale}) rotate(${-angle}rad)`;
-      lens.style.background = `rgb(255 255 255 / ${glass * 0.035 * (1 - solid) + solid * 0.94})`;
-      lens.style.boxShadow = `inset 0 0 0 1px rgb(255 255 255 / ${glass * 0.3 * (1 - solid)}), 0 0 0 1px rgb(0 0 0 / ${(glass + solid) * 0.12}), 0 8px 28px rgb(0 0 0 / ${solid * 0.22})`;
-      corners.style.opacity = String(unit(weights.bracket.x));
-      corners.style.transform = `scale(${1 + (1 - unit(weights.bracket.x)) * 0.25})`;
-      text.style.opacity = String(unit(weights.label.x));
-      text.style.color = `rgb(${ink} ${ink} ${ink})`;
-      pin.style.transform = `translate3d(${px - 2.5}px, ${py - 2.5}px, 0)`;
-      pin.style.opacity = String(unit(weights.dot.x) * presence);
+      const fine = (n: number) => n.toFixed(3);
+      put(host, "presence", "opacity", fine(presence));
+      put(lens, "width", "width", `${width.toFixed(2)}px`);
+      put(lens, "height", "height", `${height.toFixed(2)}px`);
+      put(
+        lens,
+        "radius",
+        "borderRadius",
+        `${Math.max(radius.x, 0).toFixed(2)}px`,
+      );
+      put(
+        lens,
+        "lens",
+        "transform",
+        `translate3d(${edge.l.x.toFixed(2)}px, ${edge.t.x.toFixed(2)}px, 0) rotate(${fine(angle)}rad) scale(${fine(along * scale)}, ${fine(across * scale)}) rotate(${fine(-angle)}rad)`,
+      );
+      put(
+        lens,
+        "fill",
+        "background",
+        `rgb(255 255 255 / ${fine(glass * 0.035 * (1 - solid) + solid * 0.94)})`,
+      );
+      put(
+        lens,
+        "shadow",
+        "boxShadow",
+        `inset 0 0 0 1px rgb(255 255 255 / ${fine(glass * 0.3 * (1 - solid))}), 0 0 0 1px rgb(0 0 0 / ${fine((glass + solid) * 0.12)}), 0 8px 28px rgb(0 0 0 / ${fine(solid * 0.22)})`,
+      );
+      put(corners, "brackets", "opacity", fine(unit(weights.bracket.x)));
+      put(
+        corners,
+        "spread",
+        "transform",
+        `scale(${fine(1 + (1 - unit(weights.bracket.x)) * 0.25)})`,
+      );
+      put(text, "label", "opacity", fine(unit(weights.label.x)));
+      put(text, "ink", "color", `rgb(${ink} ${ink} ${ink})`);
+      put(
+        pin,
+        "pin",
+        "transform",
+        `translate3d(${px - 2.5}px, ${py - 2.5}px, 0)`,
+      );
+      put(pin, "dot", "opacity", fine(unit(weights.dot.x) * presence));
+
+      const resting =
+        (!dirty || !pointer.present) &&
+        !scrolling &&
+        !snap &&
+        busy < 0.002 &&
+        goals.every(
+          ([state, to]) =>
+            Math.abs(state.v) < STILL && Math.abs(state.x - to) < STILL,
+        );
+      if (resting) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
     };
 
     const env = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const sync = () => html.classList.toggle("reticle", env.matches);
+    const sync = () => {
+      html.classList.toggle("reticle", env.matches);
+      wake();
+    };
     sync();
     env.addEventListener("change", sync);
 
@@ -404,7 +501,7 @@ function Reticle() {
     window.addEventListener("pointerdown", down, { passive: true });
     window.addEventListener("pointerup", up, { passive: true });
     window.addEventListener("blur", up);
-    raf = requestAnimationFrame(frame);
+    wake();
 
     return () => {
       cancelAnimationFrame(raf);

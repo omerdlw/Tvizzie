@@ -127,7 +127,7 @@ export function Title({
   return (
     <motion.h1
       aria-label={title}
-      className={className}
+      className={cn("relative", className)}
       ref={heading}
       style={{ color }}
     >

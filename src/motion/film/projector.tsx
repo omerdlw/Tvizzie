@@ -28,6 +28,10 @@ import {
 } from "./gl";
 import { pointerFromCentre, pointerSample, watchPointer } from "./pointer";
 
+// The streak is kept in eight bits: lifted into the upper half of the range so
+// its dimmest light keeps its steps finer than the grain over it.
+const STREAK_GAIN = 2.5;
+
 const FRAGMENT = `#version 300 es
 precision highp float;
 uniform sampler2D uImage;
@@ -40,6 +44,7 @@ uniform sampler2D uLevelB1;
 uniform sampler2D uLevelB2;
 uniform sampler2D uLevelB3;
 uniform sampler2D uHaloB;
+uniform sampler2D uStreak;
 uniform vec2 uCanvas;
 uniform vec2 uImageSize;
 uniform vec2 uImageSizeB;
@@ -62,6 +67,7 @@ out vec4 outColor;
 
 const float OVERSCAN = 1.07;
 const float DRAIN = 0.94;
+const float STREAK_GAIN = ${STREAK_GAIN.toFixed(1)};
 
 vec2 cover(vec2 uv, vec2 imageSize) {
   float canvasAspect = uCanvas.x / uCanvas.y;
@@ -165,16 +171,9 @@ void main() {
   color += vec3(1.0, 0.36, 0.16) * halo * uHalation * (1.0 + away * 0.9 + pool * 0.6);
 
   // Anamorphic streaks: the highlights near the cursor are drawn out sideways.
+  // The streak is the halo drawn out once when the reel is developed.
   if (pool > 0.002) {
-    vec3 streak = vec3(0.0);
-    float total = 0.0;
-    for (int i = -12; i <= 12; i++) {
-      float f = float(i) / 12.0;
-      float w = exp(-abs(f) * 3.0);
-      streak += texture(uHalo, st + vec2(f * 0.24, 0.0)).rgb * w;
-      total += w;
-    }
-    float lit = dot(streak / total, vec3(0.3333));
+    float lit = texture(uStreak, st).r / STREAK_GAIN;
     color += vec3(0.32, 0.6, 1.0) * lit * pool * pool * 7.0;
   }
 
@@ -230,6 +229,28 @@ void main() {
   outColor = vec4(c, 1.0);
 }`;
 
+// The anamorphic streak drawn out of the halo: the same 25 taps the frame
+// would take under the cursor, taken once per reel at the halo's size.
+const STREAK = `#version 300 es
+precision highp float;
+uniform sampler2D uSource;
+in vec2 vUv;
+out vec4 outColor;
+
+void main() {
+  vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+  vec3 streak = vec3(0.0);
+  float total = 0.0;
+  for (int i = -12; i <= 12; i++) {
+    float f = float(i) / 12.0;
+    float w = exp(-abs(f) * 3.0);
+    streak += texture(uSource, uv + vec2(f * 0.24, 0.0)).rgb * w;
+    total += w;
+  }
+  float lit = dot(streak / total, vec3(0.3333)) * ${STREAK_GAIN.toFixed(1)};
+  outColor = vec4(vec3(lit), 1.0);
+}`;
+
 const LEVEL_WIDTHS = [960, 320, 110] as const;
 const HALO_WIDTH = 320;
 const HALO_FROM = 0.62;
@@ -246,6 +267,7 @@ const NAMES = [
   "uLevelB2",
   "uLevelB3",
   "uHaloB",
+  "uStreak",
   "uCanvas",
   "uImageSize",
   "uImageSizeB",
@@ -305,6 +327,8 @@ const SHUTTER_MAX = 0.012;
 const MAX_TEXTURE = 2560;
 const DEVICE_CAP = 1.5;
 const FAST = 4200;
+// How long after the first frame the picture is still moving into place.
+const SETTLING_MS = 9000;
 
 const KEYWORDS: Record<string, number> = {
   bottom: 1,
@@ -328,6 +352,7 @@ interface Reel {
   levels: WebGLTexture[];
   size: [number, number];
   src: string;
+  streak: WebGLTexture;
   texture: WebGLTexture;
 }
 
@@ -391,6 +416,21 @@ function project(
   gl.bindVertexArray(mainVao);
   bindFullscreen(gl, program);
   const u = uniforms(gl, program, NAMES);
+  const samplers = [
+    u.uImage,
+    u.uLevel1,
+    u.uLevel2,
+    u.uLevel3,
+    u.uHalo,
+    u.uImageB,
+    u.uLevelB1,
+    u.uLevelB2,
+    u.uLevelB3,
+    u.uHaloB,
+    u.uStreak,
+  ];
+  samplers.forEach((location, unit) => gl.uniform1i(location, unit));
+  const specks = new Float32Array(12);
 
   let current: Reel | null = null;
   let next: Reel | null = null;
@@ -460,9 +500,24 @@ function project(
 
   const drop = (reel: Reel | null) => {
     if (!reel) return;
-    [reel.texture, ...reel.levels, reel.halo].forEach((target) =>
+    [reel.texture, ...reel.levels, reel.halo, reel.streak].forEach((target) =>
       gl.deleteTexture(target),
     );
+  };
+
+  // The lens is placed against the canvas's box. The box moves only as the
+  // page scrolls, as the window is resized, and while the opening brings the
+  // picture in, so it is read again only then; reading it on every frame forced
+  // a layout on every frame the lens was up.
+  let bounds: DOMRect | null = null;
+  let boundsAt = Number.NaN;
+  let settling = 0;
+  const measure = () => {
+    if (rack <= 0.001) return;
+    const y = scrollY.get();
+    if (bounds && y === boundsAt && performance.now() > settling) return;
+    bounds = canvas.getBoundingClientRect();
+    boundsAt = y;
   };
 
   const draw = () => {
@@ -473,21 +528,13 @@ function project(
     // Developing a reel draws into its own small targets; the frame is always
     // drawn at the canvas's size.
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.uniform1i(u.uImage, 0);
-    gl.uniform1i(u.uLevel1, 1);
-    gl.uniform1i(u.uLevel2, 2);
-    gl.uniform1i(u.uLevel3, 3);
-    gl.uniform1i(u.uHalo, 4);
-    gl.uniform1i(u.uImageB, 5);
-    gl.uniform1i(u.uLevelB1, 6);
-    gl.uniform1i(u.uLevelB2, 7);
-    gl.uniform1i(u.uLevelB3, 8);
-    gl.uniform1i(u.uHaloB, 9);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     if (!current) return;
     const incoming = next ?? current;
     bindReel(current, 0);
     bindReel(incoming, 5);
+    gl.activeTexture(gl.TEXTURE10);
+    gl.bindTexture(gl.TEXTURE_2D, current.streak);
     gl.uniform2f(u.uCanvas, canvas.width, canvas.height);
     gl.uniform2f(u.uImageSize, current.size[0], current.size[1]);
     gl.uniform2f(u.uImageSizeB, incoming.size[0], incoming.size[1]);
@@ -496,11 +543,9 @@ function project(
     gl.uniform2f(u.uWeave, weave[0], weave[1]);
     gl.uniform2f(u.uParallax, parallax[0], parallax[1]);
     if (rack > 0.001) {
-      const box = canvas.getBoundingClientRect();
-      poolAt = [
-        (lens.x - box.left) / box.width,
-        (lens.y - box.top) / box.height,
-      ];
+      const { height, left, top, width } =
+        bounds ?? canvas.getBoundingClientRect();
+      poolAt = [(lens.x - left) / width, (lens.y - top) / height];
     }
     gl.uniform2f(u.uPool, poolAt[0], poolAt[1]);
     gl.uniform2f(u.uMotion, shutter[0], shutter[1]);
@@ -510,7 +555,7 @@ function project(
     gl.uniform1f(u.uHalation, halation);
     gl.uniform1f(u.uFlicker, flicker);
     gl.uniform1f(u.uGrain, GRAIN);
-    const specks = new Float32Array(12);
+    specks.fill(0);
     dust.forEach((speck, index) =>
       specks.set([speck.x, speck.y, speck.size, speck.strength], index * 4),
     );
@@ -638,9 +683,12 @@ function project(
     const should = ready && visible && !document.hidden;
     if (should && !running) {
       running = true;
+      frame.read(measure, true);
       frame.render(step, true);
     } else if (!should && running) {
       running = false;
+      bounds = null;
+      cancelFrame(measure);
       cancelFrame(step);
     }
   };
@@ -720,6 +768,32 @@ function project(
       return c;
     };
 
+    const drawOut = (from: WebGLTexture): WebGLTexture | null => {
+      const width = Math.min(HALO_WIDTH, size[0]);
+      const height = Math.max(1, Math.round((width * size[1]) / size[0]));
+      const streak = createProgram(gl, STREAK);
+      if (!streak) return null;
+      const target = empty(width, height);
+      const strip = gl.createVertexArray();
+      gl.bindVertexArray(strip);
+      gl.useProgram(streak);
+      bindFullscreen(gl, streak);
+      gl.uniform1i(gl.getUniformLocation(streak, "uSource"), 0);
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D,
+        target,
+        0,
+      );
+      gl.viewport(0, 0, width, height);
+      gl.bindTexture(gl.TEXTURE_2D, from);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.deleteProgram(streak);
+      gl.deleteVertexArray(strip);
+      return target;
+    };
+
     const levels: WebGLTexture[] = [];
     let from = texture;
     for (const width of LEVEL_WIDTHS) {
@@ -728,15 +802,21 @@ function project(
     }
     const halo = soften(levels[0], Math.min(HALO_WIDTH, size[0]), HALO_FROM);
 
+    const streak = drawOut(halo);
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.deleteFramebuffer(framebuffer);
     gl.bindVertexArray(mainVao);
     gl.useProgram(program);
     gl.deleteProgram(blur);
     gl.deleteVertexArray(vao);
-    const kept = new Set([...levels, halo]);
+    if (!streak) {
+      for (const target of made) gl.deleteTexture(target);
+      return null;
+    }
+    const kept = new Set([...levels, halo, streak]);
     for (const target of made) if (!kept.has(target)) gl.deleteTexture(target);
-    return { halo, levels };
+    return { halo, levels, streak };
   };
 
   const develop = async (image: HTMLImageElement, name: string) => {
@@ -791,6 +871,7 @@ function project(
     current = reel;
     resized = true;
     ready = true;
+    settling = performance.now() + SETTLING_MS;
     defocus = reduced ? 0 : (defocusAt.current?.(scrollY.get()) ?? 0);
     draw();
     onLive(true);
@@ -835,6 +916,7 @@ function project(
   sight.observe(canvas);
   const box = new ResizeObserver(() => {
     resized = true;
+    bounds = null;
     if (ready && !running) draw();
   });
   box.observe(canvas);

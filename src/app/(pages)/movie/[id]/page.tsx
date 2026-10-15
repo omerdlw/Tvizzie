@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MoviePageChrome, MovieView, parseMovieId } from "@/features/movie";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
-import { getMovieAwards, getMovieDetails } from "@/infrastructure/tmdb/server";
+import {
+  getMovieAwards,
+  getMovieDetails,
+  getMovieImages,
+} from "@/infrastructure/tmdb/server";
 import { project } from "@config/project";
 
 export interface MoviePageProps {
@@ -57,7 +61,10 @@ export default async function MoviePage({
   const id = parseMovieId((await params).id);
   if (id === null) notFound();
 
-  const result = await getMovieDetails(id);
+  const [result, pictures] = await Promise.all([
+    getMovieDetails(id),
+    getMovieImages(id),
+  ]);
   if (!result.success) {
     if (result.error.kind === "not_found") notFound();
     throw new Error(`Movie ${id} is unavailable (${result.error.kind})`);
@@ -70,7 +77,11 @@ export default async function MoviePage({
   return (
     <>
       <MoviePageChrome movie={result.data} />
-      <MovieView awards={awards} movie={result.data} />
+      <MovieView
+        awards={awards}
+        images={pictures.success ? pictures.data : result.data.images}
+        movie={result.data}
+      />
     </>
   );
 }

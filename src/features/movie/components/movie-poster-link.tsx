@@ -15,20 +15,24 @@ interface MoviePosterLinkProps {
   };
   caption?: boolean;
   detail?: string | null;
+  carried?: boolean;
   onNavigated?: () => void;
-  original?: boolean;
   overlay?: ReactNode;
   sizes?: string;
 }
 
 const POSTER_WIDTHS = ["w185", "w342"] as const;
+// A card that flies to the film's page lands on its poster: it is drawn at
+// the poster's own size, so the flight is sharp and the landing is a picture
+// already decoded, without the cost of the full-size original.
+const CARRIED = "w780";
 
 export function MoviePosterLink({
   caption = true,
+  carried = false,
   detail = null,
   movie,
   onNavigated,
-  original = false,
   overlay,
   sizes = "110px",
 }: MoviePosterLinkProps) {
@@ -61,8 +65,8 @@ export function MoviePosterLink({
       href={movieHref(movie.id)}
       image={{
         sizes,
-        src: tmdbImageUrl("poster", posterPath, original ? "original" : "w342"),
-        srcSet: original
+        src: tmdbImageUrl("poster", posterPath, carried ? CARRIED : "w342"),
+        srcSet: carried
           ? undefined
           : (tmdbImageSrcSet("poster", posterPath, POSTER_WIDTHS) ?? undefined),
       }}

@@ -1,7 +1,10 @@
-import type { MovieDetails } from "@/infrastructure/tmdb/types";
+import type {
+  MovieDetails,
+  MovieImage,
+  MovieImages,
+} from "@/infrastructure/tmdb/types";
 import {
   MOVIE_CERTIFICATION_REGION,
-  MOVIE_GALLERY_LIMIT,
   MOVIE_RECOMMENDATION_LIMIT,
   MOVIE_TAG_LIMIT,
   MOVIE_TAG_MAX_LENGTH,
@@ -148,29 +151,23 @@ export function getTags(movie: MovieDetails, limit = MOVIE_TAG_LIMIT) {
     .slice(0, limit);
 }
 
-export function getGalleryImages(
-  movie: MovieDetails,
-  limit = MOVIE_GALLERY_LIMIT,
-) {
-  return movie.images.backdrops
-    .filter((image) => !image.language)
-    .sort((a, b) => b.voteAverage - a.voteAverage || b.voteCount - a.voteCount)
-    .slice(0, limit);
+const byVotes = (a: MovieImage, b: MovieImage) =>
+  b.voteAverage - a.voteAverage || b.voteCount - a.voteCount;
+
+// The gallery keeps every picture TMDB has. Stills without lettering lead, as
+// the film's own frames; those carrying a title in some language follow.
+export function getGalleryImages(images: MovieImages) {
+  const clean = images.backdrops.filter((image) => !image.language);
+  const lettered = images.backdrops.filter((image) => image.language);
+  return [...clean.sort(byVotes), ...lettered.sort(byVotes)];
 }
 
-export function getPaletteImages(movie: MovieDetails, limit = 36) {
-  return movie.images.backdrops
-    .filter((image) => !image.language)
-    .slice(0, limit);
+export function getPosterImages(images: MovieImages) {
+  return [...images.posters].sort(byVotes);
 }
 
-export function getPosterImages(
-  movie: MovieDetails,
-  limit = MOVIE_GALLERY_LIMIT,
-) {
-  return [...movie.images.posters]
-    .sort((a, b) => b.voteAverage - a.voteAverage || b.voteCount - a.voteCount)
-    .slice(0, limit);
+export function getLogoImages(images: MovieImages) {
+  return [...images.logos].sort(byVotes);
 }
 
 export function getVideoTypes(movie: MovieDetails): string[] {
