@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useModal } from "@omerdlw/base-framework/modules/modal";
 import { artworkTarget } from "@/features/artwork";
 import { MediaCard, SegmentedControl } from "@/ui";
@@ -8,7 +8,7 @@ import type { MediaCardAspect } from "@/ui";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieImage } from "@/infrastructure/tmdb/types";
 import { GALLERY_BACKDROP_ITEM, POSTER_ROW_ITEM } from "../lib/layout";
-import { Carousel, Header, Section, Swap } from "../stage";
+import { Carousel, Header, Section, Swap, useRoom } from "../stage";
 import { ImageModal, type ImageModalData } from "./movie-modals";
 
 type Tab = "backdrops" | "posters";
@@ -42,6 +42,8 @@ const TABS: Record<
   },
 };
 
+const kind = (tab: Tab) => (tab === "backdrops" ? "backdrop" : "poster");
+
 export function MovieGallery({
   backdrops,
   posters,
@@ -52,6 +54,8 @@ export function MovieGallery({
   title: string;
 }) {
   const [openImage] = useModal(ImageModal);
+  const { setLead } = useRoom();
+  useEffect(() => () => setLead(null), [setLead]);
   const available = (
     [
       ["backdrops", backdrops],
@@ -84,38 +88,49 @@ export function MovieGallery({
         icon="solar:gallery-wide-bold"
         title="Gallery"
       />
+      {/* Lingering over a still lets its light into the room. */}
       <Swap id={key}>
-        <Carousel
-          itemClassName={
-            key === "backdrops" && images.length === 1 ? "w-full" : view.item
-          }
-          label={view.label}
+        <div
+          onPointerLeave={() => setLead(null)}
+          onPointerOver={(event) => {
+            if (event.pointerType !== "mouse") return;
+            const card = (event.target as Element).closest("[data-still]");
+            const still = card?.getAttribute("data-still");
+            setLead(still ? tmdbImageUrl(kind(key), still, "w300") : null);
+          }}
         >
-          {images.map((image, index) => {
-            const kind = key === "backdrops" ? "backdrop" : "poster";
-            const full = tmdbImageUrl(kind, image.filePath, "original");
-            return (
-              <MediaCard
-                key={image.filePath}
-                {...artworkTarget(view.slot, image.filePath)}
-                aspect={view.aspect}
-                image={{
-                  sizes: view.sizes,
-                  src: full,
-                }}
-                label={`View ${view.noun} ${index + 1} of ${title}`}
-                onClick={() => {
-                  if (!full) return;
-                  const data: ImageModalData = {
-                    alt: `${view.noun[0].toUpperCase()}${view.noun.slice(1)} ${index + 1} of ${title}`,
+          <Carousel
+            itemClassName={
+              key === "backdrops" && images.length === 1 ? "w-full" : view.item
+            }
+            label={view.label}
+          >
+            {images.map((image, index) => {
+              const full = tmdbImageUrl(kind(key), image.filePath, "original");
+              return (
+                <MediaCard
+                  key={image.filePath}
+                  {...artworkTarget(view.slot, image.filePath)}
+                  aspect={view.aspect}
+                  data-still={image.filePath}
+                  image={{
+                    sizes: view.sizes,
                     src: full,
-                  };
-                  void openImage(data as unknown as Record<string, unknown>);
-                }}
-              />
-            );
-          })}
-        </Carousel>
+                  }}
+                  label={`View ${view.noun} ${index + 1} of ${title}`}
+                  onClick={() => {
+                    if (!full) return;
+                    const data: ImageModalData = {
+                      alt: `${view.noun[0].toUpperCase()}${view.noun.slice(1)} ${index + 1} of ${title}`,
+                      src: full,
+                    };
+                    void openImage(data as unknown as Record<string, unknown>);
+                  }}
+                />
+              );
+            })}
+          </Carousel>
+        </div>
       </Swap>
     </Section>
   );

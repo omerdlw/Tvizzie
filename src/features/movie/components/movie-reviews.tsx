@@ -17,7 +17,7 @@ import {
 import { Avatar, Icon } from "@/ui";
 import { SCENE } from "../lib/motion";
 import { Cascade, Header, Item, Section } from "../stage";
-import { EASE } from "../lib/tempo";
+import { EASE } from "@/motion/stage";
 
 const DATE = new Intl.DateTimeFormat("en-US", {
   day: "numeric",

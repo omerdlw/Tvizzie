@@ -2,13 +2,20 @@
 
 import { motion, useTransform } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
-import { SCENE, sinceBase } from "../lib/motion";
-import { size } from "../lib/tempo";
+import { sinceBase } from "./grammar";
+import { size } from "./tempo";
 import { useExit, useProgress } from "./clock";
 
-export function Hairline({ className }: { className?: string }) {
-  const { rule } = SCENE;
-  const entered = useProgress(sinceBase(rule.at), rule.run);
+export function Hairline({
+  at,
+  className,
+  run,
+}: {
+  at: number;
+  className?: string;
+  run: number;
+}) {
+  const entered = useProgress(sinceBase(at), run);
   const left = useExit(0);
   const scaleX = useTransform(
     [entered, left],
@@ -17,7 +24,10 @@ export function Hairline({ className }: { className?: string }) {
   return (
     <motion.div
       aria-hidden="true"
-      className={cn("h-px w-full origin-left bg-white/25", className)}
+      className={cn(
+        "h-px w-full origin-left bg-[rgb(var(--grade)/0.4)]",
+        className,
+      )}
       style={{ opacity: scaleX, scaleX }}
     />
   );

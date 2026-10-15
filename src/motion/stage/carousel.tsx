@@ -20,8 +20,8 @@ import {
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { Button, Icon } from "@/ui";
-import { SCENE } from "../lib/motion";
-import { EASE, LANDED, settle, size } from "../lib/tempo";
+import { GRAMMAR } from "./grammar";
+import { EASE, LANDED, settle, size } from "./tempo";
 import { LeadContext, useSection } from "./cue";
 
 const EDGE_TOLERANCE = 4;
@@ -112,7 +112,7 @@ function Slide({
 }) {
   const stage = use(SlideContext);
   const reduced = useReducedMotion();
-  const slide = SCENE.slides;
+  const slide = GRAMMAR.slides;
   const delay = stage?.delays[index];
   const shown = delay !== undefined;
   const instant = { duration: 0 };
@@ -205,7 +205,7 @@ export function Carousel({
   label,
 }: CarouselProps) {
   const reduced = useReducedMotion();
-  const slide = SCENE.slides;
+  const slide = GRAMMAR.slides;
   const rowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const slides = useRef<(HTMLElement | null)[]>([]);
@@ -266,7 +266,7 @@ export function Carousel({
         const next = { ...previous };
         ordered.forEach((index, order) => {
           next[index] ??=
-            lead + settle(order, ordered.length, run, SCENE.items.bend);
+            lead + settle(order, ordered.length, run, GRAMMAR.items.bend);
         });
         return next;
       });
@@ -301,7 +301,7 @@ export function Carousel({
     if (!element) return;
     if (section) {
       if (sectionShown) {
-        openRow(Math.max(section.after(SCENE.section.lead), swapLead));
+        openRow(Math.max(section.after(GRAMMAR.section.lead), swapLead));
       }
       return;
     }
@@ -334,7 +334,7 @@ export function Carousel({
         const held = sectionRef.current;
         const lead = opening.current
           ? Math.max(
-              held?.opened ? held.after(SCENE.section.lead) : 0,
+              held?.opened ? held.after(GRAMMAR.section.lead) : 0,
               swapLead,
             )
           : 0;
@@ -363,9 +363,9 @@ export function Carousel({
         if (seen.current === 0) return;
         report(
           spanKey,
-          SCENE.section.lead +
+          GRAMMAR.section.lead +
             (seen.current - 1) * slide.gap +
-            SCENE.section.tail,
+            GRAMMAR.section.tail,
         );
       },
       { root: track, threshold: SLIDE_THRESHOLD },
@@ -416,6 +416,7 @@ export function Carousel({
           "flex cursor-grab touch-pan-y gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-[20px] select-none data-[dragging=true]:cursor-grabbing",
           className,
         )}
+        data-cursor="drag"
         onDragStart={(event) => event.preventDefault()}
         onPointerDown={stopGlide}
         onScroll={sync}

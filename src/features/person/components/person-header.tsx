@@ -12,7 +12,7 @@ import {
   nameClass,
 } from "../lib/layout";
 import { SCENE, linksGap } from "../lib/motion";
-import { size } from "../lib/tempo";
+import { size } from "@/motion/stage";
 import {
   Expose,
   Fade,
@@ -47,7 +47,7 @@ function Rule({
           </Expose>
         </span>
       ) : null}
-      <Hairline className="w-auto min-w-6 flex-1" />
+      <Hairline className="w-auto min-w-6 flex-1" {...SCENE.rule} />
       {links.length > 0 ? <Links links={links} name={name} /> : null}
     </Layer>
   );

@@ -2,12 +2,14 @@
 
 import { useArtworkPath } from "@/features/artwork";
 import { Flowing } from "@/motion/flow";
-import { Intermission } from "@/motion/film";
+import { Intermission, readable } from "@/motion/film";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieDetails } from "@/infrastructure/tmdb/types";
 import { SCENE } from "../lib/motion";
-import { EASE } from "../lib/tempo";
+import { EASE } from "@/motion/stage";
 import { useLeaving } from "../stage";
+
+const pictureOf = (src: string | null) => (src ? readable(src) : null);
 
 export function MovieProjection({
   movie,
@@ -29,7 +31,7 @@ export function MovieProjection({
       <Intermission
         {...intermission}
         ease={EASE.silk}
-        image={tmdbImageUrl("backdrop", path, "original")}
+        image={pictureOf(tmdbImageUrl("backdrop", path, "original"))}
         paused={leaving}
         title={movie.title}
       />

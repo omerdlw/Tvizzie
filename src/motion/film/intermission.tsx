@@ -19,6 +19,10 @@ const dialogOpen = () =>
   getComputedStyle(document.body).overflowY === "hidden" ||
   getComputedStyle(document.documentElement).overflowY === "hidden";
 
+// Someone still down the page is reading, not resting: the interval is only
+// called while the picture itself is in view.
+const readingBelow = () => window.scrollY > window.innerHeight * 0.5;
+
 export function Intermission({
   after,
   drift,
@@ -41,7 +45,25 @@ export function Intermission({
   title: string;
 }) {
   const [resting, setResting] = useState(false);
+  const [loaded, setLoaded] = useState<string | null>(null);
   const reduced = useReducedMotion();
+
+  // The curtain only ever shows a picture that is already here.
+  useEffect(() => {
+    if (!image) return;
+    let live = true;
+    const picture = new Image();
+    picture.crossOrigin = "anonymous";
+    picture.decoding = "async";
+    picture.onload = () => {
+      if (live) setLoaded(image);
+    };
+    picture.src = image;
+    return () => {
+      live = false;
+      picture.onload = null;
+    };
+  }, [image]);
 
   useEffect(() => {
     if (paused) return;
@@ -49,7 +71,14 @@ export function Intermission({
     const arm = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (document.hidden || houseIsDown() || dialogOpen()) return arm();
+        if (
+          document.hidden ||
+          houseIsDown() ||
+          dialogOpen() ||
+          readingBelow()
+        ) {
+          return arm();
+        }
         setResting(true);
       }, after * 1000);
     };
@@ -69,7 +98,7 @@ export function Intermission({
     };
   }, [after, paused]);
 
-  const shown = resting && !paused && Boolean(image);
+  const shown = resting && !paused && image !== null && loaded === image;
   const curve = [ease[0], ease[1], ease[2], ease[3]] as [
     number,
     number,

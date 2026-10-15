@@ -2,11 +2,11 @@
 
 import { useArtworkPath } from "@/features/artwork";
 import { Flowing } from "@/motion/flow";
-import { Intermission } from "@/motion/film";
+import { Intermission, readable } from "@/motion/film";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { PersonDetails } from "@/infrastructure/tmdb/types";
 import { SCENE } from "../lib/motion";
-import { EASE } from "../lib/tempo";
+import { EASE } from "@/motion/stage";
 import { useLeaving } from "../stage";
 
 export function PersonProjection({
@@ -25,9 +25,10 @@ export function PersonProjection({
     "poster",
     person.profilePath,
   );
-  const image =
-    tmdbImageUrl("backdrop", path, "original") ??
-    tmdbImageUrl("profile", photo, "original");
+  const picture = tmdbImageUrl("backdrop", path, "original");
+  const image = picture
+    ? readable(picture)
+    : tmdbImageUrl("profile", photo, "original");
 
   return (
     <>

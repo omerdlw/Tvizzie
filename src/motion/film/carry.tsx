@@ -143,6 +143,14 @@ function onClick(event: MouseEvent) {
   };
 }
 
+// The picture that was clicked to go there: the next scene, before it is cut to.
+export function sceneFor(to: string): string | null {
+  const pick = picked;
+  return pick && pick.path === pathOf(to) && Date.now() - pick.at <= PICK_FRESH
+    ? pick.src
+    : null;
+}
+
 export function liftCarry(to: string, run: number): boolean {
   const pick = picked;
   picked = null;

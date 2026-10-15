@@ -162,7 +162,6 @@ export function MovieSidebar({
   const revenue = formatMoney(movie.revenue);
   const tags = getTags(movie);
   const genres = movie.genres.map((genre) => genre.name);
-  const hasProviders = Object.keys(movie.watchProviders).length > 0;
 
   const facts: Fact[] = [];
   if (genres.length > 0) {
@@ -245,11 +244,7 @@ export function MovieSidebar({
     <Sequence className={SIDEBAR_CLASS}>
       <div className="flex min-w-0 flex-col gap-3" data-exit="">
         <MoviePoster awards={awards} movie={movie} />
-        <MovieCollectionActions
-          hasProviders={hasProviders}
-          movieId={movie.id}
-          title={movie.title}
-        >
+        <MovieCollectionActions movieId={movie.id} title={movie.title}>
           <Suspense fallback={null}>
             <MovieAwardsAction awards={awards} order={4} />
           </Suspense>

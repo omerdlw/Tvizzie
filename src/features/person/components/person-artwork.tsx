@@ -9,8 +9,7 @@ import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { Awards, PersonDetails } from "@/infrastructure/tmdb/types";
 import { PERSON_FALLBACK_ICON } from "../lib/constants";
 import { SCENE } from "../lib/motion";
-import { Backdrop, Grade, Portrait } from "../stage";
-import { ease, unit } from "../stage/clock";
+import { Ambient, Backdrop, Grade, Portrait, ease, unit } from "../stage";
 
 type Light = Parameters<
   NonNullable<Parameters<typeof Portrait>[0]["light"]>
@@ -84,21 +83,25 @@ export function PersonBackdropHero({
 }) {
   const path = useArtworkPath("person", person.id, "backdrop", fallback);
   const image = tmdbImageUrl("backdrop", path, "original");
+  const room = tmdbImageUrl("backdrop", path, "w300");
   return image ? (
-    <Backdrop>
-      {(reveal) => (
-        <>
-          <Grade source={tmdbImageUrl("backdrop", path, "w300")} />
-          <Projection
-            defocusAt={defocusAt}
-            halation={SCENE.film.halation}
-            onReady={reveal}
-            position="center 20%"
-            src={image}
-          />
-        </>
-      )}
-    </Backdrop>
+    <>
+      {room ? <Ambient source={room} /> : null}
+      <Backdrop>
+        {(reveal) => (
+          <>
+            <Grade source={room} />
+            <Projection
+              defocusAt={defocusAt}
+              halation={SCENE.film.halation}
+              onReady={reveal}
+              position="center 20%"
+              src={image}
+            />
+          </>
+        )}
+      </Backdrop>
+    </>
   ) : null;
 }
 
@@ -113,5 +116,13 @@ export function PersonPhotoGrade({
     "poster",
     person.profilePath,
   );
-  return <Grade source={tmdbImageUrl("profile", path, "w185")} />;
+  // Without a backdrop the room is lit by the photo itself; the room light is
+  // drawn from a w300 thumbnail of whatever it is given.
+  const photo = tmdbImageUrl("profile", path, "w185");
+  return (
+    <>
+      {photo ? <Ambient source={photo} /> : null}
+      <Grade source={photo} />
+    </>
+  );
 }

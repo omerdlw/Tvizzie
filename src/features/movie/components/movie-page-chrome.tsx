@@ -28,7 +28,9 @@ export function MoviePageChrome({ movie }: { movie: MovieDetails }): null {
     movie.backdropPath,
   );
   const poster = tmdbImageUrl("poster", posterPath, "original");
-  const backdrop = tmdbImageUrl("backdrop", backdropPath, "original");
+  const swatch =
+    tmdbImageUrl("backdrop", backdropPath, "w300") ??
+    tmdbImageUrl("poster", posterPath, "w185");
 
   useArtworkContextMenu({
     defaults: { backdrop: movie.backdropPath, poster: movie.posterPath },
@@ -72,7 +74,7 @@ export function MoviePageChrome({ movie }: { movie: MovieDetails }): null {
     },
   });
   const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
-  useAmbientTheme({ image: backdrop ?? poster, initialPalette: inherited });
+  useAmbientTheme({ image: swatch, initialPalette: inherited });
 
   return null;
 }

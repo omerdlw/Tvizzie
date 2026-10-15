@@ -24,7 +24,7 @@ import {
 import { layoutTop, useHeldHeight } from "@/motion/flow";
 import { useScrollY } from "@/motion/scroll";
 import { Icon } from "@/ui";
-import { SCENE } from "../lib/motion";
+import { GRAMMAR } from "./grammar";
 import {
   DIM,
   EASE,
@@ -33,7 +33,7 @@ import {
   exposure,
   settle,
   type ItemKind,
-} from "../lib/tempo";
+} from "./tempo";
 import { ClockContext } from "./clock";
 import {
   GroupContext,
@@ -129,7 +129,7 @@ function useSectionClock(opened: { at: number; delay: number } | null) {
   const reduced = useReducedMotion();
   useEffect(() => {
     if (!opened) return;
-    const { at, run } = SCENE.section.name;
+    const { at, run } = GRAMMAR.section.name;
     const end = at + run;
     if (reduced) {
       time.set(end);
@@ -172,7 +172,7 @@ function Part({
   run: number;
 }) {
   const { delay, ref, shown } = useCue<HTMLDivElement>({ step: at });
-  const { y } = SCENE.section;
+  const { y } = GRAMMAR.section;
   return (
     <motion.div
       animate={
@@ -198,13 +198,13 @@ function Part({
 }
 
 function Rule() {
-  const { at, run } = SCENE.section.rule;
+  const { at, run } = GRAMMAR.section.rule;
   const { delay, ref, shown } = useCue<HTMLDivElement>({ step: at });
   return (
     <motion.div
       animate={shown ? { opacity: 1, scaleX: 1 } : undefined}
       aria-hidden="true"
-      className="h-px min-w-6 flex-1 origin-left bg-white/10"
+      className="h-px min-w-6 flex-1 origin-left bg-[rgb(var(--grade)/0.2)]"
       initial={{ opacity: 0, scaleX: 0 }}
       ref={ref}
       transition={{ delay, duration: run, ease: EASE.expo }}
@@ -220,7 +220,7 @@ export function Trace({
   className?: string;
 }) {
   const { delay, ref, shown } = useCue<HTMLDivElement>({
-    step: SCENE.section.lead,
+    step: GRAMMAR.section.lead,
   });
   const from = axis === "x" ? { scaleX: 0 } : axis === "y" ? { scaleY: 0 } : {};
   const to = axis === "x" ? { scaleX: 1 } : axis === "y" ? { scaleY: 1 } : {};
@@ -233,7 +233,7 @@ export function Trace({
       ref={ref}
       transition={{
         delay,
-        duration: SCENE.section.rule.run,
+        duration: GRAMMAR.section.rule.run,
         ease: EASE.expo,
       }}
     />
@@ -250,7 +250,7 @@ function Bar({
   const section = useSection();
   const reduced = useReducedMotion();
   const idle = useMotionValue(0);
-  const { drift } = SCENE.scrub;
+  const { drift } = GRAMMAR.scrub;
   const y = useTransform(section?.through ?? idle, [0, 1], [drift, -drift]);
   return (
     <motion.div
@@ -267,7 +267,7 @@ function Name({ children }: { children: string }) {
   const section = useSection();
   const reduced = useReducedMotion();
   const idle = useMotionValue(1);
-  const { name } = SCENE.section;
+  const { name } = GRAMMAR.section;
   const ink = useTransform(
     section?.enter ?? idle,
     [0, 1],
@@ -295,16 +295,20 @@ export function Header({
   icon: string;
   title: string;
 }) {
-  const { actions: tabs, name, rule } = SCENE.section;
+  const { actions: tabs, name, rule } = GRAMMAR.section;
   useSpan(
-    SCENE.section.tail + Math.max(name.at, rule.at, actions ? tabs.at : 0),
+    GRAMMAR.section.tail + Math.max(name.at, rule.at, actions ? tabs.at : 0),
   );
   return (
-    <div className="mb-4" data-exit="lead">
+    <div className="relative z-10 mb-4" data-exit="lead">
       <Bar className="flex min-h-8 w-full items-center gap-4">
         <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <Part at={name.at} className="flex shrink-0" run={name.run}>
-            <Icon className="text-white/70" icon={icon} size={18} />
+            <Icon
+              className="text-[rgb(var(--grade)/0.85)]"
+              icon={icon}
+              size={18}
+            />
           </Part>
           <Name>{title}</Name>
         </div>
@@ -320,14 +324,14 @@ export function Header({
 }
 
 export function Beat({
-  at = SCENE.section.lead,
+  at = GRAMMAR.section.lead,
   children,
 }: {
   at?: number;
   children: ReactNode;
 }) {
-  const { run } = SCENE.section.actions;
-  useSpan(SCENE.section.tail + at);
+  const { run } = GRAMMAR.section.actions;
+  useSpan(GRAMMAR.section.tail + at);
   return (
     <Part at={at} exit flow run={run}>
       {children}
@@ -343,14 +347,14 @@ const group = (gap: number): Variants => ({
   exit: {
     filter: exposure(DIM),
     opacity: 0,
-    transition: { duration: SCENE.swap.leave, ease: EASE.glide },
+    transition: { duration: GRAMMAR.swap.leave, ease: EASE.glide },
     y: -14,
   },
   hidden: {},
   visible: (lead: number = 0) => ({
     transition: {
       delayChildren: (index: number, count: number) =>
-        lead + settle(index, count, (count - 1) * gap, SCENE.items.bend),
+        lead + settle(index, count, (count - 1) * gap, GRAMMAR.items.bend),
     },
   }),
 });
@@ -360,19 +364,22 @@ export function Cascade({
   children,
   className,
   exit = false,
-  gap = SCENE.items.gap,
+  free = false,
+  gap = GRAMMAR.items.gap,
   lead = 0,
 }: {
   as?: keyof typeof TAGS;
   children: ReactNode;
   className?: string;
   exit?: boolean;
+  free?: boolean;
   gap?: number;
   lead?: number;
 }) {
-  const section = useSection();
+  const inside = useSection();
+  const section = free ? null : inside;
   const { delay, ref, shown } = useCue<HTMLDivElement>({
-    step: section ? SCENE.section.lead : undefined,
+    step: section ? GRAMMAR.section.lead : undefined,
   });
   const variants = useMemo(() => group(gap), [gap]);
   const Component = TAGS[as] as typeof motion.div;
@@ -385,7 +392,7 @@ export function Cascade({
     publish.current = () => {
       if (!report || items.current === 0) return report?.(key, null);
       const last = (items.current - 1) * gap;
-      report(key, SCENE.section.lead + lead + last + SCENE.section.tail);
+      report(key, GRAMMAR.section.lead + lead + last + GRAMMAR.section.tail);
     };
     publish.current();
     return () => report?.(key, null);
@@ -452,7 +459,7 @@ export function Swap({
 }) {
   const [seen, setSeen] = useState({ id, swapped: false });
   if (seen.id !== id) setSeen({ id, swapped: true });
-  const lead = seen.swapped ? SCENE.swap.lead : 0;
+  const lead = seen.swapped ? GRAMMAR.swap.lead : 0;
   const box = useHeldHeight(id);
   return (
     <LeadContext value={lead}>

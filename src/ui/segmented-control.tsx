@@ -61,6 +61,7 @@ export function SegmentedControl<K extends string>({
               <motion.span
                 aria-hidden="true"
                 className="absolute inset-0 rounded-[10px] bg-white/10 shadow-sm"
+                data-pill=""
                 layoutId={pill}
                 transition={
                   reduced

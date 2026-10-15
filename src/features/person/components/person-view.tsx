@@ -9,6 +9,7 @@ import {
   PAGE_CLASS,
   pageBodyClass,
 } from "../lib/layout";
+import { SCENE } from "../lib/motion";
 import { Body, Stage } from "../stage";
 import {
   departmentRole,
@@ -49,7 +50,11 @@ export function PersonView({
   const films = career?.years.reduce((sum, year) => sum + year.count, 0) ?? 0;
 
   return (
-    <Stage className={PAGE_CLASS} picture={Boolean(backdrop)}>
+    <Stage
+      className={PAGE_CLASS}
+      opening={SCENE.opening}
+      picture={Boolean(backdrop)}
+    >
       <PersonProjection backdrop={backdropPath} person={person} />
       <div className={CONTAINER_CLASS}>
         {backdrop ? (

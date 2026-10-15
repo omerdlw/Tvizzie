@@ -20,6 +20,7 @@ import { BACKDROP_HERO_MASK } from "../../ui/backdrop-hero";
 import { primitivesTheme } from "../../ui/theme";
 import { useScrollY } from "../scroll";
 import {
+  BURN,
   bindFullscreen,
   createProgram,
   fitCanvas,
@@ -35,8 +36,17 @@ uniform sampler2D uLevel1;
 uniform sampler2D uLevel2;
 uniform sampler2D uLevel3;
 uniform sampler2D uHalo;
+uniform sampler2D uImageB;
+uniform sampler2D uLevelB1;
+uniform sampler2D uLevelB2;
+uniform sampler2D uLevelB3;
+uniform sampler2D uHaloB;
 uniform vec2 uCanvas;
 uniform vec2 uImageSize;
+uniform vec2 uImageSizeB;
+uniform float uCut;
+uniform vec2 uBurnFrom;
+uniform float uSeed;
 uniform vec2 uFocus;
 uniform vec2 uWeave;
 uniform vec2 uParallax;
@@ -56,9 +66,11 @@ out vec4 outColor;
 const float OVERSCAN = 1.07;
 const float DRAIN = 0.94;
 
-vec2 cover(vec2 uv) {
+${BURN}
+
+vec2 cover(vec2 uv, vec2 imageSize) {
   float canvasAspect = uCanvas.x / uCanvas.y;
-  float imageAspect = uImageSize.x / uImageSize.y;
+  float imageAspect = imageSize.x / imageSize.y;
   vec2 visible = canvasAspect > imageAspect
     ? vec2(1.0, imageAspect / canvasAspect)
     : vec2(canvasAspect / imageAspect, 1.0);
@@ -82,12 +94,23 @@ vec3 look(sampler2D source, vec2 st) {
   return textureGrad(source, st, slopeX, slopeY).rgb;
 }
 
-vec3 pic(vec2 st, float defocus) {
+vec3 reel(
+  sampler2D image,
+  sampler2D level1,
+  sampler2D level2,
+  sampler2D level3,
+  vec2 st,
+  float defocus
+) {
   float p = defocus * 3.0;
-  if (p < 0.002) return look(uImage, st);
-  if (p < 1.0) return mix(look(uImage, st), look(uLevel1, st), p);
-  if (p < 2.0) return mix(look(uLevel1, st), look(uLevel2, st), p - 1.0);
-  return mix(look(uLevel2, st), look(uLevel3, st), min(p - 2.0, 1.0));
+  if (p < 0.002) return look(image, st);
+  if (p < 1.0) return mix(look(image, st), look(level1, st), p);
+  if (p < 2.0) return mix(look(level1, st), look(level2, st), p - 1.0);
+  return mix(look(level2, st), look(level3, st), min(p - 2.0, 1.0));
+}
+
+vec3 pic(vec2 st, float defocus) {
+  return reel(uImage, uLevel1, uLevel2, uLevel3, st, defocus);
 }
 
 void main() {
@@ -100,7 +123,8 @@ void main() {
   uv = centred + 0.5;
   float depth = mix(0.35, 1.0, vUv.y);
   uv -= uParallax * depth * vec2(0.02, 0.012);
-  vec2 st = cover(uv);
+  vec2 st = cover(uv, uImageSize);
+  vec2 stB = cover(uv, uImageSizeB);
   slopeX = dFdx(st);
   slopeY = dFdy(st);
 
@@ -135,6 +159,16 @@ void main() {
   // Light from the brightest parts, blurred once into its own picture; it
   // swells out of focus and where the cursor rests.
   float halo = dot(texture(uHalo, st).rgb, vec3(0.3333));
+
+  // The next reel burns through: same lens, same light, only the picture
+  // behind the rim is new.
+  vec2 burnt = vec2(0.0);
+  if (uCut > 0.0) {
+    burnt = burn(burnField(vUv, aspect, uBurnFrom, uSeed), uCut);
+    vec3 next = reel(uImageB, uLevelB1, uLevelB2, uLevelB3, stB, focus);
+    color = mix(color, next, burnt.x);
+    halo = mix(halo, dot(texture(uHaloB, stB).rgb, vec3(0.3333)), burnt.x);
+  }
   color += vec3(1.0, 0.36, 0.16) * halo * uHalation * (1.0 + away * 0.9 + pool * 0.6);
 
   // Anamorphic streaks: the highlights near the cursor are drawn out sideways.
@@ -178,6 +212,8 @@ void main() {
     color += smoothstep(1.5 / uCanvas.x, 0.0, abs(vUv.x - x)) * uScratch.y;
   }
 
+  if (uCut > 0.0) color = burnLight(color, uCut, burnt);
+
   outColor = vec4(color * uFlicker, 1.0);
 }`;
 
@@ -214,8 +250,17 @@ const NAMES = [
   "uLevel2",
   "uLevel3",
   "uHalo",
+  "uImageB",
+  "uLevelB1",
+  "uLevelB2",
+  "uLevelB3",
+  "uHaloB",
   "uCanvas",
   "uImageSize",
+  "uImageSizeB",
+  "uCut",
+  "uBurnFrom",
+  "uSeed",
   "uFocus",
   "uWeave",
   "uParallax",
@@ -289,7 +334,21 @@ function parsePosition(position: string): [number, number] {
   return [read(x), read(y)];
 }
 
+interface Reel {
+  halo: WebGLTexture;
+  levels: WebGLTexture[];
+  size: [number, number];
+  src: string;
+  texture: WebGLTexture;
+}
+
+interface Projector {
+  show: (src: string) => void;
+  stop: () => void;
+}
+
 interface Options {
+  cut: number;
   defocusAt: RefObject<((y: number) => number) | undefined>;
   focus: [number, number];
   halation: number;
@@ -298,12 +357,17 @@ interface Options {
   onRestore: () => void;
   reduced: boolean;
   scrollY: ReturnType<typeof useScrollY>;
+  src: string;
 }
+
+const UNPROJECTED: Projector = { show: () => {}, stop: () => {} };
+const BURN_FROM: [number, number] = [0.62, 0.38];
 
 function project(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
   {
+    cut: cutRun,
     defocusAt,
     focus,
     halation,
@@ -312,8 +376,9 @@ function project(
     onRestore,
     reduced,
     scrollY,
+    src,
   }: Options,
-): () => void {
+): Projector {
   const gl = canvas.getContext("webgl2", {
     alpha: false,
     antialias: false,
@@ -323,23 +388,28 @@ function project(
   });
   if (!gl) {
     onFail();
-    return () => {};
+    return UNPROJECTED;
   }
   const program = createProgram(gl, FRAGMENT);
   if (!program) {
     onFail();
-    return () => {};
+    return UNPROJECTED;
   }
   gl.useProgram(program);
   const mainVao = gl.createVertexArray();
   gl.bindVertexArray(mainVao);
   bindFullscreen(gl, program);
   const u = uniforms(gl, program, NAMES);
-  const texture = gl.createTexture();
 
-  let size: [number, number] = [1, 1];
+  let current: Reel | null = null;
+  let next: Reel | null = null;
+  let loading: string | null = null;
+  let pending: string | null = null;
+  let cut = 0;
+  let cutFrom: number | null = null;
+  let seed = 0;
+  let burnFrom: [number, number] = BURN_FROM;
   let ready = false;
-  let softened: WebGLTexture[] = [];
   let disposed = false;
   let lost = false;
   let visible = true;
@@ -392,26 +462,49 @@ function project(
     }
   };
 
+  const bindReel = (reel: Reel, unit: number) => {
+    [reel.texture, ...reel.levels, reel.halo].forEach((target, index) => {
+      gl.activeTexture(gl.TEXTURE0 + unit + index);
+      gl.bindTexture(gl.TEXTURE_2D, target);
+    });
+  };
+
+  const drop = (reel: Reel | null) => {
+    if (!reel) return;
+    [reel.texture, ...reel.levels, reel.halo].forEach((target) =>
+      gl.deleteTexture(target),
+    );
+  };
+
   const draw = () => {
     if (resized) {
       fitCanvas(canvas, DEVICE_CAP);
-      gl.viewport(0, 0, canvas.width, canvas.height);
       resized = false;
     }
+    // Developing a reel draws into its own small targets; the frame is always
+    // drawn at the canvas's size.
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform1i(u.uImage, 0);
     gl.uniform1i(u.uLevel1, 1);
     gl.uniform1i(u.uLevel2, 2);
     gl.uniform1i(u.uLevel3, 3);
     gl.uniform1i(u.uHalo, 4);
+    gl.uniform1i(u.uImageB, 5);
+    gl.uniform1i(u.uLevelB1, 6);
+    gl.uniform1i(u.uLevelB2, 7);
+    gl.uniform1i(u.uLevelB3, 8);
+    gl.uniform1i(u.uHaloB, 9);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    softened.forEach((target, index) => {
-      gl.activeTexture(gl.TEXTURE1 + index);
-      gl.bindTexture(gl.TEXTURE_2D, target);
-    });
+    if (!current) return;
+    const incoming = next ?? current;
+    bindReel(current, 0);
+    bindReel(incoming, 5);
     gl.uniform2f(u.uCanvas, canvas.width, canvas.height);
-    gl.uniform2f(u.uImageSize, size[0], size[1]);
+    gl.uniform2f(u.uImageSize, current.size[0], current.size[1]);
+    gl.uniform2f(u.uImageSizeB, incoming.size[0], incoming.size[1]);
+    gl.uniform1f(u.uCut, next ? cut : 0);
+    gl.uniform2f(u.uBurnFrom, burnFrom[0], burnFrom[1]);
+    gl.uniform1f(u.uSeed, seed);
     gl.uniform2f(u.uFocus, focus[0], focus[1]);
     gl.uniform2f(u.uWeave, weave[0], weave[1]);
     gl.uniform2f(u.uParallax, parallax[0], parallax[1]);
@@ -536,6 +629,21 @@ function project(
       }
     }
 
+    if (next) {
+      cutFrom ??= timestamp;
+      cut =
+        cutRun > 0 ? Math.min(1, (timestamp - cutFrom) / (cutRun * 1000)) : 1;
+      dirty = true;
+      if (cut >= 1) {
+        drop(current);
+        current = next;
+        next = null;
+        cut = 0;
+        cutFrom = null;
+        queueMicrotask(drain);
+      }
+    }
+
     if (dirty) draw();
   };
 
@@ -550,7 +658,7 @@ function project(
     }
   };
 
-  const bake = (size: readonly [number, number]) => {
+  const bake = (texture: WebGLTexture, size: readonly [number, number]) => {
     const blur = createProgram(gl, BLUR);
     if (!blur) return null;
     const vao = gl.createVertexArray();
@@ -644,15 +752,13 @@ function project(
     return { halo, levels };
   };
 
-  const upload = async () => {
+  const develop = async (image: HTMLImageElement, name: string) => {
     try {
       await image.decode();
     } catch {
-      if (!disposed) onFail();
-      return;
+      return null;
     }
-    if (disposed) return;
-    if (!image.naturalWidth) return onFail();
+    if (disposed || !image.naturalWidth) return null;
     const width = Math.min(image.naturalWidth, MAX_TEXTURE);
     const source: ImageBitmap | HTMLImageElement =
       width < image.naturalWidth && typeof createImageBitmap === "function"
@@ -666,8 +772,9 @@ function project(
         : image;
     if (disposed || lost || gl.isContextLost()) {
       if (source instanceof ImageBitmap) source.close();
-      return;
+      return null;
     }
+    const texture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
@@ -680,18 +787,62 @@ function project(
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    size = [source.width, source.height];
+    const size: [number, number] = [source.width, source.height];
     if (source instanceof ImageBitmap) source.close();
-    const baked = bake(size);
-    if (!baked || lost || gl.isContextLost()) return;
-    softened = [...baked.levels, baked.halo];
+    const baked = bake(texture, size);
+    if (!baked || lost || gl.isContextLost()) {
+      gl.deleteTexture(texture);
+      return null;
+    }
+    return { ...baked, size, src: name, texture } satisfies Reel;
+  };
+
+  const upload = async () => {
+    const reel = await develop(image, src);
+    if (disposed) return drop(reel);
+    if (!reel) return onFail();
+    current = reel;
     resized = true;
     ready = true;
     defocus = reduced ? 0 : (defocusAt.current?.(scrollY.get()) ?? 0);
     draw();
     onLive(true);
     run();
+    drain();
   };
+
+  // Another reel is threaded while this one runs; once it is ready it burns
+  // through from where the light is, and a request made meanwhile waits for
+  // the cut to finish.
+  const show = (name: string) => {
+    if (!current || next || loading !== null) {
+      pending = name;
+      return;
+    }
+    if (name === current.src) return;
+    loading = name;
+    const picture = new Image();
+    picture.crossOrigin = "anonymous";
+    picture.decoding = "async";
+    picture.src = readable(name);
+    void develop(picture, name).then((reel) => {
+      loading = null;
+      if (disposed) return drop(reel);
+      if (!reel) return drain();
+      next = reel;
+      cut = 0;
+      cutFrom = null;
+      seed = Math.random() * 100;
+      burnFrom = rack > 0.05 ? [poolAt[0], poolAt[1]] : BURN_FROM;
+      run();
+    });
+  };
+
+  function drain() {
+    const name = pending;
+    pending = null;
+    if (name !== null) show(name);
+  }
 
   const sight = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
@@ -719,7 +870,7 @@ function project(
 
   void upload();
 
-  return () => {
+  const stop = () => {
     disposed = true;
     ready = false;
     run();
@@ -729,30 +880,36 @@ function project(
     document.removeEventListener("visibilitychange", onVisibility);
     canvas.removeEventListener("webglcontextlost", onLost);
     canvas.removeEventListener("webglcontextrestored", onRestored);
-    gl.deleteTexture(texture);
-    softened.forEach((target) => gl.deleteTexture(target));
+    drop(current);
+    drop(next);
     gl.deleteProgram(program);
     gl.deleteVertexArray(mainVao);
   };
+
+  return { show, stop };
 }
 
 interface ProjectionProps {
   className?: string;
+  cut?: number;
   defocusAt?: (scrollY: number) => number;
   halation?: number;
   mask?: CSSProperties;
   onReady?: () => void;
   position?: string;
+  reel?: string | null;
   src: string;
 }
 
 export function Projection({
   className,
+  cut = 1.1,
   defocusAt,
   halation = 0.55,
   mask = BACKDROP_HERO_MASK,
   onReady,
   position = "center 20%",
+  reel = null,
   src,
 }: ProjectionProps) {
   const theme = useTheme(primitivesTheme);
@@ -762,6 +919,7 @@ export function Projection({
   const canvas = useRef<HTMLCanvasElement>(null);
   const focusRef = useRef(defocusAt);
   const readyRef = useRef(onReady);
+  const projector = useRef<Projector | null>(null);
   const [live, setLive] = useState(false);
   const [plain, setPlain] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -784,7 +942,8 @@ export function Projection({
   useEffect(() => {
     if (plain || !image.current || !canvas.current) return;
     const [x, y] = parsePosition(position);
-    const stop = project(canvas.current, image.current, {
+    const running = project(canvas.current, image.current, {
+      cut: reduced ? 0 : cut,
       defocusAt: focusRef,
       focus: [x, y],
       halation,
@@ -793,12 +952,21 @@ export function Projection({
       onRestore: () => setAttempt((count) => count + 1),
       reduced,
       scrollY,
+      src,
     });
+    projector.current = running;
     return () => {
-      stop();
+      running.stop();
+      projector.current = null;
       setLive(false);
     };
-  }, [attempt, halation, plain, position, reduced, scrollY, src]);
+  }, [attempt, cut, halation, plain, position, reduced, scrollY, src]);
+
+  // A reel threaded onto the projector replaces the picture until it is taken
+  // off again, when the projector cuts back to its own.
+  useEffect(() => {
+    if (live) projector.current?.show(reel ?? src);
+  }, [live, reel, src]);
 
   return (
     <div
@@ -820,7 +988,7 @@ export function Projection({
           }}
           onLoad={plain ? onReady : undefined}
           ref={image}
-          src={plain ? src : readable(src)}
+          src={plain ? (reel ?? src) : readable(src)}
           style={{
             filter: live ? undefined : softened,
             objectPosition: position,

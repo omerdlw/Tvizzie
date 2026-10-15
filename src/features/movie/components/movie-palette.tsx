@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cancelFrame, frame } from "motion/react";
-import { useModal } from "@omerdlw/base-framework/modules/modal";
 import { readable } from "@/motion/film";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieImage } from "@/infrastructure/tmdb/types";
 import { Cascade, Header, Item, Section, Trace } from "../stage";
-import { size, spread } from "../lib/tempo";
-import { ImageModal, type ImageModalData } from "./movie-modals";
+import { size, spread } from "@/motion/stage";
+import { useReel } from "./movie-reel";
 
 interface Still {
   colour: string;
@@ -211,9 +210,9 @@ function Strip({
       >
         <Trace className="pointer-events-none absolute inset-0 z-10 rounded-[20px] ring-1 ring-white/5 ring-inset" />
         {stills.map((still, index) => (
-          <Item className="relative min-w-0" key={still.path}>
+          <Item className="relative min-w-0" from="grow" key={still.path}>
             <button
-              aria-label={`Still ${index + 1} of ${count}`}
+              aria-label={`Project still ${index + 1} of ${count}`}
               className="relative block size-full cursor-pointer overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-white/60 focus-visible:ring-inset"
               onClick={() => onOpen(index)}
               ref={(element) => {
@@ -241,14 +240,8 @@ function Strip({
   );
 }
 
-export function MoviePalette({
-  stills: images,
-  title,
-}: {
-  stills: MovieImage[];
-  title: string;
-}) {
-  const [openImage] = useModal(ImageModal);
+export function MoviePalette({ stills: images }: { stills: MovieImage[] }) {
+  const { project } = useReel();
   const anchor = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
   const stills = useStills(images, near);
@@ -271,15 +264,10 @@ export function MoviePalette({
 
   if (images.length < MIN_STILLS) return null;
 
+  // A still is not opened in a box: it is put on the projector.
   const open = (index: number) => {
     const still = stills?.[index];
-    const src = still ? tmdbImageUrl("backdrop", still.path, "original") : null;
-    if (!src) return;
-    const data: ImageModalData = {
-      alt: `Still ${index + 1} of ${title}`,
-      src,
-    };
-    void openImage(data as unknown as Record<string, unknown>);
+    if (still) project(still.path);
   };
 
   return (

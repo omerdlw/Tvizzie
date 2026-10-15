@@ -8,7 +8,7 @@ import {
 import { report } from "@omerdlw/base-framework/utils";
 import { Icon, Loader, MediaCard, SegmentedControl, Select } from "@/ui";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
-import { size } from "../../lib/tempo";
+import { size } from "@/motion/stage";
 import { Cascade, Item } from "../../stage";
 import { SURFACE_LEAD, SurfaceScene, scrollWithin } from "../surface";
 import type { ProviderEntry, RegionProviders } from "../../lib/providers";

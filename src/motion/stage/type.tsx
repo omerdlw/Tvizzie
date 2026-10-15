@@ -20,8 +20,8 @@ import {
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { useBeam } from "@/motion/film";
-import { SCENE, sinceBase, undoGap } from "../lib/motion";
-import { focus, settle, spread, wordCount } from "../lib/tempo";
+import { GRAMMAR, sinceBase, undoGap } from "./grammar";
+import { focus, settle, spread, wordCount } from "./tempo";
 import {
   ClockContext,
   ExitContext,
@@ -79,7 +79,7 @@ function TitleWord({
   children: string;
   out: number;
 }) {
-  const entered = useProgress(at, SCENE.title.run);
+  const entered = useProgress(at, GRAMMAR.title.run);
   const left = useExit(out);
   const both = [entered, left];
   const opacity = useTransform(both, ([a, b]: number[]) => a * (1 - b));
@@ -118,7 +118,7 @@ export function Title({
   const heading = useRef<HTMLHeadingElement>(null);
   useOpticalInset(heading, title);
   useBeam(heading);
-  const { title: cue } = SCENE;
+  const { title: cue } = GRAMMAR;
   const start = sinceBase(cue.at);
   const gap = undoGap(words.length);
   const last = start + settle(words.length - 1, words.length, cue.window);
@@ -358,7 +358,7 @@ export function Expose({
   className,
   hover = false,
   out,
-  run = SCENE.facts.expose,
+  run = GRAMMAR.facts.expose,
   since,
 }: {
   as?: "div" | "p" | "span";
@@ -433,7 +433,7 @@ export function Expose({
       if (phase.current === "dark") return;
       phase.current = "burnt";
     }
-    const progress = unit((time - out) / SCENE.exit.run);
+    const progress = unit((time - out) / GRAMMAR.exit.run);
     if (progress <= 0) {
       const p = print.current;
       if (p) clearMask(p);
@@ -462,7 +462,7 @@ export function Expose({
       const l = light.current;
       if (phase.current !== "printed" || glinting.current || !l) return;
       glinting.current = animate(0, 1, {
-        duration: SCENE.facts.replay,
+        duration: GRAMMAR.facts.replay,
         ease: "linear",
         onComplete: () => {
           glinting.current = null;
@@ -510,7 +510,7 @@ export function Count({
   at,
   format,
   hover = false,
-  run = SCENE.count.run,
+  run = GRAMMAR.count.run,
   value,
 }: {
   at: number;
@@ -528,7 +528,7 @@ export function Count({
   const play = () => {
     if (reduced || progress.get() < 1 || replay.get() < 1) return;
     replay.set(0);
-    animate(replay, 1, { duration: SCENE.count.replay, ease: "linear" });
+    animate(replay, 1, { duration: GRAMMAR.count.replay, ease: "linear" });
   };
 
   return (

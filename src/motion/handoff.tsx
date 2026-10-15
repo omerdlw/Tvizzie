@@ -13,6 +13,7 @@ interface Trip {
   black: string;
   href: string;
   primary: string;
+  scene: string | null;
   to: string;
 }
 
@@ -91,7 +92,11 @@ export function watchIntent(router: AppRouterInstance): () => void {
   };
 }
 
-function beginHandoff(to: string, router: AppRouterInstance): void {
+function beginHandoff(
+  to: string,
+  router: AppRouterInstance,
+  scene: string | null,
+): void {
   if (!isFilmPage(to)) return;
   const style = getComputedStyle(document.documentElement);
   trip = {
@@ -99,6 +104,7 @@ function beginHandoff(to: string, router: AppRouterInstance): void {
     black: style.getPropertyValue("--black").trim(),
     href: to,
     primary: style.getPropertyValue("--primary").trim(),
+    scene,
     to: pathOf(to),
   };
   settle();
@@ -110,9 +116,13 @@ const ROUTED_PATIENCE = 20_000;
 export function depart(
   to: string,
   router: AppRouterInstance,
-  { onReturn, patience }: { onReturn: () => void; patience: number },
+  {
+    onReturn,
+    patience,
+    scene = null,
+  }: { onReturn: () => void; patience: number; scene?: string | null },
 ): () => void {
-  beginHandoff(to, router);
+  beginHandoff(to, router, scene);
   const target = pathOf(to);
   let timer = setTimeout(giveUp, patience);
   const unsubscribe = globalEvents.subscribe(
@@ -156,7 +166,7 @@ interface Palette {
 
 export function handoffTo(
   pathname: string,
-): { palette: Palette | null } | null {
+): { palette: Palette | null; scene: string | null } | null {
   const now = current();
   if (!now || now.to !== pathOf(pathname)) return null;
   return {
@@ -164,6 +174,7 @@ export function handoffTo(
       now.black && now.primary
         ? { black: now.black, primary: now.primary }
         : null,
+    scene: now.scene,
   };
 }
 

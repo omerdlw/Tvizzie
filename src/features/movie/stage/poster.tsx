@@ -13,8 +13,7 @@ import {
 import { cn } from "@omerdlw/base-framework/utils";
 import { useLanding } from "@/motion/film";
 import { SCENE, sinceBase } from "../lib/motion";
-import { EASE, size } from "../lib/tempo";
-import { ease, useExit, useProgress } from "./clock";
+import { EASE, ease, size, useExit, useProgress } from "@/motion/stage";
 
 export function Poster({
   children,
@@ -40,7 +39,7 @@ export function Poster({
     poster.shine.run,
     ease.glide,
   );
-  const folded = useExit(exit.poster);
+  const folded = useExit(exit.art);
   const frame = useRef<HTMLDivElement>(null);
   const { carried, shown } = useLanding(frame, {
     reveal: SCENE.film.carry.reveal,

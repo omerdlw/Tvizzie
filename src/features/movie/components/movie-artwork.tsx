@@ -1,19 +1,18 @@
 "use client";
 
 import { Suspense, use } from "react";
-import { motion, useTransform } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useModal } from "@omerdlw/base-framework/modules/modal";
 import { artworkTarget, useArtworkPath } from "@/features/artwork";
 import { wonAcademyAward } from "@/features/awards/lib/utils";
 import { AdaptiveImage, Icon } from "@/ui";
 import { Foil, Projection } from "@/motion/film";
-import { useScrollY } from "@/motion/scroll";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { Awards, MovieDetails } from "@/infrastructure/tmdb/types";
 import { SCENE } from "../lib/motion";
-import { Backdrop, Grade, Poster } from "../stage";
-import { ease, unit, useExit } from "../stage/clock";
-import { GradeContext } from "../stage/frame";
-import { EASE } from "../lib/tempo";
+import { Ambient, Backdrop, EASE, Grade, Poster, ease, unit } from "../stage";
+import { ImageModal, type ImageModalData } from "./movie-modals";
+import { useReel } from "./movie-reel";
 
 type Artwork = Pick<
   MovieDetails,
@@ -76,61 +75,49 @@ export function MoviePoster({
 const [FROM, TO] = SCENE.scrub.defocus.range;
 const defocusAt = (y: number) => ease.glide(unit((y - FROM) / (TO - FROM)));
 
-const FADE = 760;
-const settle = (y: number) => ease.glide(unit(y / FADE));
+const REEL_SIZE = "w1280";
 
-const FALLOFF =
-  "radial-gradient(ellipse 125% 105% at 50% 32%, #000 30%, rgb(0 0 0 / 0.7))";
-const shade = (mix: number, alpha: number) =>
-  `color-mix(in oklab, color-mix(in oklab, rgb(var(--grade)) ${mix}%, black) ${alpha}%, transparent)`;
-const CEILING = "linear-gradient(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.14))";
-const WASH = [
-  `radial-gradient(90% 70% at 22% 18%, ${shade(34, 68)}, transparent 74%)`,
-  `radial-gradient(80% 65% at 88% 82%, ${shade(26, 64)}, transparent 74%)`,
-  `linear-gradient(${shade(18, 76)}, ${shade(14, 84)})`,
-].join(", ");
-
-// Once the backdrop has drifted out of focus and off the top of the page, the
-// room keeps its colour: the film's grade carries it, with a faint ghost of
-// the picture behind. It fades in step with the backdrop's own fade-out, so
-// the one hands over to the other. The ceiling keeps it a room tint rather than
-// a second picture: however bright the film's backdrop or grade, it never
-// rises past a deep shade.
-function Ambient({ source }: { source: string }) {
-  const scrollY = useScrollY();
-  const left = useExit(SCENE.exit.backdrop);
-  const grade = use(GradeContext);
-  const opacity = useTransform(
-    [scrollY, left],
-    ([y, out]: number[]) => settle(y) * (1 - out),
-  );
-
+// While a still is on the projector, a quiet slate says so and offers the
+// way back to the film's own picture.
+function Slate({ title }: { title: string }) {
+  const { project, reel } = useReel();
+  const [openImage] = useModal(ImageModal);
   return (
-    <motion.div
-      aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-      style={{ maskImage: FALLOFF, opacity, WebkitMaskImage: FALLOFF }}
-    >
-      <motion.div
-        animate={{ opacity: grade?.tone ? 1 : 0 }}
-        className="absolute inset-0"
-        initial={{ opacity: 0 }}
-        style={{ background: WASH }}
-        transition={{ duration: SCENE.frame.light, ease: EASE.silk }}
-      />
-      <img
-        alt=""
-        className="absolute -inset-[8%] size-[116%] max-w-none object-cover"
-        decoding="async"
-        loading="lazy"
-        src={source}
-        style={{
-          filter: "blur(24px) saturate(1.05) brightness(0.5)",
-          opacity: 0.2,
-        }}
-      />
-      <div className="absolute inset-0" style={{ background: CEILING }} />
-    </motion.div>
+    <AnimatePresence>
+      {reel ? (
+        <motion.div
+          animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
+          className="absolute top-6 right-4 z-20 flex items-center gap-1 rounded-full bg-black/40 p-1 ring-1 ring-white/10 backdrop-blur-md sm:right-6 lg:right-8"
+          exit={{ filter: "blur(6px)", opacity: 0, y: -8 }}
+          initial={{ filter: "blur(6px)", opacity: 0, y: -8 }}
+          transition={{ duration: SCENE.view.enter, ease: EASE.expo }}
+        >
+          <span className="px-3 text-[10px] font-semibold tracking-[0.24em] text-white/60 uppercase">
+            Still
+          </span>
+          <button
+            aria-label="View this still"
+            className="cine-press center size-8 cursor-pointer rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+            onClick={() => {
+              const src = tmdbImageUrl("backdrop", reel, "original");
+              if (!src) return;
+              const data: ImageModalData = { alt: `Still of ${title}`, src };
+              void openImage(data as unknown as Record<string, unknown>);
+            }}
+            type="button"
+          >
+            <Icon icon="solar:maximize-square-minimalistic-linear" size={16} />
+          </button>
+          <button
+            className="cine-press h-8 cursor-pointer rounded-full px-3 text-[11px] font-semibold tracking-[0.12em] text-white uppercase hover:bg-white/10"
+            onClick={() => project(null)}
+            type="button"
+          >
+            Back to the film
+          </button>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -141,25 +128,30 @@ export function MovieBackdropHero({ movie }: { movie: Artwork }) {
     "backdrop",
     movie.backdropPath,
   );
+  const { reel } = useReel();
   const image = tmdbImageUrl("backdrop", path, "original");
-  const ambient = tmdbImageUrl("backdrop", path, "w780");
+  const room = tmdbImageUrl("backdrop", path, "w300");
+  const still = reel ? tmdbImageUrl("backdrop", reel, REEL_SIZE) : null;
   return image ? (
     <>
-      {ambient ? <Ambient source={ambient} /> : null}
+      {room ? <Ambient source={room} /> : null}
       <Backdrop>
         {(reveal) => (
           <>
-            <Grade source={tmdbImageUrl("backdrop", path, "w300")} />
+            <Grade source={tmdbImageUrl("backdrop", reel ?? path, "w300")} />
             <Projection
+              cut={SCENE.film.cut}
               defocusAt={defocusAt}
               halation={SCENE.film.halation}
               onReady={reveal}
               position="center 20%"
+              reel={still}
               src={image}
             />
           </>
         )}
       </Backdrop>
+      <Slate title={movie.title} />
     </>
   ) : null;
 }

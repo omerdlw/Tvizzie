@@ -44,12 +44,14 @@ const arrived = (n: number) => ({
   transitionEnd: FOCUSED,
 });
 
-export type ItemKind = "dot" | "grow" | "left" | "right" | "scale" | "up";
+export type ItemKind =
+  "dot" | "grow" | "left" | "print" | "right" | "scale" | "up";
 
 const RUNS: Record<ItemKind, number> = {
   dot: 1,
   grow: 2,
   left: 2,
+  print: 3,
   right: 2,
   scale: 2,
   up: 3,
@@ -71,6 +73,21 @@ export const ITEMS: Record<ItemKind, Variants> = {
   left: {
     hidden: { filter: exposure(DIM), opacity: 0, x: -16 },
     visible: { ...arrived(RUNS.left), x: 0 },
+  },
+  // Printed in, as the facts are: a flash of too much light that settles to
+  // the picture.
+  print: {
+    hidden: { filter: "brightness(2.6) saturate(0.15)", opacity: 0 },
+    visible: {
+      filter: "brightness(1) saturate(1)",
+      opacity: 1,
+      transition: {
+        duration: size(RUNS.print),
+        ease: EASE.expo,
+        opacity: { duration: size(RUNS.print - 2), ease: EASE.expo },
+      },
+      transitionEnd: FOCUSED,
+    },
   },
   right: {
     hidden: { filter: exposure(DIM), opacity: 0, x: 16 },

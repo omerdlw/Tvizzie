@@ -7,7 +7,7 @@ import {
   type WheelEvent,
 } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
-import { size } from "../lib/tempo";
+import { size } from "@/motion/stage";
 
 const WHITE = "252 252 251";
 

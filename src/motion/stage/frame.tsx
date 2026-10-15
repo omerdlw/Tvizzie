@@ -20,8 +20,8 @@ import {
 } from "@/motion/film";
 import { usePathname } from "next/navigation";
 import { handoffTo, useDeparture } from "@/motion/handoff";
-import { SCENE } from "../lib/motion";
-import { EASE } from "../lib/tempo";
+import { GRAMMAR } from "./grammar";
+import { EASE } from "./tempo";
 import {
   ExitContext,
   HeadContext,
@@ -76,8 +76,8 @@ export function Grade({ source }: { source: string | null }) {
 function Bars() {
   const reduced = useReducedMotion();
   const pathname = usePathname();
-  const { at, height, run, shut } = SCENE.frame.bars;
-  const left = useExit(SCENE.exit.backdrop);
+  const { at, height, run, shut } = GRAMMAR.frame.bars;
+  const left = useExit(GRAMMAR.exit.backdrop);
   const open = useMotionValue(reduced ? 1 : 0);
   const head = useContext(HeadContext);
   const timeline = useContext(TimelineContext);
@@ -190,7 +190,7 @@ function Glow() {
 
 function HouseLights() {
   const down = useHouseDown();
-  const { level, run } = SCENE.film.house;
+  const { level, run } = GRAMMAR.film.house;
   return (
     <motion.div
       animate={{ opacity: down ? level : 0 }}
@@ -206,7 +206,7 @@ export function Frame() {
   const grade = use(GradeContext);
   const reduced = useReducedMotion();
   const out = useContext(ExitContext);
-  const { cue } = SCENE.film;
+  const { cue } = GRAMMAR.film;
 
   return (
     <>
@@ -219,7 +219,7 @@ export function Frame() {
           background:
             "radial-gradient(70% 55% at 22% 38%, rgb(var(--grade) / 0.1), transparent 70%), radial-gradient(60% 50% at 88% 92%, rgb(var(--grade) / 0.06), transparent 70%)",
         }}
-        transition={{ duration: SCENE.frame.light, ease: EASE.silk }}
+        transition={{ duration: GRAMMAR.frame.light, ease: EASE.silk }}
       />
       <RoomGrain />
       <div

@@ -14,7 +14,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useSmoothScroll } from "@/motion/scroll";
 import { MAIN_COLUMN_CLASS, VIEW_CLASS } from "../lib/layout";
 import { SCENE } from "../lib/motion";
-import { EASE, FOCUSED, blur } from "../lib/tempo";
+import { EASE, FOCUSED, blur } from "@/motion/stage";
 
 type MovieViewKey = "overview" | "awards";
 

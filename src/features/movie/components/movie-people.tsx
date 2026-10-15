@@ -64,7 +64,7 @@ export function MoviePeople({ cast, crew }: MoviePeopleProps) {
       <Swap className="flex flex-col gap-3" id={tab}>
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {featured.map((person) => (
-            <Item as="li" className="min-w-0" key={person.key}>
+            <Item as="li" className="min-w-0" from="print" key={person.key}>
               <PersonCard person={person} />
             </Item>
           ))}

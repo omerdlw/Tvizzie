@@ -24,21 +24,25 @@ import { cn } from "@omerdlw/base-framework/utils";
 import {
   dropCarry,
   liftCarry,
+  sceneFor,
   settleCarry,
   useTintedFavicon,
 } from "@/motion/film";
 import { depart, endHandoff, handoffTo, watchIntent } from "@/motion/handoff";
 import { useScrollY, useSmoothScroll } from "@/motion/scroll";
-import { SCENE } from "../lib/motion";
-import { EASE, FOCUSED, blur, focus } from "../lib/tempo";
+import { GRAMMAR, type Opening } from "./grammar";
+import { EASE, FOCUSED, blur, focus } from "./tempo";
 import {
   ExitContext,
   HeadContext,
+  OpeningContext,
+  PaceContext,
   TimelineContext,
   skipped,
   useExit,
 } from "./clock";
 import { Frame, GradeContext } from "./frame";
+import { RoomContext } from "./room";
 import { createTimeline } from "./timeline";
 
 const LeavingContext = createContext(false);
@@ -47,29 +51,77 @@ export const useLeaving = () => useContext(LeavingContext);
 
 const REVEAL_PATIENCE = 2500;
 
+const SEEN = "tvizzie:seen";
+const SEEN_KEEP = 60;
+
+function seenList(): string[] {
+  try {
+    const list: unknown = JSON.parse(sessionStorage.getItem(SEEN) ?? "[]");
+    return Array.isArray(list)
+      ? list.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function remember(pathname: string) {
+  try {
+    const list = seenList().filter((item) => item !== pathname);
+    list.push(pathname);
+    sessionStorage.setItem(SEEN, JSON.stringify(list.slice(-SEEN_KEEP)));
+  } catch {
+    // Without storage every visit is a first one.
+  }
+}
+
+// Where the opening starts, and how fast it runs: from the top for a film seen
+// for the first time, past the black when arriving from another film page, and
+// cut quicker still for one already seen this session.
+function useHead(pathname: string) {
+  const [cut] = useState(() => {
+    const { arrive, revisit } = GRAMMAR.film;
+    const handed = handoffTo(pathname) ? arrive : 0;
+    return seenList().includes(pathname)
+      ? { head: Math.max(handed, revisit.head), pace: revisit.pace }
+      : { head: handed, pace: 1 };
+  });
+  useEffect(() => remember(pathname), [pathname]);
+  return cut;
+}
+
 export function Stage({
   children,
   className,
+  opening,
   picture = false,
 }: {
   children: ReactNode;
   className?: string;
+  opening: Opening;
   picture?: boolean;
 }) {
   const pathname = usePathname();
-  const [head] = useState(() => (handoffTo(pathname) ? SCENE.film.arrive : 0));
+  const { head, pace } = useHead(pathname);
   const [timeline] = useState(() =>
     createTimeline({
       head,
       hold: picture,
-      opening: SCENE.opening.end,
-      patience: SCENE.section.patience,
-      stride: SCENE.section.stride,
+      opening: opening.end / pace,
+      patience: GRAMMAR.section.patience,
+      stride: GRAMMAR.section.stride,
     }),
   );
   const reduced = useReducedMotion();
   const [tone, setTone] = useState<string | null>(null);
   const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
+  const [arrival] = useState(() => handoffTo(pathname)?.scene ?? null);
+  const [lead, setLead] = useState<string | null>(null);
+  const [destination, setDestination] = useState<string | null>(null);
+  const room = useMemo(
+    () => ({ arrival, destination, lead, setLead }),
+    [arrival, destination, lead],
+  );
 
   useEffect(() => timeline.serial(!reduced), [reduced, timeline]);
 
@@ -97,13 +149,23 @@ export function Stage({
   return (
     <TimelineContext value={timeline}>
       <HeadContext value={head}>
-        <MotionConfig reducedMotion="user">
-          <GradeContext value={grade}>
-            <Leaving className={className} tone={tone}>
-              {children}
-            </Leaving>
-          </GradeContext>
-        </MotionConfig>
+        <OpeningContext value={opening}>
+          <PaceContext value={pace}>
+            <MotionConfig reducedMotion="user">
+              <GradeContext value={grade}>
+                <RoomContext value={room}>
+                  <Leaving
+                    className={className}
+                    onDestination={setDestination}
+                    tone={tone}
+                  >
+                    {children}
+                  </Leaving>
+                </RoomContext>
+              </GradeContext>
+            </MotionConfig>
+          </PaceContext>
+        </OpeningContext>
       </HeadContext>
     </TimelineContext>
   );
@@ -112,10 +174,12 @@ export function Stage({
 function Leaving({
   children,
   className,
+  onDestination,
   tone,
 }: {
   children: ReactNode;
   className?: string;
+  onDestination: (scene: string | null) => void;
   tone: string | null;
 }) {
   const dock = useOptionalDockActions();
@@ -123,7 +187,7 @@ function Leaving({
   const timeline = useContext(TimelineContext);
   const reduced = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
-  const { wait } = SCENE.exit;
+  const { wait } = GRAMMAR.exit;
   const out = useMotionValue(-1);
 
   useEffect(() => {
@@ -151,17 +215,23 @@ function Leaving({
     const unregister = dock.registerGuard({
       when: (to: string) =>
         new Promise<boolean>((resolve) => {
+          // The next scene's light comes into the room before the cut: what
+          // was clicked to get there is already showing as this page goes.
+          const scene = sceneFor(to);
+          onDestination(scene);
           setLeaving(true);
           waiting.add(
             depart(to, router, {
               onReturn: () => {
                 dropCarry();
+                onDestination(null);
                 setLeaving(false);
               },
               patience: wait * 1000 + 2500,
+              scene,
             }),
           );
-          liftCarry(to, SCENE.film.carry.run);
+          liftCarry(to, GRAMMAR.film.carry.run);
           timers.add(setTimeout(() => resolve(false), wait * 1000));
         }),
     });
@@ -170,7 +240,7 @@ function Leaving({
       timers.forEach(clearTimeout);
       waiting.forEach((stop) => stop());
     };
-  }, [dock, reduced, router, wait]);
+  }, [dock, onDestination, reduced, router, wait]);
 
   useEffect(() => watchIntent(router), [router]);
 
@@ -201,7 +271,7 @@ export function Body({
   children: ReactNode;
   className?: string;
 }) {
-  const left = useExit(SCENE.exit.body);
+  const left = useExit(GRAMMAR.exit.body);
   const opacity = useTransform(left, (p) => 1 - p);
   const y = useTransform(left, (p) => -36 * p);
   return (
@@ -231,12 +301,12 @@ export function Backdrop({
 
   const y = useTransform(scrollY, [0, 900], [0, 240]);
   const dim = useTransform(scrollY, [0, 720], [1, 0.2]);
-  const push = useTransform(scrollY, [0, 900], [1, 1 + SCENE.scrub.push]);
+  const push = useTransform(scrollY, [0, 900], [1, 1 + GRAMMAR.scrub.push]);
   const reduced = useReducedMotion();
-  const left = useExit(SCENE.exit.backdrop);
+  const left = useExit(GRAMMAR.exit.backdrop);
   const opacity = useTransform(left, (p) => 1 - p);
   const scale = useTransform(left, (p) => 1 - 0.1 * p);
-  const { backdrop } = SCENE;
+  const { backdrop } = GRAMMAR;
   const first = skipped(backdrop.at, backdrop.run, useContext(HeadContext));
   const filter = useTransform(left, (p) =>
     p <= 0

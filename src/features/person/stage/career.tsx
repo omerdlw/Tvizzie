@@ -11,9 +11,7 @@ import {
 import { cn } from "@omerdlw/base-framework/utils";
 import { SCENE, careerGap } from "../lib/motion";
 import type { CareerYear } from "../lib/types";
-import { EASE } from "../lib/tempo";
-import { useCue } from "./cue";
-import { Cascade, Item, Trace } from "./section";
+import { Cascade, EASE, Item, Trace, useCue } from "@/motion/stage";
 
 function labelStep(count: number) {
   const steps = [1, 2, 5, 10, 20, 50];

@@ -8,8 +8,9 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { SCENE, sinceBase } from "../lib/motion";
-import { DIM, EASE, exposure, size } from "../lib/tempo";
+import { GRAMMAR, sinceBase } from "./grammar";
+import { DIM, EASE, exposure, size } from "./tempo";
+import type { Opening } from "./grammar";
 import type { Timeline } from "./timeline";
 
 export const TimelineContext = createContext<Timeline | null>(null);
@@ -17,6 +18,11 @@ export const ClockContext = createContext<MotionValue<number> | null>(null);
 export const ExitContext = createContext<MotionValue<number> | null>(null);
 
 export const HeadContext = createContext(0);
+
+export const OpeningContext = createContext<Opening>({ end: 0, length: 0 });
+
+// How fast the opening runs: a film seen before is shown at a quicker cut.
+export const PaceContext = createContext(1);
 
 export const skipped = (at: number, run: number, head: number) => ({
   delay: Math.max(0, at - head),
@@ -58,7 +64,7 @@ export function useProgress(
   return useTransform(clock, (time) => shape(unit((time - at) / run)));
 }
 
-export function useExit(at: number, run: number = SCENE.exit.run) {
+export function useExit(at: number, run: number = GRAMMAR.exit.run) {
   const out = useExitClock();
   return useTransform(out, (time) => ease.glide(unit((time - at) / run)));
 }

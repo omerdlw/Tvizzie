@@ -30,10 +30,12 @@ import { SCENE } from "../lib/motion";
 import { Rise, trackSpotlight } from "../stage";
 import { useMovieView } from "./movie-views";
 import { createListPickerSurfaceEntry } from "./surfaces/list-picker-surface";
-import { createWatchProvidersSurfaceEntry } from "./surfaces/watch-providers-surface";
 
 const BASE =
   "cine-card cine-fade cine-spot group center relative h-auto w-full cursor-pointer gap-2.5 overflow-hidden rounded-[20px] p-4 text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:cursor-wait";
+// What you do with a film comes first; where you keep it, quieter, after.
+const SECONDARY =
+  "h-11 gap-2 rounded-[16px] px-3 py-0 text-[10px] tracking-[0.08em]";
 const IDLE =
   "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10";
 const ACTIVE =
@@ -50,6 +52,7 @@ interface ActionProps {
   label: string;
   loading?: boolean;
   onClick: () => void;
+  secondary?: boolean;
   shortLabel?: string;
 }
 
@@ -63,6 +66,7 @@ function Action({
   loading,
   onClick,
   order,
+  secondary = false,
   shortLabel,
   grow,
 }: ActionProps): JSX.Element {
@@ -73,8 +77,9 @@ function Action({
       from={from}
     >
       <Button
+        aria-label={secondary && shortLabel ? label : undefined}
         aria-pressed={active}
-        className={cn(BASE, active ? ACTIVE : IDLE)}
+        className={cn(BASE, secondary && SECONDARY, active ? ACTIVE : IDLE)}
         disabled={disabled}
         loading={loading}
         onClick={onClick}
@@ -87,13 +92,18 @@ function Action({
               active ? "scale-110" : "group-hover:scale-110",
             )}
           >
-            <Icon icon={active ? icon.on : icon.off} size={16} />
+            <Icon
+              icon={active ? icon.on : icon.off}
+              size={secondary ? 14 : 16}
+            />
           </span>
           <span className="relative">
             <span
               className={cn(hoverLabel && "cine-fade group-hover:opacity-0")}
             >
-              {shortLabel ? (
+              {shortLabel && secondary ? (
+                shortLabel
+              ) : shortLabel ? (
                 <>
                   <span className="sm:max-xl:hidden">{label}</span>
                   <span className="hidden sm:max-xl:inline">{shortLabel}</span>
@@ -138,6 +148,7 @@ export function AwardsAction({ order }: { order: number }): JSX.Element {
       label="Awards"
       onClick={() => toggle("awards")}
       order={order}
+      secondary
       grow
     />
   );
@@ -145,12 +156,10 @@ export function AwardsAction({ order }: { order: number }): JSX.Element {
 
 export function MovieCollectionActions({
   children,
-  hasProviders,
   movieId,
   title,
 }: {
   children?: ReactNode;
-  hasProviders: boolean;
   movieId: number;
   title: string;
 }): JSX.Element {
@@ -268,10 +277,6 @@ export function MovieCollectionActions({
     );
   }, [auth.isReady, key, movieId, openSurface]);
 
-  const openProviders = useCallback(() => {
-    void openSurface(createWatchProvidersSurfaceEntry({ movieId, title }));
-  }, [movieId, openSurface, title]);
-
   return (
     <div className="grid grid-cols-2 gap-3">
       {state.watched ? (
@@ -320,43 +325,35 @@ export function MovieCollectionActions({
           />
         </>
       )}
-      <Action
-        active={false}
-        disabled={!auth.isReady}
-        from="left"
-        order={2}
-        icon={ICONS.list}
-        label="Add to list"
-        onClick={openLists}
-      />
-      <Action
-        active={false}
-        disabled={disabled}
-        from="right"
-        order={3}
-        icon={ICONS.diary}
-        label="Log to diary"
-        loading={logging}
-        onClick={() => void logToDiary()}
-      />
-      {hasProviders || children ? (
-        <div className="col-span-2 flex gap-3 empty:hidden">
-          {hasProviders ? (
-            <Action
-              active={false}
-              disabled={false}
-              from="left"
-              grow
-              icon={ICONS.providers}
-              label="Where to watch"
-              onClick={openProviders}
-              order={4}
-              shortLabel="Watch"
-            />
-          ) : null}
-          {children}
-        </div>
-      ) : null}
+      {/* Where to watch lives on the dock, one tap from anywhere. */}
+      <div className="col-span-2 flex gap-2">
+        <Action
+          active={false}
+          disabled={!auth.isReady}
+          from="left"
+          grow
+          order={2}
+          icon={ICONS.list}
+          label="Add to list"
+          onClick={openLists}
+          secondary
+          shortLabel="List"
+        />
+        <Action
+          active={false}
+          disabled={disabled}
+          from="right"
+          grow
+          order={3}
+          icon={ICONS.diary}
+          label="Log to diary"
+          loading={logging}
+          onClick={() => void logToDiary()}
+          secondary
+          shortLabel="Diary"
+        />
+        {children}
+      </div>
     </div>
   );
 }

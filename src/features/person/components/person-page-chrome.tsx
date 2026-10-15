@@ -26,7 +26,9 @@ export function PersonPageChrome({ person }: { person: PersonDetails }): null {
     defaultBackdrop,
   );
   const photo = tmdbImageUrl("profile", photoPath, "original");
-  const backdrop = tmdbImageUrl("backdrop", backdropPath, "original");
+  const swatch =
+    tmdbImageUrl("backdrop", backdropPath, "w300") ??
+    tmdbImageUrl("profile", photoPath, "w185");
 
   useArtworkContextMenu({
     defaults: { backdrop: defaultBackdrop, poster: person.profilePath },
@@ -47,7 +49,7 @@ export function PersonPageChrome({ person }: { person: PersonDetails }): null {
     },
   });
   const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
-  useAmbientTheme({ image: backdrop ?? photo, initialPalette: inherited });
+  useAmbientTheme({ image: swatch, initialPalette: inherited });
 
   return null;
 }

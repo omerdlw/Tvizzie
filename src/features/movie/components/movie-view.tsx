@@ -33,6 +33,7 @@ import { MoviePalette } from "./movie-palette";
 import { MoviePeople } from "./movie-people";
 import { MovieProjection } from "./movie-projection";
 import { MovieRecommendations } from "./movie-recommendations";
+import { ReelProvider } from "./movie-reel";
 import { MovieReviews } from "./movie-reviews";
 import { MovieSidebar } from "./movie-sidebar";
 import { MovieViewProvider, MovieViews } from "./movie-views";
@@ -63,87 +64,90 @@ export function MovieView({
   }));
 
   return (
-    <Stage className={PAGE_CLASS} picture={Boolean(backdrop)}>
-      <MovieProjection movie={movie} />
-      <div className={CONTAINER_CLASS}>
-        {backdrop ? <MovieBackdropHero movie={movie} /> : null}
+    <Stage
+      className={PAGE_CLASS}
+      opening={SCENE.opening}
+      picture={Boolean(backdrop)}
+    >
+      <ReelProvider>
+        <MovieProjection movie={movie} />
+        <div className={CONTAINER_CLASS}>
+          {backdrop ? <MovieBackdropHero movie={movie} /> : null}
 
-        <Body className={pageBodyClass(Boolean(backdrop))}>
-          <MovieViewProvider>
-            <div className={COLUMNS_CLASS}>
-              <Sequence as="header" className={HEADER_CLASS}>
-                <Layer {...SCENE.layers.title}>
-                  <Title className={titleClass(movie.title)}>
-                    {movie.title}
-                  </Title>
-                </Layer>
-                {movie.tagline || movie.overview ? (
-                  <Layer className={RULE_GAP} {...SCENE.layers.rule}>
-                    <Hairline />
+          <Body className={pageBodyClass(Boolean(backdrop))}>
+            <MovieViewProvider>
+              <div className={COLUMNS_CLASS}>
+                <Sequence as="header" className={HEADER_CLASS}>
+                  <Layer {...SCENE.layers.title}>
+                    <Title className={titleClass(movie.title)}>
+                      {movie.title}
+                    </Title>
                   </Layer>
-                ) : null}
-                {movie.tagline ? (
-                  <Layer {...SCENE.layers.tagline}>
-                    <Words
-                      {...SCENE.tagline}
-                      className={TAGLINE_CLASS}
-                      alpha={0.92}
-                    >
-                      {movie.tagline}
-                    </Words>
-                  </Layer>
-                ) : null}
-                {movie.overview ? (
-                  <Layer {...SCENE.layers.overview}>
-                    <Words
-                      {...SCENE.overview}
-                      className={`${OVERVIEW_CLASS} ${movie.tagline ? AFTER_TAGLINE : ""}`}
-                      alpha={0.7}
-                    >
-                      {movie.overview}
-                    </Words>
-                  </Layer>
-                ) : null}
-              </Sequence>
+                  {movie.tagline || movie.overview ? (
+                    <Layer className={RULE_GAP} {...SCENE.layers.rule}>
+                      <Hairline {...SCENE.rule} />
+                    </Layer>
+                  ) : null}
+                  {movie.tagline ? (
+                    <Layer {...SCENE.layers.tagline}>
+                      <Words
+                        {...SCENE.tagline}
+                        className={TAGLINE_CLASS}
+                        alpha={0.92}
+                      >
+                        {movie.tagline}
+                      </Words>
+                    </Layer>
+                  ) : null}
+                  {movie.overview ? (
+                    <Layer {...SCENE.layers.overview}>
+                      <Words
+                        {...SCENE.overview}
+                        className={`${OVERVIEW_CLASS} ${movie.tagline ? AFTER_TAGLINE : ""}`}
+                        alpha={0.7}
+                      >
+                        {movie.overview}
+                      </Words>
+                    </Layer>
+                  ) : null}
+                </Sequence>
 
-              <StickyAside className={ASIDE_CLASS}>
-                <MovieSidebar awards={awards} movie={movie} />
-              </StickyAside>
+                <StickyAside className={ASIDE_CLASS}>
+                  <MovieSidebar awards={awards} movie={movie} />
+                </StickyAside>
 
-              <MovieViews
-                views={{
-                  awards: (
-                    <Suspense fallback={null}>
-                      <MovieAwards awards={awards} />
-                    </Suspense>
-                  ),
-                  overview: (
-                    <>
-                      <MoviePeople cast={cast} crew={crew} />
-                      <MoviePalette
-                        stills={getPaletteImages(movie)}
-                        title={movie.title}
-                      />
-                      <MovieGallery
-                        backdrops={getGalleryImages(movie)}
-                        posters={getPosterImages(movie)}
-                        title={movie.title}
-                      />
-                      <MovieVideos
-                        types={getVideoTypes(movie)}
-                        videos={movie.videos}
-                      />
-                      <MovieRecommendations movie={movie} />
-                    </>
-                  ),
-                }}
-              />
-            </div>
-          </MovieViewProvider>
+                <MovieViews
+                  views={{
+                    awards: (
+                      <Suspense fallback={null}>
+                        <MovieAwards awards={awards} />
+                      </Suspense>
+                    ),
+                    overview: (
+                      <>
+                        <MoviePeople cast={cast} crew={crew} />
+                        <MoviePalette stills={getPaletteImages(movie)} />
+                        <MovieGallery
+                          backdrops={getGalleryImages(movie)}
+                          posters={getPosterImages(movie)}
+                          title={movie.title}
+                        />
+                        <MovieVideos
+                          types={getVideoTypes(movie)}
+                          videos={movie.videos}
+                        />
+                        <MovieRecommendations movie={movie} />
+                      </>
+                    ),
+                  }}
+                />
+              </div>
+            </MovieViewProvider>
 
-          <MovieReviews movieId={movie.id} title={movie.title} />
-        </Body>
-      </div>
+            <MovieReviews movieId={movie.id} title={movie.title} />
+          </Body>
+        </div>
+      </ReelProvider>
     </Stage>
   );
 }
