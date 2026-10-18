@@ -7,11 +7,17 @@ import { pointerSample, watchPointer } from "./pointer";
 
 // One cursor for the whole house. It is a lens that takes the shape of what it
 // is over: a glass bead on empty ground, a viewfinder over the picture, a
-// bracket that wraps a button, a disc on a poster, a bar in a field. Pages
-// opt in with `data-cursor` (and `data-cursor-label`); links, buttons and
-// fields are recognised without it.
+// bracket that wraps a button, a bar in a field, a viewfinder that takes the
+// whole of a title, a one-sheet or a card, and slates a card with its name.
+// Pages opt in with `data-cursor` (and `data-cursor-label`, and
+// `data-cursor-fit="ink"` to frame a heading's letters rather than its box);
+// links, buttons and fields are recognised without it. A canvas that draws
+// its cards itself says where the one under the pointer is with
+// `data-cursor-box` ("left,top,right,bottom" on the page) and
+// `data-cursor-corner`, or the lens would take the whole canvas.
 
-type Mode = "action" | "card" | "drag" | "frame" | "idle" | "none" | "text";
+type Mode =
+  "action" | "card" | "drag" | "frame" | "idle" | "none" | "text" | "wrap";
 
 interface Reading {
   corner?: number;
@@ -22,6 +28,7 @@ interface Reading {
 
 interface Shape {
   bracket: number;
+  caption: number;
   dot: number;
   glass: number;
   h: number;
@@ -39,6 +46,7 @@ interface Spring {
 const SHAPES: Record<Exclude<Mode, "none">, Shape> = {
   action: {
     bracket: 0,
+    caption: 0,
     dot: 0,
     glass: 1,
     h: 0,
@@ -48,17 +56,19 @@ const SHAPES: Record<Exclude<Mode, "none">, Shape> = {
     w: 0,
   },
   card: {
-    bracket: 0,
-    dot: 0,
+    bracket: 1,
+    caption: 1,
+    dot: 1,
     glass: 0,
-    h: 84,
-    label: 1,
-    r: 42,
-    solid: 1,
-    w: 84,
+    h: 0,
+    label: 0,
+    r: 4,
+    solid: 0,
+    w: 0,
   },
   drag: {
     bracket: 0,
+    caption: 0,
     dot: 0,
     glass: 1,
     h: 46,
@@ -69,6 +79,7 @@ const SHAPES: Record<Exclude<Mode, "none">, Shape> = {
   },
   frame: {
     bracket: 1,
+    caption: 0,
     dot: 1,
     glass: 0,
     h: 116,
@@ -79,6 +90,7 @@ const SHAPES: Record<Exclude<Mode, "none">, Shape> = {
   },
   idle: {
     bracket: 0,
+    caption: 0,
     dot: 1,
     glass: 1,
     h: 34,
@@ -87,7 +99,28 @@ const SHAPES: Record<Exclude<Mode, "none">, Shape> = {
     solid: 0,
     w: 34,
   },
-  text: { bracket: 0, dot: 0, glass: 0, h: 26, label: 0, r: 1, solid: 1, w: 2 },
+  text: {
+    bracket: 0,
+    caption: 0,
+    dot: 0,
+    glass: 0,
+    h: 26,
+    label: 0,
+    r: 1,
+    solid: 1,
+    w: 2,
+  },
+  wrap: {
+    bracket: 1,
+    caption: 0,
+    dot: 1,
+    glass: 0,
+    h: 0,
+    label: 0,
+    r: 4,
+    solid: 0,
+    w: 0,
+  },
 };
 
 const LABELS: Partial<Record<Mode, string>> = { card: "View", drag: "Drag" };
@@ -97,6 +130,10 @@ const TEXT_INPUT =
 const OWNER = `[data-cursor], [data-dragging], ${TEXT_INPUT}, a[href], button, summary, select, label, [role='button'], [role='link'], [role='tab'], [role='switch'], [role='menuitem']`;
 
 const WRAP = 7;
+const FRAMING = 14;
+// A card sits a gap from its neighbours, and its frame stays inside that gap.
+const CARD_FRAMING = 6;
+const SLATE = /^(.*\S)\s+\((\d{4})\)(?:,\s*(.+))?$/;
 const SNAP_MAX = [560, 280] as const;
 const ROW_MAX = [960, 120] as const;
 const FRAME_AWAY = 0.7;
@@ -151,6 +188,101 @@ function inLayer(from: Element): boolean {
   return false;
 }
 
+interface Box {
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+}
+
+interface Ink {
+  above: number;
+  below: number;
+  key: string;
+  lead: number;
+  tail: number;
+}
+
+const inks = new WeakMap<HTMLElement, Ink>();
+let ruler: CanvasRenderingContext2D | null = null;
+
+// Where a heading's letters sit inside the boxes the browser lays its text
+// out in: those run from the font's ascent to its descent and carry each
+// glyph's side bearings, while the frame should close on the ink itself.
+function inkOf(element: HTMLElement): Ink | null {
+  const style = getComputedStyle(element);
+  const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const raw = element.textContent ?? "";
+  const text =
+    style.textTransform === "uppercase"
+      ? raw.toUpperCase()
+      : style.textTransform === "lowercase"
+        ? raw.toLowerCase()
+        : raw;
+  const key = `${font}|${text}|${document.fonts.status}`;
+  const known = inks.get(element);
+  if (known?.key === key) return known;
+  ruler ??= document.createElement("canvas").getContext("2d");
+  if (!ruler || !text.trim()) return null;
+  ruler.font = font;
+  const m = ruler.measureText(text.trim());
+  const ink: Ink = {
+    above: m.fontBoundingBoxAscent - m.actualBoundingBoxAscent,
+    below: m.fontBoundingBoxAscent + m.actualBoundingBoxDescent,
+    key,
+    lead: -m.actualBoundingBoxLeft,
+    tail: m.width - m.actualBoundingBoxRight,
+  };
+  inks.set(element, ink);
+  return ink;
+}
+
+function boxOf(target: HTMLElement): Box {
+  const drawn = target.dataset.cursorBox?.split(",").map(Number);
+  if (drawn?.length === 4 && drawn.every(Number.isFinite)) {
+    const [left, top, right, bottom] = drawn as [
+      number,
+      number,
+      number,
+      number,
+    ];
+    return { bottom, left, right, top };
+  }
+  // A card is framed by its picture, not by the caption set under it.
+  // Anything else that holds a picture, a cast row say, is framed whole.
+  const picture =
+    target.dataset.cursor === "card"
+      ? target.querySelector<HTMLElement>("[data-cursor-frame]")
+      : null;
+  const plain = (picture ?? target).getBoundingClientRect();
+  if (target.dataset.cursorFit !== "ink") return plain;
+  const ink = inkOf(target);
+  if (!ink) return plain;
+  const box = {
+    bottom: -Infinity,
+    left: Infinity,
+    right: -Infinity,
+    top: Infinity,
+  };
+  const walk = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+    if (!node.textContent?.trim()) continue;
+    range.selectNodeContents(node);
+    for (const line of range.getClientRects()) {
+      if (!line.width) continue;
+      box.left = Math.min(box.left, line.left);
+      box.right = Math.max(box.right, line.right);
+      box.top = Math.min(box.top, line.top + ink.above);
+      box.bottom = Math.max(box.bottom, line.top + ink.below);
+    }
+  }
+  if (!Number.isFinite(box.left)) return plain;
+  box.left += ink.lead;
+  box.right -= ink.tail;
+  return box;
+}
+
 function read(x: number, y: number): Reading {
   const hit = document.elementFromPoint(x, y);
   if (!hit || hit.tagName === "IFRAME" || inLayer(hit)) {
@@ -165,8 +297,23 @@ function read(x: number, y: number): Reading {
     const named = own.dataset.cursor as Mode | undefined;
     if (named === "none") return { label: "", mode: "none", target: own };
     const label = own.dataset.cursorLabel ?? "";
-    if (named && named in SHAPES) {
-      return { label: label || LABELS[named] || "", mode: named, target: own };
+    if (named === "wrap") {
+      // Over a heading's empty margin the lens is not over the title.
+      const box = boxOf(own);
+      const inside =
+        x >= box.left - FRAMING &&
+        x <= box.right + FRAMING &&
+        y >= box.top - FRAMING &&
+        y <= box.bottom + FRAMING;
+      if (inside) return { label: "", mode: "wrap", target: own };
+    } else if (named && named in SHAPES) {
+      const corner = Number.parseFloat(own.dataset.cursorCorner ?? "");
+      return {
+        corner: Number.isFinite(corner) ? corner : undefined,
+        label: label || LABELS[named] || "",
+        mode: named,
+        target: own,
+      };
     }
     if (own.matches(TEXT_INPUT))
       return { label: "", mode: "text", target: own };
@@ -203,6 +350,9 @@ function Reticle() {
   const dot = useRef<HTMLDivElement>(null);
   const words = useRef<HTMLSpanElement>(null);
   const brackets = useRef<HTMLSpanElement>(null);
+  const slate = useRef<HTMLSpanElement>(null);
+  const slateName = useRef<HTMLSpanElement>(null);
+  const slateYear = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const host = root.current;
@@ -210,7 +360,11 @@ function Reticle() {
     const pin = dot.current;
     const text = words.current;
     const corners = brackets.current;
+    const caption = slate.current;
+    const name = slateName.current;
+    const year = slateYear.current;
     if (!host || !lens || !pin || !text || !corners) return;
+    if (!caption || !name || !year) return;
 
     const html = document.documentElement;
     const stopWatching = watchPointer();
@@ -226,6 +380,7 @@ function Reticle() {
     const weights = {
       bead: spring(1),
       bracket: spring(),
+      caption: spring(),
       dot: spring(1),
       glass: spring(1),
       label: spring(),
@@ -236,6 +391,40 @@ function Reticle() {
 
     let reading: Reading = { label: "", mode: "idle", target: null };
     let shown = "";
+    // The slate over a card turns like the home page's ticker: the new name
+    // rises in from the side the frame travels to while the old one leaves,
+    // and only the latest pair is ever there, so a quick pass along a row
+    // never queues behind itself.
+    // one card to the next never swaps a name under the eye.
+    let slated = "";
+    let slating = "";
+    let slatedAt = 0;
+    const roll = (
+      track: HTMLElement,
+      value: string,
+      way: number,
+      still: boolean,
+    ) => {
+      for (const old of Array.from(track.children) as HTMLElement[]) {
+        if (still || old.classList.contains("home-ticker-out")) {
+          old.remove();
+          continue;
+        }
+        old.className = "home-ticker-out [grid-area:1/1] truncate";
+        old.style.setProperty("--to", `${way * -0.7}em`);
+        old.addEventListener("animationend", () => old.remove(), {
+          once: true,
+        });
+      }
+      if (!value) return;
+      const word = document.createElement("span");
+      word.className = still
+        ? "[grid-area:1/1] truncate"
+        : "home-ticker-in [grid-area:1/1] truncate";
+      word.style.setProperty("--from", `${way * 0.7}em`);
+      word.textContent = value;
+      track.append(word);
+    };
     let dirty = true;
     let pressed = false;
     let landed = false;
@@ -302,7 +491,8 @@ function Reticle() {
       leaving = 0;
       dirty = false;
       reading = next;
-      if (next.label !== shown) {
+      if (next.mode === "card") slating = next.label;
+      else if (next.label !== shown) {
         shown = next.label;
         if (next.label) text.textContent = next.label;
       }
@@ -335,7 +525,9 @@ function Reticle() {
       html.classList.toggle("reticle-off", reading.mode === "none");
       const mode = reading.mode === "none" ? "idle" : reading.mode;
       const shape = SHAPES[mode];
-      const snap = mode === "action" && Boolean(reading.target?.isConnected);
+      const snap =
+        (mode === "action" || mode === "card" || mode === "wrap") &&
+        Boolean(reading.target?.isConnected);
 
       let cx = px;
       let cy = py;
@@ -344,18 +536,20 @@ function Reticle() {
       let tr = shape.r;
 
       if (snap) {
-        const box = reading.target!.getBoundingClientRect();
+        const box = boxOf(reading.target!);
+        const pad =
+          mode === "wrap" ? FRAMING : mode === "card" ? CARD_FRAMING : WRAP;
         const corner = reading.corner ?? Number.NaN;
-        const mx = box.left + box.width / 2;
-        const my = box.top + box.height / 2;
+        const mx = (box.left + box.right) / 2;
+        const my = (box.top + box.bottom) / 2;
         const lean = (to: number, from: number) =>
           Math.max(-MAGNET_MAX, Math.min((to - from) * MAGNET, MAGNET_MAX));
         cx = mx + lean(px, mx);
         cy = my + lean(py, my);
-        tw = box.width + WRAP * 2;
-        th = box.height + WRAP * 2;
+        tw = box.right - box.left + pad * 2;
+        th = box.bottom - box.top + pad * 2;
         tr = Math.min(
-          (Number.isFinite(corner) ? corner : 12) + WRAP,
+          (Number.isFinite(corner) ? corner : 12) + pad,
           Math.min(tw, th) / 2,
         );
       } else if (mode === "frame") {
@@ -379,6 +573,20 @@ function Reticle() {
         landed = true;
       }
 
+      if (slating !== slated) {
+        // Out of sight, the slate is simply rewritten.
+        const still = weights.caption.x < 0.06;
+        const way = cx >= slatedAt ? 1 : -1;
+        slated = slating;
+        slatedAt = cx;
+        // The role a card may carry is left to its tab and its tooltip: the
+        // slate is the film's name and year, and nothing cut short.
+        const [, title = slated, made = ""] = SLATE.exec(slated) ?? [];
+        roll(name, title, way, still);
+        roll(year, made, way, still);
+        year.hidden = !made;
+      }
+
       const travel = snap ? GRIP : mode === "frame" ? HUNT : FOLLOW;
       const width = Math.max(edge.r.x - edge.l.x, 0);
       const height = Math.max(edge.b.x - edge.t.x, 0);
@@ -392,6 +600,7 @@ function Reticle() {
         [radius, tr, travel],
         [weights.bead, mode === "idle" ? 1 : 0, FADE],
         [weights.bracket, shape.bracket, FADE],
+        [weights.caption, shape.caption, FADE],
         [weights.dot, shape.dot, FADE],
         [weights.glass, shape.glass, FADE],
         [weights.label, shape.label, FADE],
@@ -464,6 +673,7 @@ function Reticle() {
         `scale(${fine(1 + (1 - unit(weights.bracket.x)) * 0.25)})`,
       );
       put(text, "label", "opacity", fine(unit(weights.label.x)));
+      put(caption, "caption", "opacity", fine(unit(weights.caption.x)));
       put(text, "ink", "color", `rgb(${ink} ${ink} ${ink})`);
       put(
         pin,
@@ -496,6 +706,14 @@ function Reticle() {
     sync();
     env.addEventListener("change", sync);
 
+    // A canvas changes what is under a still pointer as what it draws
+    // moves; it says so by its data, and the lens reads again.
+    const watch = new MutationObserver(mark);
+    watch.observe(document.body, {
+      attributeFilter: ["data-cursor", "data-cursor-label"],
+      attributes: true,
+      subtree: true,
+    });
     window.addEventListener("pointermove", mark, { passive: true });
     window.addEventListener("scroll", mark, { capture: true, passive: true });
     window.addEventListener("pointerdown", down, { passive: true });
@@ -505,6 +723,7 @@ function Reticle() {
 
     return () => {
       cancelAnimationFrame(raf);
+      watch.disconnect();
       env.removeEventListener("change", sync);
       window.removeEventListener("pointermove", mark);
       window.removeEventListener("scroll", mark, { capture: true });
@@ -542,6 +761,21 @@ function Reticle() {
           ref={words}
           style={{ opacity: 0 }}
         />
+        <span
+          className="absolute bottom-full left-0 mb-2.5 flex max-w-[calc(100%+3rem)] items-center gap-2 font-mono text-[10px] leading-none font-bold tracking-[0.16em] whitespace-nowrap text-white uppercase [text-shadow:0_1px_10px_rgb(0_0_0/0.7)]"
+          ref={slate}
+          style={{ opacity: 0 }}
+        >
+          <span
+            className="relative inline-grid min-w-0 overflow-hidden"
+            ref={slateName}
+          />
+          <span
+            className="relative inline-grid shrink-0 overflow-hidden border-l border-white/20 pl-2 text-white/50"
+            hidden
+            ref={slateYear}
+          />
+        </span>
       </div>
       <div
         className="absolute top-0 left-0 size-[5px] rounded-full bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.25)]"

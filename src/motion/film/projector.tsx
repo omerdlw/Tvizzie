@@ -53,6 +53,7 @@ uniform vec2 uFocus;
 uniform vec2 uWeave;
 uniform vec2 uParallax;
 uniform vec2 uPool;
+uniform vec2 uPoolTrail;
 uniform vec2 uMotion;
 uniform float uRack;
 uniform float uDefocus;
@@ -114,43 +115,65 @@ vec3 pic(vec2 st, float defocus) {
   return reel(uImage, uLevel1, uLevel2, uLevel3, st, defocus);
 }
 
-void main() {
-  vec2 uv = vUv + uWeave / uCanvas;
-
-  // The camera turns with the hand: the frame slides, and the side it turns
-  // towards comes a little nearer.
-  vec2 centred = uv - 0.5;
-  centred /= 1.0 + dot(centred, uParallax * vec2(0.05, 0.035));
-  uv = centred + 0.5;
+// The camera turns with the hand: the frame slides, and the side it turns
+// towards comes a little nearer.
+vec2 framed(vec2 turn) {
+  vec2 centred = vUv + uWeave / uCanvas - 0.5;
+  centred /= 1.0 + dot(centred, turn * vec2(0.05, 0.035));
   float depth = mix(0.35, 1.0, vUv.y);
-  uv -= uParallax * depth * vec2(0.02, 0.012);
+  return centred + 0.5 - turn * depth * vec2(0.02, 0.012);
+}
+
+void main() {
+  vec2 uv = framed(uParallax);
   vec2 st = cover(uv, uImageSize);
   vec2 stB = cover(uv, uImageSizeB);
   slopeX = dFdx(st);
   slopeY = dFdy(st);
 
   // A focus puller follows the cursor: sharp where it rests, the rest of the
-  // frame falls away from it, and the light gathers round it.
+  // frame falls away from it, and the light gathers round it. The light is
+  // caught over the whole exposure, so while the hand moves it is drawn out
+  // behind the cursor and spread a little thinner.
   float aspect = uCanvas.x / uCanvas.y;
-  float reach = length((vUv - uPool) * vec2(aspect, 1.0));
+  vec2 here = (vUv - uPool) * vec2(aspect, 1.0);
+  float reach = length(here);
+  vec2 trail = -uPoolTrail * vec2(aspect, 1.0);
+  float run = dot(trail, trail);
+  float caught = run > 1e-8
+    ? length(here - trail * clamp(dot(here, trail) / run, 0.0, 1.0))
+    : reach;
   float away = smoothstep(0.1, 0.6, reach) * uRack;
-  float pool = (1.0 - smoothstep(0.0, 0.5, reach)) * uRack;
+  float pool = (1.0 - smoothstep(0.0, 0.5, caught)) * uRack
+    / (1.0 + sqrt(run) * 1.5);
 
   float focus = uDefocus + away * 0.2;
 
+  // The shutter stays open while the camera turns: each pixel is the picture
+  // swept along its own path, the near ground further than the far. Every
+  // pixel starts its taps somewhere else, so they never print as copies, and
+  // the grain swallows what is left of the pattern.
+  vec2 motion = st - cover(framed(uParallax - uMotion), uImageSize);
+  float smear = length(motion / max(abs(vec2(slopeX.x, slopeY.y)), vec2(1e-6)));
   vec3 color;
-  float shutter = length(uMotion);
-  if (shutter > 0.0003) {
+  if (smear > 0.75) {
+    float taps = clamp(ceil(smear / 2.5) + 2.0, 3.0, 16.0);
+    float start = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    float total = 0.0;
     color = vec3(0.0);
-    for (int i = 0; i < 9; i++) {
-      color += pic(st + uMotion * (float(i) / 8.0 - 0.5), focus);
+    for (int i = 0; i < 16; i++) {
+      if (float(i) >= taps) break;
+      float t = (float(i) + start) / taps - 0.5;
+      float w = 1.0 - t * t * 2.0;
+      color += pic(st + motion * t, focus) * w;
+      total += w;
     }
-    color /= 9.0;
+    color /= total;
   } else {
     color = pic(st, focus);
   }
 
-  float split = uVelocity * 0.007 + shutter * 0.6;
+  float split = uVelocity * 0.007 + length(motion) * 0.3;
   if (split > 0.0002) {
     vec2 outward = st - vec2(0.5);
     color.r = pic(st + outward * split, focus).r;
@@ -276,6 +299,7 @@ const NAMES = [
   "uWeave",
   "uParallax",
   "uPool",
+  "uPoolTrail",
   "uMotion",
   "uRack",
   "uDefocus",
@@ -322,8 +346,14 @@ const FRAME_MS = 1000 / 24;
 const CAMERA = { damping: 8.6, stiffness: 48 };
 const LENS = { damping: 21.5, stiffness: 160 };
 const LINGER = 4000;
-const SHUTTER: [number, number] = [0.0026, 0.0016];
-const SHUTTER_MAX = 0.012;
+// The shutter: how long a frame is exposed while the camera turns, and how far
+// the camera may turn in that time, in its own reach.
+const EXPOSURE = 0.42;
+const EXPOSURE_MAX = 1.3;
+// The light under the cursor is caught over a shorter exposure, and drawn out
+// no further than this share of the frame's height.
+const LENS_EXPOSURE = 0.12;
+const TRAIL_MAX = 0.32;
 const MAX_TEXTURE = 2560;
 const DEVICE_CAP = 1.5;
 const FAST = 4200;
@@ -450,6 +480,7 @@ function project(
   let shutter: [number, number] = [0, 0];
   let rack = 0;
   let poolAt: [number, number] = [0.5, 0.5];
+  let trail: [number, number] = [0, 0];
   let scrolled = scrollY.get();
   const camera: Mass = { vx: 0, vy: 0, x: 0, y: 0 };
   const lens: Mass = { vx: 0, vy: 0, x: 0, y: 0 };
@@ -546,8 +577,16 @@ function project(
       const { height, left, top, width } =
         bounds ?? canvas.getBoundingClientRect();
       poolAt = [(lens.x - left) / width, (lens.y - top) / height];
+      const [tx, ty] = [
+        (lens.vx * LENS_EXPOSURE) / width,
+        (lens.vy * LENS_EXPOSURE) / height,
+      ];
+      const length = Math.hypot((tx * width) / height, ty);
+      const keep = length > TRAIL_MAX ? TRAIL_MAX / length : 1;
+      trail = [tx * keep, ty * keep];
     }
     gl.uniform2f(u.uPool, poolAt[0], poolAt[1]);
+    gl.uniform2f(u.uPoolTrail, trail[0], trail[1]);
     gl.uniform2f(u.uMotion, shutter[0], shutter[1]);
     gl.uniform1f(u.uRack, rack);
     gl.uniform1f(u.uDefocus, Math.max(0, defocus));
@@ -610,8 +649,8 @@ function project(
       ];
       const swing = Math.abs(camera.vx) + Math.abs(camera.vy);
       const nextShutter: [number, number] = [
-        Math.max(-SHUTTER_MAX, Math.min(SHUTTER_MAX, camera.vx * SHUTTER[0])),
-        Math.max(-SHUTTER_MAX, Math.min(SHUTTER_MAX, camera.vy * SHUTTER[1])),
+        Math.max(-EXPOSURE_MAX, Math.min(EXPOSURE_MAX, camera.vx * EXPOSURE)),
+        Math.max(-EXPOSURE_MAX, Math.min(EXPOSURE_MAX, camera.vy * EXPOSURE)),
       ];
       if (
         Math.abs(ax - parallax[0]) + Math.abs(ay - parallax[1]) > 1e-5 ||
@@ -621,7 +660,7 @@ function project(
       ) {
         parallax = [ax, ay];
         shutter =
-          Math.abs(nextShutter[0]) + Math.abs(nextShutter[1]) < 2e-4
+          Math.abs(nextShutter[0]) + Math.abs(nextShutter[1]) < 0.015
             ? [0, 0]
             : nextShutter;
         dirty = true;

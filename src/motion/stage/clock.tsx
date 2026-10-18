@@ -16,7 +16,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { GRAMMAR, sinceBase } from "./grammar";
-import { DIM, EASE, exposure, size } from "./tempo";
+import { EASE, size } from "./tempo";
 import { bezier, play } from "./play";
 import type { Opening } from "./grammar";
 import type { Timeline } from "./timeline";
@@ -196,39 +196,5 @@ function TimedFade({
     <Tag className={className} ref={ref} style={{ opacity }}>
       {children}
     </Tag>
-  );
-}
-
-const FROM = {
-  left: { run: 2, scale: 1, x: -16, y: 0 },
-  right: { run: 2, scale: 1, x: 16, y: 0 },
-  scale: { run: 2, scale: 0.9, x: 0, y: 14 },
-  up: { run: 3, scale: 0.97, x: 0, y: 36 },
-} as const;
-
-export function Rise({
-  at,
-  children,
-  className,
-  from = "up",
-}: {
-  at: number;
-  children: ReactNode;
-  className?: string;
-  from?: keyof typeof FROM;
-}) {
-  const kind = FROM[from];
-  const progress = useProgress(sinceBase(at), size(kind.run));
-  const x = useTransform(progress, (p) => (1 - p) * kind.x);
-  const y = useTransform(progress, (p) => (1 - p) * kind.y);
-  const scale = useTransform(progress, (p) => 1 - (1 - p) * (1 - kind.scale));
-  const filter = useTransform(progress, (p) => exposure(DIM + (1 - DIM) * p));
-  return (
-    <motion.div
-      className={className}
-      style={{ filter, opacity: progress, scale, x, y }}
-    >
-      {children}
-    </motion.div>
   );
 }

@@ -6,6 +6,7 @@ import {
   formatMoney,
   formatReleaseDate,
   getCertification,
+  getDirectors,
   getOriginalLanguageName,
   getTags,
   getWriters,
@@ -162,6 +163,7 @@ export function MovieSidebar({
   awards: Promise<Awards | null>;
   movie: MovieDetails;
 }): JSX.Element {
+  const directors = getDirectors(movie);
   const writers = getWriters(movie);
   const certification = getCertification(movie);
   const language = getOriginalLanguageName(movie);
@@ -191,6 +193,18 @@ export function MovieSidebar({
         <Names
           max={MAX_VISIBLE_TAGS}
           names={tags.map((tag) => ({ text: capitalize(tag) }))}
+          when={when}
+        />
+      ),
+    });
+  }
+  if (directors.length > 0) {
+    facts.push({
+      label: directors.length > 1 ? "Directors" : "Director",
+      value: (when) => (
+        <Names
+          max={MAX_VISIBLE_PEOPLE}
+          names={directors.map(asName)}
           when={when}
         />
       ),

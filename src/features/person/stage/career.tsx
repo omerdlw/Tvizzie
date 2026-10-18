@@ -130,6 +130,9 @@ export function Career({
                 <button
                   aria-label={`${item.year}: ${item.count} ${item.count === 1 ? "film" : "films"}, ${item.films[0]}`}
                   className="group flex h-full w-full cursor-pointer items-end outline-none"
+                  // The bar lights itself; a lens wrapped round the whole
+                  // column would frame mostly empty air over a short year.
+                  data-cursor="idle"
                   onClick={(event) => choose(item, event)}
                   onFocus={() => setActive(item.year)}
                   onPointerEnter={() => setActive(item.year)}
@@ -155,7 +158,7 @@ export function Career({
           ))}
         </div>
 
-        <Item className="-mt-3 flex h-4 gap-[3px]" from="up">
+        <Item className="-mt-3 flex h-4 gap-[3px]" from="light">
           {years.map((item) => (
             <span aria-hidden="true" className={SLOT} key={item.year}>
               {item.year % step === 0 ? (

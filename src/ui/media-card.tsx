@@ -73,10 +73,10 @@ export function MediaCard({
         className={cn(
           "cine-fade relative isolate overflow-hidden",
           ASPECT[aspect],
-          framed &&
-            "bg-white/5 ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50",
+          framed && "bg-white/5",
           frameClassName,
         )}
+        data-cursor-frame=""
         style={style}
       >
         <AdaptiveImage
@@ -94,6 +94,15 @@ export function MediaCard({
           srcSet={image.srcSet}
         />
         {overlay}
+        {/* The edge is drawn over the picture, not under it: an inset ring
+            beneath a zoomed image is covered along the sides but shows
+            through the image's antialiased corners as a pale arc. */}
+        {framed ? (
+          <span
+            aria-hidden="true"
+            className="cine-fade pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50"
+          />
+        ) : null}
       </div>
       {caption}
     </>
@@ -105,6 +114,7 @@ export function MediaCard({
       <LinkCard
         className={classes}
         data-cursor="card"
+        data-cursor-label={tooltip}
         href={href}
         label={label}
         onNavigated={onNavigated}
@@ -121,6 +131,7 @@ export function MediaCard({
         aria-label={label}
         className={cn(classes, "cursor-pointer text-left")}
         data-cursor="card"
+        data-cursor-label={tooltip}
         onClick={onClick}
         style={style}
         type="button"
@@ -136,8 +147,10 @@ export function MediaCard({
     );
   }
 
+  // Where the house cursor runs, it slates the card itself; the tooltip is
+  // left for touch, keyboard and reduced motion.
   return tooltip ? (
-    <Tooltip position="top" text={tooltip}>
+    <Tooltip data-cursor-owned="" position="top" text={tooltip}>
       {card}
     </Tooltip>
   ) : (

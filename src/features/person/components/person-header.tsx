@@ -18,7 +18,6 @@ import {
   Fade,
   Hairline,
   Layer,
-  Rise,
   Sequence,
   Title,
   Words,
@@ -111,7 +110,7 @@ function Links({
     <ul aria-label="Profiles" className={LINKS_CLASS}>
       {links.map((link, index) => (
         <li key={link.key}>
-          <Rise at={SCENE.links.at + index * gap} from="scale">
+          <Fade at={SCENE.links.at + index * gap} run={size(2)}>
             <Tooltip position="top" text={link.label}>
               <a
                 aria-label={`${name} on ${link.label}`}
@@ -124,7 +123,7 @@ function Links({
                 <Icon icon={link.icon} size={20} />
               </a>
             </Tooltip>
-          </Rise>
+          </Fade>
         </li>
       ))}
     </ul>

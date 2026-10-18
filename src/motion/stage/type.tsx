@@ -129,6 +129,8 @@ export function Title({
     <motion.h1
       aria-label={title}
       className={cn("relative", className)}
+      data-cursor="wrap"
+      data-cursor-fit="ink"
       ref={heading}
       style={{ color }}
     >

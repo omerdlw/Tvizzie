@@ -26,7 +26,6 @@ import {
   getCast,
   getCrew,
   getGalleryImages,
-  getLogoImages,
   getPosterImages,
   getVideoTypes,
 } from "../lib/utils";
@@ -133,7 +132,6 @@ export function MovieView({
                         <MoviePeople cast={cast} crew={crew} />
                         <MovieGallery
                           backdrops={getGalleryImages(images)}
-                          logos={getLogoImages(images)}
                           posters={getPosterImages(images)}
                           title={movie.title}
                         />

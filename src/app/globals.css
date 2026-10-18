@@ -264,8 +264,7 @@ html.reticle:not(.reticle-off) * {
   }
 
   .home-word-in {
-    animation: home-word-in var(--duration-cinematic) var(--ease-out-expo)
-      both;
+    animation: home-word-in var(--duration-cinematic) var(--ease-out-expo) both;
     transform-origin: 0 100%;
   }
   @keyframes home-word-in {
@@ -440,61 +439,126 @@ html.reticle:not(.reticle-off) * {
 }
 
 @layer components {
+  /* A plate that is lit where it stands: it never travels or swells; the
+     words are uncovered by a light passing left to right, and a rule in the
+     film's grade is drawn along the edge that faces what it names. */
   .tooltip-content {
+    position: relative;
+    max-width: min(18rem, calc(100vw - 1.5rem));
+    padding: 8px 12px 9px;
+    overflow: hidden;
+    border-radius: 10px;
     background: color-mix(
       in oklab,
-      color-mix(in oklab, var(--black), black 30%) 92%,
+      color-mix(in oklab, var(--black), black 45%) 86%,
       transparent
     );
-    border-radius: 12px;
     box-shadow:
-      0 0 0 1px rgb(var(--white-rgb) / 0.1),
-      0 12px 32px -8px rgb(0 0 0 / 0.6);
-    color: var(--white);
+      inset 0 0 0 1px rgb(var(--white-rgb) / 0.08),
+      inset 0 1px 0 0 rgb(var(--white-rgb) / 0.06),
+      0 22px 48px -18px rgb(0 0 0 / 0.8);
+    color: rgb(var(--white-rgb) / 0.92);
     font-size: 12px;
     font-weight: 500;
-    line-height: 1.5;
-    max-width: min(18rem, calc(100vw - 1.5rem));
-    padding: 8px 12px;
+    letter-spacing: 0.005em;
+    line-height: 1.45;
     text-wrap: pretty;
-    transform-origin: var(--radix-tooltip-content-transform-origin);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    backdrop-filter: blur(18px) saturate(1.3);
+  }
+  .tooltip-content::after {
+    position: absolute;
+    right: 12px;
+    bottom: 0;
+    left: 12px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--grade, var(--white-rgb)) / 0.85) 30%,
+      rgb(var(--grade, var(--white-rgb)) / 0.85) 70%,
+      transparent
+    );
+    content: "";
+    transform-origin: left;
+  }
+  .tooltip-content[data-side="bottom"]::after {
+    top: 0;
+    bottom: auto;
+  }
+  .tooltip-ink {
+    display: block;
+    -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
+    mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
+    -webkit-mask-size: 220% 100%;
+    mask-size: 220% 100%;
+  }
+  .tooltip-meta {
+    margin-left: 8px;
+    padding-left: 8px;
+    box-shadow: inset 1px 0 0 rgb(var(--white-rgb) / 0.16);
+    color: rgb(var(--grade, var(--white-rgb)) / 0.9);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
   }
   .tooltip-content[data-state="delayed-open"],
   .tooltip-content[data-state="instant-open"] {
-    animation: tooltip-in 0.28s var(--ease-out-expo) both;
+    animation: tooltip-in 0.32s var(--ease-out-cream) both;
+  }
+  .tooltip-content:is([data-state="delayed-open"], [data-state="instant-open"])
+    .tooltip-ink {
+    animation: tooltip-light 0.62s var(--ease-out-cream) 0.04s both;
+  }
+  .tooltip-content:is(
+      [data-state="delayed-open"],
+      [data-state="instant-open"]
+    )::after {
+    animation: tooltip-rule 0.8s var(--ease-out-cream) 0.08s both;
   }
   .tooltip-content[data-state="closed"] {
-    animation: tooltip-out 0.14s var(--ease-in-cubic) both;
+    animation: tooltip-out 0.16s var(--ease-in-cubic) both;
   }
-  .tooltip-content[data-side="top"] {
-    --tooltip-from: translateY(4px);
-  }
-  .tooltip-content[data-side="bottom"] {
-    --tooltip-from: translateY(-4px);
-  }
-  .tooltip-content[data-side="left"] {
-    --tooltip-from: translateX(4px);
-  }
-  .tooltip-content[data-side="right"] {
-    --tooltip-from: translateX(-4px);
+  /* Where the house cursor slates a card itself, its tooltip stands down. */
+  html.reticle:not(.reticle-off) .tooltip-content[data-cursor-owned] {
+    display: none;
   }
   @keyframes tooltip-in {
     from {
       opacity: 0;
-      transform: var(--tooltip-from, none) scale(0.96);
+    }
+  }
+  @keyframes tooltip-light {
+    from {
+      -webkit-mask-position: 100% 0;
+      mask-position: 100% 0;
+    }
+    to {
+      -webkit-mask-position: 0 0;
+      mask-position: 0 0;
+    }
+  }
+  @keyframes tooltip-rule {
+    from {
+      opacity: 0;
+      transform: scaleX(0);
     }
   }
   @keyframes tooltip-out {
     to {
       opacity: 0;
-      transform: scale(0.98);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .tooltip-content {
+    .tooltip-content,
+    .tooltip-content::after,
+    .tooltip-ink {
       animation: none !important;
+    }
+    .tooltip-ink {
+      -webkit-mask-image: none;
+      mask-image: none;
     }
   }
 }

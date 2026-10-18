@@ -64,7 +64,7 @@ function uniqueById<T extends { id: number }>(items: readonly T[]): T[] {
   return items.filter((item) => !seen.has(item.id) && !!seen.add(item.id));
 }
 
-function getDirectors(movie: MovieDetails) {
+export function getDirectors(movie: MovieDetails) {
   return uniqueById(movie.credits.crew.filter((c) => c.job === "Director"));
 }
 
@@ -164,10 +164,6 @@ export function getGalleryImages(images: MovieImages) {
 
 export function getPosterImages(images: MovieImages) {
   return [...images.posters].sort(byVotes);
-}
-
-export function getLogoImages(images: MovieImages) {
-  return [...images.logos].sort(byVotes);
 }
 
 export function getVideoTypes(movie: MovieDetails): string[] {

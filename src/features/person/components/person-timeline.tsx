@@ -108,7 +108,7 @@ export function PersonTimeline({ years }: { years: TimelineYear[] }) {
             >
               <Item
                 className="w-14 shrink-0 pt-1 pr-3 text-right sm:w-20 sm:pr-4"
-                from="left"
+                from="light"
               >
                 <h3 className="text-xs font-bold text-white/50 tabular-nums sm:text-sm">
                   {year ?? "—"}
@@ -122,7 +122,7 @@ export function PersonTimeline({ years }: { years: TimelineYear[] }) {
               </Item>
               <ul className="flex min-w-0 flex-1 flex-col gap-1 pl-4 sm:pl-6">
                 {credits.map((credit) => (
-                  <Item as="li" from="left" key={credit.key}>
+                  <Item as="li" from="light" key={credit.key}>
                     <TimelineRow credit={credit} />
                   </Item>
                 ))}

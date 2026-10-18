@@ -6,7 +6,6 @@ export {
   ExitContext,
   Fade,
   TimelineContext,
-  Rise,
   ease,
   unit,
   useExit,

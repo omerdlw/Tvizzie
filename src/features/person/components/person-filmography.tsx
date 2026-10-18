@@ -67,7 +67,7 @@ export function PersonFilmography({
 
       {several ? (
         <Beat>
-          <div className="mb-4 flex w-full items-center">
+          <div className="mb-8 flex w-full items-center">
             <SegmentedControl
               ariaLabel="Kind of work"
               items={groups.map((item) => ({
@@ -88,7 +88,7 @@ export function PersonFilmography({
       >
         <ul className={FILMOGRAPHY_GRID_CLASS}>
           {visible.map((credit) => (
-            <Item as="li" className="min-w-0" from="scale" key={credit.key}>
+            <Item as="li" className="min-w-0" from="light" key={credit.key}>
               <MoviePosterLink
                 caption={false}
                 detail={credit.role}

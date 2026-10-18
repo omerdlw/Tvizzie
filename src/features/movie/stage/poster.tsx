@@ -95,6 +95,7 @@ export function Poster({
   return (
     <div
       className={cn("[perspective:1400px]", className)}
+      data-cursor="wrap"
       onPointerEnter={onEnter}
       onPointerLeave={onLeave}
       onPointerMove={onMove}

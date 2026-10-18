@@ -46,11 +46,6 @@ export const focus = (px: number) => (px > 0.05 ? blur(px) : "none");
 
 export const FOCUSED = { filter: "none" } as const;
 
-export const DIM = 0.4;
-
-export const exposure = (level: number) =>
-  level >= 0.999 ? "none" : `brightness(${level})`;
-
 export const wordCount = (text: string) =>
   text.split(/\s+/).filter(Boolean).length;
 

@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import type { Awards, PersonDetails } from "@/infrastructure/tmdb/types";
 import { PERSON_KNOWN_FOR } from "../lib/constants";
 import { SIDEBAR_CLASS, SIDEBAR_FACTS_CLASS } from "../lib/layout";
+import { SCENE } from "../lib/motion";
 import { Sequence } from "../stage";
 import { calculateAge, formatDate, getFilmography } from "../lib/utils";
 import { PersonViewActions } from "./person-actions";
@@ -20,7 +21,7 @@ export function PersonSidebar({
     .map(({ id, title }) => ({ id, title }));
 
   return (
-    <Sequence className={SIDEBAR_CLASS}>
+    <Sequence className={SIDEBAR_CLASS} wave={SCENE.buttons.at}>
       <div className="flex min-w-0 flex-col gap-3" data-exit="">
         <PersonPortrait awards={awards} person={person} />
         <PersonViewActions />

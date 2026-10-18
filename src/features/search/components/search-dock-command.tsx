@@ -22,7 +22,7 @@ const SEARCH_REGISTRATION = {
 export function SearchDockCommand(): null {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
-  const open = openPath === pathname && pathname !== "/";
+  const open = openPath === pathname;
 
   const toggle = useCallback(() => {
     setOpenPath((current) => (current === pathname ? null : pathname));
@@ -45,10 +45,9 @@ export function SearchDockCommand(): null {
         onClick: toggle,
         order: SEARCH_ACTION_ORDER,
         tooltip: "Search",
-        visible: pathname !== "/",
       },
     ],
-    [pathname, toggle],
+    [toggle],
   );
 
   useDockContextActions(actions);

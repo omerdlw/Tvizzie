@@ -4,8 +4,7 @@ import type { JSX } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { Button, Icon } from "@/ui";
 import { Magnet } from "@/motion/film";
-import { SCENE } from "../lib/motion";
-import { Rise, trackSpotlight } from "../stage";
+import { Item, trackSpotlight } from "../stage";
 import { usePersonView } from "./person-view-state";
 
 const BASE =
@@ -15,27 +14,21 @@ const IDLE =
 const ACTIVE =
   "bg-[rgb(var(--grade)/0.16)] text-[rgb(var(--grade))] ring-[rgb(var(--grade)/0.3)] hover:bg-[rgb(var(--grade)/0.24)] hover:ring-[rgb(var(--grade)/0.4)]";
 
+// The buttons come up where they stand, on the sidebar's wave: nothing slides
+// under their words, so they are drawn once and cannot shimmer.
 function Action({
   active,
-  from,
   icon,
   label,
   onClick,
-  order,
 }: {
   active: boolean;
-  from: "left" | "right";
   icon: { off: string; on: string };
   label: string;
   onClick: () => void;
-  order: number;
 }): JSX.Element {
   return (
-    <Rise
-      at={SCENE.buttons.at + order * SCENE.buttons.gap}
-      className="min-w-0 flex-1"
-      from={from}
-    >
+    <Item className="min-w-0 flex-1" exit={false} from="light">
       <Button
         aria-pressed={active}
         className={cn(BASE, active ? ACTIVE : IDLE)}
@@ -63,7 +56,7 @@ function Action({
           </span>
         </Magnet>
       </Button>
-    </Rise>
+    </Item>
   );
 }
 
@@ -81,21 +74,17 @@ export function PersonViewActions(): JSX.Element | null {
       {hasTimeline ? (
         <Action
           active={view === "timeline"}
-          from="left"
           icon={ICONS.timeline}
           label="Timeline"
           onClick={() => toggle("timeline")}
-          order={0}
         />
       ) : null}
       {awards ? (
         <Action
           active={view === "awards"}
-          from="right"
           icon={ICONS.awards}
           label="Awards"
           onClick={() => toggle("awards")}
-          order={1}
         />
       ) : null}
     </div>
