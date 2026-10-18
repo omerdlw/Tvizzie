@@ -68,6 +68,11 @@ export function layoutStage(aspect: number, wide: boolean): StageLayout {
   };
 }
 
+// The stage as a page of this size lays it out.
+export function stageFor(width: number, height: number): StageLayout {
+  return layoutStage(width / height, width >= 1024 && width / height >= 1.15);
+}
+
 // The curtain is heavy: it is drawn by a spring that lets it overshoot a
 // little and sway before it hangs still, and it closes faster than it opens.
 export interface Drape {
@@ -103,4 +108,101 @@ export function turnDigits(
     if (Math.abs(to - next) < 0.002 || Math.abs(away) < 0.002) next = to;
     digits[i] = ((next % 10) + 10) % 10;
   }
+}
+
+// The wall above was the picture on this screen all along. Its section
+// over, the camera is found close in on the screen, so close the screen is
+// all of the frame, and pulls back out of it: the house comes round it, the
+// seats rise into the foot of the frame, and the curtain closes over the
+// wall. Both sides work it out from the scroll, here, so they never part.
+// In screens of scroll past the end of the wall.
+export const PULL_BACK = {
+  // The camera pulls back over this stretch, and the wall is cropped down
+  // to the screen's edges over the first part of it.
+  crop: 0.35,
+  from: 0,
+  to: 0.6,
+  // The curtain closes over the wall.
+  close: [0.5, 0.8],
+} as const;
+
+export interface PullBack {
+  // How much of the wall's own frame has been cropped to the screen, 0..1.
+  crop: number;
+  // The camera on the stage, as the dolly the stage is drawn with.
+  dolly: number;
+  // How far the camera stood in, at the start.
+  near: number;
+  // How far the curtain is drawn while it closes over the wall.
+  open: number;
+}
+
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+const span = (value: number, a: number, b: number) =>
+  smoothstep(clamp((value - a) / (b - a), 0, 1));
+
+export function pullBackAt(
+  past: number,
+  layout: StageLayout,
+  aspect: number,
+): PullBack {
+  const near = nearOf(layout, aspect);
+  const back = span(past, PULL_BACK.from, PULL_BACK.to);
+  return {
+    crop: span(past, PULL_BACK.from, PULL_BACK.crop),
+    dolly: Math.exp(Math.log(near) * (1 - back)),
+    near,
+    open: 1 - span(past, PULL_BACK.close[0], PULL_BACK.close[1]),
+  };
+}
+
+// The nearest the camera can stand with the wall, laid over the whole
+// frame, still covering the screen.
+function nearOf(layout: StageLayout, aspect: number): number {
+  const [, cy, hw, hh] = layout.screen;
+  return Math.max(1, Math.min(aspect / (2 * hw), (0.5 - Math.abs(cy)) / hh));
+}
+
+// Where the wall's canvas goes, a frame of the full page laid over the
+// stage: a scale about a point of the page, and the part of it left
+// showing, as insets from its own edges, all in CSS pixels.
+export interface WallOnStage {
+  clip: [number, number, number, number];
+  origin: [number, number];
+  scale: number;
+}
+
+export function wallOnStage(
+  pull: PullBack,
+  layout: StageLayout,
+  width: number,
+  height: number,
+): WallOnStage {
+  const aspect = width / height;
+  const [, cy, hw, hh] = layout.screen;
+  const { near } = pull;
+  // The wall's frame on the stage: at the start it is the whole frame.
+  const left = -aspect / (2 * near);
+  const top = cy - cy / near + 1 / (2 * near);
+  const x = (sx: number) => ((sx - left) * near * width) / aspect;
+  const y = (sy: number) => (top - sy) * near * height;
+  // The screen, and of it what the curtain leaves.
+  const lead = Math.min(hw, pull.open * layout.half * DRAWN);
+  const insets: [number, number, number, number] = [
+    y(cy + hh),
+    width - x(lead),
+    height - y(cy - hh),
+    x(-lead),
+  ];
+  return {
+    // The crop is done before the curtain moves.
+    clip: insets.map((inset) => Math.max(0, inset) * pull.crop) as [
+      number,
+      number,
+      number,
+      number,
+    ],
+    origin: [width / 2, height / 2 - cy * height],
+    scale: pull.dolly / near,
+  };
 }

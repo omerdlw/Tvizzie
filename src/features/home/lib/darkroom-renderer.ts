@@ -6,11 +6,7 @@ import {
   PORTRAIT_ASPECT,
   type RoomLayout,
 } from "./darkroom";
-import {
-  DARKROOM_FRAGMENT,
-  DUST_FRAGMENT,
-  DUST_VERTEX,
-} from "./darkroom-shader";
+import { DARKROOM_FRAGMENT } from "./darkroom-shader";
 import {
   compositeFragment,
   DOWN_FRAGMENT,
@@ -22,6 +18,7 @@ const SHARED = [
   "uRes",
   "uTime",
   "uLit",
+  "uCarry",
   "uLens",
   "uLamp",
   "uLine",
@@ -31,7 +28,7 @@ const SHARED = [
   "uCount",
   "uSwing",
   "uAtlas",
-  "uCells",
+  "uWhite",
 ] as const;
 const SCENE = [
   ...SHARED,
@@ -48,7 +45,6 @@ const SCENE = [
   "uWave",
   "uInspect",
 ] as const;
-const DUST = SHARED;
 const DOWN = ["uSource", "uTexel", "uThreshold"] as const;
 const UP = ["uSource", "uTexel"] as const;
 const COMPOSITE = [
@@ -76,6 +72,8 @@ const SLOT = {
 const PICTURE_FADE_MS = 450;
 
 export interface DarkroomFrame {
+  // The light the stage's projector left on the print in the bath.
+  carry?: number;
   develop: number;
   exposure: number;
   // How far each print has come together.
@@ -92,6 +90,8 @@ export interface DarkroomFrame {
   time: number;
   wasDevelop: number;
   wave: number;
+  // The white light, 0..1.
+  white: number;
 }
 
 interface Target {
@@ -106,7 +106,8 @@ function load(src: string | null): Promise<HTMLImageElement | null> {
   const image = new Image();
   image.crossOrigin = "anonymous";
   image.decoding = "async";
-  image.src = readable(src);
+  // A sheet drawn on the page is not fetched, and a query would spoil it.
+  image.src = src.startsWith("data:") ? src : readable(src);
   return image
     .decode()
     .then(() => image)
@@ -140,17 +141,14 @@ export class DarkroomRenderer {
   readonly lost: Promise<void>;
   private readonly gl: WebGL2RenderingContext;
   private readonly scene: WebGLProgram;
-  private readonly dust: WebGLProgram;
   private readonly down: WebGLProgram;
   private readonly up: WebGLProgram;
   private readonly composite: WebGLProgram;
   private readonly us: Locations<typeof SCENE>;
-  private readonly uds: Locations<typeof DUST>;
   private readonly ud: Locations<typeof DOWN>;
   private readonly uu: Locations<typeof UP>;
   private readonly uc: Locations<typeof COMPOSITE>;
   private readonly vao: WebGLVertexArrayObject;
-  private readonly bare: WebGLVertexArrayObject;
   private readonly hdr: boolean;
   // The portrait on the sheet and the one before it, each with whether it
   // is a sheet at all and its size.
@@ -187,17 +185,13 @@ export class DarkroomRenderer {
     });
     if (!gl) return null;
     const scene = createProgram(gl, DARKROOM_FRAGMENT, POST_VERTEX);
-    const dust = createProgram(gl, DUST_FRAGMENT, DUST_VERTEX);
     const down = createProgram(gl, DOWN_FRAGMENT, POST_VERTEX);
     const up = createProgram(gl, UP_FRAGMENT, POST_VERTEX);
-    // The dust would be split into three by the usual fringe.
     const composite = createProgram(gl, compositeFragment(0.0015), POST_VERTEX);
-    if (!scene || !dust || !down || !up || !composite) {
+    if (!scene || !down || !up || !composite) {
       if (process.env.NODE_ENV !== "production") {
         for (const [type, source] of [
           [gl.FRAGMENT_SHADER, DARKROOM_FRAGMENT],
-          [gl.VERTEX_SHADER, DUST_VERTEX],
-          [gl.FRAGMENT_SHADER, DUST_FRAGMENT],
         ] as const) {
           const shader = gl.createShader(type);
           if (!shader) continue;
@@ -210,31 +204,23 @@ export class DarkroomRenderer {
       }
       return null;
     }
-    return new DarkroomRenderer(canvas, gl, [scene, dust, down, up, composite]);
+    return new DarkroomRenderer(canvas, gl, [scene, down, up, composite]);
   }
 
   private constructor(
     private readonly canvas: HTMLCanvasElement,
     gl: WebGL2RenderingContext,
-    programs: [
-      WebGLProgram,
-      WebGLProgram,
-      WebGLProgram,
-      WebGLProgram,
-      WebGLProgram,
-    ],
+    programs: [WebGLProgram, WebGLProgram, WebGLProgram, WebGLProgram],
   ) {
     this.gl = gl;
-    [this.scene, this.dust, this.down, this.up, this.composite] = programs;
+    [this.scene, this.down, this.up, this.composite] = programs;
     this.us = uniforms(gl, this.scene, SCENE);
-    this.uds = uniforms(gl, this.dust, DUST);
     this.ud = uniforms(gl, this.down, DOWN);
     this.uu = uniforms(gl, this.up, UP);
     this.uc = uniforms(gl, this.composite, COMPOSITE);
     this.hdr = Boolean(gl.getExtension("EXT_color_buffer_float"));
 
-    // One triangle over the screen for the full-screen passes. The dust is
-    // drawn without any attribute: each grain is known by its vertex id.
+    // One triangle over the screen for the full-screen passes.
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
     const buffer = gl.createBuffer();
@@ -251,7 +237,6 @@ export class DarkroomRenderer {
       gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0);
     }
     gl.bindVertexArray(null);
-    this.bare = gl.createVertexArray();
 
     this.portraits = [this.pixel(), this.pixel()];
     this.atlas = this.pixel();
@@ -477,7 +462,7 @@ export class DarkroomRenderer {
     ];
   }
 
-  // The uniforms both the room and the dust read.
+  // The uniforms of the room.
   private shared(
     u: Locations<typeof SHARED>,
     frame: DarkroomFrame,
@@ -489,6 +474,7 @@ export class DarkroomRenderer {
     gl.uniform2f(u.uRes, width, height);
     gl.uniform1f(u.uTime, frame.time);
     gl.uniform1f(u.uLit, frame.lit);
+    gl.uniform1f(u.uCarry, frame.carry ?? 0);
     gl.uniform3f(u.uLens, layout.focal, layout.horizon, layout.wall);
     gl.uniform4f(u.uLamp, ...layout.lamp);
     gl.uniform2f(u.uLine, ...layout.line);
@@ -504,7 +490,7 @@ export class DarkroomRenderer {
     gl.uniform1f(u.uCount, frame.prints);
     gl.uniform1f(u.uSwing, frame.swing);
     gl.uniform1i(u.uAtlas, 2);
-    gl.uniform2f(u.uCells, ...layout.cells);
+    gl.uniform1f(u.uWhite, frame.white);
   }
 
   draw(frame: DarkroomFrame): void {
@@ -547,28 +533,6 @@ export class DarkroomRenderer {
     gl.uniform1f(u.uWave, frame.wave);
     gl.uniform2f(u.uInspect, ...frame.inspect);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-    // The dust, over the room: only the prints that are on their way are
-    // drawn, the rest of their grains are thrown out in the vertex stage.
-    const cells = layout.cells[0] * layout.cells[1];
-    let first = -1;
-    let last = -1;
-    for (let i = 0; i < frame.prints; i += 1) {
-      const form = frame.form[i]!;
-      if (form <= 0 || form >= 0.999) continue;
-      if (first < 0) first = i;
-      last = i;
-    }
-    if (first >= 0) {
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      gl.useProgram(this.dust);
-      this.shared(this.uds, frame, scene.width, scene.height);
-      gl.bindVertexArray(this.bare);
-      gl.drawArrays(gl.POINTS, first * cells, (last - first + 1) * cells);
-      gl.bindVertexArray(this.vao);
-      gl.disable(gl.BLEND);
-    }
 
     // Bloom: halve the frame down a chain, keeping only what is bright at
     // the first step, then add the chain back up.
@@ -632,14 +596,7 @@ export class DarkroomRenderer {
       gl.deleteTexture(texture);
     }
     gl.deleteVertexArray(this.vao);
-    gl.deleteVertexArray(this.bare);
-    for (const program of [
-      this.scene,
-      this.dust,
-      this.down,
-      this.up,
-      this.composite,
-    ]) {
+    for (const program of [this.scene, this.down, this.up, this.composite]) {
       gl.deleteProgram(program);
     }
   }

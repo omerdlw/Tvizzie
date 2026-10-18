@@ -8,6 +8,7 @@
 // Units are metres of corridor, more or less; the camera rides the axis.
 
 import { PAST_DOOR } from "./portal";
+import { SPAN } from "./shatter";
 
 export type Chapter = "theatres" | "soon";
 
@@ -52,11 +53,15 @@ export interface Dated {
   day: number;
 }
 
-// Screens of scroll over which the tunnel dissolves in above the opening.
-export const OVERLAP = 0.6;
+// Screens of scroll the tunnel lies under the end of the opening: the band
+// bursts at the camera and the corridor is behind it, the camera already
+// walking it.
+export const OVERLAP = SPAN.outro;
 // Corridor travelled per screen of scroll.
 const UNITS = 3.6;
-const START = 3.6;
+// Where the camera stands when the band bursts; it comes to rest with the
+// first film a step ahead, as far in as before the overlap was longer.
+const START = 1.44 + OVERLAP * UNITS;
 // The dark stretch between the last film and the doorway.
 const RUN_OUT = 6;
 const FOCUS = 2.6;
@@ -196,8 +201,9 @@ export interface TunnelState {
   camZ: number;
   // The day the camera is looking at, fractional.
   day: number;
-  // The tunnel over the opening, 0..1.
-  dissolve: number;
+  // Through the band and into the corridor, 0..1: the corridor's lights
+  // wake as the band clears, and its words come once it has.
+  through: number;
   exposure: number;
 }
 
@@ -220,7 +226,7 @@ export function tunnelAt(s: number, plan: TunnelPlan): TunnelState {
     active,
     camZ,
     day: dayAt(plan, camZ - FOCUS * 0.85),
-    dissolve: ramp(s, OVERLAP * 0.2, OVERLAP),
+    through: ramp(s, 0, OVERLAP),
     exposure: 1,
   };
 }

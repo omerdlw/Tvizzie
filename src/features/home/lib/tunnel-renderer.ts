@@ -513,8 +513,7 @@ export class TunnelRenderer {
 
     gl.deleteTexture(this.floor);
     this.floor = this.texture(gl.LINEAR_MIPMAP_LINEAR, gl.TEXTURE_2D_ARRAY);
-    const levels =
-      Math.floor(Math.log2(Math.max(paint.width, strip))) + 1;
+    const levels = Math.floor(Math.log2(Math.max(paint.width, strip))) + 1;
     gl.texStorage3D(
       gl.TEXTURE_2D_ARRAY,
       levels,

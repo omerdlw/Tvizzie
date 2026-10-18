@@ -1,5 +1,6 @@
 import { createProgram, readable, uniforms } from "@/motion/film/gl";
 import type { StageLayout } from "./curtain";
+import { PORTRAIT_ASPECT, type RoomLayout } from "./darkroom";
 import { CURTAIN_FRAGMENT } from "./curtain-shader";
 import {
   COMPOSITE_FRAGMENT,
@@ -12,6 +13,8 @@ const SCENE = [
   "uRes",
   "uTime",
   "uLook",
+  "uDolly",
+  "uSafelight",
   "uStage",
   "uSeats",
   "uScreen",
@@ -21,6 +24,10 @@ const SCENE = [
   "uProject",
   "uFilmLight",
   "uFilm",
+  "uPrintOn",
+  "uRoom",
+  "uSheet",
+  "uSheetFit",
   "uFilmFit",
   "uHover",
   "uDigits",
@@ -53,10 +60,19 @@ const CELL_W = 112;
 const CELL_H = 256;
 
 export interface CurtainFrame {
+  // The last curtain: how far the camera has gone in on it, 1 and up, and
+  // how far the light on it has gone over to the safelight, 0..1.
+  dolly?: number;
   exposure: number;
+  safelight?: number;
   grain: number;
   hover: number;
   layout: StageLayout;
+  // The print thrown on the last curtain: how strongly, and the darkroom
+  // it is laid out for, with the zoom the dolly ends at.
+  print?: { on: number; room: RoomLayout; zoom: number } | null;
+  // The colour thrown by what is on the screen, if it is not the film.
+  light?: readonly [number, number, number] | null;
   lit: number;
   look: { x: number; y: number };
   open: number;
@@ -449,17 +465,31 @@ export class CurtainRenderer {
     gl.uniform2f(u.uRes, scene.width, scene.height);
     gl.uniform1f(u.uTime, frame.time);
     gl.uniform2f(u.uLook, frame.look.x, frame.look.y);
+    gl.uniform3f(u.uDolly, frame.dolly ?? 1, 0, layout.screen[1]);
+    gl.uniform1f(u.uSafelight, frame.safelight ?? 0);
     gl.uniform4f(u.uStage, layout.half, layout.top, layout.stage, layout.front);
     gl.uniform1f(u.uSeats, layout.seats);
     gl.uniform4f(u.uScreen, sx, sy, shw, shh);
     gl.uniform1f(u.uOpen, frame.open);
     gl.uniform1f(u.uSwing, frame.swing);
     gl.uniform1f(u.uLit, frame.lit);
-    const project = frame.project * fade;
+    const project = frame.light ? frame.project : frame.project * fade;
     gl.uniform1f(u.uProject, project);
-    gl.uniform3f(u.uFilmLight, ...this.filmLight);
+    gl.uniform3f(u.uFilmLight, ...(frame.light ?? this.filmLight));
     gl.uniform2f(u.uFilmFit, fit[0], fit[1]);
     gl.uniform1f(u.uHover, frame.hover);
+    const print = frame.print;
+    gl.uniform1f(u.uPrintOn, print ? print.on * fade : 0);
+    if (print) {
+      const { focal, horizon, sheet } = print.room;
+      gl.uniform3f(u.uRoom, focal, horizon, print.zoom);
+      gl.uniform4f(u.uSheet, ...sheet);
+      gl.uniform2f(
+        u.uSheetFit,
+        Math.min(1, PORTRAIT_ASPECT / imageAspect),
+        Math.min(1, imageAspect / PORTRAIT_ASPECT),
+      );
+    }
     gl.uniform4f(
       u.uYear,
       frame.year[0]!,

@@ -23,26 +23,40 @@ import { ordinal } from "../lib/best-picture";
 import {
   layoutStage,
   pull,
+  PULL_BACK,
+  pullBackAt,
+  stageFor,
   turnDigits,
   type Drape,
   type StageLayout,
 } from "../lib/curtain";
 import { CurtainRenderer } from "../lib/curtain-renderer";
+import { point } from "../lib/cursor";
 import { holdSteps } from "../lib/hold";
+import { carried, roomFor } from "../lib/darkroom";
 import type { LaureateMovie } from "../lib/types";
 import { FilmDock } from "./film-dock";
 import { Words } from "./words";
 
-// Screens of scroll before the house is in place, which bring the lights up
-// out of the dark the wall above went to, and after it, which take them down
-// again for the darkroom to come up out of. In between the page is held: the
-// films are not scrolled through but stepped through, one for each turn of
-// the wheel or swipe, the curtain falling and rising on every one.
+// Screens of scroll before the house is in place, which find the wall above
+// to be the picture on its screen as the camera pulls back from it, close
+// the curtain over it and bring the house lights up; and after it, over
+// which the last curtain falls with the film thrown on it as a print, and
+// the camera goes in on the print, its light turning to the darkroom's
+// safelight, until it lies where the darkroom's sheet does and the darkroom
+// comes up round it. In between the page
+// is held: the films are not scrolled through but stepped through, one for
+// each turn of the wheel or swipe, the curtain falling and rising on every
+// one.
 const INTRO = 1.3;
 const OUTRO = 0.6;
-// Of the screens after the house, those over which it goes dark.
-const DARK_FROM = 0.05;
-const DARK_TO = 0.5;
+// How near the camera is to the curtain when the darkroom has taken over:
+// by then the print thrown on the curtain lies where the darkroom's sheet
+// does.
+const DOLLY = 1.6;
+// Screens into the darkroom below at which its first director is in, where
+// skipping the stage lands.
+const DIRECTORS_IN = 1.2;
 // The least time between two steps, so every curtain is seen to fall.
 const COOLDOWN_MS = 650;
 // How long the curtain stays down with the year on it before it rises.
@@ -50,6 +64,8 @@ const HOLD_MS = 260;
 // Pictures fetched either side of the film in front.
 const AHEAD = 2;
 const GOLD = "#e4c584";
+// The light the wall throws while it is on the screen.
+const WALL_LIGHT: [number, number, number] = [0.24, 0.2, 0.17];
 const MONO = "font-mono text-[10px] uppercase tracking-[0.24em] sm:text-[11px]";
 const DECADES = [1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020];
 
@@ -103,6 +119,7 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
   const copy = useRef<HTMLDivElement>(null);
   const strip = useRef<HTMLElement>(null);
   const jump = useRef<(index: number) => void>(() => {});
+  const skip = useRef<() => void>(() => {});
   // The film the page has come to, and the one the curtain has opened on.
   const [selected, setSelected] = useState(0);
   const [revealed, setRevealed] = useState(0);
@@ -141,7 +158,6 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
     let lastInside = false;
     let lastFront = -1;
     let lastShown = -1;
-    let lastHover = false;
     let index = 0;
     let steppedAt = 0;
     let closedAt = 0;
@@ -168,9 +184,8 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
       vw = stageEl.clientWidth;
       vh = stageEl.clientHeight;
       top = layoutTop(sectionEl);
-      const isWide = vw >= 1024 && vw / vh >= 1.15;
-      layout = layoutStage(vw / vh, isWide);
-      setWide(isWide);
+      layout = stageFor(vw, vh);
+      setWide(layout.wide);
       // Where the walls and the stalls are, for the words to stand on.
       stageEl.style.setProperty(
         "--wall",
@@ -207,6 +222,14 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
       steppedAt: () => steppedAt,
       vh: () => vh,
     });
+    // Past the stage altogether, through its last curtain, for whoever
+    // does not want to step through every year.
+    skip.current = () => {
+      const y = top + (INTRO + OUTRO + DIRECTORS_IN) * vh;
+      if (reduced) window.scrollTo({ behavior: "instant", top: y });
+      else if (smoothScroll) smoothScroll.scrollTo(y, { duration: 3.4 });
+      else window.scrollTo({ behavior: "smooth", top: y });
+    };
     jump.current = (to: number) => {
       go(to);
       if (Math.abs(window.scrollY - pin()) > 2) hold.settle();
@@ -251,11 +274,21 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
       const y = scrollY.get();
       const raw = (y - top) / vh;
       hold.catchAt(y);
-      // Past the house it goes dark, and once dark it stops drawing.
-      const dark = 1 - ramp(raw, INTRO + DARK_FROM, INTRO + DARK_TO);
-      const shown = raw > 0 && dark > 0;
+      // Past the house: the words go first and the last curtain falls; the
+      // projector throws the film on it again, as a print, while the camera
+      // goes in on it and the light goes over to the safelight. Where the
+      // camera comes to rest the print lies where the darkroom's sheet does,
+      // and the darkroom comes up over it; then this stops drawing.
+      const after = raw - INTRO;
+      const leave = ramp(after, 0.02, 0.22);
+      const inward = ramp(after, 0.12, 0.5);
+      const dolly = reduced ? 1 : Math.exp(Math.log(DOLLY) * inward);
+      const printed = ramp(after, 0.1, 0.3);
+      const safelight = ramp(after, 0.22, 0.5);
+      const shown = raw > 0 && after < OUTRO;
       stageEl.style.visibility = shown ? "visible" : "hidden";
       if (!shown) {
+        point(canvasEl, null);
         if (lastInside) {
           lastInside = false;
           setInside(false);
@@ -263,14 +296,21 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
         return;
       }
 
-      // The house comes up out of the black: first the room, then the
-      // footlights, then the words.
-      stageEl.style.opacity = String(ramp(raw, 0.05, 0.45) * dark);
-      const lit = ramp(raw, 0.2, 0.95);
-      const said = ramp(raw, 0.75, 1.3) * dark;
-      stageEl.style.pointerEvents = said > 0.9 ? "" : "none";
+      // Until the curtain is closed over it, the wall above is on the
+      // screen, laid over this canvas, and the scroll alone works the camera
+      // and the curtain; the footlights and the house come up round it as
+      // the camera pulls back. Then the year is thrown on the curtain, and
+      // last come the words.
+      const pulling = raw < PULL_BACK.close[1];
+      const back = pullBackAt(Math.max(raw, 0), layout, vw / vh);
+      stageEl.style.opacity = "1";
+      const lit = ramp(raw, 0.1, 0.65);
+      const said = ramp(raw, 0.95, 1.3) * (1 - leave);
+      stageEl.style.pointerEvents = said > 0.9 ? "auto" : "none";
       if (chrome.current) {
-        chrome.current.style.opacity = String(ramp(raw, 0.4, 0.9));
+        chrome.current.style.opacity = String(
+          ramp(raw, 0.9, 1.25) * (1 - leave),
+        );
       }
 
       const within = lastInside ? said > 0.3 : said > 0.6;
@@ -296,20 +336,28 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
         const picture = pictureOf(film);
         renderer?.show(front, picture.src, picture.cover);
       }
+      const last = films[onStage];
+      carried.picture = last ? pictureOf(last).src : null;
       if (drape.open < 0.04) closedAt ||= now;
       else closedAt = 0;
       const ready = (renderer ? renderer.shown : front) === front;
       const held = closedAt === 0 || now - closedAt > HOLD_MS;
-      const wanted = raw > INTRO - 0.15 && ready && held ? 1 : 0;
-      if (reduced) {
+      const wanted =
+        raw > INTRO - 0.15 && after < 0.03 && ready && held ? 1 : 0;
+      if (pulling) {
+        drape.open = back.open;
+        drape.speed = 0;
+      } else if (reduced) {
         drape.open = wanted;
         drape.speed = 0;
       } else {
         pull(drape, wanted, dt);
       }
       const open = clamp(drape.open, 0, 1);
-      const playing = open > 0.25 && ready;
-      project = follow(project, playing ? 1 : 0, playing ? 3 : 9, dt);
+      const playing = !pulling && open > 0.25 && ready;
+      project = pulling
+        ? 0
+        : follow(project, playing ? 1 : 0, playing ? 3 : 9, dt);
 
       if (open > 0.5 && ready && front !== lastShown) {
         lastShown = front;
@@ -329,31 +377,56 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
       look.x = follow(look.x, clamp(at.x, -1, 1) * 1.2, 3, dt);
       look.y = follow(look.y, clamp(at.y, -0.5, 0.5) * 0.8, 3, dt);
       const hover = present && open > 0.85 && onScreen(sample.x, sample.y);
-      if (hover !== lastHover) {
-        lastHover = hover;
-        if (hover) {
-          canvasEl.dataset.cursor = "card";
-          canvasEl.dataset.cursorLabel = "Open";
-        } else {
-          delete canvasEl.dataset.cursor;
-          delete canvasEl.dataset.cursorLabel;
-        }
+      // The cursor frames the screen, with the film that is on it.
+      const onScreenNow = hover
+        ? films[renderer ? renderer.shown : front]
+        : undefined;
+      if (onScreenNow) {
+        const box = canvasEl.getBoundingClientRect();
+        const [cx, cy, hw, hh] = layout.screen;
+        const x = cx - look.x * 0.008;
+        const y = cy - look.y * 0.008;
+        point(canvasEl, {
+          box: [
+            box.left + vw / 2 + (x - hw) * vh,
+            box.top + vh / 2 - (y + hh) * vh,
+            box.left + vw / 2 + (x + hw) * vh,
+            box.top + vh / 2 - (y - hh) * vh,
+          ],
+          corner: 2,
+          title: onScreenNow.title,
+          year: onScreenNow.year,
+        });
+      } else {
+        point(canvasEl, null);
       }
 
       if (!renderer || cancelled) return;
       renderer.draw({
+        dolly: raw < INTRO ? back.dolly : dolly,
         exposure: 0.35 + 0.65 * lit,
         grain: reduced ? 0.02 : 0.05,
         hover: hover ? 1 : 0,
         layout,
+        print:
+          printed > 0
+            ? { on: printed, room: roomFor(vw, vh), zoom: DOLLY }
+            : null,
+        // The projector throws the wall until the curtain is across it.
+        light: pulling ? WALL_LIGHT : null,
         lit,
-        look,
+        look: pulling ? { x: 0, y: 0 } : look,
         open: drape.open,
-        project,
-        swing: reduced ? 0 : drape.speed,
+        project: pulling ? 1 - ramp(raw, 0.5, 0.8) : project,
+        safelight,
+        swing: reduced || pulling ? 0 : drape.speed,
         time: reduced ? 0 : now / 1000,
         year,
-        yearOn: (1 - ramp(open, 0.05, 0.55)) * ramp(raw, 0.45, 1.05),
+        // The last curtain is not a year's: nothing is thrown on it.
+        yearOn:
+          (1 - ramp(open, 0.05, 0.55)) *
+          ramp(raw, 0.72, 1) *
+          (1 - ramp(after, -0.01, 0.01)),
       });
     };
 
@@ -417,7 +490,7 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
     <section
       ref={section}
       aria-labelledby="awards-title"
-      className="relative"
+      className="pointer-events-none relative"
       style={{
         height: `${(INTRO + OUTRO + 1) * 100}svh`,
         marginTop: "-100svh",
@@ -455,13 +528,23 @@ export function Awards({ films }: { films: LaureateMovie[] }): JSX.Element {
             </p>
           </header>
 
-          <p
-            aria-hidden
-            className={`absolute top-[clamp(1.25rem,4.5svh,2.75rem)] right-(--gutter) pt-1.5 text-right tabular-nums ${MONO}`}
-          >
-            <span className="text-white">{pad(selected + 1)}</span>
-            <span className="text-white/30"> / {pad(count)}</span>
-          </p>
+          <div className="absolute top-[clamp(1.25rem,4.5svh,2.75rem)] right-(--gutter) flex flex-col items-end gap-3 pt-1.5">
+            <p aria-hidden className={`text-right tabular-nums ${MONO}`}>
+              <span className="text-white">{pad(selected + 1)}</span>
+              <span className="text-white/30"> / {pad(count)}</span>
+            </p>
+            <button
+              className={`group pointer-events-auto flex items-center gap-3 py-1 text-white/40 transition-colors duration-fast hover:text-white/80 ${MONO}`}
+              onClick={() => skip.current()}
+              type="button"
+            >
+              Skip to directors
+              <span
+                aria-hidden
+                className="block h-px w-5 origin-right bg-current transition-transform duration-slow ease-out-quint group-hover:scale-x-[1.6]"
+              />
+            </button>
+          </div>
 
           {wide ? (
             <nav

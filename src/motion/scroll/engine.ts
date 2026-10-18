@@ -11,8 +11,37 @@ const SCROLLING_LINGER_MS = 140;
 const LATCH_MS = 160;
 // Under the dock and everything the framework floats over the pages.
 const SHIELD_Z = 90;
+// A wheel gesture ends once it has been quiet this long. Within one, the
+// momentum only ever dies away: a new push shows as turns that keep rising
+// above it, two in a row, while a lone jump is only turns the browser ran
+// together while the page was busy drawing, and is still the same gesture.
+const GESTURE_GAP_MS = 180;
+const ENVELOPE_MS = 150;
+const RISE = 1.4;
+const RISES = 2;
+// The page is held on a stop once it is all but on it and all but still.
+const HELD_PX = 2;
+const HELD_SPEED = 80;
+// How long it must have been held there before a gesture may take it on:
+// after a pause in the wheel, and in a stream with no pause in it, as a
+// wheel spun free or a trackpad's momentum sends, which would otherwise run
+// from stop to stop.
+const DWELL_MS = 250;
+const DWELL_STREAM_MS = 700;
+// A hand still turning the wheel sends turns that hold up, one after
+// another, where momentum only ever dies away. Once the page has come up to
+// the stop, it is held a beat and then taken on.
+const STEADY = 3;
+const STEADY_MIN = 4;
+const STEADY_DWELL_MS = 350;
+const NEAR = 0.1;
 
 export interface SmoothScrollOptions {
+  // How far ahead of the page the wheel may set it going, in screens, and
+  // the fastest it may go, in screens a second. A flick on a trackpad sends
+  // far more than it seems to; without these the page runs away with it.
+  lead?: number;
+  maxSpeed?: number;
   response?: number;
   wheelMultiplier?: number;
 }
@@ -105,6 +134,25 @@ export class SmoothScroll {
 
   private response: number;
   private wheelMultiplier: number;
+  private lead: number;
+  private maxSpeed: number;
+  // Points of the page a gesture's momentum stops at; the next gesture goes
+  // on past them.
+  private readonly stops = new Set<() => number>();
+  private gesture = {
+    at: -Infinity,
+    delta: 0,
+    envelope: 0,
+    rises: 0,
+    size: 0,
+    steady: 0,
+  };
+  // The stop the page is held on, and since when; and the stop the wheel
+  // has been let past, until the page is held on another.
+  private held: { at: number; since: number } | null = null;
+  private leave: number | null = null;
+  // The stop the wheel has been pressing on since the page came up to it.
+  private pressed: { at: number; since: number } | null = null;
   private readonly listeners = new Set<Listener>();
   private current = 0;
   private velocity = 0;
@@ -141,9 +189,13 @@ export class SmoothScroll {
   private shield: HTMLDivElement | null = null;
 
   constructor({
+    lead = Infinity,
+    maxSpeed = Infinity,
     response = 0.11,
     wheelMultiplier = 1,
   }: SmoothScrollOptions = {}) {
+    this.lead = lead;
+    this.maxSpeed = maxSpeed;
     this.response = response;
     this.wheelMultiplier = wheelMultiplier;
   }
@@ -215,17 +267,36 @@ export class SmoothScroll {
 
   // A page can ask for a heavier or lighter glide while it is open; the
   // returned function puts the previous feel back.
-  tune({ response, wheelMultiplier }: SmoothScrollOptions): () => void {
+  tune({
+    lead,
+    maxSpeed,
+    response,
+    wheelMultiplier,
+  }: SmoothScrollOptions): () => void {
     const previous = {
+      lead: this.lead,
+      maxSpeed: this.maxSpeed,
       response: this.response,
       wheelMultiplier: this.wheelMultiplier,
     };
+    if (lead !== undefined) this.lead = lead;
+    if (maxSpeed !== undefined) this.maxSpeed = maxSpeed;
     if (response !== undefined) this.response = response;
     if (wheelMultiplier !== undefined) this.wheelMultiplier = wheelMultiplier;
     return () => {
+      this.lead = previous.lead;
+      this.maxSpeed = previous.maxSpeed;
       this.response = previous.response;
       this.wheelMultiplier = previous.wheelMultiplier;
     };
+  }
+
+  // A point of the page the wheel's momentum does not carry past: a gesture
+  // that began on one side of it comes to rest on it, and it takes another
+  // to go on. Read afresh at every turn of the wheel, as the page may move.
+  stopAt(at: () => number): () => void {
+    this.stops.add(at);
+    return () => this.stops.delete(at);
   }
 
   subscribe(listener: Listener): () => void {
@@ -373,11 +444,61 @@ export class SmoothScroll {
     if (!this.running) this.current = this.adoptable();
     this.tween = null;
     this.carried = null;
-    this.target = clamp(
-      start + wheelPixels(event, window.innerHeight) * this.wheelMultiplier,
-      0,
-      this.limit(),
-    );
+    const delta = wheelPixels(event, window.innerHeight) * this.wheelMultiplier;
+    const gesture = this.gesture;
+    const quiet = event.timeStamp - gesture.at;
+    const envelope = gesture.envelope * Math.exp(-quiet / ENVELOPE_MS);
+    const size = Math.abs(delta);
+    gesture.rises = size > envelope * RISE + 4 ? gesture.rises + 1 : 0;
+    const paused =
+      quiet > GESTURE_GAP_MS || Math.sign(delta) !== Math.sign(gesture.delta);
+    const raw = Math.abs(event.deltaY);
+    gesture.steady =
+      !paused && raw >= STEADY_MIN && raw >= gesture.size
+        ? gesture.steady + 1
+        : 0;
+    const pushed = gesture.rises >= RISES;
+    gesture.at = event.timeStamp;
+    gesture.delta = delta;
+    gesture.envelope = Math.max(size, envelope);
+    gesture.size = raw;
+    const pressed = this.pressed;
+    if (
+      gesture.steady >= STEADY &&
+      pressed &&
+      event.timeStamp - pressed.since >= STEADY_DWELL_MS
+    ) {
+      this.leave = pressed.at;
+    }
+    // A new gesture takes the page on past the stop it is held on, once it
+    // has been held there long enough.
+    const held = this.held;
+    if ((paused || pushed) && held) {
+      const dwell = paused ? DWELL_MS : DWELL_STREAM_MS;
+      if (event.timeStamp - held.since >= dwell) this.leave = held.at;
+      gesture.rises = 0;
+    }
+
+    const reach = this.lead * window.innerHeight;
+    let next = clamp(start + delta, this.current - reach, this.current + reach);
+    // Every stop between the page and where the wheel would take it holds
+    // it, and the one it is on, unless it has been let past that one.
+    let against: number | null = null;
+    for (const stop of this.stops) {
+      const at = stop();
+      if (this.leave !== null && Math.abs(this.leave - at) <= HELD_PX) continue;
+      if (this.current <= at + HELD_PX && next > at) next = at;
+      else if (this.current >= at - HELD_PX && next < at) next = at;
+      else continue;
+      against = at;
+    }
+    const near = NEAR * window.innerHeight;
+    if (against === null || Math.abs(this.current - against) > near) {
+      this.pressed = null;
+    } else if (!pressed || Math.abs(pressed.at - against) > HELD_PX) {
+      this.pressed = { at: against, since: event.timeStamp };
+    }
+    this.target = clamp(next, 0, this.limit());
     this.run();
   };
 
@@ -393,6 +514,35 @@ export class SmoothScroll {
     this.extent = null;
     if (!this.running) this.adopt(window.scrollY);
   };
+
+  // Whether the page is held on a stop: on it, to the eye, and all but
+  // still. Held on a new one, it is no longer let past the last.
+  private hold(ratio: number): void {
+    // A stop left well behind holds again when the page comes back to it.
+    if (
+      this.leave !== null &&
+      Math.abs(this.current - this.leave) > window.innerHeight
+    ) {
+      this.leave = null;
+    }
+    const still = Math.abs(this.velocity) * ratio < HELD_SPEED;
+    let on: number | null = null;
+    if (still) {
+      for (const stop of this.stops) {
+        const at = stop();
+        if (Math.abs(this.current - at) <= HELD_PX) on = at;
+      }
+    }
+    if (on === null) {
+      this.held = null;
+      return;
+    }
+    if (this.held && Math.abs(this.held.at - on) <= HELD_PX) return;
+    this.held = { at: on, since: performance.now() };
+    if (this.leave !== null && Math.abs(this.leave - on) > HELD_PX) {
+      this.leave = null;
+    }
+  }
 
   private readonly tick = ({ delta }: { delta: number }): void => {
     const dt = Math.min(delta, MAX_FRAME_MS) / 1000;
@@ -417,6 +567,14 @@ export class SmoothScroll {
       );
       next = state.position;
       this.velocity = state.velocity;
+      // However far ahead the target, the page goes no faster than this.
+      const fastest = this.maxSpeed * window.innerHeight;
+      if (this.carried === null && Math.abs(this.velocity) > fastest) {
+        this.velocity = Math.sign(this.velocity) * fastest;
+        next =
+          this.current +
+          clamp(next - this.current, -fastest * dt, fastest * dt);
+      }
     }
 
     const ratio = window.devicePixelRatio || 1;
@@ -437,6 +595,8 @@ export class SmoothScroll {
       this.moving();
       this.listeners.forEach((listener) => listener(y));
     }
+
+    if (this.stops.size > 0) this.hold(ratio);
 
     if (settled) {
       this.carried = null;

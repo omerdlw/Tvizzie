@@ -38,10 +38,13 @@ import {
   COLUMNS,
   filmAt,
   nearestCopy,
+  sheetOnScreen,
   wallAt,
   type Vec2,
   type WallView,
 } from "../lib/canon-wall";
+import { bounds, point } from "../lib/cursor";
+import { PULL_BACK, pullBackAt, stageFor, wallOnStage } from "../lib/curtain";
 import { rankLabel } from "../lib/format";
 import {
   COPY_WIDTH,
@@ -50,15 +53,19 @@ import {
   WALL_BEHIND,
   portal,
 } from "../lib/portal";
+import { useStop } from "../lib/stop";
 import type { CanonMovie } from "../lib/types";
 import { FilmDock } from "./film-dock";
 import { Count, Ticker } from "./odometer";
 
 // Screens of scroll the wall holds for, and how far it drifts up per screen.
 const LENGTH = 2.6;
-// Screens past its end after which the awards stage has faded in over it, and
-// the wall stops drawing and gives up the dock. It goes dark on the way.
-const GIVEN_UP = 0.5;
+// Screens past its end after which the wall stops drawing: by then the
+// camera has pulled back to find it the picture on the awards' screen, and
+// the curtain has closed over it.
+const GIVEN_UP = PULL_BACK.close[1];
+// Screens in at which the camera is through the doorway and the words are up.
+const ENTERED = 0.35;
 const ROWS_PER_SCREEN = 0.9;
 // Below this many pixels a press is a pick, not a drag.
 const CLICK_SLOP = 6;
@@ -134,6 +141,8 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
   const watched = known ? marks.watched : NONE;
   const listed = known ? marks.listed : NONE;
   const ids = useMemo(() => films.map((film) => film.id), [films]);
+  // Through the doorway, a flick comes to rest before the wall.
+  useStop(section, ENTERED);
   const seenCount = useMemo(
     () => films.filter((film) => watched.has(film.id)).length,
     [films, watched],
@@ -232,6 +241,7 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
     let cancelled = false;
     let lastAt = performance.now();
     let lastHover = -1;
+    let lastLoupe = -1;
     let lastInside = false;
     let copied = 0;
     const count = films.length;
@@ -406,16 +416,35 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
       const entered = gone ? 0 : beyond ? 1 : portal.through;
       // From far down the corridor the wall shows through the doorway,
       // dimmed by the haze between; the tunnel's canvas sits over it, clear
-      // only in the doorway.
-      const copying =
-        !beyond &&
-        portal.open &&
-        portal.distance < SEEN_FROM &&
-        portal.distance > -PAST_DOOR + 0.05;
-      // At its end the wall goes dark, for the awards to come up out of.
-      const dark = 1 - ramp(raw, LENGTH - 0.25, LENGTH + GIVEN_UP);
+      // only in the doorway. Through the doorway the tunnel gives the
+      // screen up to it, and it is drawn on until its own section takes
+      // over, never leaving a frame with neither.
+      const copying = !beyond && portal.open && portal.distance < SEEN_FROM;
+      // Past its end the wall is laid over the awards' screen, the camera
+      // pulling back from it, and the curtain closing over it.
+      const past = raw - LENGTH;
+      if (beyond && past > 0) {
+        const placed = wallOnStage(
+          pullBackAt(past, stageFor(vw, vh), vw / vh),
+          stageFor(vw, vh),
+          vw,
+          vh,
+        );
+        const [t, r, b, l] = placed.clip;
+        stageEl.style.zIndex = "1";
+        stageEl.style.transformOrigin = `${placed.origin[0]}px ${placed.origin[1]}px`;
+        stageEl.style.transform = `scale(${placed.scale.toFixed(5)})`;
+        stageEl.style.clipPath = `inset(${t.toFixed(2)}px ${r.toFixed(2)}px ${b.toFixed(2)}px ${l.toFixed(2)}px)`;
+      } else if (stageEl.style.zIndex) {
+        stageEl.style.zIndex = "";
+        stageEl.style.transformOrigin = "";
+        stageEl.style.transform = "";
+        stageEl.style.clipPath = "";
+      }
+      // The words leave first.
+      const quiet = 1 - ramp(raw, LENGTH - 0.3, LENGTH);
       const exposure = beyond
-        ? dark
+        ? 1
         : copying
           ? Math.exp(-Math.max(portal.distance, 0) * 0.05)
           : 0;
@@ -427,14 +456,18 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
 
       const shown = beyond || copying;
       stageEl.style.visibility = shown ? "visible" : "hidden";
-      stageEl.style.pointerEvents = entered > 0.95 ? "" : "none";
+      stageEl.style.pointerEvents =
+        entered > 0.95 && raw < LENGTH ? "auto" : "none";
+      // Through the doorway the camera steps in, the wall bowing round it as
+      // it comes; once it stands, the words, and after them the dock.
+      const stepped = beyond ? ramp(s, 0, ENTERED) : 0;
+      const said = beyond ? ramp(s, ENTERED * 0.6, ENTERED) * quiet : 0;
       if (chrome.current) {
-        const copy = beyond ? ramp(s, 0.02, 0.35) * dark : 0;
-        chrome.current.style.opacity = String(copy);
-        chrome.current.style.visibility = copy > 0.001 ? "visible" : "hidden";
+        chrome.current.style.opacity = String(said);
+        chrome.current.style.visibility = said > 0.001 ? "visible" : "hidden";
       }
-      const settled = entered;
-      const within = lastInside ? settled > 0.6 : settled > 0.97;
+      const settled = said;
+      const within = lastInside ? settled > 0.4 : settled > 0.95;
       if (within !== lastInside) {
         lastInside = within;
         setInside(within);
@@ -469,7 +502,7 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
       lens = follow(lens, present ? 0.44 : 0.28, 3, dt);
 
       view = {
-        bulge: 0.32,
+        bulge: 0.14 + 0.18 * stepped,
         focus: [focus[0], focus[1]],
         height: vh,
         lens,
@@ -483,21 +516,44 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
       if (hover !== lastHover) {
         lastHover = hover;
         setHovered(hover);
-        if (!drag) {
-          if (hover >= 0) {
-            canvasEl.dataset.cursor = "card";
-            canvasEl.dataset.cursorLabel =
-              hover === live.current.selected ? "Open" : "Pick";
-          } else {
-            delete canvasEl.dataset.cursor;
-            delete canvasEl.dataset.cursorLabel;
-          }
+      }
+      // The cursor frames the one-sheet as the loupe and the bow of the
+      // wall show it, which changes as either moves.
+      if (!drag) {
+        const film = hover >= 0 ? films[hover] : undefined;
+        if (film) {
+          const wall = wallAt(view, sx, sy);
+          const outline = sheetOnScreen(
+            view,
+            [Math.floor(wall[0]), Math.floor(wall[1])],
+            [sx, sy],
+          ).map(({ x, y }) => ({ x: x + box.left, y: y + box.top }));
+          const frame = bounds(outline);
+          point(canvasEl, {
+            box: frame,
+            corner: (frame[2] - frame[0]) * 0.15,
+            title: film.title,
+            year: film.year,
+          });
+        } else {
+          point(canvasEl, null);
         }
       }
 
       if (!renderer || cancelled || (!shown && !copying)) return;
 
       const state = live.current;
+      // The print the loupe is over, or else the one picked, is fetched
+      // again large enough to stand magnifying.
+      const loupe = entered > 0.95 ? (hover >= 0 ? hover : state.selected) : -1;
+      if (loupe !== lastLoupe) {
+        lastLoupe = loupe;
+        const film = films[loupe];
+        renderer.focus(
+          loupe,
+          film ? tmdbImageUrl("poster", film.posterPath, "w780") : null,
+        );
+      }
       films.forEach((film, index) => {
         const look = looks[index]!;
         const isSeen = state.watched.has(film.id);
@@ -651,7 +707,7 @@ export function Canon({ films }: { films: CanonMovie[] }): JSX.Element {
     <section
       ref={section}
       aria-labelledby="canon-title"
-      className="relative"
+      className="pointer-events-none relative"
       style={{
         height: `${(LENGTH + 1) * 100}svh`,
         marginTop: "-100svh",

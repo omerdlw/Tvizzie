@@ -11,7 +11,12 @@
 
 export interface Portal {
   // A small copy of the canon's screen, top row first, RGBA.
-  beyond: { height: number; pixels: Uint8Array; version: number; width: number };
+  beyond: {
+    height: number;
+    pixels: Uint8Array;
+    version: number;
+    width: number;
+  };
   // The average colour of that copy, linear.
   colour: [number, number, number];
   // How far the camera still is from the doorway, in corridor units;

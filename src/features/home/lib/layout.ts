@@ -5,9 +5,11 @@ import type { WordRaster } from "./glyphs";
 
 export interface WordLayout {
   box: [number, number, number, number];
+  // The middle of the letter the camera flies into, in device pixels.
   focal: [number, number];
   // The ink of the word on the page, in CSS pixels.
   ink: { bottom: number; left: number; right: number; top: number };
+  // How far the camera has to come in for that letter to fill the frame.
   zoom: number;
 }
 
@@ -19,7 +21,7 @@ export interface Rect {
 }
 
 // The camera flies into the second I.
-const THROUGH = 5;
+export const THROUGH = 5;
 const HEIGHT_SHARE = 0.6;
 const SCOPE = 2.39;
 
@@ -62,13 +64,13 @@ export function layWord(
   };
 }
 
-// Kept clear beneath the screen for the reel and the dock, which carries the
+// Kept clear beneath the band for the ranks and the dock, which carries the
 // credits.
 const BELOW = 236;
 const BELOW_PORTRAIT = 212;
 
-// The screen the films play on: cinemascope on a wide window, a tall frame on
-// a phone, as large as the room under it allows.
+// The band the week lands as: cinemascope on a wide window, a tall frame on a
+// phone, as large as the room under it allows.
 export function layScreen(width: number, height: number): Rect {
   if (width < 768 && height > width) {
     const w = width - gutterOf(width) * 2;

@@ -8,6 +8,9 @@ import type { useSmoothScroll } from "@/motion/scroll";
 
 type SmoothScroll = NonNullable<ReturnType<typeof useSmoothScroll>>;
 
+// A jump of the scroll this many screens in one frame is a scrollbar thrown
+// or a key that goes to the end, and is let through, not caught.
+const JUMP = 0.6;
 // A turn of the wheel ends once it has been quiet this long, however long
 // its momentum ran on before that.
 const GESTURE_GAP_MS = 220;
@@ -138,6 +141,7 @@ export function holdSteps(options: HoldOptions): Hold {
       const hold = pin();
       if (
         performance.now() - lastWheel > 400 &&
+        Math.abs(y - lastY) < options.vh() * JUMP &&
         ((lastY < hold - 2 && y > hold + 2) ||
           (lastY > hold + 2 && y < hold - 2))
       ) {

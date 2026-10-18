@@ -25,7 +25,9 @@ import {
   relativeDay,
 } from "../lib/format";
 import { camera, insideQuad, project, type Vec3 } from "../lib/tunnel-camera";
+import { bounds, point } from "../lib/cursor";
 import { portal } from "../lib/portal";
+import { useStop } from "../lib/stop";
 import { paintFloor } from "../lib/tunnel-floor";
 import { TunnelRenderer } from "../lib/tunnel-renderer";
 import {
@@ -50,6 +52,9 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 const follow = (from: number, to: number, rate: number, dt: number) =>
   from + (to - from) * (1 - Math.exp(-rate * dt));
+const smooth = (t: number) => t * t * (3 - 2 * t);
+const ramp = (value: number, a: number, b: number) =>
+  smooth(clamp((value - a) / (b - a), 0, 1));
 const noise = (n: number) => {
   const x = Math.sin(n * 12.9898) * 43758.5453;
   return x - Math.floor(x);
@@ -117,6 +122,8 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
   // Depth along the tunnel does not depend on the window, so the scroll it
   // takes can be known before anything is measured.
   const length = planTunnel(dated, 1.6).length;
+  // Through the screen above, a flick comes to rest in the corridor.
+  useStop(section, OVERLAP);
 
   useEffect(() => {
     const sectionEl = section.current;
@@ -153,9 +160,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
     const print = longest > 1400 ? "w780" : "w500";
     const renderer = TunnelRenderer.create(
       canvasEl,
-      entries.map(({ film }) =>
-        tmdbImageUrl("poster", film.posterPath, print),
-      ),
+      entries.map(({ film }) => tmdbImageUrl("poster", film.posterPath, print)),
     );
     if (!renderer) setPlain(true);
 
@@ -231,24 +236,28 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       );
       lastZ = state.camZ;
 
-      // The tunnel dissolves in over the end of the opening.
-      const shown = state.dissolve;
+      // The corridor lies under the opening's band as it bursts, whole
+      // from the first frame: the band clears off it, it does not fade in.
+      const shown = raw >= 0 ? 1 : 0;
+      const through = state.through;
       stageEl.style.opacity = String(shown);
-      stageEl.style.visibility = shown > 0.001 ? "visible" : "hidden";
-      stageEl.style.pointerEvents = shown > 0.6 ? "" : "none";
+      stageEl.style.visibility = shown ? "visible" : "hidden";
+      stageEl.style.pointerEvents = through > 0.9 ? "auto" : "none";
       // Past the last film the walk goes on into the dark, and the copy
       // about the films goes with it.
       const lastFilm = plan.posters[plan.posters.length - 1]?.z ?? plan.gate;
       const past = clamp((lastFilm - state.camZ + 0.2) / 1.6, 0, 1);
+      // The words come once the last of the band is past the camera.
+      const said = ramp(through, 0.7, 1);
       if (chrome.current) {
-        const copy = clamp(shown * 2 - 1, 0, 1) * (1 - past);
+        const copy = said * (1 - past);
         chrome.current.style.opacity = String(copy);
         chrome.current.style.visibility = copy > 0.001 ? "visible" : "hidden";
       }
-      // The dock takes over the film's credits once the corridor is lit, and
-      // gives the card back on the way out, either way.
-      const lit = shown * (1 - past);
-      const within = lastInside ? lit > 0.35 : lit > 0.75;
+      // The dock takes over the film's credits after the words, and gives
+      // the card back on the way out, either way.
+      const lit = said * (1 - past);
+      const within = lastInside ? lit > 0.35 : lit > 0.9;
       if (within !== lastInside) {
         lastInside = within;
         setInside(within);
@@ -269,8 +278,10 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       // The canon may show through the doorway only once this canvas covers
       // the screen; while it is still dissolving in over the opening, the
       // canon's black would show through it too.
-      portal.open = visible && !cancelled && shown >= 0.999;
-      if (!visible || cancelled || shown <= 0.001) {
+      portal.open = visible && !cancelled && through >= 0.999;
+      if (!visible || cancelled || !shown) {
+        stageEl.style.visibility = "hidden";
+        point(canvasEl, null);
         // Off screen: the doorway is either still ahead or long behind.
         const through = s >= length - 1e-3 ? 1 : 0;
         portal.open = false;
@@ -287,7 +298,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           Number.isNaN(litAt[index]!) &&
           ahead > -1 &&
           ahead < WAKE &&
-          shown > 0.15
+          through > 0.12
         ) {
           litAt[index] = now + Math.max(0, ahead) * CASCADE_MS;
         }
@@ -296,7 +307,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
           : powerAt(now - litAt[index]!, index + 1, reduced);
       });
       const toGate = state.camZ - plan.gate;
-      if (Number.isNaN(gateAt) && toGate < WAKE + 2 && shown > 0.15) {
+      if (Number.isNaN(gateAt) && toGate < WAKE + 2 && through > 0.12) {
         gateAt = now + Math.max(0, toGate) * CASCADE_MS;
       }
       const gatePower = Number.isNaN(gateAt)
@@ -348,6 +359,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
       // Through the doorway the canon has the whole screen.
       if (portal.through >= 1 && portal.distance < 0) {
         stageEl.style.visibility = "hidden";
+        point(canvasEl, null);
         return;
       }
 
@@ -373,7 +385,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
         const flat = quad as { x: number; y: number }[];
         if (
           present &&
-          shown > 0.6 &&
+          through > 0.9 &&
           state.exposure > 0.5 &&
           insideQuad(sample.x, sample.y, flat) &&
           (hit === -1 || poster.z > plan.posters[hit]!.z)
@@ -383,16 +395,16 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
         return flat;
       });
 
-      if (hit !== hovered.current) {
-        hovered.current = hit;
-        if (hit >= 0) {
-          canvasEl.dataset.cursor = "card";
-          canvasEl.dataset.cursorLabel = "View";
-        } else {
-          delete canvasEl.dataset.cursor;
-          delete canvasEl.dataset.cursorLabel;
-        }
-      }
+      hovered.current = hit;
+      // The cursor frames the poster as it stands on the wall.
+      const quad = hit >= 0 ? quads.current[hit] : null;
+      const film = hit >= 0 ? entries[hit]?.film : undefined;
+      point(
+        canvasEl,
+        quad && film
+          ? { box: bounds(quad), corner: 2, title: film.title, year: film.year }
+          : null,
+      );
       hover.forEach((value, index) => {
         hover[index] = follow(value, index === hit ? 1 : 0, 8, dt);
       });
@@ -455,7 +467,7 @@ export function Tunnel({ soon, theatres, today }: TunnelProps): JSX.Element {
     <section
       ref={section}
       aria-labelledby="tunnel-title"
-      className="relative"
+      className="pointer-events-none relative"
       style={{
         height: `${(length + 1) * 100}svh`,
         marginTop: `${-(1 + OVERLAP) * 100}svh`,

@@ -1,3 +1,5 @@
+import { SHEET_BORDER } from "./darkroom";
+
 // The picture palace, drawn in one pass and in linear light, back to front:
 // the dark of the stage with the screen in it, the velvet curtain in front
 // of that, the swagged border with its gold fringe across the top, the gilt
@@ -20,6 +22,25 @@ out vec4 outColor;
 uniform vec2 uRes;
 uniform float uTime;
 uniform vec2 uLook;
+// The last curtain: the camera dollies in on it, zoom and the point it
+// closes on, and the light on it goes over to the darkroom's safelight,
+// under which, as under any light of one colour, every colour goes to that
+// one and only how light it is is left.
+uniform vec3 uDolly;
+uniform float uSafelight;
+// The darkroom's own amber.
+const vec3 SAFELIGHT = vec3(1.0, 0.27, 0.035) * 1.9;
+// Once the last curtain is down the projector throws the film on it again,
+// as a print: the sheet of paper in the darkroom's tray as the camera will
+// see it when it has gone in, so that where the darkroom comes up the print
+// is already lying in its bath. How strongly it is thrown; the darkroom's
+// lens (focal length, horizon) and the zoom the dolly ends at; the sheet on
+// the bench, its middle and half size; and how the film is fitted to it.
+uniform float uPrintOn;
+uniform vec3 uRoom;
+uniform vec4 uSheet;
+uniform vec2 uSheetFit;
+const float SHEET_BORDER = ${SHEET_BORDER};
 // Half the opening's width, its top, the stage line and the apron's front.
 uniform vec4 uStage;
 uniform float uSeats;
@@ -102,6 +123,24 @@ vec3 gilt(vec2 p, vec3 n) {
   float spec = pow(max(dot(n, h), 0.0), 28.0);
   float level = dot(lit, vec3(0.333));
   return GOLD * (0.025 * uLit + lit * 0.55) + GOLD * spec * level * 2.4;
+}
+
+// How light the print thrown on the curtain is at a point of it, or -1 off
+// the paper. The point is taken to where it will be on the screen once the
+// dolly is done, and from there down onto the darkroom's bench.
+float printAt(vec2 p) {
+  vec2 q = uDolly.yz + (p - uDolly.yz) * uRoom.z;
+  float rise = uRoom.y - q.y;
+  if (rise <= 0.0) return -1.0;
+  float z = uRoom.x / rise;
+  vec2 s = (vec2(q.x * z / uRoom.x, z) - uSheet.xy) / uSheet.zw;
+  if (abs(s.x) > 1.0 || abs(s.y) > 1.0) return -1.0;
+  vec2 v = s / (1.0 - SHEET_BORDER);
+  if (abs(v.x) > 1.0 || abs(v.y) > 1.0) return 1.0;
+  vec2 uv = 0.5 + vec2(v.x, -v.y) * 0.5 * uSheetFit;
+  vec3 c = pow(texture(uFilm, uv).rgb, vec3(2.2));
+  float lum = pow(clamp(dot(c, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0), 0.8);
+  return 1.0 - (1.0 - lum + 0.04) * 0.94;
 }
 
 // How much of the year's lettering a point of the closed curtain catches.
@@ -193,6 +232,10 @@ vec4 curtain(vec2 p, float aa) {
   float pool = exp(-dot(off * vec2(0.55, 1.0), off * vec2(0.55, 1.0)) * 1.6);
   float glyph = yearAt(p + vec2(n.x * 0.005, 0.0));
   light += LAMP * (pool * 0.5 + glyph * 6.5) * facing * uYearOn;
+  if (uPrintOn > 0.0) {
+    float print = printAt(p + vec2(n.x * 0.004, 0.0));
+    if (print >= 0.0) light += LAMP * (0.15 + print * 3.2) * facing * uPrintOn;
+  }
   // The screen lights the edges of the drawn curtain.
   float gap = max(ax - lead, 0.0);
   light += uFilmLight * uProject * 0.9 * exp(-gap / 0.045) *
@@ -408,8 +451,11 @@ vec4 seats(vec2 p, float aa) {
 
 void main() {
   float aspect = uRes.x / uRes.y;
-  vec2 c = (vUv - 0.5) * vec2(aspect, 1.0);
-  float aa = 1.2 / uRes.y;
+  vec2 screenC = (vUv - 0.5) * vec2(aspect, 1.0);
+  // The stage nears as the camera goes in; the seats, nearer, rush past.
+  vec2 c = uDolly.yz + (screenC - uDolly.yz) / uDolly.x;
+  vec2 cs = uDolly.yz + (screenC - uDolly.yz) / pow(uDolly.x, 1.8);
+  float aa = 1.2 / uRes.y / uDolly.x;
   vec2 pb = c + uLook * 0.008;
   vec2 pc = c + uLook * 0.014;
   vec2 pf = c + uLook * 0.02;
@@ -434,7 +480,9 @@ void main() {
   }
   col += footlights(pc);
   col += beam(c);
-  vec4 stalls = seats(c, aa);
+  vec4 stalls = seats(cs, aa);
   col = mix(col, stalls.rgb, stalls.a);
+  float under = dot(col, vec3(0.6, 0.3, 0.1));
+  col = mix(col, under * SAFELIGHT, uSafelight);
   outColor = vec4(max(col, 0.0), 1.0);
 }`;

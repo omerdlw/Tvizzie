@@ -41,6 +41,12 @@ uniform float uGrain;
 // tunnel lets it through where its floor is glossy.
 uniform vec4 uMirror;
 uniform float uMirrorOn;
+// The print under the loupe, fetched again larger: which film it is (-1 for
+// none yet), how far it has come in, and how it is cropped to the cell.
+uniform sampler2D uLoupe;
+uniform float uLoupeIndex;
+uniform float uLoupeMix;
+uniform vec2 uLoupeCrop;
 
 const float COLUMNS = 10.0;
 const float GAP = 0.14;
@@ -126,6 +132,10 @@ vec3 wallColour(vec2 px) {
 
     vec2 uv = clamp(q / (2.0 * half_) + 0.5, 0.0, 1.0);
     vec3 print = texture(uPrints, vec3(uv, index)).rgb;
+    if (abs(index - uLoupeIndex) < 0.5) {
+      vec3 sharp = texture(uLoupe, (uv - 0.5) * uLoupeCrop + 0.5).rgb;
+      print = mix(print, sharp, uLoupeMix);
+    }
     print = mix(vec3(0.045), print, loaded);
 
     // Seen films keep their colour; the rest go grey and step back.
@@ -173,6 +183,7 @@ vec3 wallColour(vec2 px) {
     float shadow = smoothstep(size.x * 0.25, 0.0, sd) * (1.0 - card) * (0.35 + 0.4 * lift);
     color *= 1.0 - shadow * 0.6;
   }
+
   return color;
 }
 

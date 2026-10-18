@@ -18,7 +18,10 @@ import { pointerSample, watchPointer } from "@/motion/film/pointer";
 import { useScrollY, useSmoothScroll } from "@/motion/scroll";
 import {
   formOf,
+  carried,
+  drawYours,
   layoutRoom,
+  roomFor,
   lineY,
   MAX_PRINTS,
   PER_DIRECTOR,
@@ -26,20 +29,36 @@ import {
   printX,
   type RoomLayout,
 } from "../lib/darkroom";
+import { point } from "../lib/cursor";
 import { DarkroomRenderer } from "../lib/darkroom-renderer";
+import { useStop } from "../lib/stop";
 import type { Director } from "../lib/types";
-import { DirectorDock, FilmDock } from "./film-dock";
+import { DirectorDock, FilmDock, PrintDock } from "./film-dock";
 import { Words } from "./words";
 
-// Screens of scroll that bring the safelight up out of the dark the stage
-// above went to and carry the first director's prints in; then a stretch
-// of scroll from each director to the next; then a rest on the last before
-// the page ends. Nothing is held: the line is drawn along with the scroll.
+// Screens of scroll that bring the room up round the print the stage above
+// threw on its last curtain, which lies in the bath and bleaches back to
+// blank paper, and carry the first director's prints in; then a stretch
+// of scroll from each director to the next; then a rest on the last, a
+// stretch that draws the line on until it is empty, and a rest on the
+// last sheet, which is nobody's yet, as the page ends. Nothing is held: the
+// line is drawn along with the scroll.
 const INTRO = 1.2;
 const STRETCH = 0.9;
-const END = 0.5;
-// How long a sheet takes to come up, once it is in the bath.
-const DEVELOP_S = 3;
+const REST = 0.4;
+const LEAVE = 0.9;
+const CLOSE = 0.7;
+// The room starts coming up this far before its section, over the stage,
+// once the camera there has come to rest on the print.
+const ENTER = -0.15;
+// The print from the stage is in the bath until this far in, and bleaches
+// back to blank paper over the stretch before.
+const CARRIED = 0.55;
+const BLEACHED: readonly [number, number] = [0.08, 0.5];
+// How long a sheet takes to come up once its director is in frame, and to
+// go back to blank paper once they are not.
+const DEVELOP_S = 2.6;
+const BLEACH_S = 0.7;
 // How long the wave takes across the bath when the sheet changes.
 const WAVE_MS = 1100;
 const MONO = "font-mono text-[10px] uppercase tracking-[0.24em] sm:text-[11px]";
@@ -108,6 +127,7 @@ export function Darkroom({
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const list = useRef<HTMLDivElement>(null);
+  const exit = useRef<HTMLElement>(null);
   const jump = useRef<(index: number) => void>(() => {});
   // The film pointed at in the list, and on a touch screen the print
   // tapped, each as a place along the whole line.
@@ -119,12 +139,15 @@ export function Darkroom({
   const [hovered, setHovered] = useState(-1);
   const [tap, setTap] = useState(-1);
   const [plain, setPlain] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [generation, setGeneration] = useState(0);
   const scrollY = useScrollY();
   const smoothScroll = useSmoothScroll();
   const router = useRouter();
   const reduced = Boolean(useReducedMotion());
   const swap = useSwap(front);
+  // Out of the stage above, a flick comes to rest on the first director.
+  useStop(section, INTRO);
   const count = Math.min(directors.length, MAX_PRINTS / PER_DIRECTOR);
   // A print tapped belongs to the director it was tapped under.
   const picked = Math.floor(tap / PER_DIRECTOR) === front ? tap : -1;
@@ -147,13 +170,23 @@ export function Darkroom({
     let layout: RoomLayout = layoutRoom(16 / 9, true);
     let lastAt = performance.now();
     let lastInside = false;
+    let lastEnding = false;
+    // The last sheet, once its letters are drawn, and whether it is in
+    // the bath to come up.
+    let yours: string | null = null;
+    let yoursUp = false;
+    void drawYours().then((src) => {
+      yours = src;
+    });
     let lastFront = -1;
     let lastPlace = Number.NaN;
     let lastShown = "";
-    let lastHover = -1;
     let waveAt = -WAVE_MS;
     let develop = 0;
     let wasDevelop = 0;
+    // The director whose portrait is on the sheet, and the white light.
+    let sheeted = 0;
+    let white = 0;
     let swing = 0;
     let inspectAt = -1;
     let inspectUp = 0;
@@ -170,9 +203,8 @@ export function Darkroom({
       vw = stageEl.clientWidth;
       vh = stageEl.clientHeight;
       top = layoutTop(sectionEl);
-      const isWide = vw >= 1024 && vw / vh >= 1.15;
-      layout = layoutRoom(vw / vh, isWide);
-      setWide(isWide);
+      layout = roomFor(vw, vh);
+      setWide(layout.wide);
       stageEl.style.setProperty("--list", `${(0.5 - layout.list) * vh}px`);
       const width = Math.max(1, Math.round(vw * dpr));
       const height = Math.max(1, Math.round(vh * dpr));
@@ -180,14 +212,23 @@ export function Darkroom({
       if (canvasEl.height !== height) canvasEl.height = height;
     };
 
+    // How far the line is drawn for one director's prints to be wholly
+    // off the screen.
+    const awayOf = () =>
+      (vw / vh / 2 + layout.group / 2 + layout.pitch) / layout.group;
+    const last = count - 1;
+    const lastRest = INTRO + last * STRETCH;
     // Where the line is for a scroll: before the first director's prints
-    // are in, it is drawn in from off the right of the screen.
+    // are in, it is drawn in from off the right of the screen, and after a
+    // rest on the last it is drawn on until it is empty.
     const placeAt = (raw: number) => {
       if (raw < INTRO) {
-        const away =
-          (vw / vh / 2 + layout.group / 2 + layout.pitch) / layout.group;
         const k = clamp((raw - 0.2) / (INTRO - 0.2), 0, 1);
-        return -away * Math.pow(1 - k, 3);
+        return -awayOf() * Math.pow(1 - k, 3);
+      }
+      if (raw > lastRest + REST) {
+        const k = clamp((raw - lastRest - REST) / LEAVE, 0, 1);
+        return last + awayOf() * smooth(k);
       }
       return placeOf((raw - INTRO) / STRETCH, count);
     };
@@ -245,9 +286,17 @@ export function Darkroom({
       const dt = clamp(now - lastAt, 1, 64) / 1000;
       lastAt = now;
       const raw = (scrollY.get() - top) / vh;
-      const shown = raw > 0;
+      // The room comes up over the end of the stage above, whose last
+      // curtain has by then gone over to the safelight's colour.
+      const shown = raw > ENTER;
+      // The print from the stage is put in the bath before the room is seen.
+      const carrying = raw < CARRIED && carried.picture !== null;
+      if (carrying && raw > ENTER - 0.6) {
+        renderer?.sheet("carried", carried.picture);
+      }
       stageEl.style.visibility = shown ? "visible" : "hidden";
       if (!shown) {
+        point(canvasEl, null);
         if (lastInside) {
           lastInside = false;
           setInside(false);
@@ -255,12 +304,13 @@ export function Darkroom({
         return;
       }
 
-      // The room comes up out of the black: first the lamp and the wall,
-      // then the bench, then the list.
-      stageEl.style.opacity = String(ramp(raw, 0.05, 0.4));
-      const lit = ramp(raw, 0.12, 0.8);
+      // The room comes up over the stage where the print lies in both, and
+      // then its light reaches out from the lamp: the wall, the bench, and
+      // last the list.
+      stageEl.style.opacity = String(ramp(raw, ENTER, -0.02));
+      const lit = ramp(raw, -0.1, 0.7);
       const said = ramp(raw, 0.6, INTRO);
-      stageEl.style.pointerEvents = said > 0.9 ? "" : "none";
+      stageEl.style.pointerEvents = said > 0.9 ? "auto" : "none";
       const within = lastInside ? said > 0.3 : said > 0.6;
       if (within !== lastInside) {
         lastInside = within;
@@ -268,6 +318,16 @@ export function Darkroom({
       }
 
       const place = placeAt(raw);
+      // Past the last director: their words go as the line takes their
+      // prints away, and once it is empty the last sheet comes up and the
+      // way out of the page is shown where the list was.
+      const beyond = (place - last) / awayOf();
+      const ended = lastEnding ? beyond > 0.2 : beyond > 0.3;
+      if (ended !== lastEnding) {
+        lastEnding = ended;
+        setEnding(ended);
+      }
+      yoursUp = yoursUp ? beyond > 0.85 : beyond > 0.97;
       const speed = Number.isNaN(lastPlace) ? 0 : (place - lastPlace) / dt;
       lastPlace = place;
       swing = reduced ? 0 : follow(swing, clamp(speed * 0.5, -1, 1), 6, dt);
@@ -319,20 +379,43 @@ export function Darkroom({
         if (whole) framed = k;
       }
 
-      // The sheet is in the bath while a director is in frame and out of
-      // it otherwise. Each change rocks the bath; a new sheet comes up.
-      const key = framed >= 0 ? `d${framed}` : "none";
-      renderer?.sheet(key, framed >= 0 ? portraitOf(directors[framed]) : null);
+      // There is always a sheet in the bath. While a director is in frame
+      // their portrait comes up on it; otherwise it goes back to blank, and
+      // once blank it is changed for the next director's, the bath rocking
+      // as it goes in.
+      if (framed >= 0 && !ended) sheeted = framed;
+      else if (develop < 0.02) sheeted = ended ? count : near;
+      const isYours = sheeted === count;
+      const key = carrying
+        ? "carried"
+        : isYours
+          ? yours
+            ? "yours"
+            : "blank"
+          : `d${sheeted}`;
+      if (!carrying) {
+        renderer?.sheet(key, isYours ? yours : portraitOf(directors[sheeted]));
+      }
       const onShow = renderer ? renderer.shown : key;
       if (onShow !== lastShown) {
         lastShown = onShow;
         wasDevelop = develop;
-        develop = reduced && onShow !== "none" ? 1 : 0;
+        develop = 0;
         waveAt = now;
       }
-      if (onShow === key && key !== "none" && !reduced) {
-        develop = Math.min(1, develop + dt / DEVELOP_S);
-      }
+      const developing =
+        onShow === key &&
+        (isYours ? yoursUp && yours !== null : framed === sheeted);
+      if (carrying) {
+        develop = onShow === key ? 1 - ramp(raw, BLEACHED[0], BLEACHED[1]) : 0;
+      } else if (reduced) develop = developing ? 1 : 0;
+      else if (developing) develop = Math.min(1, develop + dt / DEVELOP_S);
+      else develop = Math.max(0, develop - dt / BLEACH_S);
+      // Once the portrait is up, the white light goes on to look at it all.
+      const check = developing ? ramp(develop, 0.8, 1) : 0;
+      white = reduced
+        ? check
+        : follow(white, check, check > white ? 2.2 : 4, dt);
       const wave = reduced ? 1 : smooth(clamp((now - waveAt) / WAVE_MS, 0, 1));
 
       // What is under the pointer, and the inspection lamp over whichever
@@ -340,15 +423,27 @@ export function Darkroom({
       const sample = pointerSample();
       pointed =
         sample.present && said > 0.9 ? printAt(sample.x, sample.y, place) : -1;
-      if (pointed !== lastHover) {
-        lastHover = pointed;
-        if (pointed >= 0) {
-          canvasEl.dataset.cursor = "card";
-          canvasEl.dataset.cursorLabel = "Open";
-        } else {
-          delete canvasEl.dataset.cursor;
-          delete canvasEl.dataset.cursorLabel;
-        }
+      // The cursor frames the print, paper and all, with its film's name.
+      const film = pointed >= 0 ? filmAt(pointed) : undefined;
+      if (film) {
+        const box = canvasEl.getBoundingClientRect();
+        const x = printX(layout, pointed, place);
+        const halfW = layout.print[0] + layout.border;
+        const tall = (layout.print[1] + layout.border) * 2 + 0.003;
+        const pin = lineY(layout, x, vw / vh) - 0.004;
+        point(canvasEl, {
+          box: [
+            box.left + vw / 2 + (x - halfW) * vh,
+            box.top + vh / 2 - pin * vh,
+            box.left + vw / 2 + (x + halfW) * vh,
+            box.top + vh / 2 - (pin - tall) * vh,
+          ],
+          corner: 1,
+          title: film.title,
+          year: film.year,
+        });
+      } else {
+        point(canvasEl, null);
       }
       let looked = -1;
       if (said > 0.9) {
@@ -363,10 +458,20 @@ export function Darkroom({
       const lamp = looked >= 0 ? 1 : 0;
       inspectUp = follow(inspectUp, lamp, lamp ? 7 : 4, dt);
 
-      if (list.current) list.current.style.opacity = String(said);
+      if (list.current) {
+        list.current.style.opacity = String(said * (1 - ramp(beyond, 0, 0.25)));
+        list.current.style.visibility = beyond > 0.25 ? "hidden" : "visible";
+      }
+      if (exit.current) {
+        const out = ramp(beyond, 0.75, 1);
+        exit.current.style.opacity = String(out);
+        exit.current.style.visibility = out > 0 ? "visible" : "hidden";
+        exit.current.style.pointerEvents = out > 0.6 ? "auto" : "none";
+      }
 
       if (!renderer || cancelled) return;
       renderer.draw({
+        carry: carrying ? 1 - ramp(raw, 0, BLEACHED[1]) : 0,
         develop,
         exposure: 0.4 + 0.6 * lit,
         form,
@@ -380,6 +485,7 @@ export function Darkroom({
         time: reduced ? 0 : now / 1000,
         wasDevelop,
         wave,
+        white,
       });
     };
 
@@ -428,15 +534,15 @@ export function Darkroom({
   const current = directors[swap.now] ?? directors[0]!;
   const was = swap.was >= 0 ? directors[swap.was] : undefined;
   const tappedFilm =
-    picked >= 0 ? current.films[picked % PER_DIRECTOR] : undefined;
+    picked >= 0 && !ending ? current.films[picked % PER_DIRECTOR] : undefined;
 
   return (
     <section
       ref={section}
       aria-label="The ten most successful directors"
-      className="relative"
+      className="pointer-events-none relative"
       style={{
-        height: `${(INTRO + (count - 1) * STRETCH + END + 1) * 100}svh`,
+        height: `${(INTRO + (count - 1) * STRETCH + REST + LEAVE + CLOSE + 1) * 100}svh`,
         marginTop: "-100svh",
       }}
     >
@@ -446,7 +552,7 @@ export function Darkroom({
       >
         <canvas
           ref={canvas}
-          aria-label="A darkroom under an amber safelight. Five films by each of the ten most successful directors hang on a line that the scroll draws along; each print gathers out of dust as it comes into view, and while a director's five are in view their portrait comes up in the tray. Arrow keys move between directors, Enter opens the one in the tray."
+          aria-label="A darkroom under an amber safelight. Five films by each of the ten most successful directors hang on a line that the scroll draws along; each print comes up on its paper as it comes into view, and once a director's five are in view their portrait comes up on the sheet in the tray and the white light goes on. Arrow keys move between directors, Enter opens the one in the tray."
           className="absolute inset-0 block size-full touch-pan-y outline-none select-none"
           onKeyDown={onKey}
           role="application"
@@ -513,6 +619,18 @@ export function Darkroom({
           </ol>
         </div>
 
+        <nav
+          ref={exit}
+          aria-label="Tvizzie"
+          className={
+            wide
+              ? "invisible absolute bottom-[max(9rem,17svh)] left-(--gutter) w-[min(24rem,28vw)] opacity-0"
+              : "invisible absolute inset-x-(--gutter) top-(--list) opacity-0"
+          }
+        >
+          <Exit wide={wide} />
+        </nav>
+
         <ol className="sr-only">
           {directors.map((director) => (
             <li key={director.id}>
@@ -536,8 +654,9 @@ export function Darkroom({
       <DirectorDock
         description={`No. ${current.rank} · ${lifeOf(current)}`}
         director={current}
-        shown={inside && !tappedFilm}
+        shown={inside && !tappedFilm && !ending}
       />
+      <PrintDock shown={inside && ending} />
       {tappedFilm ? (
         <FilmDock
           description={`${current.name} · ${tappedFilm.year}`}
@@ -583,6 +702,53 @@ function PlainList({ directors }: { directors: Director[] }): JSX.Element {
           </li>
         ))}
       </ol>
+      <nav aria-label="Tvizzie" className="mt-16">
+        <Exit wide />
+      </nav>
     </div>
+  );
+}
+
+const WAYS_OUT = [
+  { external: false, href: "/privacy", label: "Privacy" },
+  { external: false, href: "/terms", label: "Terms" },
+  { external: true, href: "https://www.themoviedb.org", label: "TMDB" },
+] as const;
+
+// Where the list of films was, the way out of the page: the house's own
+// pages, and the source every picture and date on it came from.
+function Exit({ wide }: { wide: boolean }): JSX.Element {
+  return (
+    <>
+      <ol className="flex flex-col border-t border-white/10">
+        {WAYS_OUT.map((way, i) => (
+          <li key={way.href} className="border-b border-white/10">
+            <Link
+              className={`flex items-baseline gap-4 text-white/60 transition-colors duration-fast hover:text-white focus-visible:text-white ${
+                wide ? "py-2.5 text-[15px]" : "py-1.5 text-[13px]"
+              }`}
+              href={way.href}
+              {...(way.external ? { rel: "noreferrer", target: "_blank" } : {})}
+            >
+              <span className={`w-5 text-white/30 tabular-nums ${MONO}`}>
+                {pad(i + 1)}
+              </span>
+              <span className="flex-1">{way.label}</span>
+              {way.external ? (
+                <span aria-hidden className={`text-white/35 ${MONO}`}>
+                  ↗
+                </span>
+              ) : null}
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-5 text-[11px] leading-relaxed text-white/35">
+        This product uses the TMDB API but is not endorsed or certified by TMDB.
+      </p>
+      <p className="mt-2 text-[11px] text-white/25">
+        © {new Date().getFullYear()} Tvizzie
+      </p>
+    </>
   );
 }

@@ -1,14 +1,15 @@
 // The darkroom, in linear light. The room is drawn in one pass: the wall
 // with the safelight on it, the line across it with its pegs and the prints
-// that have come together on them, the bench, and the three trays on the
-// bench with the sheet developing in the middle one under its bath. The
-// prints still coming together, or going back to dust, are drawn over it as
-// grains of dust in a second pass, one point a grain. The frame is
-// developed afterwards by the tunnel's bloom and composite passes.
+// on them, the bench, and the tray on the bench with the sheet developing
+// under its bath. A print coming into view
+// comes up as a print does: first the paper, then the picture on it, from
+// its lightest tones. The frame is developed afterwards by the tunnel's
+// bloom and composite passes.
 //
 // One lamp lights everything: the safelight, deep amber, mounted on the wall
-// above the bench and turned down at it. Where a print is looked at, a
-// white inspection lamp comes on over it and shows its colours.
+// above the bench and turned down at it. When a portrait is up, the white
+// light goes on in its place and the prints show their true colours; where
+// a print is looked at, a white inspection lamp comes on over it.
 
 import {
   ATLAS_COLUMNS,
@@ -23,6 +24,9 @@ uniform vec2 uRes;
 uniform float uTime;
 // The room coming up out of the dark, 0..1.
 uniform float uLit;
+// The light the stage's projector left on the print in the bath, as the
+// room comes up round it, 0..1.
+uniform float uCarry;
 // The lens's focal length, the horizon, and how far off the wall is.
 uniform vec3 uLens;
 // The safelight: its middle on the screen and half its size.
@@ -34,16 +38,19 @@ uniform vec2 uLine;
 uniform vec4 uRow;
 // Half a print's picture.
 uniform vec2 uPrint;
-// How far each print has come together, 0 dust and 1 whole; how many
+// How far each print has come up, 0 blank and 1 whole; how many
 // prints there are; and how fast the line is moving.
 uniform float uForm[${MAX_PRINTS}];
 uniform float uCount;
 uniform float uSwing;
 uniform sampler2D uAtlas;
-// Grains of dust across and down a print's paper.
-uniform vec2 uCells;
+// The white light, 0 the safelight alone, 1 the room in white.
+uniform float uWhite;
 
-const vec3 AMBER = vec3(1.0, 0.27, 0.035);
+const vec3 SAFE = vec3(1.0, 0.27, 0.035);
+const vec3 CHECK = vec3(1.0, 0.84, 0.66) * 0.7;
+// The light the room is lit by.
+#define AMBER mix(SAFE, CHECK, uWhite)
 const vec3 WHITE = vec3(1.0, 0.95, 0.88);
 const vec3 PAPER = vec3(0.86, 0.84, 0.79);
 const float PER = ${PER_DIRECTOR.toFixed(1)};
@@ -113,26 +120,17 @@ vec3 atlasAt(int i, vec2 uv, float lod) {
   return pow(textureLod(uAtlas, at, lod).rgb, vec3(2.2));
 }
 
-float rand(float n) {
-  return hash(vec2(n * 0.1317, n * 0.0731 + 4.1));
-}
-
-// How far a grain of a print has come home, 0..1, for how far its print has
-// come together: each grain in its own time, the ones nearer the edge the
-// print comes in by (or goes out by) a little sooner. A grain is the cell
-// of the paper at local, from -1 to 1 across and down.
-float homing(int i, vec2 cell, float form, float x) {
-  float id = float(i) * uCells.x * uCells.y + cell.y * uCells.x + cell.x;
-  float across = (cell.x + 0.5) / uCells.x * 2.0 - 1.0;
-  float lead = x > 0.0 ? 0.5 - 0.5 * across : 0.5 + 0.5 * across;
-  float delay = rand(id) * 0.5 + lead * 0.15;
-  return clamp((form - delay) / 0.35, 0.0, 1.0);
+// How much of a print's paper is on the line, for how far it has come
+// into view.
+float paperOf(float form) {
+  return smoothstep(0.0, 0.3, form);
 }
 
 // Under the safelight a print is only its tones, lifted a little so the
-// shadows still read.
+// shadows still read; under the white light, its colours.
 vec3 underSafelight(vec3 rgb) {
-  return mix(vec3(luma(rgb)), rgb, 0.12) * 0.85 + 0.06;
+  vec3 tones = mix(vec3(luma(rgb)), rgb, 0.12) * 0.85 + 0.06;
+  return mix(tones, rgb, uWhite);
 }
 `;
 
@@ -163,7 +161,6 @@ uniform vec2 uInspect;
 const float TRAY_H = 0.022;
 const float BATH = 0.015;
 const float RIM = 0.014;
-const float GAP = 0.05;
 const float SHEET_BORDER = ${SHEET_BORDER};
 
 float noise(vec2 p) {
@@ -227,11 +224,11 @@ vec3 lampGlass(vec2 p, out float cover) {
   float shine = fill(glass, aa);
   // The housing catches the glow of its own glass along its edges.
   float rim = exp(-max(glass, 0.0) * 260.0);
-  vec3 metal = vec3(0.016) + AMBER * 0.35 * rim * step(body, 0.0);
+  vec3 metal = vec3(0.016) + SAFE * 0.35 * rim * step(body, 0.0);
   // The glass burns hottest in its middle, where the bulb is behind it.
   vec2 g = q / size;
   float hot = exp(-dot(g, g) * 1.8);
-  vec3 glow = mix(AMBER * 2.0, vec3(1.0, 0.58, 0.22) * 4.6, hot) *
+  vec3 glow = mix(SAFE * 2.0, vec3(1.0, 0.58, 0.22) * 4.6, hot) *
     (0.96 + 0.04 * noise(q * 900.0));
   return mix(metal, glow, shine) * uLit;
 }
@@ -305,11 +302,11 @@ float wallShadow(vec2 p) {
   int middle = nearestPrint(p.x - off.x);
   for (int k = -1; k <= 1; k++) {
     int i = middle + k;
-    if (i < 0 || float(i) >= uCount || uForm[i] < 0.999) continue;
+    if (i < 0 || float(i) >= uCount || uForm[i] <= 0.0) continue;
     off.x = (printX(i) - uLamp.x) * 0.025;
     Hang h = hang(p - off, printX(i), sway(i));
     float soft = box(h.q, uPrint + uRow.w, 0.004);
-    dark = max(dark, fill(soft - 0.004, 0.008) * 0.55);
+    dark = max(dark, fill(soft - 0.004, 0.008) * 0.55 * paperOf(uForm[i]));
   }
   float line = abs(p.y + 0.012 - lineY(p.x));
   return max(dark, fill(line - 0.002, 0.002) * 0.4);
@@ -365,39 +362,32 @@ vec3 sheetAt(vec2 b, bool wasSide) {
   return PAPER * (1.0 - dense * 0.94);
 }
 
-// The trays: slabs on the bench. A ray from the camera, as far as the
-// bench at depth 1, is tested against each; the nearest wins.
+// The tray: a slab on the bench. A ray from the camera, as far as the
+// bench at depth 1, is tested against it.
 struct TrayHit {
-  float t;
-  // 0 the top, 1 a side facing the camera, 2 a side facing x.
+  // 0 the top, 1 a side facing the camera, 2 a side facing x, -1 none.
   int face;
-  int which;
   vec3 at;
 };
 
-TrayHit trays(vec3 dir) {
-  TrayHit best;
-  best.t = 1.0;
-  best.face = -1;
-  for (int k = -1; k <= 1; k++) {
-    vec2 c = uTray.xy + vec2(float(k) * (uTray.z * 2.0 + GAP), 0.0);
-    vec3 lo = vec3(c.x - uTray.z, -1.0, c.y - uTray.w);
-    vec3 hi = vec3(c.x + uTray.z, -1.0 + TRAY_H, c.y + uTray.w);
-    vec3 inv = 1.0 / dir;
-    vec3 t0 = lo * inv;
-    vec3 t1 = hi * inv;
-    vec3 tn = min(t0, t1);
-    vec3 tf = max(t0, t1);
-    float enter = max(max(tn.x, tn.y), tn.z);
-    float leave = min(min(tf.x, tf.y), tf.z);
-    if (enter < leave && enter > 0.0 && enter < best.t) {
-      best.t = enter;
-      best.which = k;
-      best.face = enter == tn.y ? 0 : enter == tn.z ? 1 : 2;
-      best.at = dir * enter;
-    }
+TrayHit trayHit(vec3 dir) {
+  TrayHit hit;
+  hit.face = -1;
+  vec2 c = uTray.xy;
+  vec3 lo = vec3(c.x - uTray.z, -1.0, c.y - uTray.w);
+  vec3 hi = vec3(c.x + uTray.z, -1.0 + TRAY_H, c.y + uTray.w);
+  vec3 inv = 1.0 / dir;
+  vec3 t0 = lo * inv;
+  vec3 t1 = hi * inv;
+  vec3 tn = min(t0, t1);
+  vec3 tf = max(t0, t1);
+  float enter = max(max(tn.x, tn.y), tn.z);
+  float leave = min(min(tf.x, tf.y), tf.z);
+  if (enter < leave && enter > 0.0 && enter < 1.0) {
+    hit.face = enter == tn.y ? 0 : enter == tn.z ? 1 : 2;
+    hit.at = dir * enter;
   }
-  return best;
+  return hit;
 }
 
 // What the bath reflects: the room is dark, but for the lamp.
@@ -408,7 +398,7 @@ vec3 reflection(vec3 at, vec3 r) {
   vec3 hit = at + r * t;
   vec2 size = uLamp.zw * lamp.z / uLens.x;
   float on = box(hit.xy - lamp.xy, size - 0.004, 0.006);
-  vec3 col = AMBER * 4.5 * fill(on, 0.004);
+  vec3 col = SAFE * 4.5 * fill(on, 0.004);
   // The lit wall round it.
   col += AMBER * 0.05 * exp(-max(on, 0.0) * 9.0);
   return col * uLit;
@@ -439,7 +429,7 @@ vec3 bench(vec3 at) {
 }
 
 vec3 tray(TrayHit hit, vec3 dir) {
-  vec2 c = uTray.xy + vec2(float(hit.which) * (uTray.z * 2.0 + GAP), 0.0);
+  vec2 c = uTray.xy;
   // The sides get no light from the lamp but what the bench throws back.
   vec3 bounce = AMBER * 0.006 * uLit;
   if (hit.face == 1) {
@@ -467,22 +457,19 @@ vec3 tray(TrayHit hit, vec3 dir) {
   // The bath: a surface that bends what is under it and reflects the lamp.
   vec2 b = surf.xz;
   float e = 0.004;
-  float h0 = hit.which == 0 ? bathHeight(b) : 0.0012 * sin(b.x * 40.0 + uTime) * cos(b.y * 30.0 - uTime * 0.8);
-  float hx = hit.which == 0 ? bathHeight(b + vec2(e, 0.0)) : h0;
-  float hz = hit.which == 0 ? bathHeight(b + vec2(0.0, e)) : h0;
+  float h0 = bathHeight(b);
+  float hx = bathHeight(b + vec2(e, 0.0));
+  float hz = bathHeight(b + vec2(0.0, e));
   vec3 n = normalize(vec3(-(hx - h0) / e, 1.0, -(hz - h0) / e));
   vec3 v = normalize(dir);
   vec2 bent = b + n.xz * 0.02;
   vec3 below;
   vec3 bottom = vec3(bent.x, -1.0, bent.y);
-  vec3 sheet = vec3(-1.0);
-  if (hit.which == 0) {
-    float front = mix(-uTray.z - 0.08, uTray.z + 0.18, uWave) + uTray.x;
-    sheet = sheetAt(bent, bent.x > front);
-  }
+  float front = mix(-uTray.z - 0.08, uTray.z + 0.18, uWave) + uTray.x;
+  vec3 sheet = sheetAt(bent, bent.x > front);
   vec3 up = vec3(0.0, 1.0, 0.0);
   if (sheet.x >= 0.0) {
-    below = sheet * safelight(bottom, up);
+    below = sheet * (safelight(bottom, up) + SAFE * 0.24 * uCarry);
   } else {
     float ribs = 0.85 + 0.15 * smoothstep(0.2, 0.8, abs(fract((bent.x - c.x) * 40.0) - 0.5) * 2.0);
     below = vec3(0.5, 0.48, 0.45) * ribs * safelight(bottom, up);
@@ -492,7 +479,7 @@ vec3 tray(TrayHit hit, vec3 dir) {
   float fresnel = 0.03 + 0.5 * pow(1.0 - max(dot(-v, n), 0.0), 5.0);
   vec3 col = mix(below, reflection(surf, reflect(v, n)), fresnel);
   // Light gathered by the ripples onto the bottom.
-  col *= 1.0 + 2.5 * (abs(n.x) + abs(n.z)) * float(hit.which == 0);
+  col *= 1.0 + 2.5 * (abs(n.x) + abs(n.z));
   return col;
 }
 
@@ -511,7 +498,7 @@ void main() {
     // trays, by a ray from the camera.
     float z = f / (uLens.y - p.y);
     vec3 dir = vec3(p.x * z / f, -1.0, z);
-    TrayHit hit = trays(dir);
+    TrayHit hit = trayHit(dir);
     col = hit.face >= 0 ? tray(hit, dir) : bench(dir);
     // A soft line of dark where the bench meets the wall.
     col *= 0.6 + 0.4 * smoothstep(0.0, 0.03, back - p.y);
@@ -519,7 +506,7 @@ void main() {
 
   // The haze round the lamp.
   vec2 lq = (p - uLamp.xy) / vec2(uLamp.z * 2.2, uLamp.w * 3.0);
-  col += AMBER * 0.06 * exp(-dot(lq, lq) * 0.35) * uLit;
+  col += SAFE * 0.06 * exp(-dot(lq, lq) * 0.35) * uLit;
 
   // The line, its pegs, and the prints that are whole.
   float line = abs(p.y - lineY(p.x));
@@ -538,18 +525,12 @@ void main() {
     float inspect = i == int(floor(uInspect.x + 0.5)) ? uInspect.y : 0.0;
     float form = uForm[i];
     if (form > 0.0 && h.paper > 0.0) {
-      // Only the grains already home are drawn here, whole and sharp; the
-      // rest are still dust, drawn in the next pass.
-      vec2 local = h.q / (uPrint + uRow.w);
-      vec2 cell = floor(vec2(
-        (local.x * 0.5 + 0.5) * uCells.x,
-        (0.5 - local.y * 0.5) * uCells.y
-      ));
-      cell = clamp(cell, vec2(0.0), uCells - 1.0);
-      if (form >= 0.999 || homing(i, cell, form, x) >= 1.0) {
-        vec3 rgb = atlasAt(i, h.uv, 0.0);
-        col = mix(col, shadePrint(h, rgb, inspect, p), h.paper);
-      }
+      // The paper first, then the picture coming up on it, the light tones
+      // before the dark, as a print does in the developer.
+      vec3 rgb = atlasAt(i, h.uv, 0.0);
+      float up = smoothstep(0.25, 1.0, form);
+      rgb = mix(vec3(1.0), rgb, up) * mix(1.0, 1.0 - 0.15 * (1.0 - up), up);
+      col = mix(col, shadePrint(h, rgb, inspect, p), h.paper * paperOf(form));
     }
     col = mix(col, shadePeg(h, inspect, p), h.peg);
   }
@@ -560,111 +541,4 @@ void main() {
   col = mix(col, glass, lampCover);
 
   outColor = vec4(max(col, 0.0), 1.0);
-}`;
-
-// One grain of dust for every cell of every print's paper. A grain waits in
-// the air off to one side of its place, drifting, and is drawn to its place
-// as its print comes together, each grain in its own time; it is a round
-// mote while it drifts and a square of the picture once it has settled.
-export const DUST_VERTEX = `#version 300 es
-precision highp float;
-${SHARED}
-out vec2 vLocal;
-out vec3 vLight;
-out float vAlpha;
-out float vSettled;
-out float vSpark;
-flat out int vPrint;
-
-void main() {
-  int cells = int(uCells.x * uCells.y);
-  int i = gl_VertexID / cells;
-  int c = gl_VertexID - i * cells;
-  vPrint = i;
-  float form = uForm[i];
-  if (form <= 0.0 || form >= 0.999) {
-    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    gl_PointSize = 0.0;
-    return;
-  }
-  int across = int(uCells.x);
-  float cx = float(c - (c / across) * across);
-  float cy = float(c / across);
-  vec2 local = vec2(
-    (cx + 0.5) / uCells.x * 2.0 - 1.0,
-    1.0 - (cy + 0.5) / uCells.y * 2.0
-  );
-  vLocal = local;
-
-  vec2 paper = uPrint + uRow.w;
-  float x = printX(i);
-  vec2 pin = vec2(x, lineY(x) - 0.004);
-  float a = sway(i);
-  vec2 q = vec2(local.x * paper.x, -paper.y - 0.003 + local.y * paper.y);
-  vec2 home = pin + vec2(cos(a) * q.x - sin(a) * q.y, sin(a) * q.x + cos(a) * q.y);
-
-  float id = float(gl_VertexID);
-  float h1 = rand(id);
-  float h2 = rand(id + 17.0);
-  float h3 = rand(id + 41.0);
-  float h4 = rand(id + 73.0);
-  float k = homing(i, vec2(cx, cy), form, x);
-  // Home, the grain is part of the whole print the room draws.
-  if (k >= 1.0) {
-    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-    gl_PointSize = 0.0;
-    return;
-  }
-  float settled = 1.0 - pow(1.0 - k, 3.0);
-  // Off to the side the print comes from or goes to, and drifting.
-  float side = x > 0.0 ? 1.0 : -1.0;
-  vec2 scatter = vec2(side * (0.25 + 1.4 * h2), (h3 - 0.5) * 1.3) * uRow.x;
-  float turn = uTime * (0.25 + 0.5 * h4) + h1 * 6.2832;
-  vec2 drift = vec2(cos(turn), sin(turn * 1.3)) * uRow.x * 0.14;
-  vec2 at = home + (scatter + drift) * (1.0 - settled);
-
-  gl_Position = vec4(at.x / (aspectOf() * 0.5), at.y / 0.5, 0.0, 1.0);
-  // In flight a grain is a mote smaller than its cell, growing as it
-  // nears home.
-  float cell = paper.x * 2.0 / uCells.x * uRes.y;
-  gl_PointSize = max(1.0, cell * mix(0.35, 1.1, settled));
-  vAlpha = mix(0.4, 1.0, settled) * smoothstep(0.0, 0.12, form);
-  vSettled = settled;
-  vSpark = h4;
-  vLight = printLight(at);
-}`;
-
-export const DUST_FRAGMENT = `#version 300 es
-precision highp float;
-${SHARED}
-
-in vec2 vLocal;
-in vec3 vLight;
-in float vAlpha;
-in float vSettled;
-in float vSpark;
-flat in int vPrint;
-out vec4 outColor;
-
-void main() {
-  vec2 pc = gl_PointCoord - 0.5;
-  float r2 = dot(pc, pc);
-  if (r2 > 0.25) discard;
-  float edge = 1.0 - smoothstep(0.12, 0.25, r2);
-  vec2 paper = uPrint + uRow.w;
-  vec2 q = vLocal * paper;
-  vec3 albedo = PAPER;
-  if (abs(q.x) < uPrint.x && abs(q.y) < uPrint.y) {
-    vec2 uv = 0.5 + vec2(q.x / uPrint.x, -q.y / uPrint.y) * 0.5;
-    albedo = underSafelight(atlasAt(vPrint, uv, 2.5));
-  }
-  vec3 col = albedo * vLight;
-  // A mote catches the lamp, some brighter than others, and a grain
-  // flares for a moment as it lands.
-  vec3 mote = AMBER * (0.25 + 0.9 * vSpark * vSpark) * uLit;
-  col = mix(mote, col, smoothstep(0.3, 0.85, vSettled));
-  float land = exp(-pow((vSettled - 0.9) / 0.05, 2.0));
-  col += vec3(1.0, 0.55, 0.2) * land * (0.6 + 1.6 * vSpark) * uLit;
-  float alpha = vAlpha * edge;
-  outColor = vec4(col * alpha, alpha);
 }`;

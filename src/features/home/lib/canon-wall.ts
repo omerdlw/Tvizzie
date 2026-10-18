@@ -55,6 +55,63 @@ export function wallAt(view: WallView, x: number, y: number): Vec2 {
   ];
 }
 
+// The inverse: the point of the screen at which a point of the wall is
+// seen, found from a guess near it by a few steps of Newton's method.
+export function screenAt(view: WallView, wall: Vec2, guess: Vec2): Vec2 {
+  let x = guess[0];
+  let y = guess[1];
+  const h = 0.5;
+  for (let step = 0; step < 8; step += 1) {
+    const at = wallAt(view, x, y);
+    const ex = at[0] - wall[0];
+    const ey = at[1] - wall[1];
+    if (Math.abs(ex) < 1e-4 && Math.abs(ey) < 1e-4) break;
+    const dx = wallAt(view, x + h, y);
+    const dy = wallAt(view, x, y + h);
+    const a = (dx[0] - at[0]) / h;
+    const b = (dy[0] - at[0]) / h;
+    const c = (dx[1] - at[1]) / h;
+    const d = (dy[1] - at[1]) / h;
+    const det = a * d - b * c;
+    if (Math.abs(det) < 1e-12) break;
+    x -= (d * ex - b * ey) / det;
+    y -= (a * ey - c * ex) / det;
+  }
+  return [x, y];
+}
+
+// The outline of the one-sheet in a cell of the wall, on the screen: its
+// corners and the middles of its sides, which the bow of the wall bends.
+export function sheetOnScreen(
+  view: WallView,
+  cell: Vec2,
+  guess: Vec2,
+): { x: number; y: number }[] {
+  const [px, py] = pitches(1);
+  const halfW = ((1 - GAP) * RATIO) / 2 / px;
+  const halfH = (1 - GAP) / 2 / py;
+  const middle: Vec2 = [cell[0] + 0.5, cell[1] + 0.5];
+  const points: { x: number; y: number }[] = [];
+  for (const [u, v] of [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+  ] as const) {
+    const [x, y] = screenAt(
+      view,
+      [middle[0] + u * halfW, middle[1] + v * halfH],
+      guess,
+    );
+    points.push({ x, y });
+  }
+  return points;
+}
+
 const mod = (value: number, by: number) => ((value % by) + by) % by;
 
 // The film in a cell of the wall.
@@ -70,9 +127,7 @@ export function filmAt(wall: Vec2, count: number): number {
   const [px, py] = pitches(1);
   const halfW = ((1 - GAP) * RATIO) / 2;
   const halfH = (1 - GAP) / 2;
-  return Math.abs(fx * px) <= halfW && Math.abs(fy * py) <= halfH
-    ? index
-    : -1;
+  return Math.abs(fx * px) <= halfW && Math.abs(fy * py) <= halfH ? index : -1;
 }
 
 // The middle of the copy of a film nearest a point of the wall. Every row

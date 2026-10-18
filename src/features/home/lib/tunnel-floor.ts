@@ -47,6 +47,26 @@ const MONTHS = [
 const SHORT = MONTHS.map((month) => month.slice(0, 3));
 const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const DAY_MS = 86_400_000;
+// The day numbers on the ruler: their size, how far they stand out from the
+// wall, clear of the longest tick, and the floor one takes up along the
+// corridor, with a clear stretch either side of it.
+const NUMBER_SIZE = 0.07;
+const NUMBER_STRETCH = 2.6;
+const NUMBER_COLUMN = 0.38;
+const NUMBER_CAP = NUMBER_SIZE * NUMBER_STRETCH * 0.7;
+const NUMBER_ROOM = NUMBER_CAP * 2.2;
+// A film's date at its feet, and the floor kept clear round it.
+const DATE_SIZE = 0.22;
+const DATE_STRETCH = 2.9;
+const DATE_TRACKING = 0.03;
+const DATE_CAP = DATE_SIZE * DATE_STRETCH * 0.7;
+const MONTH_SIZE = 0.42;
+const MONTH_STRETCH = 3.4;
+const MONTH_TRACKING = 0.02;
+const CLEAR = 0.06;
+// Across the corridor a number keeps further from other type, so that the
+// two are not read as one line.
+const ASIDE = 0.35;
 
 const noon = (iso: string) => new Date(`${iso}T12:00:00Z`);
 
@@ -170,6 +190,11 @@ export function paintFloor(
   const first = Math.ceil(dayAt(plan, near));
   const last = Math.floor(dayAt(plan, far));
   let previousZ = Number.POSITIVE_INFINITY;
+  // The days that may be numbered on the ruler: the first of each month and
+  // every Monday.
+  const marked: { day: string; first: boolean; z: number }[] = [];
+  // The months lettered across the floor.
+  const months: { label: string; z: number }[] = [];
   for (let day = first; day <= last; day += 1) {
     const z = zAt(plan, day, near, far);
     // Days the calendar has pressed together share a tick.
@@ -189,32 +214,103 @@ export function paintFloor(
       );
     }
     if (monday || opens) {
-      letter(
-        String(date.getUTCDate()).padStart(2, "0"),
-        -(edge - 0.2),
-        z - 0.012,
-        {
-          align: "left",
-          family: fonts.mono,
-          size: 0.07,
-          stretch: 2.6,
-          tone: 0.55,
-        },
-      );
+      marked.push({
+        day: String(date.getUTCDate()).padStart(2, "0"),
+        first: opens,
+        z,
+      });
     }
     const crowded = plan.posters.some(
       (poster) => Math.abs(poster.z + 0.62 - z) < 1.5,
     );
     if (opens && !crowded && Math.abs(z - plan.gate) > 2.2) {
-      letter(MONTHS[date.getUTCMonth()]!, 0, z - 0.1, {
+      const month = { label: MONTHS[date.getUTCMonth()]!, z: z - 0.1 };
+      months.push(month);
+      letter(month.label, 0, month.z, {
         family: fonts.display,
-        size: 0.42,
-        stretch: 3.4,
+        size: MONTH_SIZE,
+        stretch: MONTH_STRETCH,
         tone: 0.2,
-        tracking: 0.02,
+        tracking: MONTH_TRACKING,
       });
     }
   }
+
+  // How wide a line of type lies across the floor.
+  const gauge = document.createElement("canvas").getContext("2d");
+  const widthOf = (
+    text: string,
+    family: string,
+    size: number,
+    tracking = 0,
+  ) => {
+    if (!gauge) return text.length * size * 0.6;
+    gauge.font = `${family === fonts.display ? 700 : 400} ${size * ppu}px ${family}`;
+    gauge.letterSpacing = `${tracking * size * ppu}px`;
+    return gauge.measureText(text).width / ppu;
+  };
+
+  // Each film's date, at its feet.
+  const dates = plan.posters.flatMap((poster, index) => {
+    const film = films[index];
+    if (!film?.date) return [];
+    const date = noon(film.date);
+    return [
+      {
+        label: `${SHORT[date.getUTCMonth()]} ${date.getUTCDate()}`,
+        soon: film.soon,
+        x: poster.x - poster.side * 0.36,
+        z: poster.z + 0.62,
+      },
+    ];
+  });
+
+  // Where the calendar presses days together their numbers would print over
+  // each other, so only those with clear floor either side are kept, the
+  // firsts of the months before the Mondays; and none where a film's date
+  // reaches over the column.
+  const column = -(edge - NUMBER_COLUMN);
+  const reach = column + widthOf("00", fonts.mono, NUMBER_SIZE) + ASIDE;
+  const taken = [
+    ...dates
+      .filter(
+        ({ label, x }) =>
+          x - widthOf(label, fonts.display, DATE_SIZE, DATE_TRACKING) / 2 <
+          reach,
+      )
+      .map(({ z }) => ({ from: z - DATE_CAP - CLEAR, to: z + CLEAR })),
+    ...months
+      .filter(
+        ({ label }) =>
+          -widthOf(label, fonts.display, MONTH_SIZE, MONTH_TRACKING) / 2 <
+          reach,
+      )
+      .map(({ z }) => ({
+        from: z - MONTH_SIZE * MONTH_STRETCH * 0.7 - CLEAR,
+        to: z + CLEAR,
+      })),
+  ];
+  const numbers: typeof marked = [];
+  const fits = (z: number) =>
+    numbers.every((kept) => Math.abs(kept.z - z) >= NUMBER_ROOM) &&
+    taken.every(
+      ({ from, to }) => z + NUMBER_CAP / 2 < from || z - NUMBER_CAP / 2 > to,
+    );
+  for (const first of [true, false]) {
+    for (const mark of marked) {
+      if (mark.first === first && fits(mark.z)) numbers.push(mark);
+    }
+  }
+  // Each stands in one column clear of the ticks, level with its own.
+  numbers.forEach(({ day, z }) => {
+    letter(day, column, z + NUMBER_CAP / 2, {
+      align: "left",
+      family: fonts.mono,
+      size: NUMBER_SIZE,
+      stretch: NUMBER_STRETCH,
+      tone: 0.55,
+    });
+  });
 
   // Today, across the threshold.
   const weekday = WEEKDAYS[base.getUTCDay()]!;
@@ -240,19 +336,14 @@ export function paintFloor(
 
   // Each film's date at its feet: solid once it has opened, drawn in outline
   // while it is still to come.
-  plan.posters.forEach((poster, index) => {
-    const film = films[index];
-    if (!film?.date) return;
-    const date = noon(film.date);
-    const label = `${SHORT[date.getUTCMonth()]} ${date.getUTCDate()}`;
-    const x = poster.x - poster.side * 0.36;
-    letter(label, x, poster.z + 0.62, {
+  dates.forEach(({ label, soon, x, z }) => {
+    letter(label, x, z, {
       family: fonts.display,
-      outline: film.soon,
-      size: 0.22,
-      stretch: 2.9,
-      tone: film.soon ? 0.85 : 0.6,
-      tracking: 0.03,
+      outline: soon,
+      size: DATE_SIZE,
+      stretch: DATE_STRETCH,
+      tone: soon ? 0.85 : 0.6,
+      tracking: DATE_TRACKING,
     });
   });
 

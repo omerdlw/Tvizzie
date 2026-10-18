@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, type JSX, type ReactNode } from "react";
+import { useCallback, useMemo, type JSX, type ReactNode } from "react";
 import {
   useDockActionClass,
   useDockActions,
   useDockRegistration,
 } from "@omerdlw/base-framework/modules/dock";
 import { movieHref, personHref } from "@config/routes";
+import { createSignInSurfaceEntry, useAuth } from "@/features/auth";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { Button, Icon } from "@/ui";
 import type { Director, HomeMovie } from "../lib/types";
@@ -120,6 +121,55 @@ function OpenPerson({ id, name }: { id: number; name: string }): JSX.Element {
     >
       <Icon icon="solar:user-rounded-bold" size={16} />
       <span className="truncate">Open profile</span>
+    </Button>
+  );
+}
+
+// The card for the last sheet, which is nobody's yet: a way in for whoever
+// is looking, or back to their own diary once they are in.
+export function PrintDock({ shown }: { shown: boolean }): null {
+  const auth = useAuth();
+  const signedIn = auth.isReady && auth.isAuthenticated;
+  const action = useMemo(() => <StartDiary signedIn={signedIn} />, [signedIn]);
+
+  const config = useMemo(
+    () =>
+      shown
+        ? {
+            action,
+            description: signedIn
+              ? "Your films, ratings and lists"
+              : "Log films, rate them, keep lists",
+            icon: "solar:gallery-add-bold",
+            path: "/",
+            title: "The next print is yours",
+          }
+        : null,
+    [action, shown, signedIn],
+  );
+
+  useDockRegistration(config);
+  return null;
+}
+
+function StartDiary({ signedIn }: { signedIn: boolean }): JSX.Element {
+  const actionClass = useDockActionClass();
+  const { navigate, openSurface } = useDockActions();
+  const start = useCallback(() => {
+    if (signedIn) void navigate("/account");
+    else void openSurface(createSignInSurfaceEntry({ next: "/account" }));
+  }, [navigate, openSurface, signedIn]);
+
+  return (
+    <Button
+      className={actionClass({ className: "w-full" })}
+      onClick={start}
+      type="button"
+    >
+      <Icon icon="solar:notebook-bold" size={16} />
+      <span className="truncate">
+        {signedIn ? "Open your diary" : "Start your diary"}
+      </span>
     </Button>
   );
 }

@@ -6,6 +6,9 @@ import { Darkroom } from "./darkroom";
 import { Opening } from "./opening";
 import { Tunnel } from "./tunnel";
 
+// Each section after the first is pulled up over the end of the one before,
+// so their boxes overlap; a section's box lets the pointer through, and only
+// its stage, while it is up, takes it.
 export function HomeView({ feed }: { feed: HomeFeed }): JSX.Element {
   return (
     <main className="relative bg-black [--gutter:max(16px,3vw)]">
