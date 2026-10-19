@@ -7,7 +7,7 @@ import {
   type ModalContainerProps,
 } from "@omerdlw/base-framework/modules/modal";
 import { SegmentedControl } from "@/ui";
-import { useShowing } from "@/motion/film";
+import { Tube, useShowing } from "@/motion/film";
 import type { PersonEntry } from "../lib/types";
 import { PersonCard } from "./person-card";
 
@@ -63,10 +63,12 @@ export interface VideoModalData {
   name: string;
 }
 
+// A video is broadcast, not projected: it plays on a set that is switched on
+// as it opens and off as it closes.
 function VideoModalView({ data }: ModalProps<VideoModalData>) {
   useShowing();
   return (
-    <div className="aspect-video w-[min(92vw,64rem)] overflow-hidden rounded-[20px] bg-black ring-1 ring-white/10 ring-inset">
+    <Tube className="aspect-video w-[min(92vw,64rem)] overflow-hidden rounded-[20px] bg-black ring-1 ring-white/10 ring-inset">
       <iframe
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         className="size-full"
@@ -74,7 +76,7 @@ function VideoModalView({ data }: ModalProps<VideoModalData>) {
         src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(data.key)}?autoplay=1&rel=0`}
         title={data.name}
       />
-    </div>
+    </Tube>
   );
 }
 

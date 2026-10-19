@@ -4,17 +4,27 @@ import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { usePage } from "@omerdlw/base-framework/kernel";
 import { useDockActions } from "@omerdlw/base-framework/modules/dock";
-import { useAmbientTheme } from "@omerdlw/base-framework/modules/ambient";
+import {
+  useAmbientTheme,
+  type AmbientPalette,
+} from "@omerdlw/base-framework/modules/ambient";
 import { useArtworkContextMenu, useArtworkPath } from "@/features/artwork";
-import { handoffTo, useDeparture } from "@/motion/handoff";
+import { handoffTo, useDeparture, useHeldPalette } from "@/motion/handoff";
 import { MovieAction } from "@/features/reviews";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieDetails } from "@/infrastructure/tmdb/types";
 import { MOVIE_FALLBACK_ICON } from "../lib/constants";
-import { describeMovie } from "../lib/utils";
+import { describeMovie, movieSwatch } from "../lib/utils";
 import { createWatchProvidersSurfaceEntry } from "./surfaces/watch-providers-surface";
 
-export function MoviePageChrome({ movie }: { movie: MovieDetails }): null {
+export function MoviePageChrome({
+  movie,
+  palette = null,
+}: {
+  movie: MovieDetails;
+  // Worked out on the server from movieSwatch of the film's own artwork.
+  palette?: AmbientPalette | null;
+}): null {
   const posterPath = useArtworkPath(
     "movie",
     movie.id,
@@ -28,9 +38,7 @@ export function MoviePageChrome({ movie }: { movie: MovieDetails }): null {
     movie.backdropPath,
   );
   const poster = tmdbImageUrl("poster", posterPath, "original");
-  const swatch =
-    tmdbImageUrl("backdrop", backdropPath, "w300") ??
-    tmdbImageUrl("poster", posterPath, "w185");
+  const swatch = movieSwatch(backdropPath, posterPath);
 
   useArtworkContextMenu({
     defaults: { backdrop: movie.backdropPath, poster: movie.posterPath },
@@ -74,7 +82,13 @@ export function MoviePageChrome({ movie }: { movie: MovieDetails }): null {
     },
   });
   const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
-  useAmbientTheme({ image: swatch, initialPalette: inherited });
+  // The server's palette is taken as it is. Artwork chosen in this browser is
+  // read here, from the last page's colours.
+  const { palette: lit } = useAmbientTheme({
+    image: swatch,
+    initialPalette: palette?.source === swatch ? palette : inherited,
+  });
+  useHeldPalette(lit);
 
   return null;
 }

@@ -7,7 +7,7 @@ import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { PersonDetails } from "@/infrastructure/tmdb/types";
 import { SCENE } from "../lib/motion";
 import { EASE } from "@/motion/stage";
-import { useLeaving } from "../stage";
+import { useLeaving, useWall } from "../stage";
 
 export function PersonProjection({
   backdrop,
@@ -17,6 +17,8 @@ export function PersonProjection({
   person: Pick<PersonDetails, "id" | "name" | "profilePath">;
 }) {
   const leaving = useLeaving();
+  // The interval is never called while the gallery hangs in the page's place.
+  const away = (useWall()?.phase ?? "page") !== "page";
   const { intermission } = SCENE.film;
   const path = useArtworkPath("person", person.id, "backdrop", backdrop);
   const photo = useArtworkPath(
@@ -37,7 +39,7 @@ export function PersonProjection({
         {...intermission}
         ease={EASE.silk}
         image={image}
-        paused={leaving}
+        paused={leaving || away}
         title={person.name}
       />
     </>

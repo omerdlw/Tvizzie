@@ -23,6 +23,7 @@ function AdaptiveImage({
   onLoad,
   onError,
   decoding = "async",
+  crossOrigin,
   ...props
 }: AdaptiveImageProps) {
   const theme = useTheme(primitivesTheme);
@@ -30,6 +31,11 @@ function AdaptiveImage({
   const resolvedSrc = trimToNull(src);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hasFailed, setHasFailed] = useState(false);
+  // TMDB sends its CORS header only to a request that asks for it, and its
+  // cache does not vary on that: a copy kept from a plain <img> is refused to
+  // a CORS one. Refused, the picture is asked for again as a plain one.
+  const [refused, setRefused] = useState<string | null>(null);
+  const corsRefused = refused !== null && refused === resolvedSrc;
 
   useEffect(() => {
     const imageElement = imageRef.current;
@@ -91,6 +97,10 @@ function AdaptiveImage({
   };
 
   const handleError = (event: SyntheticEvent<HTMLImageElement, Event>) => {
+    if (crossOrigin && !corsRefused) {
+      setRefused(resolvedSrc);
+      return;
+    }
     setHasFailed(true);
     onError?.(event);
   };
@@ -113,6 +123,7 @@ function AdaptiveImage({
           draggable={false}
           onDragStart={(event) => event.preventDefault()}
           className={imageClassName}
+          crossOrigin={corsRefused ? undefined : crossOrigin}
           {...imageState}
           onLoad={handleLoad}
           onError={handleError}
@@ -135,6 +146,7 @@ function AdaptiveImage({
           fetchPriority={resolvedFetchPriority}
           decoding={decoding}
           className={imageClassName}
+          crossOrigin={corsRefused ? undefined : crossOrigin}
           {...imageState}
           onLoad={handleLoad}
           onError={handleError}

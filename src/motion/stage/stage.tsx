@@ -49,6 +49,7 @@ import {
 import { Frame, GradeContext } from "./frame";
 import { RoomContext } from "./room";
 import { createTimeline } from "./timeline";
+import { Hung, WallContext, pageDown, useWall, useWallScene } from "./wall";
 
 const LeavingContext = createContext(false);
 
@@ -107,11 +108,14 @@ export function Stage({
   className,
   opening,
   picture = false,
+  wall,
 }: {
   children: ReactNode;
   className?: string;
   opening: Opening;
   picture?: boolean;
+  // A gallery the page can be given over to entirely.
+  wall?: ReactNode;
 }) {
   const pathname = usePathname();
   const pace = usePace(pathname);
@@ -132,6 +136,7 @@ export function Stage({
   const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
   const [lead, setLead] = useState<string | null>(null);
   const room = useMemo(() => ({ lead, setLead }), [lead]);
+  const scene = useWallScene();
 
   useEffect(() => timeline.serial(!reduced), [reduced, timeline]);
 
@@ -166,9 +171,12 @@ export function Stage({
           <MotionConfig reducedMotion="user">
             <GradeContext value={grade}>
               <RoomContext value={room}>
-                <Leaving className={className} tone={tone}>
-                  {children}
-                </Leaving>
+                <WallContext value={scene}>
+                  <Leaving className={className} tone={tone}>
+                    {children}
+                    {wall ? <Hung onDown={scene.hung}>{wall}</Hung> : null}
+                  </Leaving>
+                </WallContext>
               </RoomContext>
             </GradeContext>
           </MotionConfig>
@@ -353,10 +361,17 @@ export function Body({
   className?: string;
 }) {
   const left = useExit(GRAMMAR.exit.body);
-  const opacity = useTransform(left, (p) => 1 - p);
+  const wall = useWall();
+  const up = useMotionValue(1);
+  const lit = wall?.page ?? up;
+  const opacity = useTransform([left, lit], ([p, l]: number[]) => (1 - p) * l);
   const y = useTransform(left, (p) => -36 * p);
   return (
-    <motion.div className={className} style={{ opacity, y }}>
+    <motion.div
+      className={className}
+      hidden={pageDown(wall?.phase)}
+      style={{ opacity, y }}
+    >
       {children}
     </motion.div>
   );
@@ -385,7 +400,10 @@ export function Backdrop({
   const push = useTransform(scrollY, [0, 900], [1, 1 + GRAMMAR.scrub.push]);
   const reduced = useReducedMotion();
   const left = useExit(GRAMMAR.exit.backdrop);
-  const opacity = useTransform(left, (p) => 1 - p);
+  const wall = useWall();
+  const up = useMotionValue(1);
+  const lit = wall?.page ?? up;
+  const opacity = useTransform([left, lit], ([p, l]: number[]) => (1 - p) * l);
   const scale = useTransform(left, (p) => 1 - 0.1 * p);
   const { backdrop } = GRAMMAR;
   const pace = useContext(PaceContext);
@@ -407,7 +425,7 @@ export function Backdrop({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" hidden={pageDown(wall?.phase)}>
       <motion.div
         style={{
           opacity: dim,

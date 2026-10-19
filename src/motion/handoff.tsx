@@ -1,19 +1,27 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { usePathname } from "next/navigation";
 import type { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useAmbientTheme } from "@omerdlw/base-framework/modules/ambient";
+import {
+  paletteVarMap,
+  useAmbientTheme,
+  type AmbientPalette,
+} from "@omerdlw/base-framework/modules/ambient";
 import { DOCK_EVENTS } from "@omerdlw/base-framework/modules/dock";
 import { globalEvents } from "@omerdlw/base-framework/events";
 
 interface Trip {
   at: number;
-  black: string;
   grade: string | null;
   href: string;
-  primary: string;
+  palette: AmbientPalette | null;
   to: string;
 }
 
@@ -102,18 +110,29 @@ export function watchIntent(router: AppRouterInstance): () => void {
   };
 }
 
+// The palette the page on screen is lit by, so a cut away from it can carry
+// its light. Pages that light themselves from a picture hold theirs here.
+let held: AmbientPalette | null = null;
+
+export function useHeldPalette(palette: AmbientPalette | null): void {
+  useEffect(() => {
+    held = palette;
+    return () => {
+      if (held === palette) held = null;
+    };
+  }, [palette]);
+}
+
 function beginHandoff(to: string, router?: AppRouterInstance): void {
   if (!isFilmPage(to)) return;
-  const style = getComputedStyle(document.documentElement);
   const stage = document.querySelector("main[data-cinematic]");
   trip = {
     at: Date.now(),
-    black: style.getPropertyValue("--black").trim(),
     grade: stage
       ? getComputedStyle(stage).getPropertyValue("--grade").trim() || null
       : null,
     href: to,
-    primary: style.getPropertyValue("--primary").trim(),
+    palette: held,
     to: pathOf(to),
   };
   settle();
@@ -196,31 +215,20 @@ export function useDeparture(pathname: string): string | undefined {
   return href && pathOf(href) !== pathOf(pathname) ? href : undefined;
 }
 
-interface Palette {
-  black: string;
-  primary: string;
-}
-
 export function handoffTo(
   pathname: string,
-): { grade: string | null; palette: Palette | null } | null {
+): { grade: string | null; palette: AmbientPalette | null } | null {
   const now = current();
   if (!now || now.to !== pathOf(pathname)) return null;
-  return {
-    grade: now.grade,
-    palette:
-      now.black && now.primary
-        ? { black: now.black, primary: now.primary }
-        : null,
-  };
+  return { grade: now.grade, palette: now.palette };
 }
 
-function Dark({ palette }: { palette: Palette | null }) {
-  useAmbientTheme(
-    palette
-      ? { colors: { black: palette.black, primary: palette.primary } }
-      : null,
+function Dark({ palette }: { palette: AmbientPalette | null }) {
+  const colors = useMemo(
+    () => (palette ? paletteVarMap(palette) : null),
+    [palette],
   );
+  useAmbientTheme(colors ? { colors } : null);
   return (
     <div aria-hidden="true" className="min-h-screen">
       <div className="fixed inset-0 z-20 bg-black" />

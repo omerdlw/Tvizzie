@@ -11,7 +11,6 @@ import {
 import { AdaptiveImage, BackdropHero, Button, Icon } from "@/ui";
 import {
   CinemaTitle,
-  DrawnRule,
   Drift,
   HeroStage,
   Reveal,
@@ -30,6 +29,7 @@ import { AvatarStage } from "./account-avatar";
 import { useGlobalEvent } from "@omerdlw/base-framework/hooks";
 import { useDockActions } from "@omerdlw/base-framework/modules/dock";
 import { useAmbientTheme } from "@omerdlw/base-framework/modules/ambient";
+import { useHeldPalette } from "@/motion/handoff";
 import { createAccountSocialSurfaceEntry } from "./dock/account-social-surface";
 import { createAccountBioSurfaceEntry } from "./dock/account-bio-surface";
 
@@ -42,6 +42,8 @@ const JOIN_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
 
 const AVATAR_CLASSES =
   "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/60 text-4xl font-semibold text-white shadow-2xl ring-2 ring-white/10 select-none sm:size-28 sm:text-5xl lg:size-32";
+
+const CONTAINER = "mx-auto flex w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8";
 
 export interface AccountData {
   id?: string;
@@ -219,50 +221,43 @@ function SocialStatButton({ count, label, onClick }: SocialStatButtonProps) {
 
 function PrivateLockedView() {
   return (
-    <Reveal
-      className="flex min-h-[14rem] w-full flex-col items-center justify-center gap-3 py-12 text-center"
-      intro={SCENE.firstSection}
-    >
-      <div className="center size-12 rounded-2xl bg-white/5 text-white/50 ring-1 ring-white/10 ring-inset">
-        <Icon icon="solar:lock-bold" size={24} />
-      </div>
+    <div className="flex min-h-56 w-full flex-col items-center justify-center gap-3 rounded-xl px-6 py-12 text-center ring-1 ring-white/10 ring-inset">
+      <span className="center size-11 rounded-full bg-white/[0.06] text-white/60">
+        <Icon icon="solar:lock-bold" size={20} />
+      </span>
       <div className="flex max-w-sm flex-col gap-1">
-        <h3 className="text-sm font-semibold text-white">
+        <h2 className="text-sm font-semibold text-white">
           This account is private
-        </h3>
-        <p className="text-xs text-white/50">
-          Follow this account to see their activity
+        </h2>
+        <p className="text-sm text-white/50">
+          Follow this account to see their films, reviews and lists.
         </p>
       </div>
-    </Reveal>
+    </div>
   );
 }
 
 interface AccountHeroProps {
   account?: AccountData | null;
-  profile?: AccountData | null;
   followersCount?: number;
   followingCount?: number;
-  enableSocial?: boolean;
 }
 
 function AccountHero({
-  account: accountProp,
-  profile,
+  account,
   followersCount = 0,
   followingCount = 0,
-  enableSocial = true,
 }: AccountHeroProps) {
-  const account = accountProp || profile;
   const { openSurface } = useDockActions();
 
   const displayName = getAccountDisplayName(account);
   const backdropUrl = resolveAccountBackdropUrl(account);
   const joinDate = formatJoinDate(account?.createdAt) || "—";
 
-  useAmbientTheme({
+  const { palette } = useAmbientTheme({
     image: backdropUrl || account?.avatarUrl || null,
   });
+  useHeldPalette(palette);
 
   const openSocial = (tab: "following" | "followers") => {
     if (!account?.id) return;
@@ -293,32 +288,29 @@ function AccountHero({
     ? "-mt-20 pb-6 sm:-mt-28 sm:pb-8 lg:-mt-36 lg:pb-10"
     : "py-14 sm:py-20 lg:py-24";
 
-  const stats: { key: string; node: ReactNode }[] = [];
-  if (enableSocial) {
-    stats.push(
-      {
-        key: "following",
-        node: (
-          <SocialStatButton
-            count={followingCount}
-            label="Following"
-            onClick={() => openSocial("following")}
-          />
-        ),
-      },
-      {
-        key: "followers",
-        node: (
-          <SocialStatButton
-            count={followersCount}
-            label="Followers"
-            onClick={() => openSocial("followers")}
-          />
-        ),
-      },
-    );
-  }
-  stats.push({ key: "joined", node: <span>Joined {joinDate}</span> });
+  const stats: { key: string; node: ReactNode }[] = [
+    {
+      key: "following",
+      node: (
+        <SocialStatButton
+          count={followingCount}
+          label="Following"
+          onClick={() => openSocial("following")}
+        />
+      ),
+    },
+    {
+      key: "followers",
+      node: (
+        <SocialStatButton
+          count={followersCount}
+          label="Followers"
+          onClick={() => openSocial("followers")}
+        />
+      ),
+    },
+    { key: "joined", node: <span>Joined {joinDate}</span> },
+  ];
   if (account?.isPrivate) {
     stats.push({ key: "private", node: <span>Private</span> });
   }
@@ -385,46 +377,46 @@ function AccountHero({
 
 interface AccountLayoutProps {
   account?: AccountData | null;
-  profile?: AccountData | null;
+  children?: ReactNode;
   followersCount?: number;
   followingCount?: number;
   isFollower?: boolean;
   isOwner?: boolean;
-  enableSocial?: boolean;
   proofSlot?: ReactNode;
   tabsSlot?: ReactNode;
-  children?: ReactNode;
 }
 
 export function AccountLayout({
   account,
-  profile,
+  children,
   followersCount: initialFollowersCount = 0,
   followingCount = 0,
   isFollower: initialIsFollower = false,
   isOwner = false,
-  enableSocial = true,
   proofSlot,
   tabsSlot,
-  children,
 }: AccountLayoutProps) {
-  const accountData = account || profile;
   const { followersCount, isFollower } = useSocialFollowSync(
-    accountData?.id,
+    account?.id,
     initialFollowersCount,
     initialIsFollower,
   );
 
-  const isPrivateLocked =
-    enableSocial && accountData?.isPrivate && !isOwner && !isFollower;
+  const isPrivateLocked = account?.isPrivate && !isOwner && !isFollower;
+  const scope = account?.username
+    ? `/account/${encodeURIComponent(account.username)}`
+    : undefined;
 
   return (
-    <Scene className="min-h-screen" score={SCENE}>
+    <Scene
+      className="min-h-screen pb-[calc(var(--dock-h,6rem)+3rem)]"
+      scope={scope}
+      score={SCENE}
+    >
       <div className="relative z-10 w-full [overflow-anchor:none]">
-        <div className="mx-auto flex w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+        <div className={CONTAINER}>
           <AccountHero
-            account={accountData}
-            enableSocial={enableSocial}
+            account={account}
             followersCount={followersCount}
             followingCount={followingCount}
           />
@@ -436,29 +428,20 @@ export function AccountLayout({
         </div>
 
         <SceneBody>
-          {tabsSlot ? (
-            <Reveal
-              className="w-full border-b border-white/10"
-              intro={SCENE.rule.delay}
-            >
-              {tabsSlot}
-            </Reveal>
-          ) : (
-            <DrawnRule className="bg-white/10" />
-          )}
-
-          <div className="mx-auto flex w-full max-w-6xl flex-col px-4 pb-16 sm:px-6 lg:px-8">
-            {isPrivateLocked ? (
-              <PrivateLockedView />
-            ) : (
-              <Reveal
-                as="section"
-                className="w-full pt-6 sm:pt-8"
-                intro={SCENE.firstSection}
-              >
-                {children}
+          <div className={CONTAINER}>
+            {tabsSlot && !isPrivateLocked ? (
+              <Reveal className="mt-4 sm:mt-6" intro={SCENE.rule.delay}>
+                {tabsSlot}
               </Reveal>
-            )}
+            ) : null}
+
+            <Reveal
+              as="section"
+              className="w-full pt-8 sm:pt-10"
+              intro={SCENE.firstSection}
+            >
+              {isPrivateLocked ? <PrivateLockedView /> : children}
+            </Reveal>
           </div>
         </SceneBody>
       </div>

@@ -19,12 +19,14 @@ import {
 } from "../lib/browse";
 import type {
   ActivityItem,
+  DiaryEntry,
   DiaryMonth,
   ListCardData,
   ListComment,
   ListDetail,
   MediaItem,
   Paged,
+  PersonPreview,
   ReviewCardData,
 } from "../lib/browse-data";
 import { releaseYear } from "../lib/library-view";
@@ -350,15 +352,23 @@ export async function getListDetail({
   if (!list.data) return null;
   const row = list.data as ListRow;
 
-  let liked = false;
-  if (viewerId) {
-    const like = await client
-      .from("list_likes")
-      .select("list_id", { count: "exact", head: true })
+  const [like, first] = await Promise.all([
+    viewerId
+      ? client
+          .from("list_likes")
+          .select("list_id", { count: "exact", head: true })
+          .eq("list_id", row.id)
+          .eq("account_id", viewerId)
+      : null,
+    client
+      .from("list_items")
+      .select("poster_path")
       .eq("list_id", row.id)
-      .eq("account_id", viewerId);
-    liked = (like.count ?? 0) > 0;
-  }
+      .order("position", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const liked = (like?.count ?? 0) > 0;
 
   return {
     description: row.description,
@@ -373,6 +383,7 @@ export async function getListDetail({
       id: owner.data.id,
       username: ownerName,
     },
+    posterPath: first.data?.poster_path ?? null,
     reviewsCount: row.reviews_count,
     slug: row.slug,
     title: row.title,
@@ -457,6 +468,7 @@ async function likedReviewIds(
 }
 
 interface ReviewRow {
+  backdrop_path: string | null;
   content: string;
   created_at: string;
   id: string;
@@ -471,13 +483,14 @@ interface ReviewRow {
 }
 
 const REVIEW_COLUMNS =
-  "id, tmdb_id, title, poster_path, release_date, content, rating, is_spoiler, likes_count, created_at, updated_at";
+  "id, tmdb_id, title, poster_path, backdrop_path, release_date, content, rating, is_spoiler, likes_count, created_at, updated_at";
 
 const toReviewCard = (row: ReviewRow, liked: Set<string>): ReviewCardData[] =>
   row.tmdb_id === null
     ? []
     : [
         {
+          backdropPath: row.backdrop_path,
           content: row.content,
           createdAt: row.created_at,
           id: row.id,
@@ -550,20 +563,29 @@ export async function getReviewsPage({
 
 export async function getRecentReviews({
   accountId,
+  by = "recent",
   client,
   limit,
   viewerId,
 }: {
   accountId: string;
+  by?: "likes" | "recent";
   client: Client;
   limit: number;
   viewerId: string | null;
 }): Promise<ReviewCardData[]> {
-  const { data, error } = await client
+  let query = client
     .from("reviews")
     .select(REVIEW_COLUMNS)
     .eq("account_id", accountId)
     .not("tmdb_id", "is", null)
+    .neq("content", "");
+  if (by === "likes") {
+    query = query.gt("likes_count", 0).order("likes_count", {
+      ascending: false,
+    });
+  }
+  const { data, error } = await query
     .order("updated_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -575,6 +597,90 @@ export async function getRecentReviews({
     rows.map((row) => row.id),
   );
   return rows.flatMap((row) => toReviewCard(row, liked));
+}
+
+// How someone's ratings fall across the ten half-star steps, lowest first.
+export async function getRatingSpread({
+  accountId,
+  client,
+}: {
+  accountId: string;
+  client: Client;
+}): Promise<number[]> {
+  const { data, error } = await client
+    .from("reviews")
+    .select("rating")
+    .eq("account_id", accountId)
+    .not("tmdb_id", "is", null)
+    .not("rating", "is", null)
+    .limit(5000);
+  if (error) throw error;
+
+  const spread = Array.from({ length: 10 }, () => 0);
+  for (const row of data ?? []) {
+    const step = Math.round(Number(row.rating) * 2);
+    if (step >= 1 && step <= 10) spread[step - 1] += 1;
+  }
+  return spread;
+}
+
+export async function countWatchedSince({
+  accountId,
+  client,
+  since,
+}: {
+  accountId: string;
+  client: Client;
+  since: string;
+}): Promise<number> {
+  const { count, error } = await client
+    .from("account_watched")
+    .select("tmdb_id", { count: "exact", head: true })
+    .eq("account_id", accountId)
+    .gte("last_watched_at", since);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function getFollowingPreview({
+  accountId,
+  client,
+  limit,
+}: {
+  accountId: string;
+  client: Client;
+  limit: number;
+}): Promise<PersonPreview[]> {
+  const { data, error } = await client
+    .from("account_follows")
+    .select(
+      "person:accounts!account_follows_following_id_fkey(username, display_name, avatar_url)",
+    )
+    .eq("follower_id", accountId)
+    .eq("status", "accepted")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+
+  return (
+    (data ?? []) as unknown as {
+      person: {
+        avatar_url: string | null;
+        display_name: string | null;
+        username: string | null;
+      } | null;
+    }[]
+  ).flatMap(({ person }) =>
+    person?.username
+      ? [
+          {
+            avatarUrl: person.avatar_url,
+            displayName: person.display_name || person.username,
+            username: person.username,
+          },
+        ]
+      : [],
+  );
 }
 
 interface ActivityRow {
@@ -680,6 +786,31 @@ export async function getRecentActivity({
   return ((data ?? []) as unknown as ActivityRow[]).map((row) =>
     toActivityItem(row, accountUsername),
   );
+}
+
+export async function getRecentDiary({
+  accountId,
+  client,
+  limit,
+}: {
+  accountId: string;
+  client: Client;
+  limit: number;
+}): Promise<DiaryEntry[]> {
+  const { data, error } = await client
+    .from("account_diary")
+    .select("id, tmdb_id, title, watched_on")
+    .eq("account_id", accountId)
+    .order("watched_on", { ascending: false })
+    .order("watched_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    tmdbId: row.tmdb_id,
+    watchedOn: row.watched_on,
+  }));
 }
 
 interface DiaryEntryRow {

@@ -204,7 +204,11 @@ export function Carousel({
     const element = trackRef.current;
     if (!element) return;
     const { clientWidth, scrollLeft, scrollWidth } = element;
-    if (scrollLeft + clientWidth * 2 >= scrollWidth) nearEnd.current?.();
+    // A track that is not laid out (its page put away for the wall) is at
+    // no end at all.
+    if (clientWidth > 0 && scrollLeft + clientWidth * 2 >= scrollWidth) {
+      nearEnd.current?.();
+    }
     const next = readScrollState(element);
     setState((previous) =>
       previous.canScrollLeft === next.canScrollLeft &&

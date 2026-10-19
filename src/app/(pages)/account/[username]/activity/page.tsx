@@ -5,11 +5,13 @@ import {
   parseActivityFilters,
   type SearchParams,
 } from "@/features/account/lib/browse";
-import { ActivityRow } from "@/features/account/components/browse/activity-row";
-import { EmptyState } from "@/features/account/components/browse/empty-state";
+import {
+  ActivityLog,
+  ActivityRow,
+} from "@/features/account/components/browse/activity-row";
 import { FilterBar } from "@/features/account/components/browse/filter-bar";
 import { Pagination } from "@/features/account/components/browse/pagination";
-import { SectionHeading } from "@/features/account/components/browse/section-heading";
+import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { getActivityPage } from "@/features/account/server/browse";
 import { getAccountPageContext } from "@/features/account/server/context";
 
@@ -19,9 +21,11 @@ export default async function AccountActivityPage({
 }: {
   params: Promise<{ username: string }>;
   searchParams: Promise<SearchParams>;
-}): Promise<JSX.Element> {
+}): Promise<JSX.Element | null> {
   const [{ username }, query] = await Promise.all([params, searchParams]);
-  const { account, client, isOwner } = await getAccountPageContext(username);
+  const { account, client, isOwner, locked } =
+    await getAccountPageContext(username);
+  if (locked) return null;
   const filters = parseActivityFilters(query);
   const result = await getActivityPage({
     accountId: account.id,
@@ -30,19 +34,15 @@ export default async function AccountActivityPage({
     filters,
   });
   const actor = {
-    displayName: account.displayName || account.username,
+    displayName: isOwner ? "You" : account.displayName || account.username,
     username: account.username,
   };
 
   return (
-    <section className="w-full">
-      <SectionHeading
-        icon="solar:bolt-bold"
-        summary={`${result.total} ${result.total === 1 ? "event" : "events"}`}
-        title="Activity"
-      />
+    <div className="flex w-full flex-col">
       {result.total > 0 || filters.group !== "all" ? (
         <FilterBar
+          docked
           fields={[
             { defaultValue: "all", key: "type", options: ACTIVITY_GROUPS },
             { defaultValue: "newest", key: "sort", options: ACTIVITY_SORTS },
@@ -53,11 +53,11 @@ export default async function AccountActivityPage({
 
       {result.items.length > 0 ? (
         <>
-          <div className="flex flex-col gap-2">
+          <ActivityLog>
             {result.items.map((item) => (
               <ActivityRow actor={actor} item={item} key={item.id} />
             ))}
-          </div>
+          </ActivityLog>
           <Pagination page={result.page} pageCount={result.pageCount} />
         </>
       ) : (
@@ -69,6 +69,6 @@ export default async function AccountActivityPage({
               : "No activity yet"}
         </EmptyState>
       )}
-    </section>
+    </div>
   );
 }

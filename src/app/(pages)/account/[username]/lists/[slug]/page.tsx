@@ -10,22 +10,22 @@ import {
   type SearchParams,
 } from "@/features/account/lib/browse";
 import { AccountLink } from "@/features/account/components/browse/account-link";
-import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { FilterBar } from "@/features/account/components/browse/filter-bar";
-import { ListCommentChrome } from "@/features/reviews/components/list-comment-chrome";
 import { ListComments } from "@/features/account/components/browse/list-comments";
-import { ListLikeButton } from "@/features/account/components/browse/list-like-button";
-import { EditListButton } from "@/features/account/components/browse/list-owner-actions";
+import { ListChrome } from "@/features/account/components/browse/list-chrome";
 import { Pagination } from "@/features/account/components/browse/pagination";
 import { PosterGrid } from "@/features/account/components/browse/poster-grid";
-import { SectionHeading } from "@/features/account/components/browse/section-heading";
+import { EmptyState } from "@/features/account/components/browse/empty-state";
+import { Section, counted } from "@/features/account/components/browse/section";
+import { formatShortDate } from "@/features/account/lib/dates";
+import { Icon } from "@/ui";
+import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import {
   getListComments,
   getListDetail,
   getListItemsPage,
 } from "@/features/account/server/browse";
 import { getAccountPageContext } from "@/features/account/server/context";
-import { Icon } from "@/ui";
 
 export default async function AccountListPage({
   params,
@@ -33,10 +33,11 @@ export default async function AccountListPage({
 }: {
   params: Promise<{ slug: string; username: string }>;
   searchParams: Promise<SearchParams>;
-}): Promise<JSX.Element> {
+}): Promise<JSX.Element | null> {
   const [{ slug, username }, query] = await Promise.all([params, searchParams]);
-  const { account, client, isOwner, viewerId } =
+  const { account, client, isOwner, locked, viewerId } =
     await getAccountPageContext(username);
+  if (locked) return null;
 
   const list = await getListDetail({
     client,
@@ -60,99 +61,75 @@ export default async function AccountListPage({
 
   return (
     <div className="flex w-full flex-col gap-10">
-      <ListCommentChrome
-        target={{
-          content: own?.content ?? null,
-          listId: list.id,
-          title: list.title,
-        }}
+      <ListChrome
+        comment={own?.content ?? null}
+        icon={tmdbImageUrl("poster", list.posterPath, "w185")}
+        isOwner={isOwner}
+        list={list}
+        signedIn={viewerId !== null}
       />
-      <header className="flex flex-col gap-4">
+      <header className="flex flex-col gap-5">
         <AccountLink
-          className="inline-flex w-fit items-center gap-1.5 text-xs font-semibold text-white/50 uppercase hover:text-white"
+          className="inline-flex w-fit items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-white/40 uppercase transition-colors hover:text-white"
           href={lists}
         >
-          <Icon icon="solar:alt-arrow-left-linear" size={12} />
-          {account.displayName || account.username}’s lists
+          <Icon icon="solar:alt-arrow-left-linear" size={13} />
+          All lists
         </AccountLink>
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="flex flex-wrap items-center gap-3 text-2xl font-semibold text-white sm:text-3xl">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <h1 className="text-2xl leading-8 font-semibold tracking-tight break-words text-white">
               {list.title}
-              {list.isPrivate ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white/70">
-                  <Icon icon="solar:lock-bold" size={12} />
-                  Private
-                </span>
-              ) : null}
-              {list.isRanked ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white/70">
-                  <Icon icon="solar:ranking-bold" size={12} />
-                  Ranked
-                </span>
-              ) : null}
             </h1>
-            {list.description ? (
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed whitespace-pre-line text-white/60">
-                {list.description}
-              </p>
-            ) : null}
-            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/50">
-              <span>
-                A list by{" "}
-                <AccountLink
-                  className="font-semibold text-white hover:underline"
-                  href={`/account/${encodeURIComponent(list.owner.username)}`}
-                >
-                  {list.owner.displayName}
-                </AccountLink>
-              </span>
-              <span>•</span>
-              <span>
-                {list.itemsCount} {list.itemsCount === 1 ? "film" : "films"}
-              </span>
-              <span>•</span>
-              <span>
-                {list.reviewsCount}{" "}
-                {list.reviewsCount === 1 ? "comment" : "comments"}
-              </span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <ListLikeButton
-              liked={list.liked}
-              likesCount={list.likesCount}
-              listId={list.id}
-              signedIn={viewerId !== null}
-            />
-            {isOwner ? (
-              <EditListButton
-                className="center h-9 w-9 cursor-pointer rounded-[13px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white"
-                list={{
-                  description: list.description,
-                  id: list.id,
-                  isPrivate: list.isPrivate,
-                  isRanked: list.isRanked,
-                  slug: list.slug,
-                  title: list.title,
-                }}
-                username={account.username}
+            {list.isPrivate ? (
+              <Icon
+                aria-label="Private list"
+                className="shrink-0 text-white/40"
+                icon="solar:lock-bold"
+                size={16}
               />
             ) : null}
           </div>
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/50">
+            <span>
+              By{" "}
+              <AccountLink
+                className="font-medium text-white/80 hover:text-white hover:underline"
+                href={`/account/${encodeURIComponent(list.owner.username)}`}
+              >
+                {list.owner.displayName}
+              </AccountLink>
+            </span>
+            <span aria-hidden="true" className="text-white/20">
+              ·
+            </span>
+            <span>{counted(list.itemsCount, "film")}</span>
+            {list.isRanked ? (
+              <>
+                <span aria-hidden="true" className="text-white/20">
+                  ·
+                </span>
+                <span>Ranked</span>
+              </>
+            ) : null}
+            <span aria-hidden="true" className="text-white/20">
+              ·
+            </span>
+            <span>Updated {formatShortDate(list.updatedAt)}</span>
+          </p>
+          {list.description ? (
+            <p className="max-w-2xl text-sm leading-6 whitespace-pre-line text-white/70">
+              {list.description}
+            </p>
+          ) : null}
         </div>
       </header>
 
-      <section>
-        <SectionHeading
-          icon="solar:clapperboard-play-bold"
-          summary={filtered ? `${items.total} shown` : undefined}
-          title="Films"
-        />
+      <div className="flex w-full flex-col">
         {list.itemsCount > 0 || filtered ? (
           <FilterBar
+            docked
             fields={[
               {
                 allLabel: "Any genre",
@@ -200,21 +177,16 @@ export default async function AccountListPage({
                 : "This list is empty"}
           </EmptyState>
         )}
-      </section>
+      </div>
 
-      <section>
-        <SectionHeading
-          icon="solar:chat-round-bold"
-          summary={`${list.reviewsCount}`}
-          title="Comments"
-        />
+      <Section summary={counted(list.reviewsCount, "comment")} title="Comments">
         <ListComments
           comments={comments}
           listId={list.id}
           listTitle={list.title}
           viewerId={viewerId}
         />
-      </section>
+      </Section>
     </div>
   );
 }

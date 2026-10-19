@@ -5,11 +5,10 @@ import {
   parseReviewFilters,
   type SearchParams,
 } from "@/features/account/lib/browse";
-import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { FilterBar } from "@/features/account/components/browse/filter-bar";
 import { Pagination } from "@/features/account/components/browse/pagination";
-import { ReviewCard } from "@/features/account/components/browse/review-card";
-import { SectionHeading } from "@/features/account/components/browse/section-heading";
+import { ReviewList } from "@/features/account/components/browse/review-list";
+import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { getReviewsPage } from "@/features/account/server/browse";
 import { getAccountPageContext } from "@/features/account/server/context";
 
@@ -19,10 +18,11 @@ export default async function AccountReviewsPage({
 }: {
   params: Promise<{ username: string }>;
   searchParams: Promise<SearchParams>;
-}): Promise<JSX.Element> {
+}): Promise<JSX.Element | null> {
   const [{ username }, query] = await Promise.all([params, searchParams]);
-  const { account, client, isOwner, viewerId } =
+  const { account, client, isOwner, locked, viewerId } =
     await getAccountPageContext(username);
+  if (locked) return null;
   const filters = parseReviewFilters(query);
   const result = await getReviewsPage({
     accountId: account.id,
@@ -33,14 +33,10 @@ export default async function AccountReviewsPage({
   const filtered = Boolean(filters.query) || filters.kind !== "all";
 
   return (
-    <section className="w-full">
-      <SectionHeading
-        icon="solar:chat-round-bold"
-        summary={`${result.total} ${result.total === 1 ? "review" : "reviews"}`}
-        title="Reviews"
-      />
+    <div className="flex w-full flex-col">
       {result.total > 0 || filtered ? (
         <FilterBar
+          docked
           fields={[
             { defaultValue: "all", key: "kind", options: REVIEW_KINDS },
             { defaultValue: "newest", key: "sort", options: REVIEW_SORTS },
@@ -51,20 +47,15 @@ export default async function AccountReviewsPage({
 
       {result.items.length > 0 ? (
         <>
-          <div className="flex flex-col gap-3">
-            {result.items.map((review) => (
-              <ReviewCard
-                isOwner={isOwner}
-                key={review.id}
-                review={review}
-                signedIn={viewerId !== null}
-              />
-            ))}
-          </div>
+          <ReviewList
+            isOwner={isOwner}
+            reviews={result.items}
+            signedIn={viewerId !== null}
+          />
           <Pagination page={result.page} pageCount={result.pageCount} />
         </>
       ) : (
-        <EmptyState icon="solar:chat-round-bold">
+        <EmptyState icon="solar:pen-new-square-bold">
           {filtered
             ? "No reviews match these filters"
             : isOwner
@@ -72,6 +63,6 @@ export default async function AccountReviewsPage({
               : "No reviews yet"}
         </EmptyState>
       )}
-    </section>
+    </div>
   );
 }

@@ -31,7 +31,7 @@ import {
 } from "../lib/utils";
 import { MovieBackdropHero } from "./movie-artwork";
 import { MovieAwards } from "./movie-awards";
-import { MovieGallery } from "./movie-gallery";
+import { MovieGallery, MovieGalleryWall } from "./movie-gallery";
 import { MoviePeople } from "./movie-people";
 import { MovieProjection } from "./movie-projection";
 import { MovieRecommendations } from "./movie-recommendations";
@@ -72,6 +72,13 @@ export function MovieView({
       className={PAGE_CLASS}
       opening={SCENE.opening}
       picture={Boolean(backdrop)}
+      wall={
+        <MovieGalleryWall
+          backdrops={getGalleryImages(images)}
+          posters={getPosterImages(images)}
+          title={movie.title}
+        />
+      }
     >
       <ReelProvider>
         <MovieProjection movie={movie} />

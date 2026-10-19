@@ -4,7 +4,9 @@ export { PersonView } from "./components/person-view";
 export { PersonViewProvider } from "./components/person-view-state";
 export {
   describePerson,
+  getBackdropPath,
   parsePersonId,
   getTimeline,
   personHref,
+  personSwatch,
 } from "./lib/utils";

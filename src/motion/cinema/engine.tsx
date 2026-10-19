@@ -238,13 +238,23 @@ export function SectionPart({
   );
 }
 
+// Within `scope`, a page is one page: going from one of its paths to another
+// changes the view on it, it does not leave it.
+const within = (href: string, scope?: string) => {
+  if (!scope) return false;
+  const path = href.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+  return path === scope || path.startsWith(`${scope}/`);
+};
+
 export function Scene({
   children,
   className,
+  scope,
   score,
 }: {
   children: ReactNode;
   className?: string;
+  scope?: string;
   score: Score;
 }) {
   const [clock] = useState<SceneTime>(() => ({ born: null }));
@@ -261,7 +271,9 @@ export function Scene({
       <SceneClock value={clock}>
         <ConductorContext value={conductor}>
           <MotionConfig reducedMotion="user">
-            <Leaving className={className}>{children}</Leaving>
+            <Leaving className={className} scope={scope}>
+              {children}
+            </Leaving>
           </MotionConfig>
         </ConductorContext>
       </SceneClock>
@@ -272,9 +284,11 @@ export function Scene({
 function Leaving({
   children,
   className,
+  scope,
 }: {
   children: ReactNode;
   className?: string;
+  scope?: string;
 }) {
   const dock = useOptionalDockActions();
   const conductor = useContext(ConductorContext);
@@ -292,18 +306,22 @@ function Leaving({
     if (!dock || reduced) return;
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const unregister = dock.registerGuard({
-      when: () =>
-        new Promise<boolean>((resolve) => {
-          setLeaving(true);
-          timers.add(setTimeout(() => setLeaving(false), wait * 1000 + 2500));
-          timers.add(setTimeout(() => resolve(false), wait * 1000));
-        }),
+      when: (to: string) =>
+        within(to, scope)
+          ? false
+          : new Promise<boolean>((resolve) => {
+              setLeaving(true);
+              timers.add(
+                setTimeout(() => setLeaving(false), wait * 1000 + 2500),
+              );
+              timers.add(setTimeout(() => resolve(false), wait * 1000));
+            }),
     });
     return () => {
       unregister();
       timers.forEach(clearTimeout);
     };
-  }, [dock, reduced, wait]);
+  }, [dock, reduced, scope, wait]);
 
   return (
     <LeavingContext value={leaving}>

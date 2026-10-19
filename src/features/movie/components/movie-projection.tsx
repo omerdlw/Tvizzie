@@ -7,7 +7,7 @@ import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieDetails } from "@/infrastructure/tmdb/types";
 import { SCENE } from "../lib/motion";
 import { EASE } from "@/motion/stage";
-import { useLeaving } from "../stage";
+import { useLeaving, useWall } from "../stage";
 
 const pictureOf = (src: string | null) => (src ? readable(src) : null);
 
@@ -17,6 +17,8 @@ export function MovieProjection({
   movie: Pick<MovieDetails, "backdropPath" | "id" | "title">;
 }) {
   const leaving = useLeaving();
+  // The interval is never called while the gallery hangs in the page's place.
+  const away = (useWall()?.phase ?? "page") !== "page";
   const { intermission } = SCENE.film;
   const path = useArtworkPath(
     "movie",
@@ -32,7 +34,7 @@ export function MovieProjection({
         {...intermission}
         ease={EASE.silk}
         image={pictureOf(tmdbImageUrl("backdrop", path, "original"))}
-        paused={leaving}
+        paused={leaving || away}
         title={movie.title}
       />
     </>

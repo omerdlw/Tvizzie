@@ -6,9 +6,12 @@ import {
   PersonView,
   PersonViewProvider,
   describePerson,
+  getBackdropPath,
   getTimeline,
   parsePersonId,
+  personSwatch,
 } from "@/features/person";
+import { getAmbientPalette } from "@/infrastructure/tmdb/ambient";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import {
   getPersonAwards,
@@ -74,6 +77,9 @@ export default async function PersonPage({
   const awards = getPersonAwards(id).then((outcome) =>
     outcome.success ? outcome.data : null,
   );
+  const palette = await getAmbientPalette(
+    personSwatch(getBackdropPath(result.data), result.data.profilePath),
+  );
 
   return (
     <PersonViewProvider
@@ -81,7 +87,7 @@ export default async function PersonPage({
       hasTimeline={getTimeline(result.data).length > 0}
       key={id}
     >
-      <PersonPageChrome person={result.data} />
+      <PersonPageChrome palette={palette} person={result.data} />
       <PersonView awards={awards} person={result.data} />
     </PersonViewProvider>
   );

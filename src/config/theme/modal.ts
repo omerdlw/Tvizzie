@@ -1,6 +1,7 @@
 import { Z_INDEX } from "@omerdlw/base-framework/tokens";
 import { defineTheme } from "@omerdlw/base-framework/theme";
 import { modalTheme } from "@omerdlw/base-framework/modules/modal";
+import { modalMotion } from "./motion/modal";
 
 export const modalThemeConfig = defineTheme(modalTheme, {
   slots: {
@@ -63,4 +64,5 @@ export const modalThemeConfig = defineTheme(modalTheme, {
     dim: { zIndex: Z_INDEX.MODAL_BACKDROP },
     row: { zIndex: Z_INDEX.MODAL_STICKY_HEADER },
   },
+  motion: modalMotion,
 });

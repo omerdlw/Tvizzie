@@ -3,10 +3,10 @@
 import type { JSX, ReactNode } from "react";
 import { useAuth } from "@/features/auth";
 import {
+  AccountDockProvider,
   AccountLayout,
   AccountSectionTabs,
   type AccountData,
-  type LibraryCounts,
   useAccount,
 } from "@/features/account";
 import { AccountRegistry } from "./registry";
@@ -19,7 +19,6 @@ interface AccountClientProps {
   initialFollowStatus: string | null;
   isFollower: boolean;
   isOwner: boolean;
-  libraryCounts: LibraryCounts;
   proofSlot?: ReactNode;
 }
 
@@ -31,7 +30,6 @@ export function AccountClient({
   initialFollowStatus,
   isFollower,
   isOwner: initialIsOwner,
-  libraryCounts,
   proofSlot,
 }: AccountClientProps): JSX.Element {
   const auth = useAuth();
@@ -57,24 +55,23 @@ export function AccountClient({
         initialFollowStatus={initialFollowStatus}
         isOwner={isOwner}
       />
-      <AccountLayout
-        account={activeAccount}
-        followersCount={followersCount}
-        followingCount={followingCount}
-        isFollower={isFollower}
-        isOwner={isOwner}
-        proofSlot={proofSlot}
-        tabsSlot={
-          activeAccount.username ? (
-            <AccountSectionTabs
-              counts={libraryCounts}
-              username={activeAccount.username}
-            />
-          ) : null
-        }
-      >
-        {children}
-      </AccountLayout>
+      <AccountDockProvider account={activeAccount}>
+        <AccountLayout
+          account={activeAccount}
+          followersCount={followersCount}
+          followingCount={followingCount}
+          isFollower={isFollower}
+          isOwner={isOwner}
+          proofSlot={proofSlot}
+          tabsSlot={
+            activeAccount.username ? (
+              <AccountSectionTabs username={activeAccount.username} />
+            ) : null
+          }
+        >
+          {children}
+        </AccountLayout>
+      </AccountDockProvider>
     </>
   );
 }

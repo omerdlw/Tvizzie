@@ -4,12 +4,16 @@ import { notFound } from "next/navigation";
 import { getOptionalUser } from "@/features/auth/server/server";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
 import type { PublicAccount } from "../lib/types";
+import { getAccountFollowRelation } from "./follows";
 import { getPublicAccount } from "./profile";
 
 interface AccountPageContext {
   account: PublicAccount;
   client: Awaited<ReturnType<typeof createServerSupabaseClient>>;
   isOwner: boolean;
+  // A private account shows nothing past its hero until the viewer follows
+  // it, so its pages read nothing either.
+  locked: boolean;
   viewerId: string | null;
 }
 
@@ -24,6 +28,15 @@ const load = cache(async (username: string) => {
   return { account, client, viewer };
 });
 
+const loadFollower = cache(
+  async (
+    client: AccountPageContext["client"],
+    targetId: string,
+    viewerId?: string,
+  ) =>
+    (await getAccountFollowRelation({ client, targetId, viewerId })).isFollower,
+);
+
 export async function getAccountPageContext(
   username: string,
 ): Promise<AccountPageContext> {
@@ -37,10 +50,17 @@ export async function getAccountPageContext(
   const { account, client, viewer } = await load(handle);
   if (!account) notFound();
 
+  const isOwner = viewer?.id === account.id;
+  const locked =
+    account.isPrivate &&
+    !isOwner &&
+    !(await loadFollower(client, account.id, viewer?.id));
+
   return {
     account,
     client,
-    isOwner: viewer?.id === account.id,
+    isOwner,
+    locked,
     viewerId: viewer?.id ?? null,
   };
 }

@@ -1,14 +1,14 @@
 import type { JSX } from "react";
 import { movieHref } from "@config/routes";
 import { Icon, MediaCard } from "@/ui";
+import { RatingStars } from "@/features/reviews/components/rating-stars";
 import type { DiaryRow } from "../../lib/browse-data";
 import { AccountLink } from "./account-link";
 import { DiaryDeleteButton } from "./diary-delete-button";
 import { posterImage } from "./poster";
-import { RatingStars } from "@/features/reviews/components/rating-stars";
 
 const DAY = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
+  day: "numeric",
   timeZone: "UTC",
   weekday: "short",
 });
@@ -21,144 +21,126 @@ function dayOf(value: string) {
   };
 }
 
-function Title({ row }: { row: DiaryRow }): JSX.Element {
-  return (
-    <div className="flex min-w-0 items-center gap-3">
-      <MediaCard
-        aspect="free"
-        className="w-9 shrink-0"
-        fallbackIcon="solar:clapperboard-play-bold"
-        fallbackIconSize={14}
-        frameClassName="h-[3.25rem] w-9"
-        framed={false}
-        href={movieHref(row.tmdbId)}
-        image={posterImage(row.posterPath, "36px")}
-        label={row.title}
-        radius={8}
-      />
-      <div className="min-w-0">
-        <AccountLink
-          className="block truncate text-sm font-semibold text-white hover:underline"
-          href={movieHref(row.tmdbId)}
-        >
-          {row.title}
-        </AccountLink>
-        {row.year ? <p className="text-xs text-white/40">{row.year}</p> : null}
-      </div>
-    </div>
-  );
-}
+const COLUMNS =
+  "grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-x-3 sm:grid-cols-[3.5rem_minmax(0,1fr)_7rem_4.5rem_4.5rem_2.5rem] sm:gap-x-4";
 
-function Marks({
-  row,
-  username,
-}: {
-  row: DiaryRow;
-  username: string;
-}): JSX.Element {
-  return (
-    <>
-      <span title={row.isRewatch ? "Rewatch" : undefined}>
-        {row.isRewatch ? (
-          <Icon className="text-white/70" icon="solar:restart-bold" size={15} />
-        ) : (
-          <span className="text-white/30">—</span>
-        )}
-      </span>
-      <span>
-        {row.hasReview ? (
-          <AccountLink
-            aria-label="Read the review"
-            href={`${movieHref(row.tmdbId)}/reviews?user=${encodeURIComponent(username)}`}
-            title="Read the review"
-          >
-            <Icon
-              className="text-white/70 hover:text-white"
-              icon="solar:document-text-bold"
-              size={15}
-            />
-          </AccountLink>
-        ) : (
-          <span className="text-white/30">—</span>
-        )}
-      </span>
-    </>
+const HEAD =
+  "text-[10px] leading-4 font-semibold tracking-[0.14em] text-white/40 uppercase";
+
+function Mark({ on, label }: { on: boolean; label: string }) {
+  return on ? (
+    <Icon
+      aria-label={label}
+      className="text-white/70"
+      icon="solar:check-circle-bold"
+      size={16}
+    />
+  ) : (
+    <span aria-hidden="true" className="text-white/20">
+      —
+    </span>
   );
 }
 
 export function DiaryLedger({
   isOwner,
-  username,
   rows,
+  username,
 }: {
   isOwner: boolean;
-  username: string;
   rows: readonly DiaryRow[];
+  username: string;
 }): JSX.Element {
-  const cells = rows.map((row, index) => {
-    const same = rows[index - 1]?.watchedOn === row.watchedOn;
-    return { ...dayOf(row.watchedOn), row, same };
-  });
-
   return (
-    <div className="overflow-hidden rounded-[20px] bg-white/5 ring-1 ring-white/5 ring-inset">
+    <div className="w-full">
       <div
-        className="hidden grid-cols-[4.5rem_minmax(0,1fr)_7rem_4rem_4rem_2.5rem] items-center gap-x-4 border-b border-white/5 px-4 py-3 text-xs font-semibold text-white/50 uppercase sm:grid"
-        role="row"
+        className={`${COLUMNS} hidden border-b border-white/10 pb-2 sm:grid`}
       >
-        <span>Day</span>
-        <span>Film</span>
-        <span>Rating</span>
-        <span className="text-center">Rewatch</span>
-        <span className="text-center">Review</span>
+        <span className={HEAD}>Day</span>
+        <span className={HEAD}>Film</span>
+        <span className={HEAD}>Rating</span>
+        <span className={`${HEAD} text-center`}>Rewatch</span>
+        <span className={`${HEAD} text-center`}>Review</span>
         <span />
       </div>
-      <ul className="divide-y divide-white/5">
-        {cells.map(({ day, row, same, weekday }) => (
-          <li
-            className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 hover:bg-white/5 sm:grid-cols-[4.5rem_minmax(0,1fr)_7rem_4rem_4rem_2.5rem] sm:gap-x-4"
-            key={row.id}
-          >
-            <time
-              className="font-mono text-xs text-white/50"
-              dateTime={row.watchedOn}
-            >
-              {same ? null : (
-                <>
-                  <span className="block text-sm font-semibold text-white">
-                    {day}
-                  </span>
-                  {weekday}
-                </>
-              )}
-            </time>
-            <Title row={row} />
-            <span className="hidden sm:block">
-              <RatingStars rating={row.rating} />
-            </span>
-            <span className="hidden justify-center sm:flex">
-              <Marks row={row} username={username} />
-            </span>
-            <span className="flex items-center justify-end gap-2.5 sm:hidden">
-              <RatingStars rating={row.rating} size={11} />
-              {row.isRewatch ? (
-                <Icon
-                  className="text-white/70"
-                  icon="solar:restart-bold"
-                  size={14}
+      <ul className="divide-y divide-white/[0.07]">
+        {rows.map((row, index) => {
+          const same = rows[index - 1]?.watchedOn === row.watchedOn;
+          const { day, weekday } = dayOf(row.watchedOn);
+          const href = movieHref(row.tmdbId);
+          return (
+            <li className={`${COLUMNS} py-3`} key={row.id}>
+              <time className="flex flex-col" dateTime={row.watchedOn}>
+                {same ? null : (
+                  <>
+                    <span className="text-lg leading-6 font-semibold text-white tabular-nums">
+                      {day}
+                    </span>
+                    <span className="text-[11px] leading-4 text-white/40">
+                      {weekday}
+                    </span>
+                  </>
+                )}
+              </time>
+
+              <div className="flex min-w-0 items-center gap-3">
+                <MediaCard
+                  aspect="free"
+                  className="w-9 shrink-0"
+                  fallbackIcon="solar:clapperboard-play-bold"
+                  fallbackIconSize={14}
+                  frameClassName="h-[3.25rem] w-9"
+                  href={href}
+                  image={posterImage(row.posterPath, "36px")}
+                  label={row.title}
+                  radius={4}
                 />
-              ) : null}
-              {isOwner ? (
-                <DiaryDeleteButton id={row.id} title={row.title} />
-              ) : null}
-            </span>
-            <span className="hidden justify-end sm:flex">
-              {isOwner ? (
-                <DiaryDeleteButton id={row.id} title={row.title} />
-              ) : null}
-            </span>
-          </li>
-        ))}
+                <div className="flex min-w-0 flex-col">
+                  <AccountLink
+                    className="truncate text-sm font-medium text-white hover:underline"
+                    href={href}
+                  >
+                    {row.title}
+                  </AccountLink>
+                  <span className="flex items-center gap-2 text-xs text-white/40 tabular-nums">
+                    {row.year ?? ""}
+                    <span className="inline-flex items-center gap-2 sm:hidden">
+                      <RatingStars rating={row.rating} size={11} />
+                      {row.isRewatch ? (
+                        <Icon icon="solar:restart-linear" size={12} />
+                      ) : null}
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              <span className="hidden sm:block">
+                <RatingStars rating={row.rating} />
+              </span>
+              <span className="hidden justify-center sm:flex">
+                <Mark label="Rewatch" on={row.isRewatch} />
+              </span>
+              <span className="hidden justify-center sm:flex">
+                {row.hasReview ? (
+                  <AccountLink
+                    aria-label="Read the review"
+                    className="text-white/70 hover:text-white"
+                    href={`${href}/reviews?user=${encodeURIComponent(username)}`}
+                  >
+                    <Icon icon="solar:document-text-bold" size={16} />
+                  </AccountLink>
+                ) : (
+                  <Mark label="Review" on={false} />
+                )}
+              </span>
+              <span className="flex justify-end">
+                {isOwner ? (
+                  <DiaryDeleteButton id={row.id} title={row.title} />
+                ) : null}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

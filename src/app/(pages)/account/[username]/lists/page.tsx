@@ -5,15 +5,11 @@ import {
   readPage,
   type SearchParams,
 } from "@/features/account/lib/browse";
-import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { FilterBar } from "@/features/account/components/browse/filter-bar";
-import {
-  LIST_GRID,
-  ListCard,
-} from "@/features/account/components/browse/list-card";
-import { NewListButton } from "@/features/account/components/browse/list-owner-actions";
+import { ListRows } from "@/features/account/components/browse/list-row";
+import { ListsChrome } from "@/features/account/components/browse/list-owner-actions";
 import { Pagination } from "@/features/account/components/browse/pagination";
-import { SectionHeading } from "@/features/account/components/browse/section-heading";
+import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { getListsPage } from "@/features/account/server/browse";
 import { getAccountPageContext } from "@/features/account/server/context";
 
@@ -23,9 +19,11 @@ export default async function AccountListsPage({
 }: {
   params: Promise<{ username: string }>;
   searchParams: Promise<SearchParams>;
-}): Promise<JSX.Element> {
+}): Promise<JSX.Element | null> {
   const [{ username }, query] = await Promise.all([params, searchParams]);
-  const { account, client, isOwner } = await getAccountPageContext(username);
+  const { account, client, isOwner, locked } =
+    await getAccountPageContext(username);
+  if (locked) return null;
   const result = await getListsPage({
     accountId: account.id,
     client,
@@ -34,15 +32,11 @@ export default async function AccountListsPage({
   });
 
   return (
-    <section className="w-full">
-      <SectionHeading
-        action={isOwner ? <NewListButton username={account.username} /> : null}
-        icon="solar:list-bold"
-        summary={`${result.total} ${result.total === 1 ? "list" : "lists"}`}
-        title="Lists"
-      />
+    <div className="flex w-full flex-col">
+      <ListsChrome isOwner={isOwner} username={account.username} />
       {result.total > 1 ? (
         <FilterBar
+          docked
           fields={[
             { defaultValue: "updated_desc", key: "sort", options: LIST_SORTS },
           ]}
@@ -52,16 +46,11 @@ export default async function AccountListsPage({
 
       {result.items.length > 0 ? (
         <>
-          <div className={LIST_GRID}>
-            {result.items.map((list) => (
-              <ListCard
-                key={list.id}
-                list={list}
-                ownerEdit={isOwner}
-                username={account.username}
-              />
-            ))}
-          </div>
+          <ListRows
+            lists={result.items}
+            ownerEdit={isOwner}
+            username={account.username}
+          />
           <Pagination page={result.page} pageCount={result.pageCount} />
         </>
       ) : (
@@ -71,6 +60,6 @@ export default async function AccountListsPage({
             : "No lists yet"}
         </EmptyState>
       )}
-    </section>
+    </div>
   );
 }

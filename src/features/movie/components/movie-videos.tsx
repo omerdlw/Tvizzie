@@ -10,6 +10,10 @@ import { VideoModal, type VideoModalData } from "./movie-modals";
 
 const plural = (type: string) => (type.endsWith("s") ? type : `${type}s`);
 
+// Videos are shown on small sets: the corners of a tube's face, rounder up
+// and down than across.
+const TUBE = "9% / 13%";
+
 export function MovieVideos({
   types,
   videos,
@@ -56,6 +60,7 @@ export function MovieVideos({
                 src: `https://img.youtube.com/vi/${encodeURIComponent(video.key)}/hqdefault.jpg`,
               }}
               label={`Play ${video.name}`}
+              radius={TUBE}
               onClick={() => {
                 const data: VideoModalData = {
                   key: video.key,
@@ -65,6 +70,7 @@ export function MovieVideos({
               }}
               overlay={
                 <>
+                  <span aria-hidden="true" className="crt-tube-face" />
                   <div className="cine-play center pointer-events-none absolute inset-0 text-white">
                     <Icon icon="solar:play-circle-bold" size={48} />
                   </div>

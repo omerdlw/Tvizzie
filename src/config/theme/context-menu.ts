@@ -1,6 +1,7 @@
 import { Z_INDEX } from "@omerdlw/base-framework/tokens";
 import { defineTheme } from "@omerdlw/base-framework/theme";
 import { contextMenuTheme } from "@omerdlw/base-framework/modules/context-menu";
+import { contextMenuMotion } from "./motion/context-menu";
 
 export const contextMenuThemeConfig = defineTheme(contextMenuTheme, {
   slots: {
@@ -25,4 +26,5 @@ export const contextMenuThemeConfig = defineTheme(contextMenuTheme, {
     backdrop: { zIndex: Z_INDEX.CONTEXT_MENU_BACKDROP },
     menu: { padding: 10, zIndex: Z_INDEX.CONTEXT_MENU },
   },
+  motion: contextMenuMotion,
 });

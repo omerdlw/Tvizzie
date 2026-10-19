@@ -1,10 +1,12 @@
 import type { JSX, ReactNode } from "react";
+import { cn } from "@omerdlw/base-framework/utils";
 import { movieHref } from "@config/routes";
 import { Icon, MediaCard } from "@/ui";
 import type { ActivityItem } from "../../lib/browse-data";
 import { AccountLink } from "./account-link";
 import { posterImage } from "./poster";
 import { RatingStars } from "@/features/reviews/components/rating-stars";
+import { timeAgo } from "../../lib/dates";
 
 const ICONS: Record<string, string> = {
   FOLLOW_CREATED: "solar:user-plus-bold",
@@ -21,26 +23,7 @@ const ICONS: Record<string, string> = {
   WATCHLIST_ADDED: "solar:bookmark-bold",
 };
 
-const strong = "font-semibold text-white hover:underline";
-
-function ago(value: string): string {
-  const minutes = Math.max(
-    0,
-    Math.floor((Date.now() - new Date(value).getTime()) / 60_000),
-  );
-  if (!Number.isFinite(minutes)) return "";
-  if (minutes < 1) return "now";
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d`;
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: days > 330 ? "numeric" : undefined,
-  }).format(new Date(value));
-}
+const strong = "font-medium text-white hover:underline";
 
 function sentence(item: ActivityItem): ReactNode {
   const movie = item.tmdbId ? (
@@ -48,7 +31,7 @@ function sentence(item: ActivityItem): ReactNode {
       {item.title ?? "a movie"}
     </AccountLink>
   ) : (
-    <span className="font-semibold text-white">{item.title ?? "a movie"}</span>
+    <span className="font-medium text-white">{item.title ?? "a movie"}</span>
   );
   const list =
     item.list && item.listOwner ? (
@@ -59,7 +42,7 @@ function sentence(item: ActivityItem): ReactNode {
         {item.list.title}
       </AccountLink>
     ) : (
-      <span className="font-semibold text-white">
+      <span className="font-medium text-white">
         {item.list?.title ?? "a list"}
       </span>
     );
@@ -137,26 +120,25 @@ export function ActivityRow({
   item: ActivityItem;
 }): JSX.Element {
   return (
-    <div className="flex items-center gap-3 rounded-[20px] bg-white/5 p-3 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:ring-white/10 sm:gap-4 sm:p-3.5">
+    <li className="flex items-center gap-3 py-3.5 sm:gap-4">
       {item.tmdbId ? (
         <MediaCard
           aspect="free"
-          className="w-10 shrink-0"
+          className="w-9 shrink-0"
           fallbackIcon="solar:clapperboard-play-bold"
-          fallbackIconSize={16}
-          frameClassName="h-14 w-10"
-          framed={false}
+          fallbackIconSize={14}
+          frameClassName="h-[3.25rem] w-9"
           href={movieHref(item.tmdbId)}
-          image={posterImage(item.posterPath, "40px")}
+          image={posterImage(item.posterPath, "36px")}
           label={item.title ?? "Movie"}
-          radius={10}
+          radius={4}
         />
       ) : (
-        <div className="center size-10 shrink-0 rounded-xl bg-white/5 text-white/50 ring-1 ring-white/5 ring-inset">
-          <Icon icon={ICONS[item.type] ?? "solar:bolt-bold"} size={18} />
-        </div>
+        <span className="center size-9 shrink-0 rounded-full bg-white/[0.06] text-white/60">
+          <Icon icon={ICONS[item.type] ?? "solar:bolt-bold"} size={15} />
+        </span>
       )}
-      <p className="min-w-0 flex-1 text-xs leading-relaxed text-white/70 sm:text-sm">
+      <p className="min-w-0 flex-1 text-sm leading-6 text-white/60">
         <AccountLink
           className={strong}
           href={`/account/${encodeURIComponent(actor.username)}`}
@@ -165,9 +147,60 @@ export function ActivityRow({
         </AccountLink>{" "}
         {sentence(item)}
       </p>
-      <span className="shrink-0 text-xs font-semibold text-white/40">
-        {ago(item.createdAt)}
-      </span>
-    </div>
+      <time
+        className="shrink-0 text-xs text-white/40 tabular-nums"
+        dateTime={item.createdAt}
+      >
+        {timeAgo(item.createdAt)}
+      </time>
+    </li>
+  );
+}
+
+// The last few things someone did, as a running log down the side of their
+// profile.
+export function ActivityFeed({
+  actor,
+  items,
+}: {
+  actor: { displayName: string; username: string };
+  items: readonly ActivityItem[];
+}): JSX.Element {
+  return (
+    <ol className="flex flex-col">
+      {items.map((item) => (
+        <li
+          className="relative border-l border-white/10 pb-4 pl-4 text-[13px] leading-5 text-white/55 last:border-transparent last:pb-0"
+          key={item.id}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute top-1.5 -left-[3.5px] size-1.5 rounded-full bg-white/40"
+          />
+          <span className="font-medium text-white/85">{actor.displayName}</span>{" "}
+          {sentence(item)}{" "}
+          <time
+            className="text-xs whitespace-nowrap text-white/35 tabular-nums"
+            dateTime={item.createdAt}
+          >
+            {timeAgo(item.createdAt)}
+          </time>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export function ActivityLog({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <ul className={cn("divide-y divide-white/[0.07]", className)}>
+      {children}
+    </ul>
   );
 }

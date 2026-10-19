@@ -1,24 +1,46 @@
 "use client";
 
-import type { JSX } from "react";
-import { useDockActions } from "@omerdlw/base-framework/modules/dock";
+import { useMemo, type JSX } from "react";
+import {
+  useDockActionClass,
+  useDockActions,
+} from "@omerdlw/base-framework/modules/dock";
 import { Button, Icon } from "@/ui";
+import { useAccountDock } from "../account-dock";
 import {
   createListFormSurfaceEntry,
   type ListFormData,
 } from "./list-form-surface";
 
-export function NewListButton({ username }: { username: string }): JSX.Element {
+function NewListAction({ username }: { username: string }): JSX.Element {
+  const actionClass = useDockActionClass();
   const { openSurface } = useDockActions();
   return (
     <Button
-      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[13px] bg-white/10 px-3.5 text-xs font-bold text-white uppercase ring-1 ring-white/10 ring-inset hover:bg-white hover:text-black"
+      className={actionClass({ className: "w-full backdrop-blur-sm" })}
       onClick={() => void openSurface(createListFormSurfaceEntry({ username }))}
+      type="button"
     >
-      <Icon icon="solar:add-circle-bold" size={15} />
-      New list
+      <Icon icon="solar:add-circle-bold" size={16} />
+      <span className="truncate">New list</span>
     </Button>
   );
+}
+
+// On the owner's lists page, starting a list is the dock's action.
+export function ListsChrome({
+  isOwner,
+  username,
+}: {
+  isOwner: boolean;
+  username: string;
+}): null {
+  const dock = useMemo(
+    () => (isOwner ? { action: <NewListAction username={username} /> } : null),
+    [isOwner, username],
+  );
+  useAccountDock(dock);
+  return null;
 }
 
 export function EditListButton({
@@ -37,8 +59,21 @@ export function EditListButton({
       onClick={() =>
         void openSurface(createListFormSurfaceEntry({ list, username }))
       }
+      type="button"
     >
-      <Icon icon="solar:pen-bold" size={14} />
+      <Icon icon="solar:pen-bold" size={15} />
     </Button>
+  );
+}
+
+export function EditListAction(props: ListFormData): JSX.Element {
+  const actionClass = useDockActionClass();
+  return (
+    <EditListButton
+      {...props}
+      className={actionClass({
+        className: "w-10 shrink-0 px-0 backdrop-blur-sm",
+      })}
+    />
   );
 }

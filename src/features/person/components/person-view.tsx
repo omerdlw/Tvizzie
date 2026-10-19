@@ -26,7 +26,7 @@ import { PersonBackdropHero, PersonPhotoGrade } from "./person-artwork";
 import { PersonAwards } from "./person-awards";
 import { PersonCareer } from "./person-career";
 import { PersonFilmography } from "./person-filmography";
-import { PersonGallery } from "./person-gallery";
+import { PersonGallery, PersonGalleryWall } from "./person-gallery";
 import { PersonHeader } from "./person-header";
 import { PersonProjection } from "./person-projection";
 import { PersonSidebar } from "./person-sidebar";
@@ -54,6 +54,13 @@ export function PersonView({
       className={PAGE_CLASS}
       opening={SCENE.opening}
       picture={Boolean(backdrop)}
+      wall={
+        <PersonGalleryWall
+          backdrops={getBackdropPaths(person)}
+          name={person.name}
+          portraits={getGalleryImages(person)}
+        />
+      }
     >
       <PersonProjection backdrop={backdropPath} person={person} />
       <div className={CONTAINER_CLASS}>

@@ -5,6 +5,7 @@ import type {
   PersonExternalIds,
   PersonImage,
 } from "@/infrastructure/tmdb/types";
+import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import {
   PERSON_BACKDROP_LIMIT,
   PERSON_BACKDROP_MIN_VOTES,
@@ -289,6 +290,18 @@ export function getBackdropPaths(
 
 export function getBackdropPath(person: PersonDetails): string | null {
   return getBackdropPaths(person, 1)[0] ?? null;
+}
+
+// The picture a person's page takes its colours from, the same address on
+// the server and in the browser (see movieSwatch).
+export function personSwatch(
+  backdropPath: string | null,
+  photoPath: string | null,
+): string | null {
+  return (
+    tmdbImageUrl("backdrop", backdropPath, "w300") ??
+    tmdbImageUrl("profile", photoPath, "w185")
+  );
 }
 
 export function getGalleryImages(

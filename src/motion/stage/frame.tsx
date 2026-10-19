@@ -180,6 +180,16 @@ function Glow() {
   );
 }
 
+// The face of the tube: the picture falls away towards its rim, more where
+// two edges meet, so the corners curve off as a set's glass does, and the
+// room's light leaves a faint sheen high on the left.
+const GLASS = [
+  "radial-gradient(60% 45% at 16% 0%, rgb(255 255 255 / 0.018), transparent 70%)",
+  "radial-gradient(ellipse 125% 105% at 50% 45%, transparent 58%, rgb(0 0 0 / 0.42))",
+  "linear-gradient(to right, rgb(0 0 0 / 0.1), transparent 6%, transparent 94%, rgb(0 0 0 / 0.1))",
+  "linear-gradient(to bottom, rgb(0 0 0 / 0.09), transparent 8%, transparent 92%, rgb(0 0 0 / 0.09))",
+].join(", ");
+
 function HouseLights() {
   const down = useHouseDown();
   const { level, run } = GRAMMAR.film.house;
@@ -214,10 +224,11 @@ export function Frame() {
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-20"
-        style={{
-          background:
-            "radial-gradient(ellipse 125% 105% at 50% 45%, transparent 58%, rgb(0 0 0 / 0.42))",
-        }}
+        style={{ background: GLASS }}
+      />
+      <div
+        aria-hidden="true"
+        className="crt-scan crt-scan-page pointer-events-none fixed inset-0 z-20"
       />
       {reduced ? null : <Glow />}
       <HouseLights />

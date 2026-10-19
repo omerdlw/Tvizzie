@@ -11,7 +11,7 @@ src/
   ui/              primitives and shared components
   motion/          cinema, film, scroll, flow, handoff
   config/          routes, project metadata, theme/
-  infrastructure/  env, http, redis, security, supabase, tmdb, youtube
+  infrastructure/  env, http, redis, security, supabase, tmdb
   proxy.ts         request proxy (session refresh)
 ```
 

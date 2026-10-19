@@ -18,6 +18,7 @@
   --ease-in-cubic: cubic-bezier(0.5, 0, 1, 1);
   --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out-cream: cubic-bezier(0.3, 0.85, 0.3, 1);
+  --ease-phosphor: cubic-bezier(0.06, 0.62, 0.2, 1);
 
   --duration-instant: 80ms;
   --duration-micro: 180ms;
@@ -74,8 +75,9 @@ html.reticle:not(.reticle-off) * {
   :root {
     --white-rgb: 252 252 251;
     --white: rgb(var(--white-rgb));
-    --black: #0b0b0b;
-    --primary: #101010;
+    /* Lit by the picture a page shows (the ambient module), else these. */
+    --black: var(--ambient-shadow, #0b0b0b);
+    --primary: var(--ambient-vibrant, #101010);
   }
 
   html,
@@ -152,19 +154,21 @@ html.reticle:not(.reticle-off) * {
 }
 
 @layer components {
+  /* A picture that has come in is lit and settles from a little too close.
+     It is never brought out of a blur: a blur being lifted is drawn again
+     on the main thread every frame, and a page of them loading at once held
+     whole frames up while it scrolled. Light and scale run on the
+     compositor. */
   [data-cinematic] img[data-state] {
     transition:
-      opacity 1.8s var(--ease-out-expo),
-      filter 1.8s var(--ease-out-expo),
-      transform 2.4s var(--ease-out-expo),
+      opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 2.4s var(--ease-out-cream),
       scale 1.8s var(--ease-out-cream);
   }
   [data-cinematic] img[data-state="loading"] {
-    filter: blur(18px);
     transform: scale(1.08);
   }
   [data-cinematic] img[data-state="loaded"] {
-    filter: none;
     transform: none;
   }
   [data-cinematic] .cine-card:is(:hover, :focus-visible) img.cine-zoom {
@@ -323,12 +327,45 @@ html.reticle:not(.reticle-off) * {
     height: round(100cqw * 3 / 2, 1px);
   }
 
+  /* Light on a tube comes up with the beam and goes out like phosphor: what
+     is lit answers the hand at once, and once the hand has gone it gives
+     most of its light back quickly and keeps the last of it a long while. */
   [data-cinematic] .cine-fade {
     transition:
-      background-color 1.2s var(--ease-out-cream),
-      color 1.2s var(--ease-out-cream),
-      box-shadow 1.2s var(--ease-out-cream),
-      opacity 1.2s var(--ease-out-cream);
+      background-color 1.6s var(--ease-phosphor),
+      color 1.6s var(--ease-phosphor),
+      box-shadow 1.6s var(--ease-phosphor),
+      opacity 1.6s var(--ease-phosphor);
+  }
+  [data-cinematic] .cine-fade:is(:hover, :focus-visible),
+  [data-cinematic] .cine-card:is(:hover, :focus-visible) .cine-fade {
+    transition-duration: 0.55s;
+    transition-timing-function: var(--ease-out-cream);
+  }
+  /* What a picture card leaves on the glass: a warm ring that outlasts the
+     white one and goes last. */
+  [data-cinematic] .cine-afterglow {
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 0 1px
+        color-mix(in oklab, rgb(var(--grade, var(--white-rgb))) 55%, #ffc48c),
+      inset 0 0 22px -4px
+        color-mix(
+          in oklab,
+          color-mix(in oklab, rgb(var(--grade, var(--white-rgb))) 55%, #ffb070)
+            42%,
+          transparent
+        );
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transition: opacity 2.4s var(--ease-phosphor);
+  }
+  [data-cinematic] .cine-card:is(:hover, :focus-visible) .cine-afterglow {
+    opacity: 0.55;
+    transition-duration: 0.7s;
+    transition-timing-function: var(--ease-out-cream);
   }
   /* The film's grade lights what is chosen, as it lights the room. */
   [data-cinematic] [data-pill] {
@@ -337,13 +374,15 @@ html.reticle:not(.reticle-off) * {
   }
   [data-cinematic] .cine-press {
     transition:
-      background-color 0.95s var(--ease-out-cream),
-      color 0.95s var(--ease-out-cream),
-      box-shadow 0.95s var(--ease-out-cream),
+      background-color 1.5s var(--ease-phosphor),
+      color 1.5s var(--ease-phosphor),
+      box-shadow 1.5s var(--ease-phosphor),
       transform 0.95s var(--ease-out-cream);
   }
   [data-cinematic] .cine-press:is(:hover, :focus-visible) {
     transform: translateY(-2px);
+    transition-duration: 0.5s, 0.5s, 0.5s, 0.95s;
+    transition-timing-function: var(--ease-out-cream);
   }
   [data-cinematic] .cine-press:active {
     transform: scale(0.94);
@@ -359,6 +398,101 @@ html.reticle:not(.reticle-off) * {
   }
   [data-cinematic] .cine-card:is(:hover, :focus-visible) .cine-play {
     transform: scale(1.14);
+  }
+
+  /* The glass the page is seen through. Its lines stand still on the screen
+     while the page scrolls under them, a whole number of device pixels apart
+     so none of them is drawn softer than the next. They are faint, only
+     over the picture, and gone by the time the page is being read. */
+  [data-cinematic] {
+    --scan: 3px;
+  }
+  @media (resolution: 1.25dppx) {
+    [data-cinematic] {
+      --scan: 3.2px;
+    }
+  }
+  @media (resolution: 1.5dppx) {
+    [data-cinematic] {
+      --scan: 2.6667px;
+    }
+  }
+  @media (resolution: 1.75dppx) {
+    [data-cinematic] {
+      --scan: 2.8571px;
+    }
+  }
+  .crt-scan {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / var(--scan-depth, 0.05)) calc(var(--scan) * 0.5),
+      rgb(0 0 0 / 0) var(--scan)
+    );
+  }
+  @keyframes crt-scan-read {
+    to {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      [data-cinematic] .crt-scan-page {
+        animation: crt-scan-read linear both;
+        animation-range: 0 100vh;
+        animation-timeline: scroll(root block);
+      }
+    }
+  }
+
+  /* A small screen: the face of a tube, darker where it curves away at the
+     edges, a soft sheen where the room's light falls on its glass, and its
+     lines, which only show once the set is looked at. */
+  .crt-tube-face {
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 32px 4px rgb(0 0 0 / 0.38),
+      inset 0 0 6px 1px rgb(0 0 0 / 0.35);
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+  .crt-tube-face::before {
+    background: radial-gradient(
+      120% 70% at 18% 0%,
+      rgb(var(--white-rgb) / 0.11),
+      transparent 48%
+    );
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    position: absolute;
+  }
+  .crt-tube-face::after {
+    --scan-depth: 0.16;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0,
+      rgb(0 0 0 / var(--scan-depth)) calc(var(--scan) * 0.5),
+      rgb(0 0 0 / 0) var(--scan)
+    );
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+    transition: opacity 2.4s var(--ease-phosphor);
+  }
+  [data-cinematic] .cine-card:is(:hover, :focus-visible) .crt-tube-face::after {
+    opacity: 1;
+    transition-duration: 0.7s;
+    transition-timing-function: var(--ease-out-cream);
+  }
+
+  /* Small words lit on the glass carry a little of their own light round
+     them, the way phosphor blooms; the large type stays sharp. */
+  [data-cinematic] .crt-glow {
+    text-shadow: 0 0 0.7em color-mix(in srgb, currentColor 30%, transparent);
   }
 
   @keyframes film-drift {

@@ -6,7 +6,6 @@ import {
   getAccountFollowRelation,
 } from "@/features/account/server";
 import { getAccountPageContext } from "@/features/account/server/context";
-import { getAccountLibrarySummary } from "@/features/account/server/library-summary";
 import { FollowedBy } from "@/features/social";
 import { readMutualFollowers } from "@/features/social/server/queries";
 import { project } from "@config/project";
@@ -54,14 +53,13 @@ export default async function AccountRouteLayout({
   const { account, client, isOwner, viewerId } =
     await getAccountPageContext(username);
 
-  const [relation, counts, library, mutual] = await Promise.all([
+  const [relation, counts, mutual] = await Promise.all([
     getAccountFollowRelation({
       client,
       viewerId: viewerId ?? undefined,
       targetId: account.id,
     }),
     getAccountFollowCounts({ client, accountId: account.id }),
-    getAccountLibrarySummary({ client, accountId: account.id }),
     viewerId && !isOwner
       ? readMutualFollowers(client, account.id).catch((error) => {
           report("Mutual followers read", error);
@@ -78,7 +76,6 @@ export default async function AccountRouteLayout({
       initialFollowStatus={relation.status}
       isFollower={relation.isFollower}
       isOwner={isOwner}
-      libraryCounts={library.counts}
       proofSlot={mutual ? <FollowedBy mutual={mutual} /> : null}
     >
       {children}

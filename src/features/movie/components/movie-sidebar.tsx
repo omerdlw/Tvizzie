@@ -48,7 +48,7 @@ function Row({
       exit={false}
       from="still"
     >
-      <dt className="shrink-0 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase">
+      <dt className="crt-glow shrink-0 text-[11px] font-semibold tracking-[0.16em] text-white/50 uppercase">
         <Expose hover out={out} since={0}>
           {label}
         </Expose>

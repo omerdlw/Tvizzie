@@ -24,3 +24,4 @@ export { trackSpotlight } from "./spotlight";
 export * from "./tempo";
 export { Count, Expose, Title, Words } from "./type";
 export { WaveContext, useArrival, useArrivalClock, useWave } from "./wave";
+export { Tile, useWall, type WallPhase } from "./wall";

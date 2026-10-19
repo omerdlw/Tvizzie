@@ -1,196 +1,288 @@
 import type { JSX } from "react";
+import { Icon } from "@/ui";
+import { FAVORITES_MAX } from "../../lib/browse-data";
+import { getAccountFollowCounts } from "../../server/follows";
 import { getAccountLibrarySummary } from "../../server/library-summary";
 import {
+  countWatchedSince,
+  getFollowingPreview,
+  getRatingSpread,
   getRecentActivity,
+  getRecentDiary,
   getRecentLists,
   getRecentMedia,
   getRecentReviews,
 } from "../../server/browse";
 import { getAccountPageContext } from "../../server/context";
-import { ActivityRow } from "./activity-row";
+import { AccountLink } from "./account-link";
+import { ActivityFeed } from "./activity-row";
 import { EmptyState } from "./empty-state";
-import { LIST_GRID, ListCard } from "./list-card";
-import { PosterGrid } from "./poster-grid";
-import { ReviewCard } from "./review-card";
-import { SectionHeading } from "./section-heading";
-import type { MediaItem } from "../../lib/browse-data";
+import { ListTeaser } from "./list-row";
+import { PosterGrid, PosterTile } from "./poster-grid";
+import { PosterStack } from "./poster-stack";
+import {
+  DiaryDigest,
+  PeopleGrid,
+  ProfileStats,
+  RatingsChart,
+} from "./profile-sidebar";
+import { ReviewList } from "./review-list";
+import { CountLink, Section, ViewAll } from "./section";
 
-const MEDIA_LIMIT = 6;
-const LIST_LIMIT = 3;
-const ACTIVITY_LIMIT = 6;
-const REVIEW_LIMIT = 3;
+const RECENT = 5;
+const REVIEWS = 3;
+const POPULAR = 3;
+const DIARY = 10;
+const LISTS = 3;
+const FOLLOWING = 18;
+const ACTIVITY = 6;
+
+// Five across in both rows of the main column, so a favorite and a film from
+// last night sit at the same size.
+const ROW =
+  "grid-cols-5 gap-2 sm:grid-cols-5 sm:gap-3 md:grid-cols-5 lg:grid-cols-5";
 
 export async function AccountOverview({
   username,
 }: {
   username: string;
-}): Promise<JSX.Element> {
-  const { account, client, isOwner, viewerId } =
+}): Promise<JSX.Element | null> {
+  const { account, client, isOwner, locked, viewerId } =
     await getAccountPageContext(username);
+  if (locked) return null;
+
   const accountId = account.id;
   const base = `/account/${encodeURIComponent(account.username)}`;
 
-  const [summary, watchlist, watched, likes, lists, activity, reviews] =
-    await Promise.all([
-      getAccountLibrarySummary({ accountId, client }),
-      getRecentMedia({
-        accountId,
-        client,
-        kind: "watchlist",
-        limit: MEDIA_LIMIT,
-      }),
-      getRecentMedia({
-        accountId,
-        client,
-        kind: "watched",
-        limit: MEDIA_LIMIT,
-      }),
-      getRecentMedia({ accountId, client, kind: "likes", limit: MEDIA_LIMIT }),
-      getRecentLists({ accountId, client, limit: LIST_LIMIT }),
-      getRecentActivity({
-        accountId,
-        accountUsername: account.username,
-        client,
-        limit: ACTIVITY_LIMIT,
-      }),
-      getRecentReviews({ accountId, client, limit: REVIEW_LIMIT, viewerId }),
-    ]);
+  const [
+    summary,
+    follows,
+    watched,
+    watchlist,
+    reviews,
+    liked,
+    diary,
+    spread,
+    lists,
+    following,
+    activity,
+    thisYear,
+  ] = await Promise.all([
+    getAccountLibrarySummary({ accountId, client }),
+    getAccountFollowCounts({ accountId, client }),
+    getRecentMedia({ accountId, client, kind: "watched", limit: RECENT }),
+    getRecentMedia({ accountId, client, kind: "watchlist", limit: 5 }),
+    getRecentReviews({ accountId, client, limit: REVIEWS, viewerId }),
+    getRecentReviews({
+      accountId,
+      by: "likes",
+      client,
+      limit: REVIEWS + POPULAR,
+      viewerId,
+    }),
+    getRecentDiary({ accountId, client, limit: DIARY }),
+    getRatingSpread({ accountId, client }),
+    getRecentLists({ accountId, client, limit: LISTS }),
+    getFollowingPreview({ accountId, client, limit: FOLLOWING }),
+    getRecentActivity({
+      accountId,
+      accountUsername: account.username,
+      client,
+      limit: ACTIVITY,
+    }),
+    countWatchedSince({
+      accountId,
+      client,
+      since: `${new Date().getUTCFullYear()}-01-01`,
+    }),
+  ]);
 
-  const { counts, favorites } = summary;
+  const { counts } = summary;
+  const favorites = summary.favorites
+    .slice(0, FAVORITES_MAX)
+    .map((film) => ({ ...film, pinned: false }));
+  const shown = new Set(reviews.map((review) => review.id));
+  const popular = liked
+    .filter((review) => !shown.has(review.id))
+    .slice(0, POPULAR);
+  const ratings = spread.reduce((sum, count) => sum + count, 0);
   const actor = {
-    displayName: account.displayName || account.username,
+    displayName: isOwner ? "You" : account.displayName || account.username,
     username: account.username,
   };
 
-  const favoriteItems: MediaItem[] = favorites.map((favorite) => ({
-    ...favorite,
-    pinned: true,
-  }));
-
-  const media = [
-    {
-      href: "watchlist",
-      icon: "solar:bookmark-bold",
-      items: watchlist,
-      kind: "watchlist",
-      title: "Watchlist",
-    },
-    {
-      href: "watched",
-      icon: "solar:eye-bold",
-      items: watched,
-      kind: "watched",
-      title: "Watched",
-    },
-    {
-      href: "likes",
-      icon: "solar:heart-bold",
-      items: likes,
-      kind: "likes",
-      title: "Likes",
-    },
-  ] as const;
-
-  const isEmpty =
-    favoriteItems.length === 0 &&
-    media.every((section) => section.items.length === 0) &&
-    lists.length === 0 &&
-    activity.length === 0 &&
-    reviews.length === 0;
-
-  if (isEmpty) {
-    return (
-      <EmptyState>
-        {isOwner
-          ? "Mark, like and list movies and they will gather here"
-          : "This account has no activity or content yet"}
-      </EmptyState>
-    );
-  }
-
   return (
-    <div className="flex w-full flex-col gap-8 sm:gap-10 lg:gap-12">
-      {favoriteItems.length > 0 ? (
-        <section>
-          <SectionHeading icon="solar:star-bold" title="Favorites" />
-          <PosterGrid items={favoriteItems} />
-        </section>
-      ) : null}
+    <div className="grid w-full gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="flex min-w-0 flex-col gap-12">
+        {favorites.length > 0 || isOwner ? (
+          <Section
+            action={
+              isOwner ? <ViewAll href={`${base}/likes`} label="Edit" /> : null
+            }
+            title="Favorite films"
+          >
+            <ul className={`grid ${ROW}`}>
+              {favorites.map((film) => (
+                <PosterTile item={film} key={film.tmdbId} />
+              ))}
+              {isOwner
+                ? Array.from(
+                    { length: FAVORITES_MAX - favorites.length },
+                    (_, index) => (
+                      <li key={`slot-${index}`}>
+                        <AccountLink
+                          aria-label="Pin a favorite from your likes"
+                          className="center aspect-[2/3] rounded-[6px] border border-dashed border-white/15 text-white/25 transition-colors hover:border-white/35 hover:text-white/60"
+                          href={`${base}/likes`}
+                        >
+                          <Icon icon="solar:add-circle-linear" size={20} />
+                        </AccountLink>
+                      </li>
+                    ),
+                  )
+                : null}
+            </ul>
+          </Section>
+        ) : null}
 
-      {media.map((section) =>
-        section.items.length > 0 ? (
-          <section key={section.kind}>
-            <SectionHeading
-              href={
-                counts[section.kind] > MEDIA_LIMIT
-                  ? `${base}/${section.href}`
-                  : undefined
-              }
-              icon={section.icon}
-              title={section.title}
-            />
-            <PosterGrid
-              items={section.items}
-              source={isOwner ? { kind: section.kind } : null}
-            />
-          </section>
-        ) : null,
-      )}
+        {watched.length > 0 ? (
+          <Section
+            action={
+              counts.watched > watched.length ? (
+                <ViewAll href={`${base}/watched`} />
+              ) : null
+            }
+            title="Recently watched"
+          >
+            <PosterGrid className={ROW} items={watched} />
+          </Section>
+        ) : null}
 
-      {lists.length > 0 ? (
-        <section>
-          <SectionHeading
-            href={counts.lists > LIST_LIMIT ? `${base}/lists` : undefined}
-            icon="solar:list-bold"
+        {reviews.length > 0 ? (
+          <Section
+            action={
+              counts.reviews > reviews.length ? (
+                <ViewAll href={`${base}/reviews`} label="More" />
+              ) : null
+            }
+            title="Recent reviews"
+          >
+            <ReviewList
+              isOwner={isOwner}
+              reviews={reviews}
+              signedIn={viewerId !== null}
+            />
+          </Section>
+        ) : null}
+
+        {popular.length > 0 ? (
+          <Section
+            action={
+              <ViewAll href={`${base}/reviews?sort=likes_desc`} label="More" />
+            }
+            title="Popular reviews"
+          >
+            <ReviewList
+              isOwner={isOwner}
+              reviews={popular}
+              signedIn={viewerId !== null}
+            />
+          </Section>
+        ) : null}
+
+        {watched.length === 0 && reviews.length === 0 ? (
+          <EmptyState icon="solar:clapperboard-open-bold">
+            {isOwner
+              ? "Films you watch, rate and review will show up here."
+              : "Nothing here yet."}
+          </EmptyState>
+        ) : null}
+      </div>
+
+      <aside className="grid min-w-0 content-start gap-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-1">
+        <ProfileStats
+          stats={[
+            { count: counts.watched, href: `${base}/watched`, label: "Films" },
+            { count: thisYear, href: `${base}/diary`, label: "This year" },
+            {
+              count: counts.reviews,
+              href: `${base}/reviews`,
+              label: "Reviews",
+            },
+            { count: counts.lists, href: `${base}/lists`, label: "Lists" },
+          ]}
+        />
+
+        {watchlist.length > 0 ? (
+          <Section
+            action={
+              <CountLink count={counts.watchlist} href={`${base}/watchlist`} />
+            }
+            title="Watchlist"
+          >
+            <AccountLink
+              aria-label="Watchlist"
+              className="block transition-opacity hover:opacity-80"
+              href={`${base}/watchlist`}
+            >
+              <PosterStack paths={watchlist.map((film) => film.posterPath)} />
+            </AccountLink>
+          </Section>
+        ) : null}
+
+        {diary.length > 0 ? (
+          <Section
+            action={<CountLink count={counts.diary} href={`${base}/diary`} />}
+            title="Diary"
+          >
+            <DiaryDigest entries={diary} />
+          </Section>
+        ) : null}
+
+        {ratings > 0 ? (
+          <Section
+            action={<CountLink count={ratings} href={`${base}/reviews`} />}
+            title="Ratings"
+          >
+            <RatingsChart spread={spread} />
+          </Section>
+        ) : null}
+
+        {lists.length > 0 ? (
+          <Section
+            action={<CountLink count={counts.lists} href={`${base}/lists`} />}
             title="Lists"
-          />
-          <div className={LIST_GRID}>
-            {lists.map((list) => (
-              <ListCard
-                key={list.id}
-                list={list}
-                ownerEdit={isOwner}
-                username={account.username}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
+          >
+            <div className="flex flex-col gap-6">
+              {lists.map((list) => (
+                <ListTeaser
+                  key={list.id}
+                  list={list}
+                  username={account.username}
+                />
+              ))}
+            </div>
+          </Section>
+        ) : null}
 
-      {activity.length > 0 ? (
-        <section>
-          <SectionHeading
-            href={`${base}/activity`}
-            icon="solar:bolt-bold"
-            title="Recent Activity"
-          />
-          <div className="flex flex-col gap-2">
-            {activity.map((item) => (
-              <ActivityRow actor={actor} item={item} key={item.id} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+        {following.length > 0 ? (
+          <Section
+            summary={follows.followingCount.toLocaleString("en-US")}
+            title="Following"
+          >
+            <PeopleGrid people={following} />
+          </Section>
+        ) : null}
 
-      {reviews.length > 0 ? (
-        <section>
-          <SectionHeading
-            href={counts.reviews > REVIEW_LIMIT ? `${base}/reviews` : undefined}
-            icon="solar:chat-round-bold"
-            title="Recent Reviews"
-          />
-          <div className="flex flex-col gap-3">
-            {reviews.map((review) => (
-              <ReviewCard
-                isOwner={isOwner}
-                key={review.id}
-                review={review}
-                signedIn={viewerId !== null}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
+        {activity.length > 0 ? (
+          <Section
+            action={<ViewAll href={`${base}/activity`} />}
+            title="Activity"
+          >
+            <ActivityFeed actor={actor} items={activity} />
+          </Section>
+        ) : null}
+      </aside>
     </div>
   );
 }

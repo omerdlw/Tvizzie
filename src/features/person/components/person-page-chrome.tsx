@@ -3,15 +3,30 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { usePage } from "@omerdlw/base-framework/kernel";
-import { useAmbientTheme } from "@omerdlw/base-framework/modules/ambient";
+import {
+  useAmbientTheme,
+  type AmbientPalette,
+} from "@omerdlw/base-framework/modules/ambient";
 import { useArtworkContextMenu, useArtworkPath } from "@/features/artwork";
-import { handoffTo, useDeparture } from "@/motion/handoff";
+import { handoffTo, useDeparture, useHeldPalette } from "@/motion/handoff";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { PersonDetails } from "@/infrastructure/tmdb/types";
 import { PERSON_FALLBACK_ICON } from "../lib/constants";
-import { countFilms, describePerson, getBackdropPath } from "../lib/utils";
+import {
+  countFilms,
+  describePerson,
+  getBackdropPath,
+  personSwatch,
+} from "../lib/utils";
 
-export function PersonPageChrome({ person }: { person: PersonDetails }): null {
+export function PersonPageChrome({
+  palette = null,
+  person,
+}: {
+  // Worked out on the server from personSwatch of the person's own artwork.
+  palette?: AmbientPalette | null;
+  person: PersonDetails;
+}): null {
   const defaultBackdrop = getBackdropPath(person);
   const photoPath = useArtworkPath(
     "person",
@@ -26,9 +41,7 @@ export function PersonPageChrome({ person }: { person: PersonDetails }): null {
     defaultBackdrop,
   );
   const photo = tmdbImageUrl("profile", photoPath, "original");
-  const swatch =
-    tmdbImageUrl("backdrop", backdropPath, "w300") ??
-    tmdbImageUrl("profile", photoPath, "w185");
+  const swatch = personSwatch(backdropPath, photoPath);
 
   useArtworkContextMenu({
     defaults: { backdrop: defaultBackdrop, poster: person.profilePath },
@@ -49,7 +62,12 @@ export function PersonPageChrome({ person }: { person: PersonDetails }): null {
     },
   });
   const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
-  useAmbientTheme({ image: swatch, initialPalette: inherited });
+  // As on a film page: the server's palette as it is, else the last page's.
+  const { palette: lit } = useAmbientTheme({
+    image: swatch,
+    initialPalette: palette?.source === swatch ? palette : inherited,
+  });
+  useHeldPalette(lit);
 
   return null;
 }

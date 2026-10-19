@@ -3,46 +3,22 @@
 import type { JSX } from "react";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { cn } from "@omerdlw/base-framework/utils";
-import { Icon } from "@/ui";
-import type { LibraryCounts } from "../../lib/library-view";
 import { AccountLink } from "./account-link";
 
 const SECTIONS = [
-  { count: null, icon: "solar:widget-bold", key: null, label: "Overview" },
-  { count: null, icon: "solar:bolt-bold", key: "activity", label: "Activity" },
-  {
-    count: "diary",
-    icon: "solar:calendar-mark-bold",
-    key: "diary",
-    label: "Diary",
-  },
-  { count: "likes", icon: "solar:heart-bold", key: "likes", label: "Likes" },
-  {
-    count: "watched",
-    icon: "solar:eye-bold",
-    key: "watched",
-    label: "Watched",
-  },
-  {
-    count: "watchlist",
-    icon: "solar:bookmark-bold",
-    key: "watchlist",
-    label: "Watchlist",
-  },
-  {
-    count: "reviews",
-    icon: "solar:chat-round-bold",
-    key: "reviews",
-    label: "Reviews",
-  },
-  { count: "lists", icon: "solar:list-bold", key: "lists", label: "Lists" },
+  { key: null, label: "Profile" },
+  { key: "activity", label: "Activity" },
+  { key: "watched", label: "Films" },
+  { key: "diary", label: "Diary" },
+  { key: "reviews", label: "Reviews" },
+  { key: "watchlist", label: "Watchlist" },
+  { key: "lists", label: "Lists" },
+  { key: "likes", label: "Likes" },
 ] as const;
 
 export function AccountSectionTabs({
-  counts,
   username,
 }: {
-  counts: LibraryCounts;
   username: string;
 }): JSX.Element {
   const active = useSelectedLayoutSegment();
@@ -50,47 +26,35 @@ export function AccountSectionTabs({
 
   return (
     <nav
-      aria-label="Account sections"
-      className="mx-auto w-full max-w-6xl overflow-x-auto px-4 py-3 sm:px-6 lg:px-8"
+      aria-label="Profile sections"
+      className="-mx-4 overflow-x-auto border-y border-white/10 [scrollbar-width:none] sm:mx-0 sm:rounded-xl sm:border sm:bg-white/[0.02]"
     >
-      <div className="inline-flex items-center gap-1">
+      <ul className="flex min-w-max items-stretch px-2 sm:justify-center">
         {SECTIONS.map((section) => {
-          const isActive = (section.key ?? null) === active;
-          const count = section.count ? counts[section.count] : null;
+          const isActive = section.key === active;
           return (
-            <AccountLink
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "center shrink-0 gap-1.5 rounded-full px-3 py-2 text-xs font-semibold uppercase select-none",
-                isActive
-                  ? "bg-white/15 font-bold text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white",
-              )}
-              href={section.key ? `${base}/${section.key}` : base}
-              key={section.label}
-            >
-              <Icon
-                className={isActive ? "text-white" : "text-white/50"}
-                icon={section.icon}
-                size={14}
-              />
-              <span className="leading-none">{section.label}</span>
-              {count ? (
+            <li className="flex" key={section.label}>
+              <AccountLink
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative inline-flex h-12 items-center px-3 text-[13px] font-medium transition-colors select-none sm:px-3.5",
+                  isActive ? "text-white" : "text-white/50 hover:text-white",
+                )}
+                href={section.key ? `${base}/${section.key}` : base}
+              >
+                {section.label}
                 <span
+                  aria-hidden="true"
                   className={cn(
-                    "rounded-full px-1.5 py-0.5 font-mono text-[10px] leading-none font-medium",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-white/10 text-white/50",
+                    "absolute inset-x-3 -bottom-px h-0.5 bg-white transition-opacity sm:inset-x-3.5",
+                    isActive ? "opacity-100" : "opacity-0",
                   )}
-                >
-                  {count}
-                </span>
-              ) : null}
-            </AccountLink>
+                />
+              </AccountLink>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </nav>
   );
 }

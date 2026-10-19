@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, type JSX } from "react";
+import type { JSX } from "react";
 import { useRouter } from "next/navigation";
-import { usePage } from "@omerdlw/base-framework/kernel";
 import {
   useDockActionClass,
   useDockActions,
@@ -11,13 +10,13 @@ import { createSignInSurfaceEntry, useAuth } from "@/features/auth";
 import { Button, Icon } from "@/ui";
 import { createReviewEditorSurfaceEntry } from "./review-editor-surface";
 
-interface ListCommentTarget {
+export interface ListCommentTarget {
   content: string | null;
   listId: string;
   title: string;
 }
 
-function ListCommentAction({
+export function ListCommentAction({
   target,
 }: {
   target: ListCommentTarget;
@@ -52,7 +51,7 @@ function ListCommentAction({
 
   return (
     <Button
-      className={actionClass({ className: "w-full backdrop-blursm" })}
+      className={actionClass({ className: "w-full backdrop-blur-sm" })}
       onClick={open}
       type="button"
     >
@@ -65,14 +64,4 @@ function ListCommentAction({
       </span>
     </Button>
   );
-}
-
-export function ListCommentChrome({
-  target,
-}: {
-  target: ListCommentTarget;
-}): null {
-  const action = useMemo(() => <ListCommentAction target={target} />, [target]);
-  usePage({ dock: { action } }, { priority: 260 });
-  return null;
 }

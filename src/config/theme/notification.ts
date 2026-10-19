@@ -1,6 +1,7 @@
 import { Z_INDEX } from "@omerdlw/base-framework/tokens";
 import { defineTheme } from "@omerdlw/base-framework/theme";
 import { notificationTheme } from "@omerdlw/base-framework/modules/notification";
+import { notificationMotion } from "./motion/notification";
 
 export const notificationThemeConfig = defineTheme(notificationTheme, {
   slots: {
@@ -14,4 +15,5 @@ export const notificationThemeConfig = defineTheme(notificationTheme, {
   styles: {
     layer: { zIndex: Z_INDEX.NOTIFICATION },
   },
+  motion: notificationMotion,
 });

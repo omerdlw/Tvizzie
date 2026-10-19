@@ -10,7 +10,7 @@ import { EmptyState } from "@/features/account/components/browse/empty-state";
 import { FilterBar } from "@/features/account/components/browse/filter-bar";
 import { Pagination } from "@/features/account/components/browse/pagination";
 import { getOptionalUser } from "@/features/auth/server/server";
-import { MoviePageChrome, parseMovieId } from "@/features/movie";
+import { MoviePageChrome, movieSwatch, parseMovieId } from "@/features/movie";
 import {
   MOVIE_REVIEW_SORTS,
   MovieReviewList,
@@ -23,6 +23,7 @@ import {
 } from "@/features/reviews/server/queries";
 import { Icon } from "@/ui";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import { getAmbientPalette } from "@/infrastructure/tmdb/ambient";
 import { getMovieDetails } from "@/infrastructure/tmdb/server";
 import { project } from "@config/project";
 import { AccountLink } from "@/features/account/components/browse/account-link";
@@ -55,6 +56,9 @@ export default async function MovieReviewsPage({
     if (movie.error.kind === "not_found") notFound();
     throw new Error(`Movie ${id} is unavailable (${movie.error.kind})`);
   }
+  const ambient = getAmbientPalette(
+    movieSwatch(movie.data.backdropPath, movie.data.posterPath),
+  );
 
   const sortParam = readParam(query, "sort");
   const sort = isMovieReviewSort(sortParam) ? sortParam : "newest";
@@ -67,7 +71,7 @@ export default async function MovieReviewsPage({
   ]);
   const viewerId = viewer?.id ?? null;
 
-  const [{ reviews, total }, stats] = await Promise.all([
+  const [{ reviews, total }, stats, palette] = await Promise.all([
     getMovieReviews({
       client,
       from: (page - 1) * REVIEWS_PAGE_SIZE,
@@ -78,13 +82,14 @@ export default async function MovieReviewsPage({
       viewerId,
     }),
     getReviewStats({ client, tmdbId: id, username }),
+    ambient,
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / REVIEWS_PAGE_SIZE));
 
   return (
     <main className="min-h-screen">
-      <MoviePageChrome movie={movie.data} />
+      <MoviePageChrome movie={movie.data} palette={palette} />
       <div className="mx-auto w-full max-w-4xl px-4 pt-24 pb-24 sm:px-6 lg:px-8">
         <header className="mb-6 flex flex-col gap-3">
           <AccountLink

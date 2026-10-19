@@ -1,7 +1,13 @@
 import type { JSX } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MoviePageChrome, MovieView, parseMovieId } from "@/features/movie";
+import {
+  MoviePageChrome,
+  MovieView,
+  movieSwatch,
+  parseMovieId,
+} from "@/features/movie";
+import { getAmbientPalette } from "@/infrastructure/tmdb/ambient";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import {
   getMovieAwards,
@@ -61,9 +67,17 @@ export default async function MoviePage({
   const id = parseMovieId((await params).id);
   if (id === null) notFound();
 
-  const [result, pictures] = await Promise.all([
-    getMovieDetails(id),
+  const details = getMovieDetails(id);
+  const [result, pictures, palette] = await Promise.all([
+    details,
     getMovieImages(id),
+    details.then((outcome) =>
+      outcome.success
+        ? getAmbientPalette(
+            movieSwatch(outcome.data.backdropPath, outcome.data.posterPath),
+          )
+        : null,
+    ),
   ]);
   if (!result.success) {
     if (result.error.kind === "not_found") notFound();
@@ -76,7 +90,7 @@ export default async function MoviePage({
 
   return (
     <>
-      <MoviePageChrome movie={result.data} />
+      <MoviePageChrome movie={result.data} palette={palette} />
       <MovieView
         awards={awards}
         images={pictures.success ? pictures.data : result.data.images}

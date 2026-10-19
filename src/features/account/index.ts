@@ -7,6 +7,7 @@ export {
 export { AccountProvider, useAccount } from "./lib/provider";
 export { getFollowState } from "./lib/client";
 export { SocialRealtimeSync } from "./lib/realtime";
+export { AccountDockProvider } from "./components/account-dock";
 export { AccountLayout } from "./components/account-layout";
 export type { AccountData } from "./components/account-layout";
 export { AccountGuard } from "./components/account-guard";

@@ -9,6 +9,12 @@ import { tmdbImageSrcSet, tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieImage } from "@/infrastructure/tmdb/types";
 import { GALLERY_BACKDROP_ITEM, POSTER_ROW_ITEM } from "../lib/layout";
 import { Carousel, Header, Section, Swap, useRoom } from "../stage";
+import {
+  GalleryWall,
+  WALL_SIZES,
+  WallButton,
+  type WallSet,
+} from "./gallery-wall";
 import { ImageModal, type ImageModalData } from "./movie-modals";
 
 type Tab = "backdrops" | "posters";
@@ -47,10 +53,13 @@ const STRETCH = 18;
 
 // The strip shows each still at its card's size; the full picture is fetched
 // only when one is opened. Decoding originals as they scrolled in stalled
-// whole frames.
+// whole frames. Stills are asked for under CORS: one set as the page's
+// background is read for its colours (movieSwatch), which a copy cached
+// without CORS would be refused to.
 function thumbnail(tab: Tab, path: string) {
   if (tab === "backdrops") {
     return {
+      crossOrigin: "anonymous" as const,
       src: tmdbImageUrl("backdrop", path, "w780"),
       srcSet: tmdbImageSrcSet("backdrop", path, ["w300", "w780", "w1280"]),
     };
@@ -58,6 +67,22 @@ function thumbnail(tab: Tab, path: string) {
   return {
     src: tmdbImageUrl("poster", path, "w342"),
     srcSet: tmdbImageSrcSet("poster", path, ["w185", "w342", "w500"]),
+  };
+}
+
+// A wall hangs dozens of pictures at once, so none is fetched larger than
+// its cell needs: decoding a screen of full stills together stalls frames.
+function wallThumbnail(tab: Tab, path: string) {
+  if (tab === "backdrops") {
+    return {
+      crossOrigin: "anonymous" as const,
+      src: tmdbImageUrl("backdrop", path, "w780"),
+      srcSet: tmdbImageSrcSet("backdrop", path, ["w300", "w780"]),
+    };
+  }
+  return {
+    src: tmdbImageUrl("poster", path, "w342"),
+    srcSet: tmdbImageSrcSet("poster", path, ["w185", "w342"]),
   };
 }
 
@@ -110,17 +135,20 @@ export function MovieGallery({
     <Section className="flex w-full flex-col">
       <Header
         actions={
-          available.length > 1 ? (
-            <SegmentedControl
-              ariaLabel="Gallery images"
-              items={available.map((itemKey) => ({
-                key: itemKey,
-                label: `${TABS[itemKey].label} ${sets[itemKey].length}`,
-              }))}
-              onChange={choose}
-              value={key}
-            />
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {available.length > 1 ? (
+              <SegmentedControl
+                ariaLabel="Gallery images"
+                items={available.map((itemKey) => ({
+                  key: itemKey,
+                  label: `${TABS[itemKey].label} ${sets[itemKey].length}`,
+                }))}
+                onChange={choose}
+                value={key}
+              />
+            ) : null}
+            <WallButton set={key} />
+          </div>
         }
         icon="solar:gallery-wide-bold"
         title="Gallery"
@@ -157,6 +185,7 @@ export function MovieGallery({
                   aspect={view.aspect}
                   data-still={image.filePath}
                   image={{
+                    crossOrigin: shown.crossOrigin,
                     sizes: view.sizes,
                     src: shown.src,
                     srcSet: shown.srcSet ?? undefined,
@@ -171,4 +200,45 @@ export function MovieGallery({
       </Swap>
     </Section>
   );
+}
+
+// The whole of the film's gallery, hung on its own once the page is given
+// over to it.
+export function MovieGalleryWall({
+  backdrops,
+  posters,
+  title,
+}: {
+  backdrops: MovieImage[];
+  posters: MovieImage[];
+  title: string;
+}) {
+  const sets: WallSet[] = ORDER.flatMap((key) => {
+    const images = key === "backdrops" ? backdrops : posters;
+    if (images.length === 0) return [];
+    const view = TABS[key];
+    const slot = key === "backdrops" ? "backdrop" : "poster";
+    return [
+      {
+        aspect: view.aspect,
+        key,
+        label: view.label,
+        noun: view.noun,
+        pictures: images.map((image) => {
+          const shown = wallThumbnail(key, image.filePath);
+          return {
+            crossOrigin: shown.crossOrigin,
+            full: original(key, image.filePath),
+            lead: tmdbImageUrl(slot, image.filePath, "w300"),
+            path: image.filePath,
+            sizes: key === "backdrops" ? WALL_SIZES.video : WALL_SIZES.poster,
+            src: shown.src,
+            srcSet: shown.srcSet ?? undefined,
+          };
+        }),
+        slot,
+      },
+    ];
+  });
+  return <GalleryWall back="Back to the film" sets={sets} title={title} />;
 }

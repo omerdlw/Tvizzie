@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Z_INDEX } from "@omerdlw/base-framework/tokens";
 import { defineTheme } from "@omerdlw/base-framework/theme";
 import { dockTheme } from "@omerdlw/base-framework/modules/dock";
+import { dockMotion } from "./motion/dock";
 
 const toLeft = (gradient: string) =>
   gradient
@@ -214,4 +215,5 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     extensionsRight: { zIndex: Z_INDEX.DOCK_SURFACE_CONTROL },
     breadcrumbs: { zIndex: Z_INDEX.DOCK_BREADCRUMBS },
   },
+  motion: dockMotion,
 });

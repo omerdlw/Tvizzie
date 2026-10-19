@@ -2,9 +2,12 @@
 
 import { useOptimistic, useTransition, type JSX } from "react";
 import { useRouter } from "next/navigation";
-import { useDockActions } from "@omerdlw/base-framework/modules/dock";
+import {
+  useDockActionClass,
+  useDockActions,
+} from "@omerdlw/base-framework/modules/dock";
 import { useToast } from "@omerdlw/base-framework/modules/notification";
-import { cn, report, toUserMessage } from "@omerdlw/base-framework/utils";
+import { report, toUserMessage } from "@omerdlw/base-framework/utils";
 import { createSignInSurfaceEntry } from "@/features/auth";
 import { Button, Icon } from "@/ui";
 import { setListLikeAction } from "../../server/browse-actions";
@@ -22,6 +25,7 @@ export function ListLikeButton({
 }): JSX.Element {
   const router = useRouter();
   const toast = useToast();
+  const actionClass = useDockActionClass();
   const { openSurface } = useDockActions();
   const [busy, startTransition] = useTransition();
   const [{ count, liked }, setOptimistic] = useOptimistic(
@@ -57,22 +61,23 @@ export function ListLikeButton({
 
   return (
     <Button
+      aria-label={liked ? "Unlike this list" : "Like this list"}
       aria-pressed={liked}
-      className={cn(
-        "inline-flex h-9 cursor-pointer items-center gap-2 rounded-[13px] px-3.5 text-xs font-bold uppercase ring-1 ring-inset disabled:cursor-wait",
-        liked
-          ? "bg-success/20 text-success ring-success/30 hover:bg-success/30"
-          : "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white",
-      )}
+      className={actionClass({
+        className:
+          "w-auto shrink-0 gap-1.5 px-3.5 backdrop-blur-sm disabled:cursor-wait",
+        isActive: liked,
+      })}
       disabled={busy}
       onClick={toggle}
+      type="button"
     >
       <Icon
+        className={liked ? "text-rose-400" : undefined}
         icon={liked ? "solar:heart-bold" : "solar:heart-linear"}
-        size={15}
+        size={16}
       />
-      {liked ? "Liked" : "Like"}
-      <span className="font-mono text-[11px] opacity-70">{count}</span>
+      <span className="tabular-nums">{count}</span>
     </Button>
   );
 }

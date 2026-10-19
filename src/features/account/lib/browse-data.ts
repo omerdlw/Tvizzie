@@ -28,6 +28,7 @@ export interface ListCardData {
 }
 
 export interface ReviewCardData {
+  backdropPath: string | null;
   content: string;
   createdAt: string;
   id: string;
@@ -67,6 +68,19 @@ export interface DiaryRow {
   year: number | null;
 }
 
+export interface DiaryEntry {
+  id: string;
+  title: string;
+  tmdbId: number;
+  watchedOn: string;
+}
+
+export interface PersonPreview {
+  avatarUrl: string | null;
+  displayName: string;
+  username: string;
+}
+
 export interface DiaryMonth {
   first: string | null;
   last: string | null;
@@ -83,6 +97,8 @@ export interface ListDetail {
   liked: boolean;
   likesCount: number;
   owner: { displayName: string; id: string; username: string };
+  // The first film's poster, which stands for the list.
+  posterPath: string | null;
   reviewsCount: number;
   slug: string;
   title: string;

@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { useModal } from "@omerdlw/base-framework/modules/modal";
 import { artworkTarget } from "@/features/artwork";
-import { ImageModal, type ImageModalData } from "@/features/movie";
+import {
+  GalleryWall,
+  ImageModal,
+  WALL_SIZES,
+  WallButton,
+  type ImageModalData,
+  type WallSet,
+} from "@/features/movie";
 import { MediaCard, SegmentedControl } from "@/ui";
 import type { MediaCardAspect } from "@/ui";
-import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
+import { tmdbImageSrcSet, tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { PersonImage } from "@/infrastructure/tmdb/types";
 import { BACKDROP_ITEM, PORTRAIT_ITEM } from "../lib/layout";
 import { Carousel, Header, Section, Swap } from "../stage";
@@ -38,6 +45,20 @@ const VIEWS: Record<Tab, View> = {
   },
 };
 
+const shelves = (
+  backdrops: string[],
+  portraits: PersonImage[],
+): [Tab, string[]][] =>
+  (
+    [
+      [
+        "portraits",
+        portraits.length > 1 ? portraits.map((p) => p.filePath) : [],
+      ],
+      ["backdrops", backdrops],
+    ] as [Tab, string[]][]
+  ).filter(([, paths]) => paths.length > 0);
+
 export function PersonGallery({
   backdrops,
   name,
@@ -48,11 +69,7 @@ export function PersonGallery({
   portraits: PersonImage[];
 }) {
   const [openImage] = useModal(ImageModal);
-  const available: [Tab, string[]][] = [
-    ["portraits", portraits.length > 1 ? portraits.map((p) => p.filePath) : []],
-    ["backdrops", backdrops],
-  ];
-  const tabs = available.filter(([, paths]) => paths.length > 0);
+  const tabs = shelves(backdrops, portraits);
   const [tab, setTab] = useState<Tab>(tabs[0]?.[0] ?? "portraits");
   if (tabs.length === 0) return null;
 
@@ -64,17 +81,20 @@ export function PersonGallery({
     <Section className="flex w-full flex-col">
       <Header
         actions={
-          tabs.length > 1 ? (
-            <SegmentedControl
-              ariaLabel="Gallery images"
-              items={tabs.map(([item]) => ({
-                key: item,
-                label: VIEWS[item].label,
-              }))}
-              onChange={setTab}
-              value={key}
-            />
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {tabs.length > 1 ? (
+              <SegmentedControl
+                ariaLabel="Gallery images"
+                items={tabs.map(([item]) => ({
+                  key: item,
+                  label: VIEWS[item].label,
+                }))}
+                onChange={setTab}
+                value={key}
+              />
+            ) : null}
+            <WallButton set={key} />
+          </div>
         }
         icon="solar:gallery-wide-bold"
         title="Gallery"
@@ -110,4 +130,52 @@ export function PersonGallery({
       </Swap>
     </Section>
   );
+}
+
+// Everything the person's gallery holds, hung on its own once the page is
+// given over to it. The wall is shown at the size of its cells, not in full.
+export function PersonGalleryWall({
+  backdrops,
+  name,
+  portraits,
+}: {
+  backdrops: string[];
+  name: string;
+  portraits: PersonImage[];
+}) {
+  const sets: WallSet[] = shelves(backdrops, portraits).map(([key, paths]) => {
+    const view = VIEWS[key];
+    const portrait = key === "portraits";
+    return {
+      aspect: view.aspect,
+      key,
+      label: view.label,
+      noun: view.noun,
+      pictures: paths.map((path) =>
+        portrait
+          ? {
+              full: tmdbImageUrl("profile", path, "original"),
+              lead: tmdbImageUrl("profile", path, "w185"),
+              path,
+              sizes: WALL_SIZES.poster,
+              src: tmdbImageUrl("profile", path, "h632"),
+            }
+          : {
+              // As in the film's gallery: a still may become the page's
+              // background, and is then read for its colours.
+              crossOrigin: "anonymous" as const,
+              full: tmdbImageUrl("backdrop", path, "original"),
+              lead: tmdbImageUrl("backdrop", path, "w300"),
+              path,
+              sizes: WALL_SIZES.video,
+              src: tmdbImageUrl("backdrop", path, "w780"),
+              srcSet:
+                tmdbImageSrcSet("backdrop", path, ["w300", "w780"]) ??
+                undefined,
+            },
+      ),
+      slot: portrait ? "poster" : "backdrop",
+    };
+  });
+  return <GalleryWall back={`Back to ${name}`} sets={sets} title={name} />;
 }

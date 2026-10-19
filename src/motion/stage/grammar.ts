@@ -79,11 +79,23 @@ export const GRAMMAR = {
       after: size(11),
       drift: size(9),
       enter: size(4),
-      leave: size(0),
+      leave: size(1),
     },
     revisit: { pace: PHI },
   },
   undo: { cap: size(-2) },
+  // The gallery taken down off the page and hung on its own. The page rolls
+  // back up to its head, at a pace kept by how far it has to go, and goes
+  // dark over the last stretch; the pictures are hung where it stood. Taken
+  // down again, the wall goes dark and the page comes back up where the
+  // gallery was left.
+  wall: {
+    back: size(2),
+    dim: size(1),
+    down: size(0),
+    gap: size(-4),
+    roll: { max: size(3), min: size(1), per: 2600 },
+  },
 } as const;
 
 export interface Opening {

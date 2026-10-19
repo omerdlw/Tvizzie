@@ -16,6 +16,7 @@ const ASPECT = {
 export type MediaCardAspect = keyof typeof ASPECT;
 
 interface MediaCardImage {
+  crossOrigin?: "anonymous";
   priority?: boolean;
   sizes?: string;
   src: string | null;
@@ -38,7 +39,7 @@ interface MediaCardProps extends DataAttributes {
   onNavigated?: () => void;
   onClick?: () => void;
   overlay?: ReactNode;
-  radius?: number;
+  radius?: number | string;
   tooltip?: string;
 }
 
@@ -82,6 +83,7 @@ export function MediaCard({
         <AdaptiveImage
           alt=""
           className="cine-zoom object-cover"
+          crossOrigin={image.crossOrigin}
           fallback={
             <div className="center h-full w-full text-white/40">
               <Icon icon={fallbackIcon} size={fallbackIconSize} />
@@ -98,10 +100,13 @@ export function MediaCard({
             beneath a zoomed image is covered along the sides but shows
             through the image's antialiased corners as a pale arc. */}
         {framed ? (
-          <span
-            aria-hidden="true"
-            className="cine-fade pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50"
-          />
+          <>
+            <span aria-hidden="true" className="cine-afterglow" />
+            <span
+              aria-hidden="true"
+              className="cine-fade pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50"
+            />
+          </>
         ) : null}
       </div>
       {caption}

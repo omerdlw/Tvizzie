@@ -11,3 +11,4 @@ export { Projection } from "./projector";
 export { Cursor } from "./reticle";
 export { Room } from "./room";
 export { RoomGrain } from "./room-grain";
+export { Tube } from "./tube";

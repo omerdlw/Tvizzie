@@ -36,15 +36,12 @@ export function ListComments({
   }
 
   return (
-    <ul className="flex flex-col gap-2.5">
+    <ul className="flex flex-col divide-y divide-white/[0.07]">
       {comments.map((comment) => {
         const profile = `/account/${encodeURIComponent(comment.author.username)}`;
         const isOwn = comment.author.id === viewerId;
         return (
-          <li
-            className="flex gap-3 rounded-[20px] bg-white/5 p-3.5 ring-1 ring-white/5 ring-inset"
-            key={comment.id}
-          >
+          <li className="flex gap-3 py-5 first:pt-0 last:pb-0" key={comment.id}>
             <AccountLink href={profile}>
               <Avatar
                 name={comment.author.displayName}

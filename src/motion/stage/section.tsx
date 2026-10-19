@@ -211,7 +211,7 @@ function Name({ children }: { children: string }) {
   const exposed = useReached(ref, (width) => width * EXPOSE_EDGE);
   return (
     <h2
-      className="min-w-0 text-[11px] font-semibold tracking-[0.18em] text-white/70 uppercase"
+      className="crt-glow min-w-0 text-[11px] font-semibold tracking-[0.18em] text-white/70 uppercase"
       ref={ref}
     >
       <Expose sweep={exposed}>{children}</Expose>

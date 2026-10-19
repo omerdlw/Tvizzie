@@ -1,5 +1,19 @@
 import { report } from "@omerdlw/base-framework/utils";
-import { isSafeUrl } from "@/infrastructure/security/url-safety";
+import { TMDB_IMAGE_BASE_URL } from "@/infrastructure/tmdb/constants";
+
+const TMDB_IMAGES = new URL(TMDB_IMAGE_BASE_URL);
+
+// Only TMDB artwork is proxied, redirects included; anything wider turns this
+// route into an open image proxy.
+function isTmdbImageUrl(url: URL): boolean {
+  return (
+    url.protocol === TMDB_IMAGES.protocol &&
+    url.host === TMDB_IMAGES.host &&
+    !url.username &&
+    !url.password &&
+    url.pathname.startsWith(`${TMDB_IMAGES.pathname}/`)
+  );
+}
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
@@ -16,7 +30,7 @@ export async function GET(request: Request): Promise<Response> {
     return new Response("URL not allowed", { status: 400 });
   }
 
-  if (!isSafeUrl(target.href)) {
+  if (!isTmdbImageUrl(target)) {
     return new Response("URL not allowed", { status: 400 });
   }
 
@@ -46,7 +60,7 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       const redirectUrl = new URL(location, currentUrl);
-      if (!isSafeUrl(redirectUrl.href)) {
+      if (!isTmdbImageUrl(redirectUrl)) {
         return new Response("URL not allowed", { status: 400 });
       }
 
@@ -68,7 +82,6 @@ export async function GET(request: Request): Promise<Response> {
 
     return new Response(upstreamResponse.body, {
       headers: {
-        "Access-Control-Allow-Origin": "*",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
         "Content-Type": contentType,
       },

@@ -13,7 +13,6 @@ import { EmptyState } from "./empty-state";
 import { FilterBar } from "./filter-bar";
 import { Pagination } from "./pagination";
 import { PosterGrid } from "./poster-grid";
-import { SectionHeading } from "./section-heading";
 
 const KINDS: Record<
   MediaKind,
@@ -47,11 +46,12 @@ export async function MediaCollectionPage({
   kind: MediaKind;
   searchParams: Promise<SearchParams>;
   username: string;
-}): Promise<JSX.Element> {
-  const [{ account, client, isOwner }, params] = await Promise.all([
+}): Promise<JSX.Element | null> {
+  const [{ account, client, isOwner, locked }, params] = await Promise.all([
     getAccountPageContext(username),
     searchParams,
   ]);
+  if (locked) return null;
   const filters = parseMediaFilters(params);
   const result = await getMediaPage({
     accountId: account.id,
@@ -64,14 +64,10 @@ export async function MediaCollectionPage({
   const showBar = result.total > 0 || filtered;
 
   return (
-    <section className="w-full">
-      <SectionHeading
-        icon={copy.icon}
-        summary={`${result.total} ${result.total === 1 ? "movie" : "movies"}`}
-        title={copy.title}
-      />
+    <div className="flex w-full flex-col">
       {showBar ? (
         <FilterBar
+          docked
           fields={[
             {
               allLabel: "Any genre",
@@ -107,12 +103,12 @@ export async function MediaCollectionPage({
       ) : (
         <EmptyState icon={copy.icon}>
           {filtered
-            ? "No movies match these filters"
+            ? "No films match these filters"
             : isOwner
               ? copy.emptyOwn
               : copy.empty}
         </EmptyState>
       )}
-    </section>
+    </div>
   );
 }

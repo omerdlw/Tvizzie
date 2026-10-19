@@ -3,6 +3,7 @@ import type {
   MovieImage,
   MovieImages,
 } from "@/infrastructure/tmdb/types";
+import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import {
   MOVIE_CERTIFICATION_REGION,
   MOVIE_RECOMMENDATION_LIMIT,
@@ -217,4 +218,17 @@ export function describeMovie(movie: MovieDetails): string {
   ]
     .filter(Boolean)
     .join(" · ");
+}
+
+// The picture a film page takes its colours from. The server and the browser
+// both ask for it here, so the palette the server sends is for the very
+// address the page uses, and the page takes it as it is.
+export function movieSwatch(
+  backdropPath: string | null,
+  posterPath: string | null,
+): string | null {
+  return (
+    tmdbImageUrl("backdrop", backdropPath, "w300") ??
+    tmdbImageUrl("poster", posterPath, "w185")
+  );
 }
