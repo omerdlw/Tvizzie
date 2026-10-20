@@ -26,7 +26,7 @@ import {
 import { useHeldHeight } from "@/motion/flow";
 import { Icon } from "@/ui";
 import { GRAMMAR } from "./grammar";
-import { EASE, ITEMS, type ItemKind } from "./tempo";
+import { EASE, itemsAt, type ItemKind } from "./tempo";
 import { ClockContext, ease, unit } from "./clock";
 import {
   GroupContext,
@@ -36,7 +36,13 @@ import {
   useSection,
 } from "./cue";
 import { Expose, clearMask, setMask } from "./type";
-import { WaveContext, useArrival, useArrivalClock, useWave } from "./wave";
+import {
+  ArrivalContext,
+  WaveContext,
+  useArrival,
+  useArrivalClock,
+  useWave,
+} from "./wave";
 
 // When the content of a section opened at `opened` may begin.
 const contentFrom = (opened: { at: number; delay: number }) =>
@@ -374,7 +380,8 @@ export function Cascade({
   if (section) {
     from = section.opened ? Math.max(contentFrom(section.opened), own) : null;
   }
-  const wave = useWave(from, gap);
+  const arrival = useContext(ArrivalContext);
+  const wave = useWave(from, gap / arrival.pace, arrival.eager);
   const Component = TAGS[as] as typeof motion.div;
 
   return (
@@ -414,6 +421,7 @@ export function Item({
 }) {
   const { delay, ref, shown } = useArrival<HTMLDivElement>();
   const clock = useArrivalClock(shown, delay);
+  const { pace } = useContext(ArrivalContext);
   const Component = TAGS[as] as typeof motion.div;
   return (
     <ClockContext value={clock}>
@@ -425,7 +433,7 @@ export function Item({
         data-flow={flow ? "" : undefined}
         initial="hidden"
         ref={ref}
-        variants={ITEMS[from]}
+        variants={itemsAt(pace)[from]}
       >
         {children}
       </Component>

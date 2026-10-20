@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
 import { GRAMMAR } from "./grammar";
-import { settle, size } from "./tempo";
+import { PHI, settle, size } from "./tempo";
 
 const MARGIN = "0px 0px -6% 0px";
 
@@ -49,7 +49,16 @@ function readingOrder(batch: Waiting[]): Waiting[] {
 // eye meets them. Whatever is seen together goes in one pass, a step apart;
 // what scrolls in later starts where the eye already is, waiting no more than
 // a beat for the pass before it.
-export function createWave({ gap }: { gap: number }): Wave {
+//
+// An eager wave does not wait for things to be seen: what it holds is on
+// screen as soon as it is there.
+export function createWave({
+  eager = false,
+  gap,
+}: {
+  eager?: boolean;
+  gap: number;
+}): Wave {
   const watched = new Map<Element, Waiting>();
   const seen: Waiting[] = [];
   let from: number | null = null;
@@ -107,6 +116,14 @@ export function createWave({ gap }: { gap: number }): Wave {
     },
     watch(element, open) {
       const waiting = { element, open };
+      if (eager) {
+        seen.push(waiting);
+        schedule();
+        return () => {
+          const index = seen.indexOf(waiting);
+          if (index >= 0) seen.splice(index, 1);
+        };
+      }
       watched.set(element, waiting);
       observe().observe(element);
       return () => {
@@ -121,9 +138,26 @@ export function createWave({ gap }: { gap: number }): Wave {
 
 export const WaveContext = createContext<Wave | null>(null);
 
+// How things arrive where this is given: at what pace, and whether they wait
+// to be seen.
+export interface Arrival {
+  eager: boolean;
+  pace: number;
+}
+
+export const ArrivalContext = createContext<Arrival>({
+  eager: false,
+  pace: 1,
+});
+
+// A dock surface is on screen the moment it opens, and the dock keeps a
+// quicker time than the page: what is in it arrives φ² as fast, a step apart,
+// without waiting to be seen.
+export const IN_DOCK: Arrival = Object.freeze({ eager: true, pace: PHI ** 2 });
+
 // `from` is the moment, on the performance clock, the wave may begin.
-export function useWave(from: number | null, gap: number) {
-  const [wave] = useState(() => createWave({ gap }));
+export function useWave(from: number | null, gap: number, eager = false) {
+  const [wave] = useState(() => createWave({ eager, gap }));
   useEffect(() => {
     if (from !== null) wave.begin(from);
   }, [from, wave]);

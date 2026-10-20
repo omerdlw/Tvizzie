@@ -23,5 +23,13 @@ export { Beat, Cascade, Header, Item, Section, Swap, Trace } from "./section";
 export { trackSpotlight } from "./spotlight";
 export * from "./tempo";
 export { Count, Expose, Title, Words } from "./type";
-export { WaveContext, useArrival, useArrivalClock, useWave } from "./wave";
+export {
+  ArrivalContext,
+  IN_DOCK,
+  WaveContext,
+  useArrival,
+  useArrivalClock,
+  useWave,
+  type Arrival,
+} from "./wave";
 export { Tile, useWall, type WallPhase } from "./wall";

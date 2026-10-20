@@ -1,26 +1,17 @@
 import type { NotificationMotion } from "@omerdlw/base-framework/modules/notification";
 import { motion, tween } from "./tokens";
 
-const { durations, easings } = motion;
+const { durations: time, easings: ease } = motion;
 
-const enter = tween(durations.moderate, easings.emphasized);
+const enter = tween(time.reveal, ease.fade);
 
+// A toast is a title card: it comes up on light where it is shown, holds, and
+// goes down there. It never slides in over the page.
 export const notificationMotion: NotificationMotion = {
   transition: enter,
   toast: {
-    hidden: {
-      opacity: 0,
-      transform: "translate3d(0, -10px, 0) scale(0.96)",
-    },
-    visible: {
-      opacity: 1,
-      transform: "translate3d(0, 0px, 0) scale(1)",
-      transition: enter,
-    },
-    exit: {
-      opacity: 0,
-      transform: "translate3d(0, -6px, 0) scale(0.98)",
-      transition: tween(durations.fast, easings.exit),
-    },
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: enter },
+    exit: { opacity: 0, transition: tween(time.light, ease.fade) },
   },
 };

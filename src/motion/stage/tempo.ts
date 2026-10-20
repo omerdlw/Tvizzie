@@ -73,38 +73,59 @@ export type ItemKind =
 
 // Content travels, and only a little: far enough to be seen settling, never
 // so far it reads as flying in. The chrome around it never travels at all.
-export const ITEMS: Record<ItemKind, Variants> = {
-  dot: {
-    hidden: { opacity: 0, scale: 0 },
-    visible: arriving({ scale: 1 }, size(2), size(1)),
-  },
-  grow: {
-    hidden: { opacity: 0, scaleY: 0 },
-    visible: arriving({ scaleY: 1 }),
-  },
-  left: {
-    hidden: { opacity: 0, x: -20 },
-    visible: arriving({ x: 0 }),
-  },
-  // Comes up where it stands, on light alone. Nothing under it moves, so its
-  // words and pictures are drawn once, on whole pixels, and never redrawn
-  // as they slide: the arrival runs on the compositor and cannot shimmer.
-  light: {
-    hidden: { opacity: 0 },
-    visible: arriving({}),
-  },
-  right: {
-    hidden: { opacity: 0, x: 20 },
-    visible: arriving({ x: 0 }),
-  },
-  scale: {
-    hidden: { opacity: 0, scale: 0.94, y: 10 },
-    visible: arriving({ scale: 1, y: 0 }),
-  },
-  // Arrives in place: whatever is inside reveals itself on the item's clock.
-  still: { hidden: {}, visible: {} },
-  up: {
-    hidden: { opacity: 0, y: 24 },
-    visible: arriving({ y: 0 }),
-  },
-};
+//
+// At a faster pace (inside the dock) everything runs that much quicker and
+// travels that much less: a smaller room, the same grammar.
+function itemVariants(pace: number): Record<ItemKind, Variants> {
+  const run = ARRIVE.run / pace;
+  const light = ARRIVE.light / pace;
+  const travel = (px: number) => px / pace;
+  return {
+    dot: {
+      hidden: { opacity: 0, scale: 0 },
+      visible: arriving({ scale: 1 }, size(2) / pace, size(1) / pace),
+    },
+    grow: {
+      hidden: { opacity: 0, scaleY: 0 },
+      visible: arriving({ scaleY: 1 }, run, light),
+    },
+    left: {
+      hidden: { opacity: 0, x: travel(-20) },
+      visible: arriving({ x: 0 }, run, light),
+    },
+    // Comes up where it stands, on light alone. Nothing under it moves, so its
+    // words and pictures are drawn once, on whole pixels, and never redrawn
+    // as they slide: the arrival runs on the compositor and cannot shimmer.
+    light: {
+      hidden: { opacity: 0 },
+      visible: arriving({}, run, light),
+    },
+    right: {
+      hidden: { opacity: 0, x: travel(20) },
+      visible: arriving({ x: 0 }, run, light),
+    },
+    scale: {
+      hidden: { opacity: 0, scale: 1 - 0.06 / pace, y: travel(10) },
+      visible: arriving({ scale: 1, y: 0 }, run, light),
+    },
+    // Arrives in place: whatever is inside reveals itself on the item's clock.
+    still: { hidden: {}, visible: {} },
+    up: {
+      hidden: { opacity: 0, y: travel(24) },
+      visible: arriving({ y: 0 }, run, light),
+    },
+  };
+}
+
+export const ITEMS = itemVariants(1);
+
+const PACED = new Map<number, Record<ItemKind, Variants>>([[1, ITEMS]]);
+
+export function itemsAt(pace: number): Record<ItemKind, Variants> {
+  let items = PACED.get(pace);
+  if (!items) {
+    items = itemVariants(pace);
+    PACED.set(pace, items);
+  }
+  return items;
+}

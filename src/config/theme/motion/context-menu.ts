@@ -1,66 +1,52 @@
 import type { ContextMenuMotion } from "@omerdlw/base-framework/modules/context-menu";
-import { motion } from "./tokens";
+import { motion, tween } from "./tokens";
 
-const { durations, easings, springs } = motion;
+const { durations: time, easings: ease, springs } = motion;
 
-// Rows come in one after another, a short step apart, after the menu opens.
+const leave = tween(time.touch, ease.fade);
+const ORIGIN = "top left";
+
+// Rows light in reading order, a step apart, once the menu is up; a long menu
+// waits no longer than a beat for its last row.
 const rowDelay = (index: unknown) =>
-  0.04 + Math.min(Math.max(Number(index) || 0, 0) * 0.042, 0.21);
-
-const leave = { duration: durations.micro, ease: easings.exit };
+  time.step + Math.min(Math.max(Number(index) || 0, 0), 5) * time.step;
 
 export const contextMenuMotion: ContextMenuMotion = {
+  // The menu comes up at the pointer, settling the last hair of its size from
+  // the corner it hangs from, and goes dark there.
   pop: {
     hidden: {
       opacity: 0,
-      transform: "translate3d(0px, 0px, 0) scale(0.96)",
-      transformOrigin: "top left",
+      transform: "translate3d(0px, 0px, 0) scale(0.98)",
+      transformOrigin: ORIGIN,
     },
     visible: {
       opacity: 1,
       transform: "translate3d(0px, 0px, 0) scale(1)",
-      transformOrigin: "top left",
-      transition: { duration: durations.fast, ease: easings.emphasized },
+      transformOrigin: ORIGIN,
+      transition: {
+        transform: tween(time.reveal, ease.pour),
+        opacity: tween(time.leave, ease.fade),
+      },
     },
     exit: {
       opacity: 0,
-      transform: "translate3d(0px, 0px, 0) scale(0.98)",
-      transformOrigin: "top left",
+      transform: "translate3d(0px, 0px, 0) scale(1)",
+      transformOrigin: ORIGIN,
       transition: leave,
     },
   },
   content: {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: durations.fast,
-        ease: easings.weighted,
-        delay: 0.04,
-      },
-    },
-    exit: { opacity: 0, transition: leave },
+    visible: { opacity: 1, transition: tween(time.light, ease.fade) },
   },
   item: {
-    hidden: {
-      opacity: 0,
-      transform: "translate3d(0px, 4px, 0) scale(0.992)",
-    },
+    hidden: { opacity: 0 },
     visible: (index: unknown = 0) => ({
       opacity: 1,
-      transform: "translate3d(0px, 0px, 0) scale(1)",
-      transition: {
-        duration: durations.fast,
-        ease: easings.emphasized,
-        delay: rowDelay(index),
-      },
+      transition: tween(time.light, ease.fade, rowDelay(index)),
     }),
-    exit: {
-      opacity: 0,
-      transform: "translate3d(0px, -3px, 0) scale(0.994)",
-      transition: leave,
-    },
   },
-  itemTap: { transform: "translate3d(0px, 0px, 0) scale(0.97)" },
-  itemTransition: springs.tap,
+  itemTap: { transform: "translate3d(0px, 0px, 0) scale(0.98)" },
+  itemTransition: springs.press,
 };

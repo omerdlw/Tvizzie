@@ -7,7 +7,7 @@ import {
   type WheelEvent,
 } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
-import { size } from "@/motion/stage";
+import { ArrivalContext, IN_DOCK, size } from "@/motion/stage";
 
 const WHITE = "252 252 251";
 
@@ -21,6 +21,8 @@ function readGrade(): string {
 
 const noChange = () => () => {};
 
+// A surface in the dock keeps the dock's time: what is in it arrives at the
+// dock's pace, in reading order, without waiting to be seen.
 export function SurfaceScene({
   children,
   className,
@@ -30,17 +32,21 @@ export function SurfaceScene({
 }) {
   const grade = useSyncExternalStore(noChange, readGrade, () => WHITE);
   return (
-    <div
-      className={cn("w-full", className)}
-      data-cinematic
-      style={{ "--grade": grade } as CSSProperties}
-    >
-      {children}
-    </div>
+    <ArrivalContext value={IN_DOCK}>
+      <div
+        className={cn("w-full", className)}
+        data-cinematic
+        style={{ "--grade": grade } as CSSProperties}
+      >
+        {children}
+      </div>
+    </ArrivalContext>
   );
 }
 
-export const SURFACE_LEAD = size(-1);
+// The first row comes up once the card has begun to open and the surface is
+// coming into light around it.
+export const SURFACE_LEAD = size(-2);
 
 const BUTTON =
   "cine-fade center relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-[20px] text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:pointer-events-none";
