@@ -55,7 +55,7 @@ export const WALL_SIZES: Record<"poster" | "video", string> = {
 };
 
 const CONTROL =
-  "cine-press center h-8 cursor-pointer gap-2 rounded-[13px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white focus-visible:ring-white/50";
+  "cine-press center h-8 cursor-pointer gap-2 rounded-control bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white focus-visible:ring-white/50";
 
 // The way into the wall, beside a gallery's own tabs.
 export function WallButton({ set }: { set: string }) {
@@ -177,7 +177,7 @@ export function GalleryWall({
             }}
           >
             {shown.pictures.slice(0, reach).map((picture, index) => (
-              <Tile className="rounded-[20px]" key={picture.path}>
+              <Tile className="rounded-card" key={picture.path}>
                 <MediaCard
                   {...artworkTarget(shown.slot, picture.path)}
                   aspect={shown.aspect}

@@ -40,7 +40,7 @@ export function Pagination({
   };
 
   const step =
-    "center size-9 shrink-0 rounded-[12px] text-xs font-semibold ring-1 ring-inset";
+    "center size-9 shrink-0 rounded-control text-xs font-semibold ring-1 ring-inset";
 
   return (
     <nav

@@ -852,9 +852,26 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      check_auth_session: {
+        Args: {
+          p_ip_address?: string | null;
+          p_session_id: string;
+          p_user_agent?: string | null;
+        };
+        Returns: boolean;
+      };
       deactivate_current_account: {
         Args: Record<PropertyKey, never>;
         Returns: void;
+      };
+      get_account_follow_counts: {
+        Args: {
+          p_account_id: string;
+        };
+        Returns: {
+          followers_count: number;
+          following_count: number;
+        }[];
       };
       get_account_follow_target: {
         Args: {
@@ -863,6 +880,84 @@ export type Database = {
         Returns: {
           id: string;
           is_private: boolean;
+        }[];
+      };
+      get_account_overview: {
+        Args: {
+          p_account_id: string;
+          p_activity?: number;
+          p_diary?: number;
+          p_following?: number;
+          p_lists?: number;
+          p_popular?: number;
+          p_reviews?: number;
+          p_watched?: number;
+          p_watchlist?: number;
+        };
+        Returns: Json;
+      };
+      get_account_header: {
+        Args: { p_account_id: string; p_mutual?: number };
+        Returns: Json;
+      };
+      get_list_page: {
+        Args: {
+          p_account_id: string;
+          p_comments?: number;
+          p_decade?: number | null;
+          p_genre?: number | null;
+          p_page?: number;
+          p_page_size?: number;
+          p_pattern?: string | null;
+          p_slug: string;
+          p_sort?: string;
+        };
+        Returns: Json;
+      };
+      get_account_follows: {
+        Args: {
+          p_account_id: string;
+          p_before?: string | null;
+          p_before_id?: string | null;
+          p_direction: string;
+          p_limit?: number;
+        };
+        Returns: {
+          account_id: string;
+          avatar_url: string | null;
+          banner_url: string | null;
+          display_name: string | null;
+          follow_id: string;
+          followed_at: string;
+          username: string | null;
+          viewer_status: string | null;
+        }[];
+      };
+      get_list_previews: {
+        Args: {
+          p_limit?: number;
+          p_list_ids: string[];
+        };
+        Returns: {
+          list_id: string;
+          poster_path: string | null;
+        }[];
+      };
+      get_rating_spread: {
+        Args: {
+          p_account_id: string;
+        };
+        Returns: number[];
+      };
+      get_review_stats: {
+        Args: {
+          p_tmdb_id: number;
+          p_username?: string | null;
+        };
+        Returns: {
+          average: number | null;
+          rated: number;
+          total: number;
         }[];
       };
       get_popular_movies: {
@@ -955,6 +1050,56 @@ export type Database = {
           p_current_session_id: string;
         };
         Returns: void;
+      };
+      search_accounts: {
+        Args: {
+          p_limit?: number;
+          p_query: string;
+        };
+        Returns: {
+          avatar_url: string | null;
+          display_name: string | null;
+          followers_count: number;
+          id: string;
+          is_private: boolean;
+          username: string;
+        }[];
+      };
+      search_lists: {
+        Args: {
+          p_limit?: number;
+          p_query: string;
+        };
+        Returns: {
+          id: string;
+          items_count: number;
+          likes_count: number;
+          owner_display_name: string | null;
+          owner_username: string;
+          poster_path: string | null;
+          slug: string;
+          title: string;
+        }[];
+      };
+      search_reviews: {
+        Args: {
+          p_limit?: number;
+          p_query: string;
+        };
+        Returns: {
+          author_avatar_url: string | null;
+          author_display_name: string | null;
+          author_username: string;
+          content: string;
+          id: string;
+          is_spoiler: boolean;
+          likes_count: number;
+          poster_path: string | null;
+          rating: number | null;
+          release_date: string | null;
+          tmdb_id: number;
+          title: string;
+        }[];
       };
       touch_auth_session: {
         Args: {

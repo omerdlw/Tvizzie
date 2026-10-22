@@ -18,6 +18,7 @@ export interface MovieDetailsOptions {
 
 export interface MovieSearchOptions extends MovieDetailsOptions {
   page?: number;
+  year?: number;
 }
 
 const APPENDED_RESOURCES = [
@@ -97,7 +98,7 @@ export function createMoviesApi(transport: TmdbTransport): MoviesApi {
 
     async search(
       query,
-      { language = TMDB_DEFAULT_LANGUAGE, page = 1, signal } = {},
+      { language = TMDB_DEFAULT_LANGUAGE, page = 1, signal, year } = {},
     ) {
       const checked = checkSearchInput(query, page, language);
       if ("error" in checked) return err(checked.error);
@@ -109,6 +110,7 @@ export function createMoviesApi(transport: TmdbTransport): MoviesApi {
           language,
           page,
           include_adult: false,
+          ...(year ? { primary_release_year: year } : {}),
         },
         schema: movieSearchPageSchema,
         revalidate: TMDB_REVALIDATE.search,

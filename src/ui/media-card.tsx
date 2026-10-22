@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@omerdlw/base-framework/utils";
 import { useDockLinkClick } from "../motion/dock-link";
 import { AdaptiveImage, Icon, Tooltip } from "./";
+import { RADIUS } from "./radius";
 
 const ASPECT = {
   free: "",
@@ -57,7 +58,7 @@ export function MediaCard({
   onClick,
   onNavigated,
   overlay,
-  radius = 20,
+  radius = RADIUS.card,
   tooltip,
   ...rest
 }: MediaCardProps) {
@@ -104,7 +105,7 @@ export function MediaCard({
             <span aria-hidden="true" className="cine-afterglow" />
             <span
               aria-hidden="true"
-              className="cine-fade pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50"
+              className="cine-fade pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/5 ring-inset group-hover/media:ring-white/50 group-focus-visible/media:ring-white/50 in-data-active:ring-white/50"
             />
           </>
         ) : null}

@@ -78,7 +78,7 @@ const ListPreviewStack = memo(function ListPreviewStack({
           <div
             key={index}
             className={cn(
-              "absolute bottom-0 overflow-hidden rounded-[14px] ring-1 ring-inset",
+              "absolute bottom-0 overflow-hidden rounded-chip ring-1 ring-inset",
               hasCard
                 ? "bg-black shadow-[0_4px_12px_rgba(0,0,0,0.6)] ring-white/10"
                 : "bg-white/5 ring-white/5",
@@ -164,7 +164,7 @@ const ListRow = memo(function ListRow({
 
       <span
         className={cn(
-          "cine-fade center size-[22px] shrink-0 rounded-lg ring-1 ring-inset",
+          "cine-fade center size-[22px] shrink-0 rounded-chip ring-1 ring-inset",
           inList
             ? SURFACE_CHECK_ON
             : "text-transparent ring-white/10 group-hover:ring-white/30",
@@ -186,13 +186,13 @@ function LoadingListSkeleton(): JSX.Element {
       {Array.from({ length: 3 }, (_, index) => (
         <div
           key={index}
-          className="flex h-[84px] w-full animate-skeleton-pulse items-center gap-3 rounded-[20px] bg-white/5 p-2 ring-1 ring-white/5 ring-inset"
+          className="flex h-[76px] w-full animate-skeleton-pulse items-center gap-3 rounded-control bg-white/5 p-1 pr-3 ring-1 ring-white/5 ring-inset"
         >
           <div className="relative h-[68px] w-[70px] shrink-0">
             {Array.from({ length: STACK }, (_, stackIndex) => (
               <div
                 key={stackIndex}
-                className="absolute bottom-0 overflow-hidden rounded-[14px] bg-white/10 ring-1 ring-white/5 ring-inset"
+                className="absolute bottom-0 overflow-hidden rounded-chip bg-white/10 ring-1 ring-white/5 ring-inset"
                 style={{
                   height: `${68 - stackIndex * 6}px`,
                   left: `${stackIndex * 12}px`,
@@ -204,10 +204,10 @@ function LoadingListSkeleton(): JSX.Element {
             ))}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="skeleton-block h-3.5 w-3/5 rounded-full" />
-            <div className="skeleton-block-soft h-2.5 w-2/5 rounded-full" />
+            <div className="skeleton-block h-3.5 w-3/5 rounded-chip" />
+            <div className="skeleton-block-soft h-2.5 w-2/5 rounded-chip" />
           </div>
-          <div className="skeleton-block-soft size-[22px] shrink-0 rounded-lg ring-1 ring-white/5 ring-inset" />
+          <div className="skeleton-block-soft size-[22px] shrink-0 rounded-chip ring-1 ring-white/5 ring-inset" />
         </div>
       ))}
     </div>
@@ -377,7 +377,7 @@ function ListPickerSurface({ data }: { data: ListPickerData }): JSX.Element {
             <LoadingListSkeleton />
           ) : status === "error" ? (
             <div className="center min-h-40 flex-col gap-1.5 text-center">
-              <div className="center size-10 rounded-full bg-white/5 text-white/50">
+              <div className="center size-10 rounded-control bg-white/5 text-white/50">
                 <Icon icon="solar:danger-circle-bold" size={20} />
               </div>
               <p className="text-sm text-white/70">
@@ -386,7 +386,7 @@ function ListPickerSurface({ data }: { data: ListPickerData }): JSX.Element {
             </div>
           ) : lists.length === 0 ? (
             <div className="center min-h-40 flex-col gap-2 py-6 text-center">
-              <div className="center size-12 rounded-[20px] bg-white/5 text-white/40 ring-1 ring-white/10 ring-inset">
+              <div className="center size-12 rounded-control bg-white/5 text-white/40 ring-1 ring-white/10 ring-inset">
                 <Icon icon="solar:folder-open-bold" size={22} />
               </div>
               <div className="flex flex-col gap-0.5">

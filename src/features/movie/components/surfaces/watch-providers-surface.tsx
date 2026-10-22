@@ -7,6 +7,7 @@ import {
 } from "@omerdlw/base-framework/modules/dock";
 import { report } from "@omerdlw/base-framework/utils";
 import { Icon, Loader, MediaCard, SegmentedControl, Select } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { size } from "@/motion/stage";
 import { Cascade, Item } from "../../stage";
@@ -101,7 +102,7 @@ function pickRegion(codes: readonly string[]): string {
 }
 
 const TILE =
-  "cine-fade flex min-w-0 items-center gap-3 rounded-[20px] bg-white/5 p-2 pr-4 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10";
+  "cine-fade flex min-w-0 items-center gap-3 rounded-control bg-white/5 p-1 pr-4 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10";
 
 function ProviderTile({
   categoryBadge,
@@ -125,7 +126,7 @@ function ProviderTile({
           sizes: "40px",
           src: tmdbImageUrl("logo", provider.logoPath, "original"),
         }}
-        radius={12}
+        radius={RADIUS.chip}
       />
       <div className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-white">
@@ -287,9 +288,10 @@ function WatchProvidersSurface({
                 ariaLabel="Region"
                 placement="inline"
                 classNames={{
-                  content: "static mt-0 max-h-52 rounded-[20px]",
+                  content: "static mt-0 max-h-52 rounded-control",
+                  option: "rounded-chip",
                   trigger:
-                    "h-10 rounded-[20px] px-4 py-0 ring-white/5 hover:ring-white/10",
+                    "h-10 rounded-control px-4 py-0 ring-white/5 hover:ring-white/10",
                 }}
                 onChange={setSelectedRegion}
                 options={codes.map((code) => ({

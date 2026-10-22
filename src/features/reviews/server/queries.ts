@@ -25,8 +25,6 @@ interface Row {
 const COLUMNS =
   "id, content, rating, is_spoiler, likes_count, created_at, updated_at, author:accounts!reviews_account_id_fkey!inner(id, username, display_name, avatar_url)";
 
-const STATS_SAMPLE = 5000;
-
 const ORDER: Record<MovieReviewSort, [string, boolean]> = {
   likes_asc: ["likes_count", true],
   likes_desc: ["likes_count", false],
@@ -65,6 +63,12 @@ export async function getMovieReviews({
     .order(column as "created_at", { ascending, nullsFirst: false })
     .order("id")
     .range(from, from + limit - 1);
+  // A page past the last one comes back empty rather than failing the page:
+  // PostgREST refuses the offset (PGRST103) and says how many rows there are.
+  if (error?.code === "PGRST103") {
+    const rows = Number(/only (\d+) rows/.exec(error.details ?? "")?.[1]);
+    return { reviews: [], total: Number.isFinite(rows) ? rows : 0 };
+  }
   if (error) throw error;
 
   const rows = (data ?? []) as unknown as Row[];
@@ -117,27 +121,18 @@ export async function getReviewStats({
   tmdbId: number;
   username?: string | null;
 }): Promise<ReviewStats> {
-  let query = client
-    .from("reviews")
-    .select("rating, author:accounts!reviews_account_id_fkey!inner(username)", {
-      count: "exact",
-    })
-    .eq("tmdb_id", tmdbId);
-  if (username) query = query.eq("author.username", username.toLowerCase());
-
-  const { count, data, error } = await query.limit(STATS_SAMPLE);
+  // Added up in the database: every rating counts, not a sample of them.
+  const { data, error } = await client.rpc("get_review_stats", {
+    p_tmdb_id: tmdbId,
+    p_username: username ? username.toLowerCase() : null,
+  });
   if (error) throw error;
 
-  const ratings = ((data ?? []) as unknown as { rating: number | null }[])
-    .map((row) => (row.rating === null ? null : Number(row.rating)))
-    .filter((rating): rating is number => rating !== null);
-  const sum = ratings.reduce((total, rating) => total + rating, 0);
-
+  const stats = data?.[0];
+  const average = stats?.average ?? null;
   return {
-    average: ratings.length
-      ? Math.round((sum / ratings.length) * 10) / 10
-      : null,
-    rated: ratings.length,
-    total: count ?? 0,
+    average: average === null ? null : Number(average),
+    rated: Number(stats?.rated ?? 0),
+    total: Number(stats?.total ?? 0),
   };
 }

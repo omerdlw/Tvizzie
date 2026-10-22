@@ -43,6 +43,12 @@ export interface ReviewCardData {
   year: number | null;
 }
 
+// Activity per day (UTC) from a Monday a year back through today.
+export interface ActivityDays {
+  counts: number[];
+  from: string;
+}
+
 export interface ActivityItem {
   createdAt: string;
   id: string;

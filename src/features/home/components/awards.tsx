@@ -754,7 +754,7 @@ function PlainList({ films }: { films: LaureateMovie[] }): JSX.Element {
                 {src ? (
                   <img
                     alt={`${film.ceremonyYear}: ${film.title}`}
-                    className="aspect-[2/3] w-full rounded-xl object-cover"
+                    className="aspect-[2/3] w-full rounded-card object-cover"
                     loading="lazy"
                     src={src}
                   />

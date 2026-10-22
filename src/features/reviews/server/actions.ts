@@ -7,6 +7,7 @@ import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
 import { isMovieId } from "@/infrastructure/tmdb/movies";
 import { getMovieDetails } from "@/infrastructure/tmdb/server";
 import { movieSnapshot } from "@/infrastructure/tmdb/snapshot";
+import { rememberWatchedPayload } from "@/features/account/server/watched-payload";
 import {
   RECENT_REVIEWS,
   isMovieReviewSort,
@@ -124,9 +125,8 @@ export async function saveMovieReviewAction(
       const movie = await getMovieDetails(tmdbId);
       if (!movie.success) return fail("Could not load this movie, try again");
 
-      const { backdrop_path, poster_path, release_date, title } = movieSnapshot(
-        movie.data,
-      );
+      const { backdrop_path, payload, poster_path, release_date, title } =
+        movieSnapshot(movie.data);
       const { error } = await client.from("reviews").upsert(
         {
           account_id: userId,
@@ -142,6 +142,7 @@ export async function saveMovieReviewAction(
         { onConflict: "account_id,tmdb_id" },
       );
       if (error) throw error;
+      await rememberWatchedPayload(client, userId, tmdbId, payload);
       return ok();
     },
   );

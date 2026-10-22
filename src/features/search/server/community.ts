@@ -11,7 +11,8 @@ import type {
   SearchResponse,
   UserSearchResponse,
 } from "../lib/types";
-import { excerpt, isSearchable, matchRank, normalizeQuery } from "../lib/utils";
+import { MATCH, RENOWN, bestMatch, fold, renown, textMatch } from "../lib/rank";
+import { excerpt, isSearchable, normalizeQuery } from "../lib/utils";
 
 const INVALID: SearchFailure = {
   code: "invalid_query",
@@ -22,17 +23,11 @@ const UNAVAILABLE: SearchFailure = {
   message: "Search is unavailable right now. Please try again in a moment",
 };
 
+// The database puts prefix matches first, so twice the shown count leaves the
+// ranking below room to reorder what it was given.
 const CANDIDATES = SEARCH_COMMUNITY_LIMIT * 2;
 
-type Client = Awaited<ReturnType<typeof createServerSupabaseClient>>;
-
-interface Prepared {
-  contains: string;
-  prefix: string;
-  text: string;
-}
-
-function prepare(query: string, { handle = false } = {}): Prepared | null {
+function prepare(query: string, { handle = false } = {}): string | null {
   const normalized = normalizeQuery(handle ? query.replace(/^@+/, "") : query);
   if (!isSearchable(normalized)) return null;
 
@@ -40,23 +35,11 @@ function prepare(query: string, { handle = false } = {}): Prepared | null {
     .replace(/[\\%_,()*"]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  if (text.length < 2) return null;
-
-  return { contains: `%${text}%`, prefix: `${text}%`, text };
+  return text.length < 2 ? null : text;
 }
 
 function answer<Hit>(hits: Hit[]): SearchResponse<Hit> {
   return { hits, page: 1, totalPages: 1, totalResults: hits.length };
-}
-
-function merge<Row extends { id: string }>(
-  ...groups: readonly (readonly Row[] | null)[]
-): Row[] {
-  const seen = new Map<string, Row>();
-  for (const group of groups) {
-    for (const row of group ?? []) if (!seen.has(row.id)) seen.set(row.id, row);
-  }
-  return [...seen.values()];
 }
 
 function fail(name: string, error: unknown): Result<never, SearchFailure> {
@@ -64,64 +47,47 @@ function fail(name: string, error: unknown): Result<never, SearchFailure> {
   return err(UNAVAILABLE);
 }
 
-function one<T>(value: T | T[] | null | undefined): T | null {
-  return (Array.isArray(value) ? value[0] : value) ?? null;
-}
-
-const USER_SELECT =
-  "id, username, display_name, avatar_url, is_private, account_stats(followers_count)";
-
+// Community search goes through search_* functions rather than the tables:
+// under row level security ILIKE may not run before the policy, so the
+// trigram indexes went unused and every row was filtered one by one. The
+// functions apply the same visibility rules as the policies.
 export async function searchUserHits(
   query: string,
   options: { page?: number; signal?: AbortSignal } = {},
 ): Promise<Result<UserSearchResponse, SearchFailure>> {
   void options;
-  const wanted = prepare(query, { handle: true });
-  if (!wanted) return err(INVALID);
+  const text = prepare(query, { handle: true });
+  if (!text) return err(INVALID);
 
   try {
-    const client: Client = await createServerSupabaseClient();
-    const read = (pattern: string, limit: number) =>
-      client
-        .from("accounts")
-        .select(USER_SELECT)
-        .eq("is_active", true)
-        .not("username", "is", null)
-        .or(`username.ilike.${pattern},display_name.ilike.${pattern}`)
-        .limit(limit);
+    const client = await createServerSupabaseClient();
+    const { data, error } = await client.rpc("search_accounts", {
+      p_limit: CANDIDATES,
+      p_query: text,
+    });
+    if (error) throw error;
 
-    const [prefix, contains] = await Promise.all([
-      read(wanted.prefix, SEARCH_COMMUNITY_LIMIT),
-      read(wanted.contains, CANDIDATES),
-    ]);
-    if (prefix.error) throw prefix.error;
-    if (contains.error) throw contains.error;
-
-    const hits = merge(prefix.data, contains.data)
-      .flatMap((row) =>
-        row.username
-          ? [
-              {
-                avatarUrl: row.avatar_url,
-                displayName: row.display_name?.trim() || row.username,
-                followersCount: one(row.account_stats)?.followers_count ?? 0,
-                id: row.id,
-                isPrivate: row.is_private,
-                rank: Math.min(
-                  matchRank(row.username, wanted.text),
-                  matchRank(row.display_name, wanted.text),
-                ),
-                username: row.username,
-              },
-            ]
-          : [],
-      )
-      .sort((a, b) => a.rank - b.rank || b.followersCount - a.followersCount)
-      .slice(0, SEARCH_COMMUNITY_LIMIT)
-      .map(({ rank, ...hit }) => {
-        void rank;
-        return hit;
-      });
+    const hits = (data ?? [])
+      .flatMap((row) => {
+        if (!row.username) return [];
+        const followersCount = row.followers_count ?? 0;
+        const match = bestMatch([row.username, row.display_name], text);
+        return [
+          {
+            avatarUrl: row.avatar_url,
+            displayName: row.display_name?.trim() || row.username,
+            followersCount,
+            id: row.id,
+            isPrivate: row.is_private,
+            match,
+            score:
+              match + renown({ popularity: followersCount }, RENOWN.follows),
+            username: row.username,
+          },
+        ];
+      })
+      .sort((a, b) => b.match - a.match || b.followersCount - a.followersCount)
+      .slice(0, SEARCH_COMMUNITY_LIMIT);
 
     return ok(answer(hits));
   } catch (error) {
@@ -129,61 +95,48 @@ export async function searchUserHits(
   }
 }
 
-const LIST_SELECT =
-  "id, slug, title, poster_path, items_count, likes_count, owner:accounts!lists_account_id_fkey(username, display_name)";
-
 export async function searchListHits(
   query: string,
   options: { page?: number; signal?: AbortSignal } = {},
 ): Promise<Result<ListSearchResponse, SearchFailure>> {
   void options;
-  const wanted = prepare(query);
-  if (!wanted) return err(INVALID);
+  const text = prepare(query);
+  if (!text) return err(INVALID);
 
   try {
-    const client: Client = await createServerSupabaseClient();
-    const read = (pattern: string, limit: number) =>
-      client
-        .from("lists")
-        .select(LIST_SELECT)
-        .ilike("title", pattern)
-        .order("likes_count", { ascending: false })
-        .limit(limit);
+    const client = await createServerSupabaseClient();
+    const { data, error } = await client.rpc("search_lists", {
+      p_limit: CANDIDATES,
+      p_query: text,
+    });
+    if (error) throw error;
 
-    const [prefix, contains] = await Promise.all([
-      read(wanted.prefix, SEARCH_COMMUNITY_LIMIT),
-      read(wanted.contains, CANDIDATES),
-    ]);
-    if (prefix.error) throw prefix.error;
-    if (contains.error) throw contains.error;
-
-    const hits = merge(prefix.data, contains.data)
+    const hits = (data ?? [])
       .flatMap((row) => {
-        const owner = one(row.owner);
-        return owner?.username
+        const match = textMatch(row.title, text);
+        return row.owner_username
           ? [
               {
                 id: row.id,
                 itemsCount: row.items_count,
                 likesCount: row.likes_count,
+                match,
                 owner: {
-                  displayName: owner.display_name?.trim() || owner.username,
-                  username: owner.username,
+                  displayName:
+                    row.owner_display_name?.trim() || row.owner_username,
+                  username: row.owner_username,
                 },
                 posterPath: row.poster_path,
-                rank: matchRank(row.title, wanted.text),
+                score:
+                  match + renown({ popularity: row.likes_count }, RENOWN.likes),
                 slug: row.slug,
                 title: row.title,
               },
             ]
           : [];
       })
-      .sort((a, b) => a.rank - b.rank || b.likesCount - a.likesCount)
-      .slice(0, SEARCH_COMMUNITY_LIMIT)
-      .map(({ rank, ...hit }) => {
-        void rank;
-        return hit;
-      });
+      .sort((a, b) => b.match - a.match || b.likesCount - a.likesCount)
+      .slice(0, SEARCH_COMMUNITY_LIMIT);
 
     return ok(answer(hits));
   } catch (error) {
@@ -191,56 +144,59 @@ export async function searchListHits(
   }
 }
 
-const REVIEW_SELECT =
-  "id, content, is_spoiler, rating, likes_count, tmdb_id, title, poster_path, release_date, author:accounts!reviews_account_id_fkey(username, display_name, avatar_url)";
-
 export async function searchReviewHits(
   query: string,
   options: { page?: number; signal?: AbortSignal } = {},
 ): Promise<Result<ReviewSearchResponse, SearchFailure>> {
   void options;
-  const wanted = prepare(query);
-  if (!wanted) return err(INVALID);
+  const text = prepare(query);
+  if (!text) return err(INVALID);
 
   try {
-    const client: Client = await createServerSupabaseClient();
-    const { data, error } = await client
-      .from("reviews")
-      .select(REVIEW_SELECT)
-      .not("tmdb_id", "is", null)
-      .ilike("content", wanted.contains)
-      .order("likes_count", { ascending: false })
-      .order("updated_at", { ascending: false })
-      .limit(SEARCH_COMMUNITY_LIMIT);
+    const client = await createServerSupabaseClient();
+    // A review is found by the film it is about as well as by its words:
+    // "la la land" brings the reviews of La La Land, then the ones that
+    // mention it.
+    const { data, error } = await client.rpc("search_reviews", {
+      p_limit: CANDIDATES,
+      p_query: text,
+    });
     if (error) throw error;
 
+    const said = fold(text);
     const hits = (data ?? []).flatMap((row) => {
-      const author = one(row.author);
-      if (!author?.username || row.tmdb_id === null) return [];
+      if (!row.author_username) return [];
       const year = row.release_date
         ? Number(row.release_date.slice(0, 4))
         : null;
+      const match = Math.max(
+        textMatch(row.title, text),
+        fold(row.content).includes(said) ? MATCH.substring : 0,
+      );
       return [
         {
           author: {
-            avatarUrl: author.avatar_url,
-            displayName: author.display_name?.trim() || author.username,
-            username: author.username,
+            avatarUrl: row.author_avatar_url,
+            displayName: row.author_display_name?.trim() || row.author_username,
+            username: row.author_username,
           },
-          excerpt: row.is_spoiler ? "" : excerpt(row.content, wanted.text),
+          excerpt: row.is_spoiler ? "" : excerpt(row.content, text),
           id: row.id,
           isSpoiler: row.is_spoiler,
           likesCount: row.likes_count,
+          match,
           posterPath: row.poster_path,
           rating: row.rating === null ? null : Number(row.rating),
+          score: match + renown({ popularity: row.likes_count }, RENOWN.likes),
           title: row.title ?? "Untitled",
           tmdbId: row.tmdb_id,
           year: year !== null && Number.isFinite(year) ? year : null,
         },
       ];
     });
+    hits.sort((a, b) => b.match - a.match || b.likesCount - a.likesCount);
 
-    return ok(answer(hits));
+    return ok(answer(hits.slice(0, SEARCH_COMMUNITY_LIMIT)));
   } catch (error) {
     return fail("Search reviews", error);
   }

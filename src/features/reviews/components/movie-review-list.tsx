@@ -43,7 +43,7 @@ export function MovieReviewList({
 
         return (
           <li
-            className="flex gap-3.5 rounded-[20px] bg-white/5 p-3.5 ring-1 ring-white/5 ring-inset sm:gap-4 sm:p-4"
+            className="flex gap-3.5 rounded-plate bg-white/5 p-3.5 ring-1 ring-white/5 ring-inset sm:gap-4 sm:p-4"
             key={review.id}
           >
             <AccountLink className="shrink-0" href={profile}>

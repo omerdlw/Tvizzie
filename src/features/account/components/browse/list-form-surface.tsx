@@ -36,7 +36,7 @@ export function createListFormSurfaceEntry(data: ListFormData): SurfaceEntry {
 }
 
 const FIELD =
-  "w-full rounded-[20px] bg-white/5 px-4 text-sm text-white ring-1 ring-white/5 ring-inset placeholder:text-white/40 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
+  "w-full rounded-control bg-white/5 px-4 text-sm text-white ring-1 ring-white/5 ring-inset placeholder:text-white/40 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
 
 function Toggle({
   checked,
@@ -50,7 +50,7 @@ function Toggle({
   onChange: (value: boolean) => void;
 }): JSX.Element {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[20px] bg-white/5 px-4 py-3 ring-1 ring-white/5 ring-inset hover:bg-white/10">
+    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-control bg-white/5 px-4 py-3 ring-1 ring-white/5 ring-inset hover:bg-white/10">
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-white">{label}</span>
         <span className="block text-xs text-white/50">{description}</span>
@@ -166,7 +166,7 @@ function ListFormSurface({ data }: { data: ListFormData }): JSX.Element {
         {list ? (
           <Button
             className={cn(
-              "inline-flex h-11 cursor-pointer items-center gap-2 rounded-[20px] px-4 text-xs font-bold uppercase ring-1 ring-inset disabled:cursor-wait",
+              "inline-flex h-11 cursor-pointer items-center gap-2 rounded-control px-4 text-xs font-bold uppercase ring-1 ring-inset disabled:cursor-wait",
               confirmingDelete
                 ? "bg-red-600 text-white ring-red-400"
                 : "bg-white/5 text-white/60 ring-white/5 hover:bg-white/10 hover:text-white",
@@ -180,7 +180,7 @@ function ListFormSurface({ data }: { data: ListFormData }): JSX.Element {
           </Button>
         ) : null}
         <Button
-          className="ml-auto inline-flex h-11 cursor-pointer items-center gap-2 rounded-[20px] bg-white px-5 text-xs font-bold text-black uppercase hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ml-auto inline-flex h-11 cursor-pointer items-center gap-2 rounded-control bg-white px-5 text-xs font-bold text-black uppercase hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!title.trim() || busy !== null}
           loading={busy === "save"}
           type="submit"

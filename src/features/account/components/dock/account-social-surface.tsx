@@ -14,7 +14,6 @@ import Link from "next/link";
 import { useAuth } from "@/features/auth";
 import {
   DockSurfaceExtension,
-  isValidBannerUrl,
   type SurfaceEntry,
 } from "@omerdlw/base-framework/modules/dock";
 import { useToast } from "@omerdlw/base-framework/modules/notification";
@@ -37,6 +36,8 @@ import {
   rejectFollowRequest,
   removeFollower,
   unfollowUser,
+  type FollowCursor,
+  type FollowPage,
 } from "../../lib/client";
 import {
   applyAvatarFallback,
@@ -52,6 +53,8 @@ interface SocialUser {
   bannerUrl: string | null;
   displayName: string;
   status: string;
+  // How the signed-in viewer follows this person, as the server saw it.
+  viewerStatus: string | null;
   [key: string]: unknown;
 }
 
@@ -73,12 +76,16 @@ const ACTION_KEYS = Object.freeze({
 
 type ActionKey = (typeof ACTION_KEYS)[keyof typeof ACTION_KEYS];
 
+// Small and quiet: only Follow is lit; what is already done is outlined.
 const BUTTON_BASE_CLASS =
-  "center h-9 shrink-0 gap-1.5 rounded-[14px] px-3.5 text-xs font-semibold select-none cursor-pointer disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-white/50";
+  "center h-8 min-w-[5.5rem] shrink-0 rounded-chip px-3 text-xs font-semibold transition-colors select-none cursor-pointer disabled:cursor-not-allowed";
 
-const PRIMARY_BUTTON_CLASS = `${BUTTON_BASE_CLASS} bg-primary/10 text-primary hover:bg-primary hover:text-black`;
-const SECONDARY_BUTTON_CLASS = `${BUTTON_BASE_CLASS} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white`;
-const DISABLED_BUTTON_CLASS = `${BUTTON_BASE_CLASS} bg-white/5 text-white/50 cursor-default`;
+const PRIMARY_BUTTON_CLASS = `${BUTTON_BASE_CLASS} bg-white text-black hover:bg-white/80 disabled:bg-white/40`;
+const SECONDARY_BUTTON_CLASS = `${BUTTON_BASE_CLASS} text-white/65 ring-1 ring-white/15 ring-inset hover:bg-white/[0.06] hover:text-white disabled:text-white/35`;
+const DISABLED_BUTTON_CLASS = `${BUTTON_BASE_CLASS} text-white/40 ring-1 ring-white/10 ring-inset cursor-default`;
+
+// One row of the list: a round face, the name over the handle, the action.
+const ROW_CLASS = "flex h-16 w-full items-center gap-3 px-2.5";
 
 function handleListWheel(event: WheelEvent<HTMLDivElement>) {
   const listViewport = event.currentTarget;
@@ -115,6 +122,7 @@ function hydrateFollowUsers(list?: unknown): SocialUser[] {
         item.username ||
         "Anonymous User",
       status: item.status || FOLLOW_STATUSES.ACCEPTED,
+      viewerStatus: item.viewerStatus || null,
     }))
     .filter((item) => item.id);
 }
@@ -131,36 +139,53 @@ function resolveCollectionErrorMessage(error: any, tab: TabType): string {
     : `Couldn't load ${tab}`;
 }
 
-function buildFollowingStatusMap(
-  list: any[] = [],
-  fallbackStatus: string = FOLLOW_STATUSES.ACCEPTED,
-): Record<string, string> {
-  return (Array.isArray(list) ? list : []).reduce<Record<string, string>>(
-    (acc, item) => {
-      const id = item?.userId || item?.id;
-      if (id) acc[id] = item?.status || fallbackStatus;
-      return acc;
-    },
-    {},
+// Everyone listed carries the viewer's own follow status with them, so the
+// follow buttons need no separate read of the viewer's following.
+function buildViewerStatusMap(list: SocialUser[]): Record<string, string> {
+  return Object.fromEntries(
+    list.map((user) => [user.id, user.viewerStatus || ""]),
   );
 }
 
+interface CollectionState {
+  error: any;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  list: SocialUser[];
+  next: FollowCursor | null;
+  total: number | null;
+}
+
+function withoutUser(state: CollectionState, id: string): CollectionState {
+  return {
+    ...state,
+    list: state.list.filter((user) => user.id !== id),
+    total: state.total === null ? null : Math.max(0, state.total - 1),
+  };
+}
+
+function toPage(result: unknown): FollowPage {
+  return Array.isArray(result)
+    ? { items: result, next: null, total: null }
+    : (result as FollowPage);
+}
+
 function useSocialCollection(
-  fetchFn: (param?: any) => Promise<any>,
+  fetchFn: (param?: any, cursor?: FollowCursor | null) => Promise<unknown>,
   param?: any,
   enabled = true,
 ) {
-  const [state, setState] = useState<{
-    list: SocialUser[];
-    isLoading: boolean;
-    error: any;
-  }>({
-    list: [],
-    isLoading: enabled,
+  const [state, setState] = useState<CollectionState>({
     error: null,
+    isLoading: enabled,
+    isLoadingMore: false,
+    list: [],
+    next: null,
+    total: null,
   });
 
   const requestIdRef = useRef(0);
+  const loadingMoreRef = useRef(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -180,12 +205,15 @@ function useSocialCollection(
     setState((s) => ({ ...s, isLoading: s.list.length === 0, error: null }));
 
     try {
-      const res = await fetchFn(param);
+      const page = toPage(await fetchFn(param));
       if (mountedRef.current && requestId === requestIdRef.current) {
         setState({
-          list: hydrateFollowUsers(res),
-          isLoading: false,
           error: null,
+          isLoading: false,
+          isLoadingMore: false,
+          list: hydrateFollowUsers(page.items),
+          next: page.next,
+          total: page.total,
         });
       }
     } catch (error) {
@@ -195,11 +223,74 @@ function useSocialCollection(
     }
   }, [fetchFn, param, enabled]);
 
+  const loadMore = useCallback(async () => {
+    const cursor = state.next;
+    if (!cursor || loadingMoreRef.current) return;
+
+    loadingMoreRef.current = true;
+    const requestId = requestIdRef.current;
+    setState((s) => ({ ...s, isLoadingMore: true }));
+
+    try {
+      const page = toPage(await fetchFn(param, cursor));
+      if (mountedRef.current && requestId === requestIdRef.current) {
+        setState((s) => {
+          const known = new Set(s.list.map((user) => user.id));
+          const more = hydrateFollowUsers(page.items).filter(
+            (user) => !known.has(user.id),
+          );
+          return {
+            ...s,
+            isLoadingMore: false,
+            list: [...s.list, ...more],
+            next: page.next,
+          };
+        });
+      }
+    } catch {
+      // The sentinel stays in place, so scrolling back to it tries again.
+      if (mountedRef.current) {
+        setState((s) => ({ ...s, isLoadingMore: false }));
+      }
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  }, [fetchFn, param, state.next]);
+
   useEffect(() => {
     void fetcher();
   }, [fetcher]);
 
-  return { state, setState, reload: fetcher };
+  return { state, setState, reload: fetcher, loadMore };
+}
+
+function LoadMoreSentinel({
+  loading,
+  onVisible,
+}: {
+  loading: boolean;
+  onVisible: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) onVisible();
+      },
+      { rootMargin: "120px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [onVisible]);
+
+  return (
+    <div aria-hidden="true" className="flex w-full flex-col" ref={ref}>
+      {loading ? <LoadingRow /> : null}
+    </div>
+  );
 }
 
 interface SocialStatusMessageProps {
@@ -214,15 +305,15 @@ function SocialStatusMessage({
   title,
 }: SocialStatusMessageProps) {
   return (
-    <div className="flex h-12 min-h-[48px] w-full items-center gap-2.5">
-      <div className="center size-12 shrink-0 rounded-[20px] bg-white/5 text-white/50">
-        <Icon icon={icon} size={22} />
+    <div className={ROW_CLASS}>
+      <div className="center size-10 shrink-0 rounded-full bg-white/[0.06] text-white/45">
+        <Icon icon={icon} size={18} />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
-        <p className="truncate text-sm font-semibold text-white leading-tight">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+        <p className="truncate text-sm leading-tight font-semibold text-white">
           {title}
         </p>
-        <p className="truncate text-xs text-white/70 leading-tight">
+        <p className="truncate text-xs leading-tight text-white/45">
           {description}
         </p>
       </div>
@@ -247,7 +338,7 @@ function SocialTabBar({
 }) {
   return (
     <DockSurfaceExtension id="account-social-tabs" align="center">
-      <div className="flex h-8 shrink-0 items-center gap-1.5 select-none">
+      <div className="flex h-9 shrink-0 items-center gap-0.5 rounded-control bg-white/[0.04] p-1 ring-1 ring-white/[0.06] ring-inset select-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;
           return (
@@ -256,18 +347,18 @@ function SocialTabBar({
               type="button"
               onClick={() => onSelect(tab.key)}
               className={cn(
-                "flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold select-none",
+                "flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-chip px-3 text-xs font-semibold transition-colors select-none",
                 isActive
-                  ? "bg-white text-black"
-                  : "bg-transparent text-white/70 hover:bg-white/5 hover:text-white",
+                  ? "bg-white/[0.12] text-white"
+                  : "bg-transparent text-white/50 hover:text-white",
               )}
             >
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span
                   className={cn(
-                    "text-xs font-bold tabular-nums",
-                    isActive ? "text-black/80" : "text-white/50",
+                    "text-[11px] font-medium tabular-nums",
+                    isActive ? "text-white/60" : "text-white/30",
                   )}
                 >
                   {tab.count}
@@ -294,33 +385,20 @@ const SocialUserRow = memo(function SocialUserRow({
 }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
-  const hasBanner = isValidBannerUrl(user?.bannerUrl);
 
   return (
-    <div className="group/user relative flex h-12 min-h-[48px] w-full items-center justify-between gap-2.5 overflow-hidden rounded-[20px]">
-      {hasBanner && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[inherit] select-none"
-        >
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25"
-            style={{
-              backgroundImage: `url("${user.bannerUrl}")`,
-              WebkitMaskImage:
-                "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.65) 70%, black 100%)",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-        </div>
+    <div
+      className={cn(
+        ROW_CLASS,
+        "group/user rounded-control transition-colors hover:bg-white/[0.04]",
       )}
-
+    >
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
-        className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-2.5"
+        className="flex h-full min-w-0 flex-1 items-center gap-3"
       >
-        <div className="relative size-12 shrink-0 overflow-hidden rounded-[20px] bg-white/5">
+        <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-white/5 ring-1 ring-white/10">
           <AdaptiveImage
             mode="img"
             src={avatarSrc}
@@ -332,41 +410,40 @@ const SocialUserRow = memo(function SocialUserRow({
             wrapperClassName="size-full rounded-[inherit]"
           />
         </div>
-        <div className="flex h-full min-w-0 flex-1 flex-col justify-center gap-0.5">
-          <span className="truncate text-sm font-semibold text-white leading-tight">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+          <span className="truncate text-sm leading-tight font-semibold text-white">
             {user.displayName}
           </span>
-          <span className="truncate text-xs text-white/70 leading-tight">
+          <span className="truncate text-xs leading-tight text-white/45">
             @{user.username || "user"}
           </span>
         </div>
       </Link>
       {action ? (
-        <div className="relative z-10 mr-1.5 flex shrink-0 items-center">
-          {action}
-        </div>
+        <div className="flex shrink-0 items-center">{action}</div>
       ) : null}
     </div>
   );
 });
 
+function LoadingRow() {
+  return (
+    <div className={ROW_CLASS}>
+      <div className="skeleton-block size-10 shrink-0 rounded-full" />
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+        <div className="skeleton-block h-3 w-28 rounded-chip" />
+        <div className="skeleton-block h-2.5 w-16 rounded-chip" />
+      </div>
+      <div className="skeleton-block h-8 w-[5.5rem] shrink-0 rounded-chip" />
+    </div>
+  );
+}
+
 function LoadingList() {
   return (
-    <div className="flex w-full flex-col gap-2.5">
+    <div className="flex w-full flex-col divide-y divide-white/[0.06]">
       {Array.from({ length: 4 }, (_, index) => (
-        <div
-          key={index}
-          className="flex h-12 min-h-[48px] w-full items-center justify-between gap-2.5"
-        >
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <div className="skeleton-block size-12 shrink-0 rounded-[20px]" />
-            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-              <div className="skeleton-block h-3 w-28 rounded-full" />
-              <div className="skeleton-block h-2.5 w-16 rounded-full" />
-            </div>
-          </div>
-          <div className="skeleton-block mr-1.5 h-9 w-20 shrink-0 rounded-[14px]" />
-        </div>
+        <LoadingRow key={index} />
       ))}
     </div>
   );
@@ -414,7 +491,6 @@ const UserAction = memo(function UserAction({
           className={PRIMARY_BUTTON_CLASS}
           aria-label="Accept"
         >
-          <Icon icon="solar:check-circle-bold" size={14} />
           <span>Accept</span>
         </Button>
         <Button
@@ -424,7 +500,6 @@ const UserAction = memo(function UserAction({
           className={SECONDARY_BUTTON_CLASS}
           aria-label="Reject"
         >
-          <Icon icon="solar:close-circle-bold" size={14} />
           <span>Reject</span>
         </Button>
       </div>
@@ -440,7 +515,6 @@ const UserAction = memo(function UserAction({
         className={SECONDARY_BUTTON_CLASS}
         aria-label="Unfollow"
       >
-        <Icon icon="solar:user-minus-bold" size={14} />
         <span>Unfollow</span>
       </Button>
     );
@@ -455,7 +529,6 @@ const UserAction = memo(function UserAction({
         className={SECONDARY_BUTTON_CLASS}
         aria-label="Remove"
       >
-        <Icon icon="solar:user-cross-bold" size={14} />
         <span>Remove</span>
       </Button>
     );
@@ -470,11 +543,6 @@ const UserAction = memo(function UserAction({
       : isFollowPending
         ? "Requested"
         : "Follow";
-    const followIcon = isFollowAccepted
-      ? "solar:user-check-bold"
-      : isFollowPending
-        ? "solar:clock-circle-bold"
-        : "solar:user-plus-bold";
     const btnClass = isFollowPending
       ? DISABLED_BUTTON_CLASS
       : isFollowAccepted
@@ -490,7 +558,6 @@ const UserAction = memo(function UserAction({
         className={btnClass}
         aria-label={followLabel}
       >
-        <Icon icon={followIcon} size={14} />
         <span>{followLabel}</span>
       </Button>
     );
@@ -578,11 +645,13 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
     state: followersState,
     setState: setFollowersState,
     reload: reloadFollowers,
+    loadMore: loadMoreFollowers,
   } = useSocialCollection(fetchFollowers, userId, !!userId);
   const {
     state: followingState,
     setState: setFollowingState,
     reload: reloadFollowing,
+    loadMore: loadMoreFollowing,
   } = useSocialCollection(fetchFollowing, userId, !!userId);
   const {
     state: requestsState,
@@ -594,13 +663,20 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
     canManageRequests && isAuthSessionReady,
   );
 
-  const { state: authFollowingState, reload: reloadAuthFollowing } =
-    useSocialCollection(fetchFollowing, authUserId, isAuthSessionReady);
-
-  const [prevAuthList, setPrevAuthList] = useState(authFollowingState.list);
-  if (prevAuthList !== authFollowingState.list) {
-    setPrevAuthList(authFollowingState.list);
-    setFollowingStatusMap(buildFollowingStatusMap(authFollowingState.list));
+  const [statusSources, setStatusSources] = useState([
+    followersState.list,
+    followingState.list,
+  ]);
+  if (
+    statusSources[0] !== followersState.list ||
+    statusSources[1] !== followingState.list
+  ) {
+    setStatusSources([followersState.list, followingState.list]);
+    setFollowingStatusMap((prev) => ({
+      ...prev,
+      ...buildViewerStatusMap(followersState.list),
+      ...buildViewerStatusMap(followingState.list),
+    }));
   }
 
   useGlobalEvent(
@@ -610,7 +686,6 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
         reloadFollowers();
         reloadFollowing();
       }
-      if (authUserId) reloadAuthFollowing();
     },
     { debounceMs: 250 },
   );
@@ -713,7 +788,7 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
   const handleUnfollow = useCallback(
     (id: string) => {
       let previousMap: Record<string, string> = {};
-      let previousList: SocialUser[] = [];
+      let previousState: CollectionState | null = null;
       runAction({
         targetId: id,
         actionKey: ACTION_KEYS.UNFOLLOW,
@@ -734,14 +809,13 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
           });
           if (isOwnProfile)
             setFollowingState((prev) => {
-              previousList = prev.list;
-              return { ...prev, list: prev.list.filter((u) => u.id !== id) };
+              previousState = prev;
+              return withoutUser(prev, id);
             });
         },
         onRollback: () => {
           setFollowingStatusMap(previousMap);
-          if (isOwnProfile)
-            setFollowingState((prev) => ({ ...prev, list: previousList }));
+          if (isOwnProfile && previousState) setFollowingState(previousState);
         },
       });
     },
@@ -750,7 +824,7 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
 
   const handleRemoveFollower = useCallback(
     (id: string) => {
-      let previousList: SocialUser[] = [];
+      let previousState: CollectionState | null = null;
       runAction({
         targetId: id,
         actionKey: ACTION_KEYS.REMOVE,
@@ -764,11 +838,12 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
         errorMsg: "Couldn't remove this follower",
         onOptimistic: () =>
           setFollowersState((prev) => {
-            previousList = prev.list;
-            return { ...prev, list: prev.list.filter((u) => u.id !== id) };
+            previousState = prev;
+            return withoutUser(prev, id);
           }),
-        onRollback: () =>
-          setFollowersState((prev) => ({ ...prev, list: previousList })),
+        onRollback: () => {
+          if (previousState) setFollowersState(previousState);
+        },
       });
     },
     [authUserId, runAction, setFollowersState],
@@ -809,17 +884,20 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
       requestsState.list.length > 0 ||
       Boolean(requestsState.error));
 
+  const followingCount = followingState.total ?? followingState.list.length;
+  const followersCount = followersState.total ?? followersState.list.length;
+
   const tabs = useMemo(() => {
     const list: SocialTab[] = [
       {
         key: TABS.FOLLOWING,
         label: "Following",
-        count: followingState.list.length,
+        count: followingCount,
       },
       {
         key: TABS.FOLLOWERS,
         label: "Followers",
-        count: followersState.list.length,
+        count: followersCount,
       },
     ];
     if (shouldShowInboxTab)
@@ -830,8 +908,8 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
       });
     return list;
   }, [
-    followingState.list.length,
-    followersState.list.length,
+    followingCount,
+    followersCount,
     shouldShowInboxTab,
     requestsState.list.length,
   ]);
@@ -842,6 +920,12 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
       : activeTab === TABS.FOLLOWING
         ? followingState
         : followersState;
+  const loadMoreActive =
+    activeTab === TABS.FOLLOWING
+      ? loadMoreFollowing
+      : activeTab === TABS.FOLLOWERS
+        ? loadMoreFollowers
+        : null;
   const { list, isLoading, error: activeError } = activeDataState;
   const activeErrorMessage = activeError
     ? resolveCollectionErrorMessage(activeError, activeTab)
@@ -888,11 +972,11 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
             data-lenis-prevent
             data-lenis-prevent-wheel
             onWheel={handleListWheel}
-            className="max-h-[min(54dvh,24rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain rounded-[20px]"
+            className="max-h-[min(56dvh,26rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain"
           >
             <div
               key={`users-list-${activeTab}`}
-              className="flex min-h-[48px] w-full flex-col justify-center gap-2.5 overflow-visible"
+              className="flex w-full flex-col divide-y divide-white/[0.06]"
             >
               {list.map((user, index) => (
                 <SocialUserRow
@@ -917,6 +1001,13 @@ function AccountSocialSurface({ close, data }: AccountSocialSurfaceProps) {
                   }
                 />
               ))}
+              {activeDataState.next && loadMoreActive ? (
+                <LoadMoreSentinel
+                  key={`more-${activeTab}`}
+                  loading={activeDataState.isLoadingMore}
+                  onVisible={loadMoreActive}
+                />
+              ) : null}
             </div>
           </div>
         )}

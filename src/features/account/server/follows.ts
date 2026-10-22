@@ -28,26 +28,3 @@ export async function getAccountFollowRelation({
     isFollower: status === "accepted",
   };
 }
-
-export async function getAccountFollowCounts({
-  client,
-  accountId,
-}: {
-  client: SupabaseClient<Database>;
-  accountId: string;
-}): Promise<{ followersCount: number; followingCount: number }> {
-  if (!client || !accountId) {
-    return { followersCount: 0, followingCount: 0 };
-  }
-
-  const { data } = await client
-    .from("account_stats")
-    .select("followers_count, following_count")
-    .eq("account_id", accountId)
-    .maybeSingle();
-
-  return {
-    followersCount: data?.followers_count ?? 0,
-    followingCount: data?.following_count ?? 0,
-  };
-}

@@ -18,6 +18,7 @@ import {
   type MovieLibraryState,
 } from "../lib/library";
 import { movieSnapshot } from "@/infrastructure/tmdb/snapshot";
+import { rememberWatchedPayload } from "./watched-payload";
 
 type Client = Awaited<ReturnType<typeof createServerSupabaseClient>>;
 
@@ -262,9 +263,8 @@ export async function logMovieToDiaryAction(
       return { error: "Could not load this movie, try again", success: false };
     }
 
-    const { backdrop_path, poster_path, release_date, title } = movieSnapshot(
-      result.data,
-    );
+    const { backdrop_path, payload, poster_path, release_date, title } =
+      movieSnapshot(result.data);
 
     const client = await createServerSupabaseClient();
     const { error } = await client.from("account_diary").insert({
@@ -293,6 +293,7 @@ export async function logMovieToDiaryAction(
       throw error;
     }
 
+    await rememberWatchedPayload(client, user.id, tmdbId, payload);
     return { success: true };
   } catch (error) {
     report("MovieDiary write", error);

@@ -11,7 +11,7 @@ export function SkeletonBlock({
   return (
     <div
       aria-hidden="true"
-      className={cn("skeleton-block rounded-full", className)}
+      className={cn("skeleton-block rounded-chip", className)}
       style={style}
     />
   );
@@ -62,7 +62,7 @@ export function SectionHeaderSkeleton({
 export function TabsSkeleton({ width }: { width: string }): JSX.Element {
   return (
     <div aria-hidden="true" className="mb-4 flex w-full items-center">
-      <SkeletonBlock className="h-8 rounded-[13px]" style={{ width }} />
+      <SkeletonBlock className="h-8 rounded-control" style={{ width }} />
     </div>
   );
 }
@@ -78,13 +78,13 @@ export function CarouselSkeleton({
 }): JSX.Element {
   return (
     <div aria-hidden="true" className="relative w-full">
-      <div className="flex gap-3 overflow-hidden rounded-[20px]">
+      <div className="flex gap-3 overflow-hidden rounded-card">
         {Array.from({ length: count }, (_, index) => (
           <div
-            className={cn("shrink-0 rounded-[20px]", itemClassName)}
+            className={cn("shrink-0 rounded-card", itemClassName)}
             key={index}
           >
-            <SkeletonBlock className={cn("w-full rounded-[20px]", aspect)} />
+            <SkeletonBlock className={cn("w-full rounded-card", aspect)} />
           </div>
         ))}
       </div>

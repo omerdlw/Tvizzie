@@ -1,6 +1,8 @@
 import "server-only";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import { SESSION_CHECKED_HEADER } from "@/infrastructure/supabase/session";
 import { DEFAULT_MAX_AUTH_AGE_SECONDS } from "../lib/constants";
 import { sanitizeNextPath, toAuthUser } from "../lib/utils";
 import type { AuthUser, RequireUserOptions } from "../lib/types";
@@ -16,7 +18,11 @@ export async function getOptionalUser(): Promise<AuthUser | null> {
 
   const user = toAuthUser(data.claims);
 
-  if (user?.sessionId) {
+  // The proxy has already found this session live on this request.
+  if (
+    user?.sessionId &&
+    (await headers()).get(SESSION_CHECKED_HEADER) !== user.sessionId
+  ) {
     try {
       const { data: revokedSession, error: sessionError } = await supabase
         .from("auth_sessions")

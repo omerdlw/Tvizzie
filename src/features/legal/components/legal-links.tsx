@@ -7,7 +7,7 @@ import { useDockLinkClick } from "@/motion";
 import { LEGAL_CONTACT_EMAIL, LEGAL_LINKS } from "../lib/constants";
 
 const BASE =
-  "cine-fade flex-1 rounded-[16px] px-4 py-3 text-center text-sm font-medium ring-1 ring-inset outline-none focus-visible:ring-white/50";
+  "cine-fade flex-1 rounded-control px-4 py-3 text-center text-sm font-medium ring-1 ring-inset outline-none focus-visible:ring-white/50";
 
 function LegalLink({
   active,

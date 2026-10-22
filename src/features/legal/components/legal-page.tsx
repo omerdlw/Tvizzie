@@ -27,7 +27,7 @@ export function LegalPage({
 
         <LegalLinks active={document.path} />
 
-        <article className="mt-6 flex flex-col gap-9 rounded-[20px] bg-white/[0.03] p-6 ring-1 ring-white/5 ring-inset sm:p-8">
+        <article className="mt-6 flex flex-col gap-9 rounded-plate bg-white/[0.03] p-6 ring-1 ring-white/5 ring-inset sm:p-8">
           {document.sections.map((section) => (
             <section className="flex flex-col gap-3" key={section.title}>
               <h2 className="text-lg font-semibold text-white sm:text-xl">

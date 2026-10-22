@@ -17,7 +17,7 @@ function TimelineRow({ credit }: { credit: TimelineCredit }) {
 
   return (
     <Link
-      className="cine-fade group flex items-center gap-4 rounded-[20px] p-2 ring-1 ring-transparent ring-inset hover:bg-white/10 hover:ring-white/10"
+      className="cine-fade group flex items-center gap-4 rounded-control p-0.5 pr-3 ring-1 ring-transparent ring-inset hover:bg-white/10 hover:ring-white/10"
       href={href}
       onClick={handleClick}
       prefetch={false}

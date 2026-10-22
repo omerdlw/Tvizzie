@@ -117,36 +117,56 @@ export async function rejectFollowRequest(requesterId: string): Promise<void> {
   });
 }
 
-export async function fetchFollowers(
-  userId?: string | null,
-): Promise<FollowRecord[]> {
-  const query = userId
-    ? `?resource=followers&userId=${encodeURIComponent(userId)}`
-    : "?resource=followers";
-  const res = await requestJson<{ data?: FollowRecord[] }>(
-    `/api/social/follows${query}`,
-    {
-      notifyOnError: false,
-      notifyOnUnauthorized: false,
-    },
-  );
-  return Array.isArray(res?.data) ? res.data : [];
+export interface FollowCursor {
+  before: string;
+  beforeId: string;
 }
 
-export async function fetchFollowing(
+export interface FollowPage {
+  items: FollowRecord[];
+  next: FollowCursor | null;
+  // Accepted follows in all, the first page only.
+  total: number | null;
+}
+
+async function fetchFollowPage(
+  resource: "followers" | "following",
   userId?: string | null,
-): Promise<FollowRecord[]> {
-  const query = userId
-    ? `?resource=following&userId=${encodeURIComponent(userId)}`
-    : "?resource=following";
-  const res = await requestJson<{ data?: FollowRecord[] }>(
-    `/api/social/follows${query}`,
-    {
-      notifyOnError: false,
-      notifyOnUnauthorized: false,
-    },
-  );
-  return Array.isArray(res?.data) ? res.data : [];
+  cursor?: FollowCursor | null,
+): Promise<FollowPage> {
+  const query = new URLSearchParams({ resource });
+  if (userId) query.set("userId", userId);
+  if (cursor) {
+    query.set("before", cursor.before);
+    query.set("beforeId", cursor.beforeId);
+  }
+  const res = await requestJson<{
+    data?: FollowRecord[];
+    next?: FollowCursor | null;
+    total?: number | null;
+  }>(`/api/social/follows?${query}`, {
+    notifyOnError: false,
+    notifyOnUnauthorized: false,
+  });
+  return {
+    items: Array.isArray(res?.data) ? res.data : [],
+    next: res?.next ?? null,
+    total: typeof res?.total === "number" ? res.total : null,
+  };
+}
+
+export function fetchFollowers(
+  userId?: string | null,
+  cursor?: FollowCursor | null,
+): Promise<FollowPage> {
+  return fetchFollowPage("followers", userId, cursor);
+}
+
+export function fetchFollowing(
+  userId?: string | null,
+  cursor?: FollowCursor | null,
+): Promise<FollowPage> {
+  return fetchFollowPage("following", userId, cursor);
 }
 
 interface NotificationRecord {

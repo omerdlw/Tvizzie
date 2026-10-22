@@ -32,10 +32,9 @@ import { useMovieView } from "./movie-views";
 import { createListPickerSurfaceEntry } from "./surfaces/list-picker-surface";
 
 const BASE =
-  "cine-card cine-fade cine-spot group center relative h-auto w-full cursor-pointer gap-2.5 overflow-hidden rounded-[20px] p-4 text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:cursor-wait";
+  "cine-card cine-fade cine-spot group center relative h-auto w-full cursor-pointer gap-2.5 overflow-hidden rounded-control p-4 text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:cursor-wait";
 // What you do with a film comes first; where you keep it, quieter, after.
-const SECONDARY =
-  "h-11 gap-2 rounded-[16px] px-3 py-0 text-[10px] tracking-[0.08em]";
+const SECONDARY = "h-11 gap-2 px-3 py-0 text-[10px] tracking-[0.08em]";
 const IDLE =
   "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10";
 const ACTIVE =

@@ -68,7 +68,7 @@ export interface VideoModalData {
 function VideoModalView({ data }: ModalProps<VideoModalData>) {
   useShowing();
   return (
-    <Tube className="aspect-video w-[min(92vw,64rem)] overflow-hidden rounded-[20px] bg-black ring-1 ring-white/10 ring-inset">
+    <Tube className="aspect-video w-[min(92vw,64rem)] overflow-hidden rounded-card bg-black ring-1 ring-white/10 ring-inset">
       <iframe
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         className="size-full"
@@ -95,7 +95,7 @@ function ImageModalView({ data }: ModalProps<ImageModalData>) {
   return (
     <img
       alt={data.alt}
-      className="max-h-[85vh] max-w-[92vw] rounded-[20px] object-contain ring-1 ring-white/10"
+      className="max-h-[85vh] max-w-[92vw] rounded-card object-contain ring-1 ring-white/10"
       draggable={false}
       src={data.src}
     />

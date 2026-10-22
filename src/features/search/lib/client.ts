@@ -51,7 +51,18 @@ export async function fetchSearch<T extends SearchType>(
   } | null;
 
   if (response.ok && isSearchResponse(payload?.data)) {
-    return ok(payload.data as SearchResponseMap[T]);
+    // An answer cached before a hit carried its weights (the browser may
+    // serve one while it revalidates) still sorts: missing weights are 0.
+    const data = payload.data as SearchResponseMap[T];
+    const hits = (data.hits as unknown[]).map((hit) => {
+      const { match, score } = hit as { match?: unknown; score?: unknown };
+      return {
+        ...(hit as object),
+        match: typeof match === "number" ? match : 0,
+        score: typeof score === "number" ? score : 0,
+      };
+    });
+    return ok({ ...data, hits } as SearchResponseMap[T]);
   }
 
   const code: SearchFailureCode =

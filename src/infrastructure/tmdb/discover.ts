@@ -15,7 +15,7 @@ import type { TmdbTransport } from "./transport";
 import type {
   FeaturedMovie,
   FeaturedMoviePage,
-  PersonSearchPage,
+  TrendingPeoplePage,
 } from "./types";
 import { checkLanguage } from "./validation";
 
@@ -75,7 +75,7 @@ export interface DiscoverApi {
   ): Promise<Result<FeaturedMoviePage, TmdbError>>;
   trendingPeople(
     options?: ListOptions,
-  ): Promise<Result<PersonSearchPage, TmdbError>>;
+  ): Promise<Result<TrendingPeoplePage, TmdbError>>;
   findByImdb(
     imdbId: string,
     options?: ListOptions,

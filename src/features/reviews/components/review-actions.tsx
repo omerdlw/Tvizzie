@@ -29,7 +29,7 @@ export function ReviewBody({
   if (isSpoiler && !revealed) {
     return (
       <Button
-        className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-xl bg-white/5 px-3 py-2 text-xs font-semibold text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white"
+        className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-control bg-white/5 px-3 py-2 text-xs font-semibold text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white"
         onClick={() => setRevealed(true)}
       >
         <Icon icon="solar:eye-closed-linear" size={14} />
@@ -128,26 +128,26 @@ export function ReviewActions({
 
   const like = plain
     ? cn(
-        "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-2 text-xs font-semibold disabled:cursor-wait",
+        "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-control px-2 text-xs font-semibold disabled:cursor-wait",
         liked
           ? "text-[rgb(var(--grade,252_252_251))]"
           : "text-white/50 hover:text-white",
       )
     : cn(
-        "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-xs font-semibold ring-1 ring-inset disabled:cursor-wait",
+        "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-control px-3 text-xs font-semibold ring-1 ring-inset disabled:cursor-wait",
         liked
           ? "bg-success/20 text-success ring-success/30"
           : "text-white/70 ring-white/5 hover:bg-white/10 hover:text-white",
       );
   const round = plain
-    ? "center size-8 cursor-pointer rounded-full text-white/40 hover:text-white"
-    : "center size-8 cursor-pointer rounded-full text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white";
+    ? "center size-8 cursor-pointer rounded-control text-white/40 hover:text-white"
+    : "center size-8 cursor-pointer rounded-control text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white";
   const trash = plain
     ? confirming
-      ? "center size-8 cursor-pointer rounded-full text-red-400 disabled:cursor-wait"
-      : "center size-8 cursor-pointer rounded-full text-white/40 hover:text-white disabled:cursor-wait"
+      ? "center size-8 cursor-pointer rounded-control text-red-400 disabled:cursor-wait"
+      : "center size-8 cursor-pointer rounded-control text-white/40 hover:text-white disabled:cursor-wait"
     : cn(
-        "center size-8 cursor-pointer rounded-full ring-1 ring-inset disabled:cursor-wait",
+        "center size-8 cursor-pointer rounded-control ring-1 ring-inset disabled:cursor-wait",
         confirming
           ? "bg-red-600 text-white ring-red-400"
           : "text-white/70 ring-white/5 hover:bg-white/10 hover:text-white",

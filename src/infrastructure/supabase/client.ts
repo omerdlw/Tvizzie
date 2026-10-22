@@ -16,6 +16,9 @@ export function createBrowserSupabaseClient(): SupabaseClient<Database> {
       experimental: { passkey: true },
       flowType: "pkce",
     },
+    cookieOptions: {
+      secure: typeof location !== "undefined" && location.protocol === "https:",
+    },
   });
 
   return browserClient;

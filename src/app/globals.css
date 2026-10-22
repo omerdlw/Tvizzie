@@ -10,6 +10,18 @@
 
   --font-zuume: var(--font-zuume);
 
+  /* One scale of corners, set from the poster's up. Whatever holds another
+     thing keeps the two concentric: its corner is the inner corner plus the
+     gap between them, and that sum lands on the scale. Only round things
+     (avatars, dots, rails, switches) are rounded-full. Mirrored as RADIUS in
+     src/ui/radius.ts for the corners set from script. */
+  --radius-*: initial;
+  --radius-chip: 10px;
+  --radius-card: 12px;
+  --radius-control: 14px;
+  --radius-plate: 18px;
+  --radius-shell: 24px;
+
   --ease-*: initial;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -58,6 +70,15 @@
 }
 @utility duration-cinematic {
   transition-duration: var(--duration-cinematic);
+}
+
+/* Five stars from one tile, STAR_PATH in rating-stars.tsx. The element is five
+   stars and four gaps wide, and `space` spreads the tiles to fill it. */
+@utility rating-stars {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12.74 3.98 L14.26 8.05 Q14.47 8.60 15.06 8.63 L19.40 8.82 Q21.51 8.91 19.85 10.23 L16.45 12.93 Q15.99 13.30 16.15 13.87 L17.31 18.05 Q17.88 20.09 16.12 18.92 L12.49 16.53 Q12 16.20 11.51 16.53 L7.88 18.92 Q6.12 20.09 6.69 18.05 L7.85 13.87 Q8.01 13.30 7.55 12.93 L4.15 10.23 Q2.49 8.91 4.60 8.82 L8.94 8.63 Q9.53 8.60 9.74 8.05 L11.26 3.98 Q12 2 12.74 3.98Z'/%3E%3C/svg%3E");
+  mask-position: left center;
+  mask-repeat: space no-repeat;
+  mask-size: var(--star-size) var(--star-size);
 }
 
 html.reticle:not(.reticle-off),
@@ -581,7 +602,7 @@ html.reticle:not(.reticle-off) * {
     max-width: min(18rem, calc(100vw - 1.5rem));
     padding: 8px 12px 9px;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: var(--radius-control);
     background: color-mix(
       in oklab,
       color-mix(in oklab, var(--black), black 45%) 86%,
@@ -653,6 +674,11 @@ html.reticle:not(.reticle-off) * {
   }
   .tooltip-content[data-state="closed"] {
     animation: tooltip-out 0.16s var(--ease-in-cubic) both;
+  }
+  /* The dock's tooltips are portalled out of it with only a class, so their
+     layer is set here: Z_INDEX.TOOLTIP, over the dock's stacked cards. */
+  .dock-tooltip {
+    z-index: 200;
   }
   /* Where the house cursor slates a card itself, its tooltip stands down. */
   html.reticle:not(.reticle-off) .tooltip-content[data-cursor-owned] {

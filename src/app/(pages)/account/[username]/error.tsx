@@ -24,14 +24,14 @@ export default function AccountError({
       <p className="mt-2 text-sm text-white/50">{USER_MESSAGES.generic}</p>
       <div className="mt-6 flex items-center gap-3">
         <Button
-          className="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15"
+          className="rounded-control bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15"
           onClick={() => reset?.()}
           type="button"
         >
           Try again
         </Button>
         <Link
-          className="rounded-xl bg-white/5 px-4 py-2 text-sm font-medium text-white/70 ring-1 ring-white/10 hover:bg-white/10"
+          className="rounded-control bg-white/5 px-4 py-2 text-sm font-medium text-white/70 ring-1 ring-white/10 hover:bg-white/10"
           href="/"
         >
           Home

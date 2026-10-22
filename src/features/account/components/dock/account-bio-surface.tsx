@@ -6,7 +6,7 @@ const FALLBACK_BIO_TEXT = "No bio provided";
 const DEFAULT_TITLE = "Account";
 
 const BIO_CONTAINER_CLASS =
-  "h-auto w-full overflow-y-auto rounded-[20px] bg-white/5 py-3 px-3.5 ring-1 ring-inset ring-white/5 scrollbar-none overscroll-contain";
+  "h-auto w-full overflow-y-auto rounded-control bg-white/5 py-3 px-3.5 ring-1 ring-inset ring-white/5 scrollbar-none overscroll-contain";
 const BIO_TEXT_CLASS =
   "select-text whitespace-pre-wrap break-words text-sm leading-relaxed text-justify text-white/70 sm:text-base";
 

@@ -8,7 +8,7 @@ import { Item, trackSpotlight } from "../stage";
 import { usePersonView } from "./person-view-state";
 
 const BASE =
-  "cine-card cine-fade cine-spot group center relative h-auto w-full cursor-pointer gap-2.5 overflow-hidden rounded-[20px] p-4 text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50";
+  "cine-card cine-fade cine-spot group center relative h-auto w-full cursor-pointer gap-2.5 overflow-hidden rounded-control p-4 text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50";
 const IDLE =
   "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10";
 const ACTIVE =

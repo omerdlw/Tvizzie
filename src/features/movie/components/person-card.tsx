@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { personHref } from "@/config/routes";
 import { useArtworkPath } from "@/features/artwork";
+import { RADIUS } from "@/ui/radius";
 import { MediaCard } from "@/ui";
 import { useDockLinkClick } from "@/motion";
 import { SCENE } from "../lib/motion";
@@ -40,17 +41,11 @@ export function PersonCard({
       onPointerMove={trackSpotlight}
       prefetch={false}
       className={cn(
-        "cine-card cine-fade cine-spot relative flex items-center gap-3 overflow-hidden outline-none focus-visible:ring-white/50 rounded-[20px] bg-white/5 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:ring-white/10",
-        compact
-          ? "h-10 min-w-0 flex-1 rounded-[16px] p-1 pr-2"
-          : "h-[84px] p-1 pr-4",
+        "cine-card cine-fade cine-spot relative flex items-center gap-3 overflow-hidden outline-none focus-visible:ring-white/50 rounded-control bg-white/5 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:ring-white/10",
+        compact ? "h-10 min-w-0 flex-1 p-1 pr-2" : "h-[84px] p-1 pr-4",
       )}
     >
-      <Develop
-        at={SCENE.card.photo}
-        className="shrink-0"
-        radius={compact ? 12 : 16}
-      >
+      <Develop at={SCENE.card.photo} className="shrink-0" radius={RADIUS.chip}>
         <MediaCard
           aspect="free"
           className="shrink-0"
@@ -59,7 +54,7 @@ export function PersonCard({
           frameClassName={compact ? "size-8" : "h-[76px] w-14"}
           framed={false}
           image={{ sizes: compact ? "32px" : "56px", src }}
-          radius={compact ? 12 : 16}
+          radius={RADIUS.chip}
         />
       </Develop>
 

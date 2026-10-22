@@ -114,7 +114,7 @@ function Links({
             <Tooltip position="top" text={link.label}>
               <a
                 aria-label={`${name} on ${link.label}`}
-                className="cine-fade center size-9 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                className="cine-fade center size-9 rounded-control text-white/70 hover:bg-white/10 hover:text-white"
                 href={link.url}
                 referrerPolicy="no-referrer"
                 rel="noopener noreferrer"

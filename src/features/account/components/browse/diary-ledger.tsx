@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import { movieHref } from "@config/routes";
 import { Icon, MediaCard } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import { RatingStars } from "@/features/reviews/components/rating-stars";
 import type { DiaryRow } from "../../lib/browse-data";
 import { AccountLink } from "./account-link";
@@ -93,7 +94,7 @@ export function DiaryLedger({
                   href={href}
                   image={posterImage(row.posterPath, "36px")}
                   label={row.title}
-                  radius={4}
+                  radius={RADIUS.chip}
                 />
                 <div className="flex min-w-0 flex-col">
                   <AccountLink

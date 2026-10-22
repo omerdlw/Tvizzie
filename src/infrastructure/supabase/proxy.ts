@@ -1,84 +1,152 @@
 import "server-only";
 
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { report } from "@omerdlw/base-framework/utils";
 import { getSupabasePublicConfig } from "@/infrastructure/env";
 import { getClientIp } from "@/infrastructure/security/rate-limiter";
-import { applySecurityHeaders } from "@/infrastructure/security/headers";
+import {
+  applySecurityHeaders,
+  buildContentSecurityPolicy,
+  createNonce,
+} from "@/infrastructure/security/headers";
+import type { Database } from "./database.types";
+import { SESSION_CHECKED_HEADER, isHttpsRequest } from "./session";
+
+// A session found live is trusted for this long before it is checked again, so
+// a page and the requests around it cost one round trip between them, and
+// signing a device out reaches it within the window. Requests that arrive
+// while a check is running wait for that check's answer.
+const SESSION_CHECK_TTL_MS = 30_000;
+const SESSION_CHECK_LIMIT = 5_000;
+const sessionChecks = new Map<
+  string,
+  { expires: number; live: Promise<boolean> }
+>();
+
+function checkSession(
+  supabase: SupabaseClient<Database>,
+  sessionId: string,
+  request: NextRequest,
+): Promise<boolean> {
+  const now = Date.now();
+  const known = sessionChecks.get(sessionId);
+  if (known && known.expires > now) return known.live;
+
+  const live = (async () => {
+    const { data, error } = await supabase.rpc("check_auth_session", {
+      p_ip_address: getClientIp(request),
+      p_session_id: sessionId,
+      p_user_agent: request.headers.get("user-agent"),
+    });
+    if (error) throw error;
+    return data !== false;
+  })();
+
+  sessionChecks.delete(sessionId);
+  sessionChecks.set(sessionId, { expires: now + SESSION_CHECK_TTL_MS, live });
+  // A revoked session or a failed check is asked again next time.
+  live.then(
+    (isLive) => {
+      if (!isLive) sessionChecks.delete(sessionId);
+    },
+    () => sessionChecks.delete(sessionId),
+  );
+
+  for (const [key, entry] of sessionChecks) {
+    if (sessionChecks.size <= SESSION_CHECK_LIMIT && entry.expires > now) {
+      break;
+    }
+    sessionChecks.delete(key);
+  }
+
+  return live;
+}
 
 export async function updateSupabaseSession(
   request: NextRequest,
 ): Promise<NextResponse> {
   const config = getSupabasePublicConfig();
-  if (!config) return applySecurityHeaders(NextResponse.next({ request }));
+  const https = isHttpsRequest(request.headers, request.nextUrl.protocol);
+  const nonce = createNonce();
+  const csp = buildContentSecurityPolicy({
+    connectSrc: config ? [config.url, config.url.replace(/^http/, "ws")] : [],
+    development: process.env.NODE_ENV === "development",
+    nonce,
+    upgradeInsecureRequests: https,
+  });
 
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(config.url, config.publishableKey, {
-    auth: {
-      experimental: { passkey: true },
-      flowType: "pkce",
-    },
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll(cookiesToSet, headers = {}) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
-        );
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, options, value }) => {
-          response.cookies.set(name, value, options);
-        });
-        Object.entries(headers).forEach(([key, value]) =>
-          response.headers.set(key, value as string),
-        );
+  // Next.js finds the nonce in the request's policy and stamps its scripts.
+  request.headers.set("content-security-policy", csp);
+  request.headers.set("x-nonce", nonce);
+  request.headers.delete(SESSION_CHECKED_HEADER);
+
+  const cookieWrites = new Map<
+    string,
+    { name: string; options: CookieOptions; value: string }
+  >();
+  const cacheHeaders: Record<string, string> = {};
+
+  // The request headers are final by now, so the response forwards them.
+  const respond = (response = NextResponse.next({ request })) => {
+    cookieWrites.forEach(({ name, options, value }) => {
+      response.cookies.set(name, value, options);
+    });
+    Object.entries(cacheHeaders).forEach(([key, value]) =>
+      response.headers.set(key, value),
+    );
+    return applySecurityHeaders(response, { csp });
+  };
+
+  if (!config) return respond();
+
+  const supabase = createServerClient<Database>(
+    config.url,
+    config.publishableKey,
+    {
+      auth: {
+        experimental: { passkey: true },
+        flowType: "pkce",
+      },
+      cookieOptions: { secure: https },
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll(cookiesToSet, headers = {}) {
+          cookiesToSet.forEach(({ name, options, value }) => {
+            request.cookies.set(name, value);
+            cookieWrites.set(name, { name, options, value });
+          });
+          Object.assign(cacheHeaders, headers);
+        },
       },
     },
-  });
+  );
 
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims || null;
   const sessionId = String(claims?.session_id || "").trim();
 
-  if (!claims?.sub || !sessionId) return applySecurityHeaders(response);
+  if (!claims?.sub || !sessionId) return respond();
 
-  let session: { revoked_at: string | null } | null;
+  let live: boolean;
   try {
-    const { data, error } = await supabase
-      .from("auth_sessions")
-      .select("revoked_at")
-      .eq("session_id", sessionId)
-      .maybeSingle();
-    if (error) {
-      return applySecurityHeaders(
-        new NextResponse("Session validation unavailable", { status: 503 }),
-      );
-    }
-    session = data;
-  } catch {
-    return applySecurityHeaders(
+    live = await checkSession(supabase, sessionId, request);
+  } catch (error) {
+    report("Supabase session check", error);
+    return respond(
       new NextResponse("Session validation unavailable", { status: 503 }),
     );
   }
 
-  if (session?.revoked_at) {
+  if (!live) {
     await supabase.auth.signOut({ scope: "local" });
     const signInUrl = request.nextUrl.clone();
     signInUrl.pathname = "/";
     signInUrl.search = "?reason=session-revoked";
-    const redirect = NextResponse.redirect(signInUrl);
-    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    return applySecurityHeaders(redirect);
+    return respond(NextResponse.redirect(signInUrl));
   }
 
-  const { error: touchError } = await supabase.rpc("touch_auth_session", {
-    p_ip_address: getClientIp(request),
-    p_session_id: sessionId,
-    p_user_agent: request.headers.get("user-agent"),
-  });
-  if (touchError) {
-    report("Supabase touch auth session", touchError);
-  }
-
-  return applySecurityHeaders(response);
+  request.headers.set(SESSION_CHECKED_HEADER, sessionId);
+  return respond();
 }

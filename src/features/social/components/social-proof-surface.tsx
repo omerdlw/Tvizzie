@@ -56,7 +56,7 @@ function FriendRow({
   movieId: number;
 }): JSX.Element {
   return (
-    <li className="flex items-center gap-3 rounded-[16px] p-2 transition-colors duration-fast hover:bg-white/5">
+    <li className="flex items-center gap-3 rounded-control p-0.5 pr-2 transition-colors duration-fast hover:bg-white/5">
       <Link
         className="flex min-w-0 flex-1 items-center gap-3"
         href={`/account/${friend.username}`}
@@ -64,7 +64,7 @@ function FriendRow({
         prefetch={false}
       >
         <Avatar
-          className="rounded-[14px]"
+          className="rounded-card"
           name={friend.displayName}
           size={40}
           src={friend.avatarUrl}

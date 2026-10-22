@@ -2,6 +2,7 @@ import type { JSX, ReactNode } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { movieHref } from "@config/routes";
 import { Icon, MediaCard } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import type { ActivityItem } from "../../lib/browse-data";
 import { AccountLink } from "./account-link";
 import { posterImage } from "./poster";
@@ -131,10 +132,10 @@ export function ActivityRow({
           href={movieHref(item.tmdbId)}
           image={posterImage(item.posterPath, "36px")}
           label={item.title ?? "Movie"}
-          radius={4}
+          radius={RADIUS.chip}
         />
       ) : (
-        <span className="center size-9 shrink-0 rounded-full bg-white/[0.06] text-white/60">
+        <span className="center size-9 shrink-0 rounded-chip bg-white/[0.06] text-white/60">
           <Icon icon={ICONS[item.type] ?? "solar:bolt-bold"} size={15} />
         </span>
       )}

@@ -6,6 +6,7 @@ import { REGISTRY_SOURCES } from "@omerdlw/base-framework/kernel";
 import {
   useDockContextActions,
   useDockRegistration,
+  useDockSelector,
 } from "@omerdlw/base-framework/modules/dock";
 import {
   SEARCH_ACTION_KEY,
@@ -23,6 +24,9 @@ export function SearchDockCommand(): null {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
+  // The card in front, which is not always the one at this path: on your own
+  // profile the account card stands in for it. Search opens on that one.
+  const frontPath = useDockSelector((state) => state.activeItem?.path ?? null);
 
   const toggle = useCallback(() => {
     setOpenPath((current) => (current === pathname ? null : pathname));
@@ -32,8 +36,13 @@ export function SearchDockCommand(): null {
 
   const dock = useMemo(
     () =>
-      open ? { action: <SearchAction autoFocus onClose={close} /> } : null,
-    [close, open],
+      open
+        ? {
+            action: <SearchAction autoFocus onClose={close} />,
+            ...(frontPath ? { path: frontPath } : {}),
+          }
+        : null,
+    [close, frontPath, open],
   );
   useDockRegistration(dock, SEARCH_REGISTRATION);
 

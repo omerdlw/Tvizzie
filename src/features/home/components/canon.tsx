@@ -933,7 +933,7 @@ function PlainWall({
           return (
             <li key={film.id}>
               <Link
-                className={`block overflow-hidden rounded-xl ${watched.has(film.id) ? "" : "opacity-60 grayscale"}`}
+                className={`block overflow-hidden rounded-card ${watched.has(film.id) ? "" : "opacity-60 grayscale"}`}
                 href={movieHref(film.id)}
               >
                 {src ? (

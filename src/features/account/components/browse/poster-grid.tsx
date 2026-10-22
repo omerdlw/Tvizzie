@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { movieHref } from "@config/routes";
 import { MediaCard } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import type { MediaItem } from "../../lib/browse-data";
 import { GRID, posterImage } from "./poster";
 import { TileActions, type TileSource } from "./tile-actions";
@@ -23,11 +24,11 @@ export function PosterTile({
         href={movieHref(item.tmdbId)}
         image={posterImage(item.posterPath)}
         label={label}
-        radius={6}
+        radius={RADIUS.card}
         tooltip={item.pinned ? `${label} · Favorite` : label}
       />
       {rank !== undefined ? (
-        <span className="pointer-events-none absolute top-2 left-2 center h-6 min-w-6 rounded-[4px] bg-black/75 px-1.5 text-[11px] font-semibold text-white tabular-nums ring-1 ring-white/10 backdrop-blur-sm">
+        <span className="pointer-events-none absolute top-2 left-2 center h-6 min-w-6 rounded-chip bg-black/75 px-1.5 text-[11px] font-semibold text-white tabular-nums ring-1 ring-white/10 backdrop-blur-sm">
           {rank}
         </span>
       ) : null}

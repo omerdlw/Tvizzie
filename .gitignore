@@ -41,3 +41,7 @@ yarn-error.log*
 /AGENTS.md
 /.remember
 /.playwright-mcp
+
+# seed data cache (TMDB catalog, generated login sheet)
+/scripts/
+/supabase/

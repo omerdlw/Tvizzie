@@ -20,11 +20,7 @@ import { Section, counted } from "@/features/account/components/browse/section";
 import { formatShortDate } from "@/features/account/lib/dates";
 import { Icon } from "@/ui";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
-import {
-  getListComments,
-  getListDetail,
-  getListItemsPage,
-} from "@/features/account/server/browse";
+import { getListPage } from "@/features/account/server/browse";
 import { getAccountPageContext } from "@/features/account/server/context";
 
 export default async function AccountListPage({
@@ -39,30 +35,24 @@ export default async function AccountListPage({
     await getAccountPageContext(username);
   if (locked) return null;
 
-  const list = await getListDetail({
-    client,
-    slug: decodeURIComponent(slug),
-    username: account.username,
-    viewerId,
-  });
-  if (!list) notFound();
-
   const filters = parseListItemFilters(query);
-  const [items, comments] = await Promise.all([
-    getListItemsPage({ client, filters, listId: list.id }),
-    getListComments({ client, listId: list.id, viewerId }),
-  ]);
+  const page = await getListPage({
+    client,
+    filters,
+    owner: account,
+    slug: decodeURIComponent(slug),
+  });
+  if (!page) notFound();
+  const { commentCount, comments, items, list, ownComment } = page;
 
   const filtered = hasMediaFilters(filters);
   const ranked = list.isRanked && filters.sort === "position" && !filtered;
   const lists = `/account/${encodeURIComponent(account.username)}/lists`;
 
-  const own = comments.find((comment) => comment.author.id === viewerId);
-
   return (
     <div className="flex w-full flex-col gap-10">
       <ListChrome
-        comment={own?.content ?? null}
+        comment={ownComment}
         icon={tmdbImageUrl("poster", list.posterPath, "w185")}
         isOwner={isOwner}
         list={list}
@@ -179,7 +169,7 @@ export default async function AccountListPage({
         )}
       </div>
 
-      <Section summary={counted(list.reviewsCount, "comment")} title="Comments">
+      <Section summary={counted(commentCount, "comment")} title="Comments">
         <ListComments
           comments={comments}
           listId={list.id}

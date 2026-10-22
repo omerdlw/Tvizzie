@@ -2,17 +2,18 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import {
   requireSupabasePublicConfig,
   requireSupabaseSecretKey,
 } from "@/infrastructure/env";
 import type { Database } from "./database.types";
+import { isHttpsRequest } from "./session";
 
 export async function createServerSupabaseClient(): Promise<
   SupabaseClient<Database>
 > {
-  const cookieStore = await cookies();
+  const [cookieStore, headerList] = await Promise.all([cookies(), headers()]);
   const { publishableKey, url } = requireSupabasePublicConfig();
 
   return createServerClient<Database>(url, publishableKey, {
@@ -20,6 +21,7 @@ export async function createServerSupabaseClient(): Promise<
       experimental: { passkey: true },
       flowType: "pkce",
     },
+    cookieOptions: { secure: isHttpsRequest(headerList) },
     cookies: {
       getAll() {
         return cookieStore.getAll();

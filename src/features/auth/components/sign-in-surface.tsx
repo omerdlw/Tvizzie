@@ -15,9 +15,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   getAuthErrorMessage,
   getAuthCallbackUrl,
+  isSeedEmail,
   OAUTH_PROVIDERS,
   requestEmailAuth,
   sanitizeNextPath,
+  signInSeedAccount,
   signInWithOAuth,
   signInWithPasskey,
   useAuth,
@@ -49,13 +51,13 @@ const PROVIDER_CONFIG = Object.freeze({
 } as Record<string, { icon: string; label: string }>);
 
 export const AUTH_INPUT_CLASS =
-  "h-10 w-full rounded-[20px] bg-white/5 px-4 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
+  "h-10 w-full rounded-control bg-white/5 px-4 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
 
 const PROVIDER_BUTTON_CLASS =
-  "group/btn center h-10 w-full cursor-pointer rounded-[20px] bg-white/5 px-4 text-xs @[280px]:text-sm text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
+  "group/btn center h-10 w-full cursor-pointer rounded-control bg-white/5 px-4 text-xs @[280px]:text-sm text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
 
 const PROVIDER_GRID_BUTTON_CLASS =
-  "group/btn center h-10 w-full cursor-pointer rounded-[20px] bg-white/5 text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
+  "group/btn center h-10 w-full cursor-pointer rounded-control bg-white/5 text-white/70 hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50";
 
 interface OAuthProviderButtonProps {
   disabled?: boolean;
@@ -249,11 +251,24 @@ function EmailSignInSurface({ data = {} }: EmailSignInSurfaceProps) {
       const targetEmail = ((formData?.get("email") as string) || email).trim();
       if (!targetEmail) return { error: "Email is required", success: false };
       try {
+        if (isSeedEmail(targetEmail)) {
+          await signInSeedAccount(targetEmail);
+          const nextState = await auth.refresh();
+          if (nextState?.user) {
+            globalEvents.emit(AUTH_EVENTS.AUTH_SIGN_IN, {
+              session: nextState.session,
+              userId: nextState.user.id,
+            });
+          }
+          window.location.replace(postAuthRedirect);
+          return { email: targetEmail, signedIn: true, success: true };
+        }
+
         await requestEmailAuth(auth.client, {
           createUser: true,
           email: targetEmail,
         });
-        return { email: targetEmail, success: true };
+        return { email: targetEmail, signedIn: false, success: true };
       } catch (error: any) {
         return {
           error: getAuthErrorMessage(
@@ -268,7 +283,7 @@ function EmailSignInSurface({ data = {} }: EmailSignInSurfaceProps) {
   );
 
   useEffect(() => {
-    if (!emailAuthState) return;
+    if (!emailAuthState || emailAuthState.signedIn) return;
     if (emailAuthState.success && emailAuthState.email) {
       openSurface(
         createVerificationSurfaceEntry({
@@ -431,7 +446,7 @@ function SignInSurface({ close, data = {} }: SignInSurfaceProps) {
 
   if (!auth.isConfigured) {
     return (
-      <p className="rounded-[20px] bg-white/5 px-4 py-3 text-sm text-white/70 ring-1 ring-inset ring-white/5">
+      <p className="rounded-control bg-white/5 px-4 py-3 text-sm text-white/70 ring-1 ring-inset ring-white/5">
         Configure the Supabase variables in .env.local first
       </p>
     );

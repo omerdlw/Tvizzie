@@ -18,6 +18,7 @@ import {
   type ReviewFilters,
 } from "../lib/browse";
 import type {
+  ActivityDays,
   ActivityItem,
   DiaryEntry,
   DiaryMonth,
@@ -29,7 +30,11 @@ import type {
   PersonPreview,
   ReviewCardData,
 } from "../lib/browse-data";
-import { releaseYear } from "../lib/library-view";
+import {
+  EMPTY_LIBRARY_COUNTS,
+  releaseYear,
+  type LibraryCounts,
+} from "../lib/library-view";
 
 type Client = SupabaseClient<Database>;
 
@@ -44,6 +49,34 @@ const paged = <T>(
   pageCount: pageCount(total ?? 0, size),
   total: total ?? 0,
 });
+
+interface PageResult<Row> {
+  count: number | null;
+  data: Row[] | null;
+  error: { code?: string; details?: string } | null;
+}
+
+// A page past the last one reads as the last page there is. PostgREST refuses
+// an offset beyond the rows (PGRST103), which a stale link or a typed ?page=
+// asks for, and says in the refusal how many rows there are.
+async function readPage<Row>(
+  query: { range(from: number, to: number): PromiseLike<PageResult<Row>> },
+  page: number,
+  size: number,
+  retried = false,
+): Promise<{ count: number | null; page: number; rows: Row[] }> {
+  const { from, to } = pageRange(page, size);
+  const result = await query.range(from, to);
+  if (result.error?.code === "PGRST103" && !retried) {
+    const rows = Number(
+      /only (\d+) rows/.exec(result.error.details ?? "")?.[1],
+    );
+    const last = Math.max(1, pageCount(Number.isFinite(rows) ? rows : 0, size));
+    return readPage(query, last, size, true);
+  }
+  if (result.error) throw result.error;
+  return { count: result.count, page, rows: result.data ?? [] };
+}
 
 export type MediaKind = "likes" | "watched" | "watchlist";
 
@@ -105,10 +138,9 @@ export async function getMediaPage({
   filters: MediaFilters;
   kind: MediaKind;
 }): Promise<Paged<MediaItem>> {
-  const { from, to } = pageRange(filters.page, MEDIA_PAGE_SIZE);
   const added = kind === "watched" ? "last_watched_at" : "created_at";
 
-  let query = filterMovies(
+  const query = filterMovies(
     client
       .from(MEDIA_TABLES[kind] as "account_likes")
       .select(MOVIE_COLUMNS, { count: "exact" })
@@ -125,13 +157,14 @@ export async function getMediaPage({
     title_desc: ["title", false],
   }[filters.sort] as [string, boolean];
 
-  query = query
-    .order(column as "created_at", { ascending, nullsFirst: false })
-    .order("tmdb_id", { ascending: false })
-    .range(from, to);
-
   const [result, favorites] = await Promise.all([
-    query,
+    readPage(
+      query
+        .order(column as "created_at", { ascending, nullsFirst: false })
+        .order("tmdb_id", { ascending: false }),
+      filters.page,
+      MEDIA_PAGE_SIZE,
+    ),
     kind === "likes"
       ? client
           .from("account_favorites")
@@ -139,81 +172,12 @@ export async function getMediaPage({
           .eq("account_id", accountId)
       : null,
   ]);
-  if (result.error) throw result.error;
 
   const pinned = new Set((favorites?.data ?? []).map((row) => row.tmdb_id));
   return paged(
-    ((result.data ?? []) as MovieRow[]).map((row) => toMediaItem(row, pinned)),
+    (result.rows as MovieRow[]).map((row) => toMediaItem(row, pinned)),
     result.count,
-    filters.page,
-    MEDIA_PAGE_SIZE,
-  );
-}
-
-export async function getRecentMedia({
-  accountId,
-  client,
-  kind,
-  limit,
-}: {
-  accountId: string;
-  client: Client;
-  kind: MediaKind;
-  limit: number;
-}): Promise<MediaItem[]> {
-  const added = kind === "watched" ? "last_watched_at" : "created_at";
-  const { data, error } = await client
-    .from(MEDIA_TABLES[kind] as "account_likes")
-    .select(MOVIE_COLUMNS)
-    .eq("account_id", accountId)
-    .order(added as "created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return ((data ?? []) as MovieRow[]).map((row) => toMediaItem(row, new Set()));
-}
-
-export async function getListItemsPage({
-  client,
-  filters,
-  listId,
-}: {
-  client: Client;
-  filters: ListItemFilters;
-  listId: string;
-}): Promise<Paged<MediaItem>> {
-  const { from, to } = pageRange(filters.page, MEDIA_PAGE_SIZE);
-
-  let query = filterMovies(
-    client
-      .from("list_items")
-      .select(MOVIE_COLUMNS, { count: "exact" })
-      .eq("list_id", listId),
-    filters,
-  );
-
-  const [column, ascending] = {
-    added_asc: ["created_at", true],
-    added_desc: ["created_at", false],
-    position: ["position", true],
-    release_asc: ["release_date", true],
-    release_desc: ["release_date", false],
-    title_asc: ["title", true],
-    title_desc: ["title", false],
-  }[filters.sort] as [string, boolean];
-
-  query = query
-    .order(column as "created_at", { ascending, nullsFirst: false })
-    .order("tmdb_id", { ascending: true })
-    .range(from, to);
-
-  const result = await query;
-  if (result.error) throw result.error;
-  return paged(
-    ((result.data ?? []) as MovieRow[]).map((row) =>
-      toMediaItem(row, new Set()),
-    ),
-    result.count,
-    filters.page,
+    result.page,
     MEDIA_PAGE_SIZE,
   );
 }
@@ -234,36 +198,44 @@ interface ListRow {
 const LIST_COLUMNS =
   "id, slug, title, description, is_private, is_ranked, items_count, likes_count, reviews_count, updated_at";
 
+// Every card's first posters in one call, rather than a query per card.
 async function withPreviews(
   client: Client,
   rows: ListRow[],
 ): Promise<ListCardData[]> {
-  const previews = await Promise.all(
-    rows.map(async (row) => {
-      const { data } = await client
-        .from("list_items")
-        .select("poster_path")
-        .eq("list_id", row.id)
-        .order("position", { ascending: true })
-        .limit(5);
-      return (data ?? []).map((item) => item.poster_path);
-    }),
-  );
+  const previews = new Map<string, (string | null)[]>();
+  if (rows.length > 0) {
+    const { data, error } = await client.rpc("get_list_previews", {
+      p_limit: 5,
+      p_list_ids: rows.map((row) => row.id),
+    });
+    if (error) throw error;
+    for (const item of data ?? []) {
+      const posters = previews.get(item.list_id) ?? [];
+      posters.push(item.poster_path);
+      previews.set(item.list_id, posters);
+    }
+  }
 
-  return rows.map((row, index) => ({
-    description: row.description,
-    id: row.id,
-    isPrivate: row.is_private,
-    isRanked: row.is_ranked,
-    itemsCount: row.items_count,
-    likesCount: row.likes_count,
-    previews: previews[index] ?? [],
-    reviewsCount: row.reviews_count,
-    slug: row.slug,
-    title: row.title,
-    updatedAt: row.updated_at,
-  }));
+  return rows.map((row) => toListCard(row, previews.get(row.id) ?? []));
 }
+
+const toListCard = (
+  row: ListRow,
+  previews: (string | null)[],
+): ListCardData => ({
+  description: row.description,
+  id: row.id,
+  isPrivate: row.is_private,
+  isRanked: row.is_ranked,
+  itemsCount: row.items_count,
+  likesCount: row.likes_count,
+  previews,
+  reviewsCount: row.reviews_count,
+  slug: row.slug,
+  title: row.title,
+  updatedAt: row.updated_at,
+});
 
 export async function getListsPage({
   accountId,
@@ -276,7 +248,6 @@ export async function getListsPage({
   page: number;
   sort: ListSort;
 }): Promise<Paged<ListCardData>> {
-  const { from, to } = pageRange(page, LIST_PAGE_SIZE);
   const [column, ascending] = {
     created_asc: ["created_at", true],
     created_desc: ["created_at", false],
@@ -286,171 +257,137 @@ export async function getListsPage({
     updated_desc: ["updated_at", false],
   }[sort] as [string, boolean];
 
-  const { count, data, error } = await client
-    .from("lists")
-    .select(LIST_COLUMNS, { count: "exact" })
-    .eq("account_id", accountId)
-    .order(column as "created_at", { ascending })
-    .order("id")
-    .range(from, to);
-  if (error) throw error;
+  const result = await readPage(
+    client
+      .from("lists")
+      .select(LIST_COLUMNS, { count: "exact" })
+      .eq("account_id", accountId)
+      .order(column as "created_at", { ascending })
+      .order("id"),
+    page,
+    LIST_PAGE_SIZE,
+  );
 
   return paged(
-    await withPreviews(client, (data ?? []) as ListRow[]),
-    count,
-    page,
+    await withPreviews(client, result.rows as ListRow[]),
+    result.count,
+    result.page,
     LIST_PAGE_SIZE,
   );
 }
 
-export async function getRecentLists({
-  accountId,
-  client,
-  limit,
-}: {
-  accountId: string;
-  client: Client;
-  limit: number;
-}): Promise<ListCardData[]> {
-  const { data, error } = await client
-    .from("lists")
-    .select(LIST_COLUMNS)
-    .eq("account_id", accountId)
-    .order("updated_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return withPreviews(client, (data ?? []) as ListRow[]);
+interface ListPageRow {
+  comments: {
+    rows: {
+      author: {
+        avatar_url: string | null;
+        display_name: string | null;
+        id: string;
+        username: string;
+      };
+      content: string;
+      created_at: string;
+      id: string;
+      liked: boolean;
+      likes_count: number;
+    }[];
+    total: number;
+  };
+  items: MovieRow[];
+  items_total: number;
+  list: ListRow & { liked: boolean; poster_path: string | null };
+  own_comment: string | null;
+  page: number;
 }
 
-export async function getListDetail({
+export interface ListPageData {
+  commentCount: number;
+  comments: ListComment[];
+  items: Paged<MediaItem>;
+  list: ListDetail;
+  // The viewer's own comment, which may be older than the ones shown.
+  ownComment: string | null;
+}
+
+// A list's page in one round trip: the list with the viewer's like and its
+// cover, a page of its films, and its comments with the viewer's likes. Read
+// separately it was four or five requests one after another. The function
+// checks once that the viewer may see the list and applies the policies'
+// remaining rules itself.
+export async function getListPage({
   client,
+  comments = 50,
+  filters,
+  owner,
   slug,
-  username,
-  viewerId,
 }: {
   client: Client;
+  comments?: number;
+  filters: ListItemFilters;
+  // The page has already read its owner.
+  owner: { displayName: string; id: string; username: string };
   slug: string;
-  username: string;
-  viewerId: string | null;
-}): Promise<ListDetail | null> {
-  const owner = await client
-    .from("accounts")
-    .select("id, username, display_name")
-    .eq("username", username.toLowerCase())
-    .maybeSingle();
-  if (owner.error) throw owner.error;
-  const ownerName = owner.data?.username;
-  if (!owner.data || !ownerName) return null;
+}): Promise<ListPageData | null> {
+  const { data, error } = await client.rpc("get_list_page", {
+    p_account_id: owner.id,
+    p_comments: comments,
+    p_decade: filters.decade,
+    p_genre: filters.genre,
+    p_page: filters.page,
+    p_page_size: MEDIA_PAGE_SIZE,
+    p_pattern: filters.query ? likePattern(filters.query) : null,
+    p_slug: slug,
+    p_sort: filters.sort,
+  });
+  if (error) throw error;
 
-  const list = await client
-    .from("lists")
-    .select(LIST_COLUMNS)
-    .eq("account_id", owner.data.id)
-    .eq("slug", slug)
-    .maybeSingle();
-  if (list.error) throw list.error;
-  if (!list.data) return null;
-  const row = list.data as ListRow;
-
-  const [like, first] = await Promise.all([
-    viewerId
-      ? client
-          .from("list_likes")
-          .select("list_id", { count: "exact", head: true })
-          .eq("list_id", row.id)
-          .eq("account_id", viewerId)
-      : null,
-    client
-      .from("list_items")
-      .select("poster_path")
-      .eq("list_id", row.id)
-      .order("position", { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-  const liked = (like?.count ?? 0) > 0;
+  // Nothing comes back for a list the viewer may not see.
+  const row = data as unknown as ListPageRow | null;
+  if (!row) return null;
+  const list = row.list;
 
   return {
-    description: row.description,
-    id: row.id,
-    isPrivate: row.is_private,
-    isRanked: row.is_ranked,
-    itemsCount: row.items_count,
-    liked,
-    likesCount: row.likes_count,
-    owner: {
-      displayName: owner.data.display_name || ownerName,
-      id: owner.data.id,
-      username: ownerName,
+    commentCount: row.comments.total,
+    comments: row.comments.rows.map((comment) => ({
+      author: {
+        avatarUrl: comment.author.avatar_url,
+        displayName: comment.author.display_name || comment.author.username,
+        id: comment.author.id,
+        username: comment.author.username,
+      },
+      content: comment.content,
+      createdAt: comment.created_at,
+      id: comment.id,
+      liked: comment.liked,
+      likesCount: comment.likes_count,
+    })),
+    items: paged(
+      row.items.map((item) => toMediaItem(item, new Set())),
+      row.items_total,
+      row.page,
+      MEDIA_PAGE_SIZE,
+    ),
+    list: {
+      description: list.description,
+      id: list.id,
+      isPrivate: list.is_private,
+      isRanked: list.is_ranked,
+      itemsCount: list.items_count,
+      liked: list.liked,
+      likesCount: list.likes_count,
+      owner: {
+        displayName: owner.displayName || owner.username,
+        id: owner.id,
+        username: owner.username,
+      },
+      posterPath: list.poster_path,
+      reviewsCount: list.reviews_count,
+      slug: list.slug,
+      title: list.title,
+      updatedAt: list.updated_at,
     },
-    posterPath: first.data?.poster_path ?? null,
-    reviewsCount: row.reviews_count,
-    slug: row.slug,
-    title: row.title,
-    updatedAt: row.updated_at,
+    ownComment: row.own_comment,
   };
-}
-
-interface CommentRow {
-  author: {
-    avatar_url: string | null;
-    display_name: string | null;
-    id: string;
-    username: string;
-  } | null;
-  content: string;
-  created_at: string;
-  id: string;
-  likes_count: number;
-}
-
-export async function getListComments({
-  client,
-  limit = 50,
-  listId,
-  viewerId,
-}: {
-  client: Client;
-  limit?: number;
-  listId: string;
-  viewerId: string | null;
-}): Promise<ListComment[]> {
-  const { data, error } = await client
-    .from("reviews")
-    .select(
-      "id, content, likes_count, created_at, author:accounts!reviews_account_id_fkey(id, username, display_name, avatar_url)",
-    )
-    .eq("list_id", listId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-
-  const rows = (data ?? []) as unknown as CommentRow[];
-  const liked = await likedReviewIds(
-    client,
-    viewerId,
-    rows.map((row) => row.id),
-  );
-
-  return rows.flatMap((row) =>
-    row.author
-      ? [
-          {
-            author: {
-              avatarUrl: row.author.avatar_url,
-              displayName: row.author.display_name || row.author.username,
-              id: row.author.id,
-              username: row.author.username,
-            },
-            content: row.content,
-            createdAt: row.created_at,
-            id: row.id,
-            liked: liked.has(row.id),
-            likesCount: row.likes_count,
-          },
-        ]
-      : [],
-  );
 }
 
 async function likedReviewIds(
@@ -517,8 +454,6 @@ export async function getReviewsPage({
   filters: ReviewFilters;
   viewerId: string | null;
 }): Promise<Paged<ReviewCardData>> {
-  const { from, to } = pageRange(filters.page, REVIEW_PAGE_SIZE);
-
   let query = client
     .from("reviews")
     .select(REVIEW_COLUMNS, { count: "exact" })
@@ -540,13 +475,15 @@ export async function getReviewsPage({
     rating_desc: ["rating", false],
   }[filters.sort] as [string, boolean];
 
-  const { count, data, error } = await query
-    .order(column as "created_at", { ascending, nullsFirst: false })
-    .order("id")
-    .range(from, to);
-  if (error) throw error;
+  const result = await readPage(
+    query
+      .order(column as "created_at", { ascending, nullsFirst: false })
+      .order("id"),
+    filters.page,
+    REVIEW_PAGE_SIZE,
+  );
 
-  const rows = (data ?? []) as ReviewRow[];
+  const rows = result.rows as ReviewRow[];
   const liked = await likedReviewIds(
     client,
     viewerId,
@@ -555,131 +492,9 @@ export async function getReviewsPage({
 
   return paged(
     rows.flatMap((row) => toReviewCard(row, liked)),
-    count,
-    filters.page,
+    result.count,
+    result.page,
     REVIEW_PAGE_SIZE,
-  );
-}
-
-export async function getRecentReviews({
-  accountId,
-  by = "recent",
-  client,
-  limit,
-  viewerId,
-}: {
-  accountId: string;
-  by?: "likes" | "recent";
-  client: Client;
-  limit: number;
-  viewerId: string | null;
-}): Promise<ReviewCardData[]> {
-  let query = client
-    .from("reviews")
-    .select(REVIEW_COLUMNS)
-    .eq("account_id", accountId)
-    .not("tmdb_id", "is", null)
-    .neq("content", "");
-  if (by === "likes") {
-    query = query.gt("likes_count", 0).order("likes_count", {
-      ascending: false,
-    });
-  }
-  const { data, error } = await query
-    .order("updated_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-
-  const rows = (data ?? []) as ReviewRow[];
-  const liked = await likedReviewIds(
-    client,
-    viewerId,
-    rows.map((row) => row.id),
-  );
-  return rows.flatMap((row) => toReviewCard(row, liked));
-}
-
-// How someone's ratings fall across the ten half-star steps, lowest first.
-export async function getRatingSpread({
-  accountId,
-  client,
-}: {
-  accountId: string;
-  client: Client;
-}): Promise<number[]> {
-  const { data, error } = await client
-    .from("reviews")
-    .select("rating")
-    .eq("account_id", accountId)
-    .not("tmdb_id", "is", null)
-    .not("rating", "is", null)
-    .limit(5000);
-  if (error) throw error;
-
-  const spread = Array.from({ length: 10 }, () => 0);
-  for (const row of data ?? []) {
-    const step = Math.round(Number(row.rating) * 2);
-    if (step >= 1 && step <= 10) spread[step - 1] += 1;
-  }
-  return spread;
-}
-
-export async function countWatchedSince({
-  accountId,
-  client,
-  since,
-}: {
-  accountId: string;
-  client: Client;
-  since: string;
-}): Promise<number> {
-  const { count, error } = await client
-    .from("account_watched")
-    .select("tmdb_id", { count: "exact", head: true })
-    .eq("account_id", accountId)
-    .gte("last_watched_at", since);
-  if (error) throw error;
-  return count ?? 0;
-}
-
-export async function getFollowingPreview({
-  accountId,
-  client,
-  limit,
-}: {
-  accountId: string;
-  client: Client;
-  limit: number;
-}): Promise<PersonPreview[]> {
-  const { data, error } = await client
-    .from("account_follows")
-    .select(
-      "person:accounts!account_follows_following_id_fkey(username, display_name, avatar_url)",
-    )
-    .eq("follower_id", accountId)
-    .eq("status", "accepted")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-
-  return (
-    (data ?? []) as unknown as {
-      person: {
-        avatar_url: string | null;
-        display_name: string | null;
-        username: string | null;
-      } | null;
-    }[]
-  ).flatMap(({ person }) =>
-    person?.username
-      ? [
-          {
-            avatarUrl: person.avatar_url,
-            displayName: person.display_name || person.username,
-            username: person.username,
-          },
-        ]
-      : [],
   );
 }
 
@@ -740,7 +555,6 @@ export async function getActivityPage({
   client: Client;
   filters: ActivityFilters;
 }): Promise<Paged<ActivityItem>> {
-  const { from, to } = pageRange(filters.page, ACTIVITY_PAGE_SIZE);
   const types = ACTIVITY_TYPES[filters.group];
 
   let query = client
@@ -749,68 +563,169 @@ export async function getActivityPage({
     .eq("account_id", accountId);
   if (types.length > 0) query = query.in("type", [...types]);
 
-  const { count, data, error } = await query
-    .order("created_at", { ascending: filters.sort === "oldest" })
-    .order("id")
-    .range(from, to);
-  if (error) throw error;
+  const result = await readPage(
+    query
+      .order("created_at", { ascending: filters.sort === "oldest" })
+      .order("id"),
+    filters.page,
+    ACTIVITY_PAGE_SIZE,
+  );
 
   return paged(
-    ((data ?? []) as unknown as ActivityRow[]).map((row) =>
+    (result.rows as unknown as ActivityRow[]).map((row) =>
       toActivityItem(row, accountUsername),
     ),
-    count,
-    filters.page,
+    result.count,
+    result.page,
     ACTIVITY_PAGE_SIZE,
   );
 }
 
-export async function getRecentActivity({
+interface OverviewRow {
+  activity: ActivityRow[];
+  activity_days: { counts: number[] | null; from: string } | null;
+  diary: { id: string; title: string; tmdb_id: number; watched_on: string }[];
+  favorites: MovieRow[];
+  following: {
+    avatar_url: string | null;
+    display_name: string | null;
+    username: string;
+  }[];
+  lists: (ListRow & { previews: (string | null)[] })[];
+  popular_reviews: (ReviewRow & { liked: boolean })[];
+  rating_spread: number[] | null;
+  recent_reviews: (ReviewRow & { liked: boolean })[];
+  stats: {
+    diary_count: number;
+    following_count: number;
+    likes_count: number;
+    lists_count: number;
+    reviews_count: number;
+    watched_count: number;
+    watchlist_count: number;
+  } | null;
+  watched: MovieRow[];
+  watchlist: MovieRow[];
+}
+
+export interface AccountOverviewData {
+  activity: ActivityItem[];
+  activityDays: ActivityDays;
+  counts: LibraryCounts;
+  diary: DiaryEntry[];
+  favorites: MediaItem[];
+  following: PersonPreview[];
+  followingCount: number;
+  lists: ListCardData[];
+  // The most liked reviews, recent ones included.
+  popular: ReviewCardData[];
+  reviews: ReviewCardData[];
+  spread: number[];
+  watched: MediaItem[];
+  watchlist: MediaItem[];
+}
+
+const EMPTY_OVERVIEW: OverviewRow = {
+  activity: [],
+  activity_days: null,
+  diary: [],
+  favorites: [],
+  following: [],
+  lists: [],
+  popular_reviews: [],
+  rating_spread: null,
+  recent_reviews: [],
+  stats: null,
+  watched: [],
+  watchlist: [],
+};
+
+const reviewCards = (rows: (ReviewRow & { liked: boolean })[]) => {
+  const liked = new Set(rows.filter((row) => row.liked).map((row) => row.id));
+  return rows.flatMap((row) => toReviewCard(row, liked));
+};
+
+// Everything the profile overview shows, in one round trip. Read separately it
+// was fourteen requests or more per load, and a dozen visitors at once queued
+// on the connection pool for seconds. The function checks once that the viewer
+// may see the account and applies the policies' remaining rules itself.
+export async function getAccountOverview({
   accountId,
   accountUsername,
   client,
-  limit,
+  limits,
 }: {
   accountId: string;
   accountUsername: string;
   client: Client;
-  limit: number;
-}): Promise<ActivityItem[]> {
-  const { data, error } = await client
-    .from("account_activity")
-    .select(ACTIVITY_COLUMNS)
-    .eq("account_id", accountId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  limits: {
+    activity: number;
+    diary: number;
+    following: number;
+    lists: number;
+    popular: number;
+    reviews: number;
+    watched: number;
+    watchlist: number;
+  };
+}): Promise<AccountOverviewData> {
+  const { data, error } = await client.rpc("get_account_overview", {
+    p_account_id: accountId,
+    p_activity: limits.activity,
+    p_diary: limits.diary,
+    p_following: limits.following,
+    p_lists: limits.lists,
+    p_popular: limits.popular,
+    p_reviews: limits.reviews,
+    p_watched: limits.watched,
+    p_watchlist: limits.watchlist,
+  });
   if (error) throw error;
-  return ((data ?? []) as unknown as ActivityRow[]).map((row) =>
-    toActivityItem(row, accountUsername),
-  );
-}
 
-export async function getRecentDiary({
-  accountId,
-  client,
-  limit,
-}: {
-  accountId: string;
-  client: Client;
-  limit: number;
-}): Promise<DiaryEntry[]> {
-  const { data, error } = await client
-    .from("account_diary")
-    .select("id, tmdb_id, title, watched_on")
-    .eq("account_id", accountId)
-    .order("watched_on", { ascending: false })
-    .order("watched_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    tmdbId: row.tmdb_id,
-    watchedOn: row.watched_on,
-  }));
+  // Nothing comes back for an account the viewer may not see.
+  const row = (data as unknown as OverviewRow | null) ?? EMPTY_OVERVIEW;
+  const stats = row.stats;
+  const none = new Set<number>();
+
+  return {
+    activity: row.activity.map((item) => toActivityItem(item, accountUsername)),
+    activityDays: {
+      counts: (row.activity_days?.counts ?? []).map(Number),
+      from: row.activity_days?.from ?? "",
+    },
+    counts: stats
+      ? {
+          diary: stats.diary_count,
+          likes: stats.likes_count,
+          lists: stats.lists_count,
+          reviews: stats.reviews_count,
+          watched: stats.watched_count,
+          watchlist: stats.watchlist_count,
+        }
+      : EMPTY_LIBRARY_COUNTS,
+    diary: row.diary.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      tmdbId: entry.tmdb_id,
+      watchedOn: entry.watched_on,
+    })),
+    favorites: row.favorites.map((film) => toMediaItem(film, none)),
+    following: row.following.map((person) => ({
+      avatarUrl: person.avatar_url,
+      displayName: person.display_name || person.username,
+      username: person.username,
+    })),
+    followingCount: stats?.following_count ?? 0,
+    lists: row.lists.map((list) => toListCard(list, list.previews)),
+    popular: reviewCards(row.popular_reviews),
+    reviews: reviewCards(row.recent_reviews),
+    spread: Array.from(
+      { length: 10 },
+      (_, index) => Number(row.rating_spread?.[index]) || 0,
+    ),
+    watched: row.watched.map((film) => toMediaItem(film, none)),
+    watchlist: row.watchlist.map((film) => toMediaItem(film, none)),
+  };
 }
 
 interface DiaryEntryRow {

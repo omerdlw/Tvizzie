@@ -94,7 +94,7 @@ export function MoviePeople({ cast, crew }: MoviePeopleProps) {
             <Item className="min-w-0" exit={false} from="light">
               <Button
                 aria-label="Show full cast and crew"
-                className="cine-press center h-10 w-full cursor-pointer rounded-[16px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
+                className="cine-press center h-10 w-full cursor-pointer rounded-control bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
                 onClick={openAll}
               >
                 <Icon icon="solar:alt-arrow-right-linear" size={16} />

@@ -241,7 +241,7 @@ function AwardGroupBlock({
             alt=""
             className="object-contain p-0.5"
             src={logo}
-            wrapperClassName="size-7 shrink-0 rounded-lg bg-white/10"
+            wrapperClassName="size-7 shrink-0 rounded-card bg-white/10"
           />
         ) : null}
         <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-white">
@@ -399,7 +399,7 @@ export function AwardsView({
             <Button
               aria-pressed={winsOnly}
               className={cn(
-                "cine-fade inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[13px] px-3 text-xs font-semibold ring-1 ring-inset",
+                "cine-fade inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-control px-3 text-xs font-semibold ring-1 ring-inset",
                 winsOnly
                   ? "bg-[rgb(var(--grade,252_252_251)/0.16)] text-[rgb(var(--grade,252_252_251))] ring-[rgb(var(--grade,252_252_251)/0.3)] hover:bg-[rgb(var(--grade,252_252_251)/0.24)] hover:ring-[rgb(var(--grade,252_252_251)/0.4)]"
                   : "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10",

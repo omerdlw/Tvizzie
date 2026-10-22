@@ -20,7 +20,7 @@ export function PosterStack({
         const path = paths[index] ?? null;
         return (
           <div
-            className="relative aspect-[2/3] w-[28%] shrink-0 overflow-hidden rounded-[4px] bg-white/[0.04] shadow-[6px_0_14px_-6px_rgb(0_0_0/0.9)] not-first:-ml-[10%]"
+            className="relative aspect-[2/3] w-[28%] shrink-0 overflow-hidden rounded-chip bg-white/[0.04] shadow-[6px_0_14px_-6px_rgb(0_0_0/0.9)] not-first:-ml-[10%]"
             key={index}
             style={{ zIndex: SLOTS - index }}
           >

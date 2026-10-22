@@ -1,13 +1,10 @@
 import type { JSX, ReactNode } from "react";
 import type { Metadata } from "next";
-import { report } from "@omerdlw/base-framework/utils";
-import {
-  getAccountFollowCounts,
-  getAccountFollowRelation,
-} from "@/features/account/server";
+import { getAccountAmbientPalette } from "@/features/account/server/ambient";
+import { getAccountHeader } from "@/features/account/server/header";
+import { ProfileStats } from "@/features/account/components/browse/profile-stats";
 import { getAccountPageContext } from "@/features/account/server/context";
 import { FollowedBy } from "@/features/social";
-import { readMutualFollowers } from "@/features/social/server/queries";
 import { project } from "@config/project";
 import { AccountClient } from "./client";
 
@@ -50,33 +47,49 @@ export default async function AccountRouteLayout({
   params,
 }: AccountPageProps & { children: ReactNode }): Promise<JSX.Element> {
   const { username } = await params;
-  const { account, client, isOwner, viewerId } =
-    await getAccountPageContext(username);
+  const { account, client, isOwner } = await getAccountPageContext(username);
 
-  const [relation, counts, mutual] = await Promise.all([
-    getAccountFollowRelation({
-      client,
-      viewerId: viewerId ?? undefined,
-      targetId: account.id,
-    }),
-    getAccountFollowCounts({ client, accountId: account.id }),
-    viewerId && !isOwner
-      ? readMutualFollowers(client, account.id).catch((error) => {
-          report("Mutual followers read", error);
-          return null;
-        })
-      : null,
+  const [header, palette] = await Promise.all([
+    getAccountHeader({ accountId: account.id, client }),
+    // The hero's picture lights the page, as a film's does.
+    getAccountAmbientPalette(account.backgroundUrl || account.avatarUrl),
   ]);
+  const { library, mutual } = header;
+  const base = `/account/${encodeURIComponent(account.username)}`;
 
   return (
     <AccountClient
       account={account}
-      followersCount={counts.followersCount}
-      followingCount={counts.followingCount}
-      initialFollowStatus={relation.status}
-      isFollower={relation.isFollower}
+      followersCount={header.followersCount}
+      followingCount={header.followingCount}
+      initialFollowStatus={header.followStatus}
+      isFollower={header.followStatus === "accepted"}
       isOwner={isOwner}
+      palette={palette}
       proofSlot={mutual ? <FollowedBy mutual={mutual} /> : null}
+      statsSlot={
+        library ? (
+          <ProfileStats
+            stats={[
+              {
+                count: library.watched,
+                href: `${base}/watched`,
+                label: "Films",
+              },
+              {
+                count: library.thisYear,
+                href: `${base}/diary`,
+                label: "This year",
+              },
+              {
+                count: library.lists,
+                href: `${base}/lists`,
+                label: "Lists",
+              },
+            ]}
+          />
+        ) : null
+      }
     >
       {children}
     </AccountClient>

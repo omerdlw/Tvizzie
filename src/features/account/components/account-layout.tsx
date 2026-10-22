@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEventHandler,
-  type ReactNode,
-} from "react";
+import { useState, type ReactNode } from "react";
 
-import { AdaptiveImage, BackdropHero, Button, Icon } from "@/ui";
+import { AdaptiveImage, BackdropHero, Icon } from "@/ui";
 import {
   CinemaTitle,
   Drift,
@@ -28,10 +22,13 @@ import { SCENE } from "../lib/motion";
 import { AvatarStage } from "./account-avatar";
 import { useGlobalEvent } from "@omerdlw/base-framework/hooks";
 import { useDockActions } from "@omerdlw/base-framework/modules/dock";
-import { useAmbientTheme } from "@omerdlw/base-framework/modules/ambient";
+import {
+  useAmbientTheme,
+  type AmbientPalette,
+} from "@omerdlw/base-framework/modules/ambient";
 import { useHeldPalette } from "@/motion/handoff";
 import { createAccountSocialSurfaceEntry } from "./dock/account-social-surface";
-import { createAccountBioSurfaceEntry } from "./dock/account-bio-surface";
+import { ProfileStatButton, ProfileStatRow } from "./browse/profile-stats";
 
 const DEFAULT_DISPLAY_NAME = "Account";
 
@@ -41,7 +38,7 @@ const JOIN_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
 });
 
 const AVATAR_CLASSES =
-  "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/60 text-4xl font-semibold text-white shadow-2xl ring-2 ring-white/10 select-none sm:size-28 sm:text-5xl lg:size-32";
+  "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/60 text-3xl font-semibold text-white shadow-2xl ring-2 ring-white/10 select-none sm:size-24 sm:text-4xl lg:size-28";
 
 const CONTAINER = "mx-auto flex w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8";
 
@@ -141,88 +138,10 @@ function AccountBackdropHero({ image }: AccountBackdropHeroProps) {
   );
 }
 
-interface AccountHeroBioProps {
-  bio?: string | null;
-  onOpenBio: () => void;
-}
-
-function AccountHeroBio({ bio, onOpenBio }: AccountHeroBioProps) {
-  const textRef = useRef<HTMLParagraphElement | null>(null);
-  const [hasTextOverflow, setHasTextOverflow] = useState(false);
-
-  useEffect(() => {
-    const element = textRef.current;
-    if (!element || !bio) return;
-
-    const checkOverflow = () => {
-      setHasTextOverflow(element.scrollWidth > element.clientWidth);
-    };
-
-    const frameId = requestAnimationFrame(checkOverflow);
-    const resizeObserver = new ResizeObserver(checkOverflow);
-
-    resizeObserver.observe(element);
-    return () => {
-      cancelAnimationFrame(frameId);
-      resizeObserver.disconnect();
-    };
-  }, [bio]);
-
-  if (!bio) return null;
-
-  const isOverflowing = bio.includes("\n") || hasTextOverflow;
-
-  return (
-    <Reveal
-      blurPx={6}
-      className="mt-3 flex min-w-0 items-center gap-1.5 overflow-hidden text-xs text-white/70 sm:mt-3.5 sm:text-sm"
-      duration={SCENE.bio.duration}
-      intro={SCENE.bio.delay}
-      offset={10}
-    >
-      <p
-        ref={textRef}
-        className={`cine-fade min-w-0 truncate ${isOverflowing ? "cursor-pointer select-none hover:text-white" : ""}`}
-        onClick={isOverflowing ? onOpenBio : undefined}
-      >
-        {bio}
-      </p>
-      {isOverflowing && (
-        <Button
-          className="shrink-0 cursor-pointer font-medium text-white underline underline-offset-2 hover:text-white"
-          onClick={onOpenBio}
-          type="button"
-        >
-          read more
-        </Button>
-      )}
-    </Reveal>
-  );
-}
-
-interface SocialStatButtonProps {
-  count: number;
-  label: string;
-  onClick: MouseEventHandler<HTMLButtonElement>;
-}
-
-function SocialStatButton({ count, label, onClick }: SocialStatButtonProps) {
-  return (
-    <Button
-      className="cine-fade inline-flex cursor-pointer items-center gap-1.5 hover:text-white"
-      onClick={onClick}
-      type="button"
-    >
-      <span className="font-semibold text-white">{count}</span>
-      <span>{label}</span>
-    </Button>
-  );
-}
-
 function PrivateLockedView() {
   return (
-    <div className="flex min-h-56 w-full flex-col items-center justify-center gap-3 rounded-xl px-6 py-12 text-center ring-1 ring-white/10 ring-inset">
-      <span className="center size-11 rounded-full bg-white/[0.06] text-white/60">
+    <div className="flex min-h-56 w-full flex-col items-center justify-center gap-3 rounded-plate px-6 py-12 text-center ring-1 ring-white/10 ring-inset">
+      <span className="center size-11 rounded-control bg-white/[0.06] text-white/60">
         <Icon icon="solar:lock-bold" size={20} />
       </span>
       <div className="flex max-w-sm flex-col gap-1">
@@ -241,12 +160,21 @@ interface AccountHeroProps {
   account?: AccountData | null;
   followersCount?: number;
   followingCount?: number;
+  palette?: AmbientPalette | null;
+  proofSlot?: ReactNode;
+  statsSlot?: ReactNode;
 }
 
+// Who it is on the left, their figures on the right, as on Letterboxd: the
+// avatar and name, then the handle and when they joined; the library's counts
+// with following and followers after them.
 function AccountHero({
   account,
   followersCount = 0,
   followingCount = 0,
+  palette: served = null,
+  proofSlot,
+  statsSlot,
 }: AccountHeroProps) {
   const { openSurface } = useDockActions();
 
@@ -254,8 +182,11 @@ function AccountHero({
   const backdropUrl = resolveAccountBackdropUrl(account);
   const joinDate = formatJoinDate(account?.createdAt) || "—";
 
+  // Worked out on the server: the browser can seldom read a pasted picture.
+  // One changed in this browser since is read here, if its host allows.
   const { palette } = useAmbientTheme({
     image: backdropUrl || account?.avatarUrl || null,
+    initialPalette: served,
   });
   useHeldPalette(palette);
 
@@ -272,47 +203,25 @@ function AccountHero({
     );
   };
 
-  const openBio = () => {
-    if (!account?.bio) return;
-    openSurface(
-      createAccountBioSurfaceEntry({
-        account,
-        bio: account.bio,
-        displayName,
-        username: account.username,
-      }),
-    );
-  };
-
   const paddingClass = backdropUrl
     ? "-mt-20 pb-6 sm:-mt-28 sm:pb-8 lg:-mt-36 lg:pb-10"
-    : "py-14 sm:py-20 lg:py-24";
+    : "pt-24 pb-6 sm:pt-28 sm:pb-8 lg:pt-32 lg:pb-10";
 
-  const stats: { key: string; node: ReactNode }[] = [
-    {
-      key: "following",
-      node: (
-        <SocialStatButton
-          count={followingCount}
-          label="Following"
-          onClick={() => openSocial("following")}
-        />
-      ),
-    },
-    {
-      key: "followers",
-      node: (
-        <SocialStatButton
-          count={followersCount}
-          label="Followers"
-          onClick={() => openSocial("followers")}
-        />
-      ),
-    },
-    { key: "joined", node: <span>Joined {joinDate}</span> },
-  ];
+  const meta: { key: string; node: ReactNode }[] = [];
+  if (account?.username) {
+    meta.push({ key: "handle", node: <span>@{account.username}</span> });
+  }
+  meta.push({ key: "joined", node: <span>Joined {joinDate}</span> });
   if (account?.isPrivate) {
-    stats.push({ key: "private", node: <span>Private</span> });
+    meta.push({
+      key: "private",
+      node: (
+        <span className="inline-flex items-center gap-1">
+          <Icon icon="solar:lock-bold" size={12} />
+          Private
+        </span>
+      ),
+    });
   }
 
   return (
@@ -320,55 +229,75 @@ function AccountHero({
       {backdropUrl && <AccountBackdropHero image={backdropUrl} />}
 
       <SceneBody className={`relative z-10 w-full ${paddingClass}`}>
-        <div className="relative z-10 flex min-w-0 items-center gap-4 sm:gap-6 lg:gap-8">
-          <AvatarStage
-            className={AVATAR_CLASSES}
-            label={`${displayName} avatar`}
-          >
-            {account?.avatarUrl ? (
-              <AdaptiveImage
-                alt=""
-                className="size-full object-cover"
-                onError={(e) =>
-                  applyAvatarFallback(e, getUserAvatarFallbackUrl(account))
-                }
-                src={account.avatarUrl}
-              />
-            ) : (
-              getInitial(displayName || account?.username)
-            )}
-          </AvatarStage>
+        <div className="relative z-10 flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-6">
+            <AvatarStage
+              className={AVATAR_CLASSES}
+              label={`${displayName} avatar`}
+            >
+              {account?.avatarUrl ? (
+                <AdaptiveImage
+                  alt=""
+                  className="size-full object-cover"
+                  onError={(e) =>
+                    applyAvatarFallback(e, getUserAvatarFallbackUrl(account))
+                  }
+                  src={account.avatarUrl}
+                />
+              ) : (
+                getInitial(displayName || account?.username)
+              )}
+            </AvatarStage>
 
-          <div className="flex min-w-0 flex-1 flex-col justify-center">
-            <CinemaTitle className="font-zuume max-w-full text-4xl leading-none font-bold text-white uppercase [overflow-wrap:anywhere] sm:text-6xl lg:text-7xl">
-              {displayName}
-            </CinemaTitle>
+            <div className="flex min-w-0 flex-col">
+              <CinemaTitle className="font-zuume max-w-full text-4xl leading-none font-bold text-white uppercase [overflow-wrap:anywhere] sm:text-5xl lg:text-6xl">
+                {displayName}
+              </CinemaTitle>
 
-            <Drift>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/50 sm:mt-2 sm:text-base">
-                {stats.map((stat, index) => (
-                  <RowItem
-                    as="div"
-                    className="inline-flex items-center gap-x-3"
-                    count={stats.length}
-                    index={index}
-                    intro={SCENE.stats.delay}
-                    key={stat.key}
-                    total={SCENE.stats.spread}
-                  >
-                    {index > 0 ? (
-                      <span className="text-white/50">•</span>
-                    ) : null}
-                    {stat.node}
-                  </RowItem>
-                ))}
-              </div>
-            </Drift>
+              <Drift>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-white/50 sm:text-sm">
+                  {meta.map((item, index) => (
+                    <RowItem
+                      as="div"
+                      className="inline-flex items-center gap-x-2.5"
+                      count={meta.length}
+                      index={index}
+                      intro={SCENE.stats.delay}
+                      key={item.key}
+                      total={SCENE.stats.spread}
+                    >
+                      {index > 0 ? (
+                        <span className="text-white/30">•</span>
+                      ) : null}
+                      {item.node}
+                    </RowItem>
+                  ))}
+                </div>
+              </Drift>
 
-            <Drift>
-              <AccountHeroBio bio={account?.bio} onOpenBio={openBio} />
-            </Drift>
+              {proofSlot ? (
+                <Reveal className="mt-3 flex" intro={SCENE.bio.delay}>
+                  {proofSlot}
+                </Reveal>
+              ) : null}
+            </div>
           </div>
+
+          <Reveal className="shrink-0" intro={SCENE.bio.delay}>
+            <ProfileStatRow>
+              {statsSlot}
+              <ProfileStatButton
+                count={followingCount}
+                label="Following"
+                onClick={() => openSocial("following")}
+              />
+              <ProfileStatButton
+                count={followersCount}
+                label="Followers"
+                onClick={() => openSocial("followers")}
+              />
+            </ProfileStatRow>
+          </Reveal>
         </div>
       </SceneBody>
     </>
@@ -382,7 +311,9 @@ interface AccountLayoutProps {
   followingCount?: number;
   isFollower?: boolean;
   isOwner?: boolean;
+  palette?: AmbientPalette | null;
   proofSlot?: ReactNode;
+  statsSlot?: ReactNode;
   tabsSlot?: ReactNode;
 }
 
@@ -393,7 +324,9 @@ export function AccountLayout({
   followingCount = 0,
   isFollower: initialIsFollower = false,
   isOwner = false,
+  palette = null,
   proofSlot,
+  statsSlot,
   tabsSlot,
 }: AccountLayoutProps) {
   const { followersCount, isFollower } = useSocialFollowSync(
@@ -414,27 +347,31 @@ export function AccountLayout({
       score={SCENE}
     >
       <div className="relative z-10 w-full [overflow-anchor:none]">
+        {/* The sections bar sits over the top of the hero, as a site's bar
+            would, and stays where it is while the hero arrives under it. */}
+        {tabsSlot && !isPrivateLocked ? (
+          <Reveal
+            className="absolute inset-x-0 top-0 z-20"
+            intro={SCENE.rule.delay}
+            offset={0}
+          >
+            {tabsSlot}
+          </Reveal>
+        ) : null}
+
         <div className={CONTAINER}>
           <AccountHero
             account={account}
             followersCount={followersCount}
             followingCount={followingCount}
+            palette={palette}
+            proofSlot={proofSlot}
+            statsSlot={isPrivateLocked ? null : statsSlot}
           />
-          {proofSlot ? (
-            <Reveal className="pb-4" intro={SCENE.bio.delay}>
-              {proofSlot}
-            </Reveal>
-          ) : null}
         </div>
 
         <SceneBody>
           <div className={CONTAINER}>
-            {tabsSlot && !isPrivateLocked ? (
-              <Reveal className="mt-4 sm:mt-6" intro={SCENE.rule.delay}>
-                {tabsSlot}
-              </Reveal>
-            ) : null}
-
             <Reveal
               as="section"
               className="w-full pt-8 sm:pt-10"

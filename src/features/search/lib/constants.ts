@@ -2,7 +2,8 @@ import type { SearchScope, SearchType } from "./types";
 
 export const SEARCH_MIN_QUERY_LENGTH = 2;
 export const SEARCH_MAX_QUERY_LENGTH = 100;
-export const SEARCH_DEBOUNCE_MS = 300;
+export const SEARCH_DEBOUNCE_MS = 250;
+export const SEARCH_CACHE_LIMIT = 80;
 
 export const SEARCH_ENDPOINTS: Readonly<Record<SearchType, string>> = {
   lists: "/api/search/lists",
@@ -41,6 +42,23 @@ export const SEARCH_NOUNS: Readonly<Record<SearchScope, string>> = {
   users: "users",
 };
 
+export const SEARCH_EMPTY_HINTS: Readonly<Record<SearchScope, string>> = {
+  all: "Check the spelling, or add a year: dune 1984",
+  lists: "Try fewer words from the list's title",
+  movies: "Check the spelling, or add a year: dune 1984",
+  people: "Check the spelling of the name",
+  reviews: "Try a film's title or a few words from a review",
+  users: "Try a username or a display name",
+};
+
+export const SEARCH_GROUP_LABELS: Readonly<Record<SearchType, string>> = {
+  lists: "Lists",
+  movies: "Movies",
+  people: "People",
+  reviews: "Reviews",
+  users: "Users",
+};
+
 export const SEARCH_PER_PAGE: Readonly<Record<SearchType, number>> = {
   lists: 3,
   movies: 8,
@@ -54,6 +72,14 @@ export const SEARCH_OVERVIEW: Readonly<Record<SearchType, number>> = {
   people: 1,
   reviews: 1,
   users: 1,
+};
+// The kind that answers the query best leads the overview, with more rows.
+export const SEARCH_OVERVIEW_LEAD: Readonly<Record<SearchType, number>> = {
+  lists: 2,
+  movies: 4,
+  people: 3,
+  reviews: 2,
+  users: 3,
 };
 
 export const SEARCH_ICON = "solar:magnifer-linear";

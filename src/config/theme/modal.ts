@@ -30,19 +30,19 @@ export const modalThemeConfig = defineTheme(modalTheme, {
       "overflow-visible bg-transparent ring-1 ring-transparent ring-inset",
     panelChrome: [
       "overflow-hidden bg-black/60 shadow-[0_18px_56px_rgba(0,0,0,0.50)] ring-1 ring-inset ring-white/10 backdrop-blur-lg",
-      "data-[layout=center]:rounded-[30px]",
-      "data-[layout=top]:rounded-b-[30px] data-[layout=top]:border-t-0",
-      "data-[layout=bottom]:rounded-t-[30px] data-[layout=bottom]:border-b-0",
-      "data-[layout=top-mobile]:w-full data-[layout=top-mobile]:rounded-b-[30px] data-[layout=top-mobile]:border-x-0 data-[layout=top-mobile]:border-t-0",
-      "data-[layout=bottom-mobile]:w-full data-[layout=bottom-mobile]:rounded-t-[30px] data-[layout=bottom-mobile]:border-x-0 data-[layout=bottom-mobile]:border-b-0",
-      "data-[layout=left]:h-screen data-[layout=left]:max-h-screen data-[layout=left]:w-full data-[layout=left]:rounded-r-[30px] data-[layout=left]:border-l-0",
-      "data-[layout=right]:h-screen data-[layout=right]:max-h-screen data-[layout=right]:w-full data-[layout=right]:rounded-l-[30px] data-[layout=right]:border-r-0",
+      "data-[layout=center]:rounded-shell",
+      "data-[layout=top]:rounded-b-shell data-[layout=top]:border-t-0",
+      "data-[layout=bottom]:rounded-t-shell data-[layout=bottom]:border-b-0",
+      "data-[layout=top-mobile]:w-full data-[layout=top-mobile]:rounded-b-shell data-[layout=top-mobile]:border-x-0 data-[layout=top-mobile]:border-t-0",
+      "data-[layout=bottom-mobile]:w-full data-[layout=bottom-mobile]:rounded-t-shell data-[layout=bottom-mobile]:border-x-0 data-[layout=bottom-mobile]:border-b-0",
+      "data-[layout=left]:h-screen data-[layout=left]:max-h-screen data-[layout=left]:w-full data-[layout=left]:rounded-r-shell data-[layout=left]:border-l-0",
+      "data-[layout=right]:h-screen data-[layout=right]:max-h-screen data-[layout=right]:w-full data-[layout=right]:rounded-l-shell data-[layout=right]:border-r-0",
       "data-[layout=side-mobile]:h-screen data-[layout=side-mobile]:max-h-screen data-[layout=side-mobile]:w-full data-[layout=side-mobile]:self-stretch data-[layout=side-mobile]:rounded-none data-[layout=side-mobile]:border-0",
     ].join(" "),
 
     content:
       "flex min-h-0 flex-col overflow-hidden data-[height=capped]:max-h-[70dvh] data-[height=full]:h-full data-[height=full]:max-h-full",
-    body: "modal-body min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-[20px]",
+    body: "modal-body min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-shell",
 
     row: "items-center gap-2.5 px-4 py-3 data-[columns=2]:flex data-[columns=2]:justify-between data-[columns=3]:grid data-[columns=3]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] data-[sticky]:bg-black/80 data-[sticky]:backdrop-blur-md data-[sticky=bottom]:sticky data-[sticky=bottom]:bottom-0 data-[sticky=top]:sticky data-[sticky=top]:top-0",
     rowCenter: "flex items-center justify-center",
@@ -50,13 +50,13 @@ export const modalThemeConfig = defineTheme(modalTheme, {
     rowStart: "min-w-0",
     title: "truncate text-sm font-semibold text-white",
     closeButton:
-      "center inline-flex size-8 cursor-pointer rounded-[20px] bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white hover:text-black hover:ring-transparent",
+      "center inline-flex size-8 cursor-pointer rounded-control bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white hover:text-black hover:ring-transparent",
 
     switcher: "center shrink-0 gap-2 border-t border-white/10 bg-white/5 p-2.5",
     switcherButton:
-      "flex cursor-pointer items-center gap-1.5 rounded-xl bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset *:shrink-0 hover:bg-white hover:text-black",
+      "flex cursor-pointer items-center gap-1.5 rounded-card bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset *:shrink-0 hover:bg-white hover:text-black",
     switcherCurrent:
-      "rounded-xl bg-white/10 px-2.5 py-1.5 text-xs font-bold uppercase ring-1 ring-white/10 ring-inset",
+      "rounded-card bg-white/10 px-2.5 py-1.5 text-xs font-bold uppercase ring-1 ring-white/10 ring-inset",
     switcherDivider: "text-xs text-white/15",
   },
   styles: {

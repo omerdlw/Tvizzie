@@ -26,6 +26,7 @@ import { Develop } from "./develop";
 import { GRAMMAR } from "./grammar";
 import { EASE } from "./tempo";
 import { useArrival, useArrivalClock } from "./wave";
+import { RADIUS } from "@/ui/radius";
 
 // "page": the film's page is up. "leaving": it is rolling back to its head
 // and going dark. "wall": the gallery hangs on its own. "closing": the wall is
@@ -196,7 +197,7 @@ export function Tile({
       <ClockContext value={clock}>
         <Develop
           className="h-full rounded-[inherit]"
-          radius={20}
+          radius={RADIUS.card}
           run={run}
           zoom={zoom}
         >

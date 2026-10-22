@@ -87,7 +87,7 @@ function Slate({ title }: { title: string }) {
       {reel ? (
         <motion.div
           animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
-          className="absolute top-6 right-4 z-20 flex items-center gap-1 rounded-full bg-black/40 p-1 ring-1 ring-white/10 backdrop-blur-md sm:right-6 lg:right-8"
+          className="absolute top-6 right-4 z-20 flex items-center gap-1 rounded-plate bg-black/40 p-1 ring-1 ring-white/10 backdrop-blur-md sm:right-6 lg:right-8"
           exit={{ filter: "blur(6px)", opacity: 0, y: -8 }}
           initial={{ filter: "blur(6px)", opacity: 0, y: -8 }}
           transition={{ duration: SCENE.view.enter, ease: EASE.expo }}
@@ -97,7 +97,7 @@ function Slate({ title }: { title: string }) {
           </span>
           <button
             aria-label="View this still"
-            className="cine-press center size-8 cursor-pointer rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+            className="cine-press center size-8 cursor-pointer rounded-control text-white/70 hover:bg-white/10 hover:text-white"
             onClick={() => {
               const src = tmdbImageUrl("backdrop", reel, "original");
               if (!src) return;
@@ -109,7 +109,7 @@ function Slate({ title }: { title: string }) {
             <Icon icon="solar:maximize-square-minimalistic-linear" size={16} />
           </button>
           <button
-            className="cine-press h-8 cursor-pointer rounded-full px-3 text-[11px] font-semibold tracking-[0.12em] text-white uppercase hover:bg-white/10"
+            className="cine-press h-8 cursor-pointer rounded-control px-3 text-[11px] font-semibold tracking-[0.12em] text-white uppercase hover:bg-white/10"
             onClick={() => project(null)}
             type="button"
           >

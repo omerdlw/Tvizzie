@@ -1,31 +1,16 @@
 import type { JSX } from "react";
 import { Icon } from "@/ui";
 import { FAVORITES_MAX } from "../../lib/browse-data";
-import { getAccountFollowCounts } from "../../server/follows";
-import { getAccountLibrarySummary } from "../../server/library-summary";
-import {
-  countWatchedSince,
-  getFollowingPreview,
-  getRatingSpread,
-  getRecentActivity,
-  getRecentDiary,
-  getRecentLists,
-  getRecentMedia,
-  getRecentReviews,
-} from "../../server/browse";
+import { getAccountOverview } from "../../server/browse";
 import { getAccountPageContext } from "../../server/context";
+import { AccountBio } from "./account-bio";
 import { AccountLink } from "./account-link";
+import { ActivityCalendar } from "./activity-calendar";
 import { ActivityFeed } from "./activity-row";
 import { EmptyState } from "./empty-state";
 import { ListTeaser } from "./list-row";
 import { PosterGrid, PosterTile } from "./poster-grid";
-import { PosterStack } from "./poster-stack";
-import {
-  DiaryDigest,
-  PeopleGrid,
-  ProfileStats,
-  RatingsChart,
-} from "./profile-sidebar";
+import { DiaryDigest, PeopleGrid, RatingsChart } from "./profile-sidebar";
 import { ReviewList } from "./review-list";
 import { CountLink, Section, ViewAll } from "./section";
 
@@ -35,7 +20,7 @@ const POPULAR = 3;
 const DIARY = 10;
 const LISTS = 3;
 const FOLLOWING = 18;
-const ACTIVITY = 6;
+const ACTIVITY = 5;
 
 // Five across in both rows of the main column, so a favorite and a film from
 // last night sit at the same size.
@@ -51,56 +36,39 @@ export async function AccountOverview({
     await getAccountPageContext(username);
   if (locked) return null;
 
-  const accountId = account.id;
   const base = `/account/${encodeURIComponent(account.username)}`;
 
-  const [
-    summary,
-    follows,
+  const {
+    activity,
+    activityDays,
+    counts,
+    diary,
+    favorites: pinned,
+    following,
+    followingCount,
+    lists,
+    popular: liked,
+    reviews,
+    spread,
     watched,
     watchlist,
-    reviews,
-    liked,
-    diary,
-    spread,
-    lists,
-    following,
-    activity,
-    thisYear,
-  ] = await Promise.all([
-    getAccountLibrarySummary({ accountId, client }),
-    getAccountFollowCounts({ accountId, client }),
-    getRecentMedia({ accountId, client, kind: "watched", limit: RECENT }),
-    getRecentMedia({ accountId, client, kind: "watchlist", limit: 5 }),
-    getRecentReviews({ accountId, client, limit: REVIEWS, viewerId }),
-    getRecentReviews({
-      accountId,
-      by: "likes",
-      client,
-      limit: REVIEWS + POPULAR,
-      viewerId,
-    }),
-    getRecentDiary({ accountId, client, limit: DIARY }),
-    getRatingSpread({ accountId, client }),
-    getRecentLists({ accountId, client, limit: LISTS }),
-    getFollowingPreview({ accountId, client, limit: FOLLOWING }),
-    getRecentActivity({
-      accountId,
-      accountUsername: account.username,
-      client,
-      limit: ACTIVITY,
-    }),
-    countWatchedSince({
-      accountId,
-      client,
-      since: `${new Date().getUTCFullYear()}-01-01`,
-    }),
-  ]);
+  } = await getAccountOverview({
+    accountId: account.id,
+    accountUsername: account.username,
+    client,
+    limits: {
+      activity: ACTIVITY,
+      diary: DIARY,
+      following: FOLLOWING,
+      lists: LISTS,
+      popular: REVIEWS + POPULAR,
+      reviews: REVIEWS,
+      watched: RECENT,
+      watchlist: 5,
+    },
+  });
 
-  const { counts } = summary;
-  const favorites = summary.favorites
-    .slice(0, FAVORITES_MAX)
-    .map((film) => ({ ...film, pinned: false }));
+  const favorites = pinned.slice(0, FAVORITES_MAX);
   const shown = new Set(reviews.map((review) => review.id));
   const popular = liked
     .filter((review) => !shown.has(review.id))
@@ -111,6 +79,9 @@ export async function AccountOverview({
     username: account.username,
   };
 
+  // The films and the words about them run down the main column; the
+  // person (bio, diary, ratings, what they've been doing, who they follow)
+  // down a narrow sidebar beside it, as on Letterboxd.
   return (
     <div className="grid w-full gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="flex min-w-0 flex-col gap-12">
@@ -132,7 +103,7 @@ export async function AccountOverview({
                       <li key={`slot-${index}`}>
                         <AccountLink
                           aria-label="Pin a favorite from your likes"
-                          className="center aspect-[2/3] rounded-[6px] border border-dashed border-white/15 text-white/25 transition-colors hover:border-white/35 hover:text-white/60"
+                          className="center aspect-[2/3] rounded-card border border-dashed border-white/15 text-white/25 transition-colors hover:border-white/35 hover:text-white/60"
                           href={`${base}/likes`}
                         >
                           <Icon icon="solar:add-circle-linear" size={20} />
@@ -155,6 +126,17 @@ export async function AccountOverview({
             title="Recently watched"
           >
             <PosterGrid className={ROW} items={watched} />
+          </Section>
+        ) : null}
+
+        {watchlist.length > 0 ? (
+          <Section
+            action={
+              <CountLink count={counts.watchlist} href={`${base}/watchlist`} />
+            }
+            title="Watchlist"
+          >
+            <PosterGrid className={ROW} items={watchlist} />
           </Section>
         ) : null}
 
@@ -197,36 +179,33 @@ export async function AccountOverview({
               : "Nothing here yet."}
           </EmptyState>
         ) : null}
+
+        {lists.length > 0 ? (
+          <Section
+            action={<CountLink count={counts.lists} href={`${base}/lists`} />}
+            title="Lists"
+          >
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {lists.map((list) => (
+                <ListTeaser
+                  key={list.id}
+                  list={list}
+                  username={account.username}
+                />
+              ))}
+            </div>
+          </Section>
+        ) : null}
       </div>
 
       <aside className="grid min-w-0 content-start gap-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-1">
-        <ProfileStats
-          stats={[
-            { count: counts.watched, href: `${base}/watched`, label: "Films" },
-            { count: thisYear, href: `${base}/diary`, label: "This year" },
-            {
-              count: counts.reviews,
-              href: `${base}/reviews`,
-              label: "Reviews",
-            },
-            { count: counts.lists, href: `${base}/lists`, label: "Lists" },
-          ]}
-        />
-
-        {watchlist.length > 0 ? (
-          <Section
-            action={
-              <CountLink count={counts.watchlist} href={`${base}/watchlist`} />
-            }
-            title="Watchlist"
-          >
-            <AccountLink
-              aria-label="Watchlist"
-              className="block transition-opacity hover:opacity-80"
-              href={`${base}/watchlist`}
-            >
-              <PosterStack paths={watchlist.map((film) => film.posterPath)} />
-            </AccountLink>
+        {account.bio ? (
+          <Section title="Bio">
+            <AccountBio
+              bio={account.bio}
+              displayName={account.displayName || account.username}
+              username={account.username}
+            />
           </Section>
         ) : null}
 
@@ -248,38 +227,24 @@ export async function AccountOverview({
           </Section>
         ) : null}
 
-        {lists.length > 0 ? (
+        {activity.length > 0 ? (
           <Section
-            action={<CountLink count={counts.lists} href={`${base}/lists`} />}
-            title="Lists"
+            action={<ViewAll href={`${base}/activity`} />}
+            title="Activity"
           >
             <div className="flex flex-col gap-6">
-              {lists.map((list) => (
-                <ListTeaser
-                  key={list.id}
-                  list={list}
-                  username={account.username}
-                />
-              ))}
+              <ActivityCalendar days={activityDays} />
+              <ActivityFeed actor={actor} items={activity} />
             </div>
           </Section>
         ) : null}
 
         {following.length > 0 ? (
           <Section
-            summary={follows.followingCount.toLocaleString("en-US")}
+            summary={followingCount.toLocaleString("en-US")}
             title="Following"
           >
             <PeopleGrid people={following} />
-          </Section>
-        ) : null}
-
-        {activity.length > 0 ? (
-          <Section
-            action={<ViewAll href={`${base}/activity`} />}
-            title="Activity"
-          >
-            <ActivityFeed actor={actor} items={activity} />
           </Section>
         ) : null}
       </aside>

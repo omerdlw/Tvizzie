@@ -17,6 +17,7 @@ import {
 } from "motion/react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { Button, Icon } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import { GRAMMAR } from "./grammar";
 import { EASE, LANDED, size } from "./tempo";
 import { ClockContext } from "./clock";
@@ -116,7 +117,7 @@ function Slide({
       <ClockContext value={clock}>
         <Develop
           className="h-full rounded-[inherit]"
-          radius={20}
+          radius={RADIUS.card}
           run={slide.run}
           zoom={slide.zoom}
         >
@@ -130,7 +131,7 @@ function Slide({
 const ARROW_STYLE = { transitionDuration: `${size(1)}s` };
 
 const ARROW_CLASS =
-  "center absolute top-1/2 z-10 size-9 -translate-y-1/2 transition-[opacity,scale,background-color] ease-out-expo cursor-pointer rounded-full bg-white/70 text-black shadow-md ring-1 ring-black/10 ring-inset hover:bg-white sm:size-10";
+  "center absolute top-1/2 z-10 size-9 -translate-y-1/2 transition-[opacity,scale,background-color] ease-out-expo cursor-pointer rounded-control bg-white/70 text-black shadow-md ring-1 ring-black/10 ring-inset hover:bg-white sm:size-10";
 
 const arrowState = (visible: boolean) =>
   visible ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-75";
@@ -274,7 +275,7 @@ export function Carousel({
     >
       <div
         className={cn(
-          "flex cursor-grab touch-pan-y gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-[20px] select-none data-[dragging=true]:cursor-grabbing",
+          "flex cursor-grab touch-pan-y gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-card select-none data-[dragging=true]:cursor-grabbing",
           className,
         )}
         data-cursor="drag"
@@ -289,7 +290,7 @@ export function Carousel({
           {Children.toArray(children).map((child, index) => (
             <Slide
               className={cn(
-                "cine-slide shrink-0 rounded-[20px]",
+                "cine-slide shrink-0 rounded-card",
                 itemClassName,
               )}
               key={(child as { key?: string }).key ?? index}

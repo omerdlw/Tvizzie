@@ -37,7 +37,7 @@ export function SegmentedControl<K extends string>({
     <div
       aria-label={ariaLabel}
       className={cn(
-        "h-8 max-w-full items-stretch gap-0.5 overflow-x-auto rounded-[13px] bg-white/5 p-[3px] ring-1 ring-white/5 ring-inset select-none",
+        "h-8 max-w-full items-stretch gap-0.5 overflow-x-auto rounded-control bg-white/5 p-0.5 ring-1 ring-white/5 ring-inset select-none",
         fill ? "flex w-full" : "inline-flex w-fit",
         className,
       )}
@@ -49,7 +49,7 @@ export function SegmentedControl<K extends string>({
           <Button
             aria-selected={active}
             className={cn(
-              "cine-fade relative inline-flex min-w-fit cursor-pointer items-center justify-center gap-1.5 rounded-[10px] px-3 text-xs whitespace-nowrap outline-none focus-visible:ring-1 focus-visible:ring-white/50 focus-visible:ring-inset",
+              "cine-fade relative inline-flex min-w-fit cursor-pointer items-center justify-center gap-1.5 rounded-card px-3 text-xs whitespace-nowrap outline-none focus-visible:ring-1 focus-visible:ring-white/50 focus-visible:ring-inset",
               fill && "flex-1",
               active ? "text-white" : "text-white/70 hover:text-white",
             )}
@@ -60,7 +60,7 @@ export function SegmentedControl<K extends string>({
             {active ? (
               <motion.span
                 aria-hidden="true"
-                className="absolute inset-0 rounded-[10px] bg-white/10 shadow-sm"
+                className="absolute inset-0 rounded-card bg-white/10 shadow-sm"
                 data-pill=""
                 layoutId={pill}
                 transition={

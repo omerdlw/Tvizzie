@@ -90,7 +90,6 @@ export function PersonFilmography({
           {visible.map((credit) => (
             <Item as="li" className="min-w-0" from="light" key={credit.key}>
               <MoviePosterLink
-                caption={false}
                 detail={credit.role}
                 carried
                 movie={{
@@ -107,7 +106,7 @@ export function PersonFilmography({
         {credits.length > visible.length ? (
           <Item>
             <Button
-              className="cine-press mt-3 h-10 w-full cursor-pointer rounded-[16px] bg-white/5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
+              className="cine-press mt-3 h-10 w-full cursor-pointer rounded-control bg-white/5 text-xs font-semibold text-white/70 uppercase ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10"
               onClick={() => setExpanded(new Set(expanded).add(group.key))}
               type="button"
             >

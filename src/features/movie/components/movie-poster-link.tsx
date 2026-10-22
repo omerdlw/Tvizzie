@@ -13,7 +13,6 @@ interface MoviePosterLinkProps {
     title: string;
     year: number | null;
   };
-  caption?: boolean;
   detail?: string | null;
   carried?: boolean;
   onNavigated?: () => void;
@@ -27,8 +26,13 @@ const POSTER_WIDTHS = ["w185", "w342"] as const;
 // already decoded, without the cost of the full-size original.
 const CARRIED = "w780";
 
+// Holds a poster's place, so a short last page of a grid keeps the height
+// of a full one.
+export function MoviePosterPlaceholder() {
+  return <MediaCard framed={false} image={{ src: null }} />;
+}
+
 export function MoviePosterLink({
-  caption = true,
   carried = false,
   detail = null,
   movie,
@@ -47,20 +51,6 @@ export function MoviePosterLink({
 
   return (
     <MediaCard
-      caption={
-        caption ? (
-          <>
-            <span className="truncate px-1 text-xs font-semibold text-white/70">
-              {movie.title}
-            </span>
-            {movie.year ? (
-              <span className="-mt-1 px-1 text-[11px] font-semibold text-white/50">
-                {movie.year}
-              </span>
-            ) : null}
-          </>
-        ) : undefined
-      }
       fallbackIcon="solar:clapperboard-play-bold"
       href={movieHref(movie.id)}
       image={{
@@ -73,7 +63,7 @@ export function MoviePosterLink({
       label={label}
       onNavigated={onNavigated}
       overlay={overlay}
-      tooltip={caption ? undefined : label}
+      tooltip={label}
     />
   );
 }

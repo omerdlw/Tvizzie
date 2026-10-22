@@ -1,3 +1,5 @@
+import { requestJson } from "@/infrastructure/http/client";
+import { SEED_EMAIL_DOMAIN } from "./constants";
 import { normalizeEmail, unwrapResult } from "./utils";
 import type {
   LinkIdentityParams,
@@ -37,6 +39,23 @@ export async function requestEmailAuth(
     email: normalizedEmail,
     sent: true,
   };
+}
+
+// Seed accounts have no inbox. Built with NEXT_PUBLIC_SEED_LOGIN=1 they skip
+// the code step; any other build folds this to false.
+export function isSeedEmail(email: string): boolean {
+  return (
+    process.env.NEXT_PUBLIC_SEED_LOGIN === "1" &&
+    email.trim().toLowerCase().endsWith(`@${SEED_EMAIL_DOMAIN}`)
+  );
+}
+
+export async function signInSeedAccount(email: string): Promise<void> {
+  await requestJson("/api/auth/seed", {
+    body: JSON.stringify({ email: normalizeEmail(email) }),
+    method: "POST",
+    notifyOnError: false,
+  });
 }
 
 export async function verifyEmailOtp(

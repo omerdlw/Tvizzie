@@ -46,11 +46,11 @@ function Sidebar(): JSX.Element {
     <div className={SIDEBAR_CLASS}>
       <div className="flex min-w-0 flex-col gap-3">
         <div className="w-full shrink-0">
-          <SkeletonBlock className="aspect-[2/3] w-full rounded-[20px]" />
+          <SkeletonBlock className="aspect-[2/3] w-full rounded-card" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           {Array.from({ length: 4 }, (_, index) => (
-            <SkeletonBlock className="h-12 rounded-[20px]" key={index} />
+            <SkeletonBlock className="h-12 rounded-control" key={index} />
           ))}
         </div>
       </div>
@@ -79,12 +79,12 @@ function Sidebar(): JSX.Element {
 function PersonCardSkeleton({ compact = false }: { compact?: boolean }) {
   return compact ? (
     <div className="flex h-10 min-w-0 items-center gap-3 p-1 pr-2">
-      <SkeletonBlock className="size-8 shrink-0 rounded-[12px]" />
+      <SkeletonBlock className="size-8 shrink-0" />
       <SkeletonBlock className="h-2 w-20" />
     </div>
   ) : (
     <div className="flex h-[84px] items-center gap-3 p-1 pr-4">
-      <SkeletonBlock className="h-[76px] w-14 shrink-0 rounded-[16px]" />
+      <SkeletonBlock className="h-[76px] w-14 shrink-0" />
       <div className="flex min-w-0 flex-col">
         <SkeletonLines className="text-sm" widths={["8rem"]} />
         <SkeletonLines className="text-xs" widths={["5rem"]} />
@@ -110,7 +110,7 @@ function People(): JSX.Element {
               <PersonCardSkeleton compact />
             </div>
           ))}
-          <SkeletonBlock className="h-10 w-full rounded-[16px]" />
+          <SkeletonBlock className="h-10 w-full rounded-control" />
         </div>
       </div>
     </section>

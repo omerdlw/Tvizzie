@@ -5,11 +5,13 @@ export type * from "./lib/types";
 export {
   deletePasskey,
   getUserIdentities,
+  isSeedEmail,
   linkIdentity,
   listPasskeys,
   registerPasskey,
   renamePasskey,
   requestEmailAuth,
+  signInSeedAccount,
   signInWithOAuth,
   signInWithPasskey,
   unlinkIdentity,

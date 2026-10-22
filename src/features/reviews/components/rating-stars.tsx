@@ -1,8 +1,11 @@
-import type { JSX } from "react";
+import type { CSSProperties, JSX } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
 
+// Mirrored as the `rating-stars` mask in globals.css.
 export const STAR_PATH =
   "M12.74 3.98 L14.26 8.05 Q14.47 8.60 15.06 8.63 L19.40 8.82 Q21.51 8.91 19.85 10.23 L16.45 12.93 Q15.99 13.30 16.15 13.87 L17.31 18.05 Q17.88 20.09 16.12 18.92 L12.49 16.53 Q12 16.20 11.51 16.53 L7.88 18.92 Q6.12 20.09 6.69 18.05 L7.85 13.87 Q8.01 13.30 7.55 12.93 L4.15 10.23 Q2.49 8.91 4.60 8.82 L8.94 8.63 Q9.53 8.60 9.74 8.05 L11.26 3.98 Q12 2 12.74 3.98Z";
+
+const STAR_GAP = 2;
 
 export function Star({
   className,
@@ -54,17 +57,35 @@ export function RatingStars({
   }
 
   const value = Math.min(5, Math.max(0, rating));
+  // Lit as Star lights one: a star from half full on, a half from the left.
+  const whole = Math.floor(value);
+  const half = value - whole >= 0.5;
+  const width = size * 5 + STAR_GAP * 4;
+  const lit = whole * (size + STAR_GAP) + (half ? size / 2 : 0);
+  const mask = { "--star-size": `${size}px` } as CSSProperties;
+
+  // Two masked layers rather than ten SVGs: a ledger draws this on every row,
+  // twice, and the star's path was most of the page's weight.
   return (
     <span
       aria-label={`${value} out of 5`}
-      className={cn("inline-flex items-center gap-0.5", className)}
+      className={cn("relative inline-block shrink-0", className)}
       role="img"
+      style={{ height: size, width }}
       title={`${value} out of 5`}
     >
-      {Array.from({ length: 5 }, (_, index) => {
-        const fill = value - index;
-        return <Star fill={fill} key={index} size={size} />;
-      })}
+      <span
+        aria-hidden="true"
+        className="rating-stars absolute inset-0 bg-white/15"
+        style={mask}
+      />
+      {lit > 0 ? (
+        <span
+          aria-hidden="true"
+          className="rating-stars absolute inset-0 bg-amber-400"
+          style={{ ...mask, clipPath: `inset(0 ${width - lit}px 0 0)` }}
+        />
+      ) : null}
     </span>
   );
 }

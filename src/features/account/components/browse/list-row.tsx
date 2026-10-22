@@ -73,7 +73,7 @@ export function ListRow({
 
       {ownerEdit ? (
         <EditListButton
-          className="center size-8 shrink-0 cursor-pointer self-start rounded-lg text-white/50 ring-1 ring-white/10 ring-inset hover:bg-white/10 hover:text-white"
+          className="center size-8 shrink-0 cursor-pointer self-start rounded-control text-white/50 ring-1 ring-white/10 ring-inset hover:bg-white/10 hover:text-white"
           list={{
             description: list.description,
             id: list.id,

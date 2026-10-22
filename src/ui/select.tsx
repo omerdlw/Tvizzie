@@ -44,9 +44,9 @@ const MENU_GAP = 6;
 const VIEWPORT_MARGIN = 12;
 
 const COMPACT = {
-  content: "rounded-[16px] p-1",
-  option: "rounded-[11px] px-2.5 py-1.5 text-xs",
-  trigger: "h-8 rounded-[13px] px-3 py-0 text-xs",
+  content: "rounded-plate p-1",
+  option: "rounded-control px-2.5 py-1.5 text-xs",
+  trigger: "h-8 rounded-control px-3 py-0 text-xs",
 } as const;
 
 function Select<T extends string = string>({

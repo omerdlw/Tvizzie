@@ -23,19 +23,6 @@ export function reviewHref(tmdbId: number, username: string): string {
   return `/movie/${tmdbId}/reviews?user=${encodeURIComponent(username)}`;
 }
 
-export function matchRank(
-  text: string | null | undefined,
-  query: string,
-): number {
-  const haystack = (text ?? "").toLowerCase();
-  const needle = query.toLowerCase();
-  if (!needle || !haystack) return 4;
-  if (haystack === needle) return 0;
-  if (haystack.startsWith(needle)) return 1;
-  if (haystack.includes(` ${needle}`)) return 2;
-  return haystack.includes(needle) ? 3 : 4;
-}
-
 export function excerpt(text: string, query: string, max = 140): string {
   const flat = text.replace(/\s+/g, " ").trim();
   if (flat.length <= max) return flat;

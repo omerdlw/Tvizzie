@@ -1,6 +1,7 @@
 "use client";
 
 import type { JSX, ReactNode } from "react";
+import type { AmbientPalette } from "@omerdlw/base-framework/modules/ambient";
 import { useAuth } from "@/features/auth";
 import {
   AccountDockProvider,
@@ -19,7 +20,9 @@ interface AccountClientProps {
   initialFollowStatus: string | null;
   isFollower: boolean;
   isOwner: boolean;
+  palette?: AmbientPalette | null;
   proofSlot?: ReactNode;
+  statsSlot?: ReactNode;
 }
 
 export function AccountClient({
@@ -30,7 +33,9 @@ export function AccountClient({
   initialFollowStatus,
   isFollower,
   isOwner: initialIsOwner,
+  palette,
   proofSlot,
+  statsSlot,
 }: AccountClientProps): JSX.Element {
   const auth = useAuth();
   const accountState = useAccount();
@@ -62,7 +67,9 @@ export function AccountClient({
           followingCount={followingCount}
           isFollower={isFollower}
           isOwner={isOwner}
+          palette={palette}
           proofSlot={proofSlot}
+          statsSlot={statsSlot}
           tabsSlot={
             activeAccount.username ? (
               <AccountSectionTabs username={activeAccount.username} />

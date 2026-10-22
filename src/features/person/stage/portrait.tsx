@@ -102,7 +102,7 @@ export function Portrait({
     >
       <motion.div
         {...target}
-        className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px]"
+        className="relative aspect-[2/3] w-full overflow-hidden rounded-card"
         data-carry-slot=""
         ref={frame}
         style={{ clipPath, opacity: shown ? 1 : 0, rotateX, rotateY }}

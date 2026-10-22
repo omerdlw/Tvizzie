@@ -36,7 +36,7 @@ const ERROR_RESET_DELAY_MS = 700;
 const AUTO_FOCUS_DELAY_MS = 150;
 
 const BOX_STYLES = {
-  BASE: "center h-11 @[280px]:h-14 rounded-[14px] @[280px]:rounded-[20px] text-base @[280px]:text-lg font-semibold text-white/70 ring-1 ring-inset ring-white/5 hover:text-white",
+  BASE: "center h-11 @[280px]:h-14 rounded-control text-base @[280px]:text-lg font-semibold text-white/70 ring-1 ring-inset ring-white/5 hover:text-white",
   ERROR:
     "bg-white/10 text-white ring-white/30 hover:bg-white/15 hover:ring-white/30",
   ACTIVE: "bg-white/5 text-white ring-white/10 hover:bg-white/10",
@@ -348,7 +348,7 @@ function VerificationSurface({ close, data = {} }: VerificationSurfaceProps) {
 
   if (!auth.isConfigured) {
     return (
-      <p className="rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70 ring-1 ring-inset ring-white/10">
+      <p className="rounded-control bg-white/5 px-4 py-3 text-sm text-white/70 ring-1 ring-inset ring-white/10">
         Configure the Supabase variables in .env.local first
       </p>
     );

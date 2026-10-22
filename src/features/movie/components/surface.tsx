@@ -49,7 +49,7 @@ export function SurfaceScene({
 export const SURFACE_LEAD = size(-2);
 
 const BUTTON =
-  "cine-fade center relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-[20px] text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:pointer-events-none";
+  "cine-fade center relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-control text-xs font-bold uppercase ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:pointer-events-none";
 const IDLE =
   "bg-white/5 text-white/70 ring-white/5 hover:bg-white/10 hover:text-white hover:ring-white/10";
 const LIT =
@@ -62,13 +62,13 @@ export const surfaceIconButton = (lit: boolean) =>
   `${BUTTON} size-10 shrink-0 p-0 ${lit ? LIT : IDLE}`;
 
 export const surfaceRow = (lit: boolean) =>
-  `cine-fade group relative flex w-full cursor-pointer items-center gap-3 rounded-[20px] p-2 text-left ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:cursor-wait ${lit ? LIT : IDLE}`;
+  `cine-fade group relative flex w-full cursor-pointer items-center gap-3 rounded-control p-1 pr-3 text-left ring-1 ring-inset select-none outline-none focus-visible:ring-white/50 disabled:cursor-wait ${lit ? LIT : IDLE}`;
 
 export const SURFACE_CHECK_ON =
   "bg-[rgb(var(--grade))] text-black ring-[rgb(var(--grade))]";
 
 export const SURFACE_FIELD =
-  "cine-fade rounded-[20px] bg-white/5 text-white ring-1 ring-white/5 ring-inset outline-none placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:ring-white/20";
+  "cine-fade rounded-control bg-white/5 text-white ring-1 ring-white/5 ring-inset outline-none placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:ring-white/20";
 
 export function scrollWithin(event: WheelEvent<HTMLDivElement>) {
   const box = event.currentTarget;

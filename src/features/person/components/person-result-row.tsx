@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useArtworkPath } from "@/features/artwork";
-import { MediaCard } from "@/ui";
-import { useDockLinkClick } from "@/motion";
+import { Highlight, MediaCard, ResultRow } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import { tmdbImageSrcSet, tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { departmentRole, personHref } from "../lib/utils";
 
@@ -11,15 +10,21 @@ interface PersonResultRowProps {
   person: {
     department: string | null;
     id: number;
+    knownFor?: readonly string[];
     name: string;
     profilePath: string | null;
   };
   onNavigated?: () => void;
+  query?: string;
 }
 
 const PROFILE_WIDTHS = ["w185"] as const;
 
-export function PersonResultRow({ onNavigated, person }: PersonResultRowProps) {
+export function PersonResultRow({
+  onNavigated,
+  person,
+  query,
+}: PersonResultRowProps) {
   const photoPath = useArtworkPath(
     "person",
     person.id,
@@ -27,37 +32,39 @@ export function PersonResultRow({ onNavigated, person }: PersonResultRowProps) {
     person.profilePath,
   );
   const role = departmentRole(person.department) ?? "Person";
-  const href = personHref(person.id);
-  const handleClick = useDockLinkClick(href, onNavigated);
+  const knownFor = person.knownFor?.join(", ");
 
   return (
-    <Link
-      aria-label={`${person.name}, ${role}`}
-      className="cine-fade group/row flex items-center gap-3 rounded-[20px] p-0.5 pr-3 outline-none hover:bg-white/10 focus-visible:bg-white/10"
-      href={href}
-      onClick={handleClick}
-      prefetch={false}
-    >
-      <MediaCard
-        className="w-14 shrink-0"
-        fallbackIcon="solar:user-bold"
-        fallbackIconSize={20}
-        image={{
-          sizes: "56px",
-          src: tmdbImageUrl("profile", photoPath, "w185"),
-          srcSet:
-            tmdbImageSrcSet("profile", photoPath, PROFILE_WIDTHS) ?? undefined,
-        }}
-        radius={18}
-      />
-      <span className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
-        <span className="w-full truncate text-sm leading-tight font-bold text-white uppercase">
-          {person.name}
-        </span>
-        <span className="rounded-lg px-2 py-1 text-xs font-bold text-white/70 ring-1 ring-white/5 ring-inset">
-          {role}
-        </span>
-      </span>
-    </Link>
+    <ResultRow
+      href={personHref(person.id)}
+      label={`${person.name}, ${role}`}
+      meta={
+        <>
+          <span className="shrink-0">{role}</span>
+          {knownFor ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <span className="truncate">{knownFor}</span>
+            </>
+          ) : null}
+        </>
+      }
+      onNavigated={onNavigated}
+      thumb={
+        <MediaCard
+          fallbackIcon="solar:user-bold"
+          fallbackIconSize={16}
+          image={{
+            sizes: "40px",
+            src: tmdbImageUrl("profile", photoPath, "w185"),
+            srcSet:
+              tmdbImageSrcSet("profile", photoPath, PROFILE_WIDTHS) ??
+              undefined,
+          }}
+          radius={RADIUS.card}
+        />
+      }
+      title={<Highlight query={query} text={person.name} />}
+    />
   );
 }

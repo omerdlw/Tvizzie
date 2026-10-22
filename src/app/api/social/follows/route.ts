@@ -14,6 +14,38 @@ function failure(error: unknown): NextResponse {
   return apiErrorResponse(error);
 }
 
+const FOLLOW_PAGE_SIZE = 50;
+const REQUESTS_LIMIT = 100;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function cursorTime(value: string | null): string | null {
+  if (!value) return null;
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? new Date(time).toISOString() : null;
+}
+
+interface ProfileRow {
+  avatar_url: string | null;
+  banner_url: string | null;
+  display_name: string | null;
+  username: string | null;
+}
+
+function toSocialUser(
+  id: string,
+  profile: ProfileRow | null | undefined,
+  createdAt: string,
+) {
+  return {
+    avatarUrl: profile?.avatar_url || null,
+    bannerUrl: profile?.banner_url || null,
+    createdAt,
+    displayName: profile?.display_name || profile?.username || "Anonymous User",
+    id,
+    username: profile?.username || null,
+  };
+}
+
 export async function GET(request: Request): Promise<Response> {
   try {
     const user = await getOptionalUser();
@@ -39,154 +71,73 @@ export async function GET(request: Request): Promise<Response> {
       if (!user) return NextResponse.json({ data: [] });
       const { data: rows, error } = await client
         .from("account_follows")
-        .select("follower_id, created_at")
+        .select(
+          "follower_id, created_at, follower:accounts!account_follows_follower_id_fkey(username, display_name, avatar_url, banner_url)",
+        )
         .eq("following_id", user.id)
         .eq("status", "pending")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(REQUESTS_LIMIT);
 
       if (error) throw error;
-      if (!rows || rows.length === 0) return NextResponse.json({ data: [] });
-
-      const followerIds = rows.map((r) => r.follower_id);
-      const { data: profiles, error: pError } = await client
-        .from("accounts")
-        .select("id, username, display_name, avatar_url, banner_url")
-        .in("id", followerIds);
-
-      if (pError) throw pError;
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-
-      const data = rows.map((r) => {
-        const p = profileMap.get(r.follower_id) as
-          Record<string, any> | undefined;
-        return {
-          avatarUrl: p?.avatar_url || null,
-          bannerUrl: p?.banner_url || null,
-          createdAt: r.created_at,
-          displayName: p?.display_name || p?.username || "Anonymous User",
-          id: r.follower_id,
-          username: p?.username || null,
-        };
+      return NextResponse.json({
+        data: (rows ?? []).map((row) =>
+          toSocialUser(row.follower_id, row.follower, row.created_at),
+        ),
       });
-
-      return NextResponse.json({ data });
     }
 
-    async function canViewTargetSocial(
-      targetId: string | null | undefined,
-      viewerId?: string | null,
-    ): Promise<boolean> {
-      if (!targetId || targetId === viewerId) return true;
-      const { data: targetAccount } = await client
-        .from("accounts")
-        .select("is_private")
-        .eq("id", targetId)
-        .maybeSingle();
+    // A page of followers or following, newest first. `next` is where the
+    // following page starts; the first page also carries the totals.
+    if (resource === "followers" || resource === "following") {
+      if (!targetUserId || !UUID.test(targetUserId)) {
+        return NextResponse.json({ data: [], next: null, total: 0 });
+      }
+      const before = cursorTime(url.searchParams.get("before"));
+      const beforeId = url.searchParams.get("beforeId");
 
-      if (!targetAccount || !targetAccount.is_private) return true;
-      if (!viewerId) return false;
+      const [page, counts] = await Promise.all([
+        client.rpc("get_account_follows", {
+          p_account_id: targetUserId,
+          p_before: before,
+          p_before_id: beforeId && UUID.test(beforeId) ? beforeId : null,
+          p_direction: resource,
+          p_limit: FOLLOW_PAGE_SIZE,
+        }),
+        before
+          ? null
+          : client.rpc("get_account_follow_counts", {
+              p_account_id: targetUserId,
+            }),
+      ]);
 
-      const { data: followRel } = await client
-        .from("account_follows")
-        .select("status")
-        .eq("follower_id", viewerId)
-        .eq("following_id", targetId)
-        .eq("status", "accepted")
-        .maybeSingle();
-
-      return Boolean(followRel);
-    }
-
-    if (resource === "followers") {
-      if (!targetUserId) return NextResponse.json({ data: [] });
-
-      const allowed = await canViewTargetSocial(targetUserId, user?.id);
-      if (!allowed) {
+      if (page.error?.code === "42501") {
         return NextResponse.json(
           { error: "This account is private" },
           { status: 403 },
         );
       }
+      if (page.error) throw page.error;
 
-      const { data: rows, error } = await client
-        .from("account_follows")
-        .select("follower_id, created_at")
-        .eq("following_id", targetUserId)
-        .eq("status", "accepted")
-        .order("created_at", { ascending: false });
+      const rows = page.data ?? [];
+      const last =
+        rows.length === FOLLOW_PAGE_SIZE ? rows[rows.length - 1] : null;
+      const totals = counts?.data?.[0];
 
-      if (error) throw error;
-      if (!rows || rows.length === 0) return NextResponse.json({ data: [] });
-
-      const ids = rows.map((r) => r.follower_id);
-      const { data: profiles, error: pError } = await client
-        .from("accounts")
-        .select("id, username, display_name, avatar_url, banner_url")
-        .in("id", ids);
-
-      if (pError) throw pError;
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-
-      const data = rows.map((r) => {
-        const p = profileMap.get(r.follower_id) as
-          Record<string, any> | undefined;
-        return {
-          avatarUrl: p?.avatar_url || null,
-          bannerUrl: p?.banner_url || null,
-          createdAt: r.created_at,
-          displayName: p?.display_name || p?.username || "Anonymous User",
-          id: r.follower_id,
-          username: p?.username || null,
-        };
+      return NextResponse.json({
+        data: rows.map((row) => ({
+          ...toSocialUser(row.account_id, row, row.followed_at),
+          viewerStatus: row.viewer_status,
+        })),
+        next: last
+          ? { before: last.followed_at, beforeId: last.follow_id }
+          : null,
+        total: totals
+          ? resource === "followers"
+            ? totals.followers_count
+            : totals.following_count
+          : null,
       });
-
-      return NextResponse.json({ data });
-    }
-
-    if (resource === "following") {
-      if (!targetUserId) return NextResponse.json({ data: [] });
-
-      const allowed = await canViewTargetSocial(targetUserId, user?.id);
-      if (!allowed) {
-        return NextResponse.json(
-          { error: "This account is private" },
-          { status: 403 },
-        );
-      }
-
-      const { data: rows, error } = await client
-        .from("account_follows")
-        .select("following_id, created_at")
-        .eq("follower_id", targetUserId)
-        .eq("status", "accepted")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      if (!rows || rows.length === 0) return NextResponse.json({ data: [] });
-
-      const ids = rows.map((r) => r.following_id);
-      const { data: profiles, error: pError } = await client
-        .from("accounts")
-        .select("id, username, display_name, avatar_url, banner_url")
-        .in("id", ids);
-
-      if (pError) throw pError;
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-
-      const data = rows.map((r) => {
-        const p = profileMap.get(r.following_id) as
-          Record<string, any> | undefined;
-        return {
-          avatarUrl: p?.avatar_url || null,
-          bannerUrl: p?.banner_url || null,
-          createdAt: r.created_at,
-          displayName: p?.display_name || p?.username || "Anonymous User",
-          id: r.following_id,
-          username: p?.username || null,
-        };
-      });
-
-      return NextResponse.json({ data });
     }
 
     if (!user || !followingId) return NextResponse.json({ status: null });

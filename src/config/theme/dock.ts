@@ -19,7 +19,7 @@ const CONTROL_BUTTON =
   "center size-9 backdrop-blur-lg shrink-0 cursor-pointer bg-black/60 text-white/70 ring-1 ring-white/10 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/15";
 
 const MEDIA_ICON_BUTTON =
-  "center size-8 cursor-pointer rounded-full bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10";
+  "center size-8 cursor-pointer rounded-control bg-white/5 text-white/70 ring-1 ring-white/5 ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10";
 
 const TONE_MUTED =
   "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white";
@@ -33,14 +33,14 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     backdrop: "fixed inset-0 cursor-pointer bg-black/60 backdrop-blur-sm",
 
     card: [
-      "group @container absolute h-auto w-full overflow-hidden rounded-[30px] bg-black/60 p-2.5 ring-1 ring-inset ring-white/10 backdrop-blur-sm cursor-pointer",
+      "group @container absolute h-auto w-full overflow-hidden rounded-shell bg-black/60 p-2.5 ring-1 ring-inset ring-white/10 backdrop-blur-sm cursor-pointer",
       "data-[anchored=true]:cursor-default data-[blur=heavy]:backdrop-blur-lg data-[shelf=true]:px-1.5 data-[shelf=true]:py-0",
       "data-[placement=top]:inset-0 data-[placement=top]:h-full data-[placement=bottom]:bottom-0 data-[placement=float]:top-0",
       "data-[ghost=true]:pointer-events-none data-[ghost=true]:select-none",
     ].join(" "),
     cardContent:
       "flow-root w-full overflow-hidden data-[shelf=true]:min-h-[96px]",
-    cardSurface: "w-full overflow-hidden rounded-[20px]",
+    cardSurface: "w-full overflow-hidden rounded-control",
     cardShelf: "relative flex h-[45px] w-full items-center justify-between",
     cardStandard: "w-full",
     cardHud: "relative flex w-full items-center justify-between",
@@ -72,9 +72,9 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     icon: "relative size-12 shrink-0",
     iconMotion: "size-full",
     iconImage:
-      "size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat",
+      "size-12 shrink-0 rounded-control bg-cover bg-center bg-no-repeat",
     iconGlyph:
-      "center size-12 shrink-0 rounded-[20px] bg-white/5 text-white hover:bg-white/10",
+      "center size-12 shrink-0 rounded-control bg-white/5 text-white hover:bg-white/10",
     iconGlyphInner: "center shrink-0",
     iconButton: "size-full cursor-pointer p-0 focus:outline-none select-none",
     iconBadge:
@@ -87,9 +87,9 @@ export const dockThemeConfig = defineTheme(dockTheme, {
 
     commandBar: "flex shrink-0 items-center",
     commandTooltip:
-      "rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-black",
+      "dock-tooltip rounded-card bg-white px-2.5 py-1 text-xs font-semibold text-black",
     command:
-      "center relative size-8 cursor-pointer rounded-full bg-transparent text-white/70 hover:text-white select-none data-[banner=false]:hover:bg-white/5 data-[banner=true]:hover:bg-white/10 data-[banner=true]:hover:backdrop-blur-md",
+      "center relative size-8 cursor-pointer rounded-control bg-transparent text-white/70 hover:text-white select-none data-[banner=false]:hover:bg-white/5 data-[banner=true]:hover:bg-white/10 data-[banner=true]:hover:backdrop-blur-md",
     commandBadge:
       "center bg-white absolute right-1.5 top-1.5 size-3 rounded-full text-[10px] leading-none font-bold tabular-nums text-black",
 
@@ -98,11 +98,11 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     statusTitle: "text-white",
     statusDescription: "text-white/70",
 
-    surfaceHost: "@container relative w-full overflow-hidden rounded-[20px]",
+    surfaceHost: "@container relative w-full overflow-hidden rounded-control",
     surfaceHostInner: "w-full",
     surfaceShell:
-      "@container relative flex flex-col overflow-hidden rounded-[20px]",
-    surfaceBody: "@container w-full overflow-hidden rounded-[20px]",
+      "@container relative flex flex-col overflow-hidden rounded-control",
+    surfaceBody: "@container w-full overflow-hidden rounded-control",
 
     controls:
       "pointer-events-none absolute inset-x-0 bottom-[calc(100%+14px)] select-none flex items-center justify-center gap-[2px]",
@@ -113,9 +113,9 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     controlButton: CONTROL_BUTTON,
     controlBackIcon: "rtl:rotate-180",
     controlHeaderButton: `pointer-events-auto ${CONTROL_BUTTON} disabled:opacity-50 disabled:pointer-events-none data-[text=true]:h-9 data-[text=true]:px-3.5 data-[text=true]:text-xs data-[text=true]:font-semibold data-[text=true]:whitespace-nowrap`,
-    controlRadiusSingle: "rounded-full",
-    controlRadiusFirst: "rounded-s-full rounded-e-none",
-    controlRadiusLast: "rounded-e-full rounded-s-none",
+    controlRadiusSingle: "rounded-plate",
+    controlRadiusFirst: "rounded-s-plate rounded-e-none",
+    controlRadiusLast: "rounded-e-plate rounded-s-none",
     controlRadiusMiddle: "rounded-none",
 
     extensions:
@@ -134,25 +134,25 @@ export const dockThemeConfig = defineTheme(dockTheme, {
       "pointer-events-auto data-[fill=true]:w-full data-[fill=true]:min-w-0 data-[fill=true]:flex-1",
 
     scrubber:
-      "group absolute inset-x-0 top-0 h-3 cursor-pointer touch-none overflow-hidden rounded-t-[30px] select-none",
+      "group absolute inset-x-0 top-0 h-3 cursor-pointer touch-none overflow-hidden rounded-t-shell select-none",
     scrubberTrack:
       "absolute inset-x-0 top-0 h-1 w-full origin-top scale-y-[0.625] transform-gpu bg-white/10",
     scrubberProgress:
       "h-full w-full origin-left bg-white/70 group-hover:bg-white",
     scrubberTooltip:
-      "pointer-events-none absolute top-3 -translate-x-1/2 rounded-[8px] bg-black/80 px-2 py-0.5 text-xs font-medium tabular-nums text-white ring-1 ring-white/10 ring-inset",
+      "pointer-events-none absolute top-3 -translate-x-1/2 rounded-card bg-black/80 px-2 py-0.5 text-xs font-medium tabular-nums text-white ring-1 ring-white/10 ring-inset",
 
     media: "flex w-full items-center justify-between gap-2 select-none",
     mediaGroup: "flex items-center gap-1.5",
     mediaSpeed:
-      "center h-8 cursor-pointer rounded-full bg-white/5 px-3 text-xs font-semibold tabular-nums text-white/70 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:ring-white/10 data-[active=true]:hover:bg-white/15 data-[active=true]:hover:ring-white/15",
+      "center h-8 cursor-pointer rounded-control bg-white/5 px-3 text-xs font-semibold tabular-nums text-white/70 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:ring-white/10 data-[active=true]:hover:bg-white/15 data-[active=true]:hover:ring-white/15",
     mediaSkip: MEDIA_ICON_BUTTON,
     mediaToggle:
-      "flex size-8 cursor-pointer items-center justify-center rounded-full bg-white/5 text-white/70 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:ring-white/10 data-[active=true]:hover:bg-white/15",
+      "flex size-8 cursor-pointer items-center justify-center rounded-control bg-white/5 text-white/70 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:text-white hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:ring-white/10 data-[active=true]:hover:bg-white/15",
     mediaMute:
       "center size-5 cursor-pointer p-0 text-white/70 hover:text-white",
     mediaVolume:
-      "group flex h-8 items-center gap-1.5 rounded-full bg-white/5 px-2.5 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:ring-white/10",
+      "group flex h-8 items-center gap-1.5 rounded-control bg-white/5 px-2.5 ring-1 ring-white/5 select-none ring-inset hover:bg-white/10 hover:ring-white/10 data-[active=true]:bg-white/10 data-[active=true]:ring-white/10",
     mediaVolumeTrack:
       "group/track relative flex h-6 w-16 cursor-pointer touch-none items-center select-none sm:w-20",
     mediaVolumeRail:
@@ -162,7 +162,7 @@ export const dockThemeConfig = defineTheme(dockTheme, {
       "pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow-md ring-2 ring-black group-hover/track:opacity-100 data-[active=true]:opacity-100",
 
     breadcrumbs:
-      "absolute inset-x-0 top-[calc(100%+4px)] flex h-[40px] w-full items-center justify-center rounded-[20px] bg-black/60 px-4 text-xs ring-1 ring-white/10 select-none ring-inset backdrop-blur-lg",
+      "absolute inset-x-0 top-[calc(100%+4px)] flex h-[40px] w-full items-center justify-center rounded-plate bg-black/60 px-4 text-xs ring-1 ring-white/10 select-none ring-inset backdrop-blur-lg",
     breadcrumbsNav: "flex scrollbar-none items-center gap-1.5 overflow-x-auto",
     breadcrumbsEllipsis: "px-0.5 text-white/50 select-none",
     breadcrumbsItem: "flex items-center gap-1.5",
@@ -171,13 +171,13 @@ export const dockThemeConfig = defineTheme(dockTheme, {
     breadcrumbsSeparator: "center shrink-0 text-white/50 rtl:rotate-180",
 
     loading: "flex min-h-[48px] w-full items-center gap-2.5",
-    loadingIcon: "skeleton-block size-12 shrink-0 rounded-[20px]",
+    loadingIcon: "skeleton-block size-12 shrink-0 rounded-control",
     loadingText: "flex min-w-0 flex-1 flex-col justify-center gap-1.5",
-    loadingTitle: "skeleton-block h-3.5 w-36 max-w-[60%] rounded-full",
-    loadingDescription: "skeleton-block h-3 w-56 max-w-[85%] rounded-full",
+    loadingTitle: "skeleton-block h-3.5 w-36 max-w-[60%] rounded-chip",
+    loadingDescription: "skeleton-block h-3 w-56 max-w-[85%] rounded-chip",
 
     action:
-      "center h-10 w-full rounded-[20px] gap-2 px-4 text-xs font-semibold uppercase cursor-pointer select-none",
+      "center h-10 w-full rounded-control gap-2 px-4 text-xs font-semibold uppercase cursor-pointer select-none",
     actionActive: TONE_ACTIVE,
     actionFill: "min-w-0 flex-1 justify-center whitespace-nowrap",
     actionLabel: "truncate",
@@ -191,7 +191,7 @@ export const dockThemeConfig = defineTheme(dockTheme, {
       zIndex: Z_INDEX.DOCK,
       maxWidth: "100vw",
       contain: "layout",
-      borderRadius: 30,
+      borderRadius: 24,
     },
     backdrop: { zIndex: Z_INDEX.DOCK_BACKDROP },
     cardFooter: { zIndex: Z_INDEX.DOCK_CARD_CONTENT },

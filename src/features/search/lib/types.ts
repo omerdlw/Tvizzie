@@ -7,8 +7,14 @@ export const SEARCH_TYPES = [
 ] as const;
 export type SearchType = (typeof SEARCH_TYPES)[number];
 
+// Every hit carries `match`, how closely its title reads as the query, and
+// `score`, that match with how well known the hit is on a scale shared by
+// every kind (see lib/rank.ts), so the overview can weigh one kind against
+// another.
 export interface MovieSearchHit {
   id: number;
+  match: number;
+  score: number;
   posterPath: string | null;
   title: string;
   year: number | null;
@@ -17,6 +23,9 @@ export interface MovieSearchHit {
 export interface PersonSearchHit {
   department: string | null;
   id: number;
+  knownFor: string[];
+  match: number;
+  score: number;
   name: string;
   profilePath: string | null;
 }
@@ -27,6 +36,8 @@ export interface UserSearchHit {
   followersCount: number;
   id: string;
   isPrivate: boolean;
+  match: number;
+  score: number;
   username: string;
 }
 
@@ -34,6 +45,8 @@ export interface ListSearchHit {
   id: string;
   itemsCount: number;
   likesCount: number;
+  match: number;
+  score: number;
   owner: { displayName: string; username: string };
   posterPath: string | null;
   slug: string;
@@ -46,6 +59,8 @@ export interface ReviewSearchHit {
   id: string;
   isSpoiler: boolean;
   likesCount: number;
+  match: number;
+  score: number;
   posterPath: string | null;
   rating: number | null;
   title: string;

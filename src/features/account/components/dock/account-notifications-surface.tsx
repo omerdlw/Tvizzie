@@ -64,7 +64,7 @@ const FALLBACK_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
 });
 
 const ICON_ACTION_BASE_CLASS =
-  "center size-9 shrink-0 cursor-pointer rounded-[14px] select-none";
+  "center size-10 shrink-0 cursor-pointer rounded-chip select-none";
 const PRIMARY_ICON_BUTTON_CLASS = `${ICON_ACTION_BASE_CLASS} bg-primary/10 text-primary hover:bg-primary hover:text-black`;
 const SECONDARY_ICON_BUTTON_CLASS = `${ICON_ACTION_BASE_CLASS} bg-white/5 text-white/70 hover:bg-white/10 hover:text-white`;
 
@@ -132,13 +132,13 @@ function NotificationListSkeleton({ count = 4 }: { count?: number }) {
           className="flex h-12 min-h-[48px] w-full items-center justify-between gap-2.5"
         >
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <div className="skeleton-block size-12 shrink-0 rounded-[20px]" />
+            <div className="skeleton-block size-12 shrink-0 rounded-control" />
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-              <div className="skeleton-block h-3 w-28 rounded-full" />
-              <div className="skeleton-block h-2.5 w-16 rounded-full" />
+              <div className="skeleton-block h-3 w-28 rounded-chip" />
+              <div className="skeleton-block h-2.5 w-16 rounded-chip" />
             </div>
           </div>
-          <div className="skeleton-block mr-1.5 size-9 shrink-0 rounded-[14px]" />
+          <div className="skeleton-block mr-1 size-10 shrink-0 rounded-chip" />
         </div>
       ))}
     </div>
@@ -225,7 +225,7 @@ const NotificationRow = memo(function NotificationRow({
   );
 
   const AvatarNode = (
-    <div className="relative size-12 shrink-0 overflow-hidden rounded-[20px] bg-white/5">
+    <div className="relative size-12 shrink-0 overflow-hidden rounded-control bg-white/5">
       {actor ? (
         <AdaptiveImage
           mode="img"
@@ -260,7 +260,7 @@ const NotificationRow = memo(function NotificationRow({
   );
 
   return (
-    <div className="group/user relative flex h-12 min-h-[48px] w-full items-center justify-between gap-2.5 overflow-hidden rounded-[20px]">
+    <div className="group/user relative flex h-12 min-h-[48px] w-full items-center justify-between gap-2.5 overflow-hidden rounded-control">
       {hasBanner && (
         <div
           aria-hidden="true"
@@ -294,7 +294,7 @@ const NotificationRow = memo(function NotificationRow({
         </div>
       )}
 
-      <div className="relative z-10 mr-1.5 flex shrink-0 items-center gap-1.5">
+      <div className="relative z-10 mr-1 flex shrink-0 items-center gap-1.5">
         {isUnread && (
           <Button
             type="button"
@@ -606,7 +606,7 @@ export function AccountNotificationsSurface({
                   type="button"
                   onClick={() => setActiveFilter(tab.key)}
                   className={cn(
-                    "flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold select-none",
+                    "flex h-full shrink-0 cursor-pointer items-center gap-2 rounded-control px-3.5 text-xs font-semibold select-none",
                     isActive
                       ? "bg-white text-black"
                       : "bg-transparent text-white/70 hover:bg-white/5 hover:text-white",
@@ -632,7 +632,7 @@ export function AccountNotificationsSurface({
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="flex h-full shrink-0 cursor-pointer items-center rounded-full bg-transparent px-3 text-xs font-semibold text-white/70 select-none hover:bg-white/5 hover:text-white"
+                  className="flex h-full shrink-0 cursor-pointer items-center rounded-control bg-transparent px-3 text-xs font-semibold text-white/70 select-none hover:bg-white/5 hover:text-white"
                 >
                   <span>Mark read</span>
                 </Button>
@@ -640,7 +640,7 @@ export function AccountNotificationsSurface({
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className="flex h-full shrink-0 cursor-pointer items-center rounded-full bg-transparent px-3 text-xs font-semibold text-white/70 select-none hover:bg-white/5 hover:text-white"
+                className="flex h-full shrink-0 cursor-pointer items-center rounded-control bg-transparent px-3 text-xs font-semibold text-white/70 select-none hover:bg-white/5 hover:text-white"
               >
                 <span>Clear all</span>
               </Button>
@@ -659,7 +659,7 @@ export function AccountNotificationsSurface({
             key="error"
             className="flex h-12 min-h-[48px] w-full items-center gap-2.5"
           >
-            <div className="center size-12 shrink-0 rounded-[20px] bg-white/5 text-white/50">
+            <div className="center size-12 shrink-0 rounded-control bg-white/5 text-white/50">
               <Icon icon="solar:danger-circle-bold" size={22} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
@@ -676,7 +676,7 @@ export function AccountNotificationsSurface({
             key={`empty-${activeFilter}`}
             className="flex h-12 min-h-[48px] w-full items-center gap-2.5"
           >
-            <div className="center size-12 shrink-0 rounded-[20px] bg-white/5 text-white/50">
+            <div className="center size-12 shrink-0 rounded-control bg-white/5 text-white/50">
               <Icon icon="solar:bell-bold" size={22} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
@@ -698,7 +698,7 @@ export function AccountNotificationsSurface({
             data-lenis-prevent
             data-lenis-prevent-wheel
             onWheel={handleListWheel}
-            className="max-h-[min(54dvh,24rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain rounded-[20px]"
+            className="max-h-[min(54dvh,24rem)] w-full touch-pan-y scrollbar-none overflow-y-auto overscroll-contain rounded-control"
           >
             <div
               key={`notifications-list-${activeFilter}`}

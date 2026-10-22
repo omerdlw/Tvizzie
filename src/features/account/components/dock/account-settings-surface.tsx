@@ -63,7 +63,7 @@ function useSubmitButtonClass() {
 }
 
 const BASE_INPUT_STYLE =
-  "w-full resize-none rounded-[20px] bg-white/5 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
+  "w-full resize-none rounded-control bg-white/5 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none";
 
 const INPUT_BASE_CLASSES = cn(BASE_INPUT_STYLE, "h-10 px-4");
 const TEXTAREA_BASE_CLASSES = cn(BASE_INPUT_STYLE, "min-h-36 p-4");
@@ -315,7 +315,7 @@ function AccountSettingsOverviewView({
           key={s.key}
           type="button"
           onClick={() => handleSelect?.(s.key)}
-          className="group/item flex min-h-[52px] w-full cursor-pointer items-center gap-3.5 rounded-[20px] bg-white/5 px-3.5 py-2 text-left hover:bg-white/10"
+          className="group/item flex min-h-[52px] w-full cursor-pointer items-center gap-3.5 rounded-control bg-white/5 px-3.5 py-2 text-left hover:bg-white/10"
         >
           <Icon
             icon={s.icon}
@@ -504,7 +504,7 @@ function AccountInfoView({
         aria-checked={isPrivate}
         disabled={isPending}
         onClick={() => onChange(setIsPrivate, "isPrivate", !isPrivate)}
-        className="flex h-11 w-full items-center justify-between rounded-[20px] bg-white/5 px-4 ring-1 ring-inset ring-white/5 hover:bg-white/10 hover:ring-white/10"
+        className="flex h-11 w-full items-center justify-between rounded-control bg-white/5 px-4 ring-1 ring-inset ring-white/5 hover:bg-white/10 hover:ring-white/10"
       >
         <span className="text-sm font-medium text-white">
           {isPrivate ? "Private profile" : "Public profile"}
@@ -581,7 +581,7 @@ function MediaSection({ children }: { children: ReactNode }) {
 
 function MediaPreview({ children }: { children: ReactNode }) {
   return (
-    <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-[20px] bg-white/5">
+    <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-control bg-white/5">
       {children}
     </div>
   );
@@ -609,7 +609,7 @@ function UrlInput({
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
         className={cn(
-          "h-10 w-full rounded-[20px] bg-white/5 pl-4 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none",
+          "h-10 w-full rounded-control bg-white/5 pl-4 text-sm text-white placeholder:text-white/50 hover:bg-white/10 focus:bg-white/10 focus:outline-none",
           value ? "pr-9" : "pr-4",
           className,
         )}
@@ -621,7 +621,7 @@ function UrlInput({
           disabled={disabled}
           onClick={() => onChange("")}
           aria-label="Clear input"
-          className="center absolute right-1.5 size-7 cursor-pointer rounded-full p-0 text-white/50 hover:bg-white/10 hover:text-white"
+          className="center absolute right-1 size-8 cursor-pointer rounded-chip p-0 text-white/50 hover:bg-white/10 hover:text-white"
         >
           <Icon icon="solar:close-bold" size={14} />
         </Button>
@@ -706,7 +706,7 @@ function BannerVerticalSlider({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       className={cn(
-        "group/slider flex w-10 shrink-0 cursor-ns-resize flex-col items-center justify-between self-stretch rounded-[20px] bg-white/5 py-2.5 select-none touch-none hover:bg-white/10",
+        "group/slider flex w-10 shrink-0 cursor-ns-resize flex-col items-center justify-between self-stretch rounded-control bg-white/5 py-2.5 select-none touch-none hover:bg-white/10",
         disabled && "pointer-events-none opacity-50",
       )}
     >
@@ -889,7 +889,7 @@ function AccountMediaView({
       <MediaSection>
         <div className="flex w-full items-stretch gap-2.5">
           <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-            <div className="relative flex h-[68px] w-full items-center justify-between overflow-hidden rounded-[30px] bg-black/60 p-2.5 ring-1 ring-inset ring-white/10 shadow-xl backdrop-blur-lg select-none">
+            <div className="relative flex h-[68px] w-full items-center justify-between overflow-hidden rounded-shell bg-black/60 p-2.5 ring-1 ring-inset ring-white/10 shadow-xl backdrop-blur-lg select-none">
               {bannerUrl && (
                 <DockCardBanner
                   bannerUrl={bannerUrl}
@@ -900,7 +900,7 @@ function AccountMediaView({
 
               <div className="pointer-events-none relative z-10 flex w-full items-center justify-between gap-2.5">
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="center relative size-12 shrink-0 overflow-hidden rounded-[20px] bg-white/5 text-white shadow-sm">
+                  <div className="center relative size-12 shrink-0 overflow-hidden rounded-control bg-white/5 text-white shadow-sm">
                     {avatarUrl ? (
                       <AdaptiveImage
                         alt="Preview avatar"
@@ -924,15 +924,15 @@ function AccountMediaView({
                 </div>
 
                 <div className="mr-1.5 flex shrink-0 items-center gap-1">
-                  <div className="center size-9 rounded-[14px] text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                  <div className="center size-8 rounded-control text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                     <Icon icon="solar:logout-2-bold" size={16} />
                   </div>
 
-                  <div className="center size-9 rounded-[14px] text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                  <div className="center size-8 rounded-control text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                     <Icon icon="solar:settings-bold" size={16} />
                   </div>
 
-                  <div className="center size-9 rounded-[14px] text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                  <div className="center size-8 rounded-control text-white/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                     <Icon icon="solar:bell-bold" size={16} />
                   </div>
                 </div>
@@ -1121,7 +1121,7 @@ function AccountProvidersView({
       {connectedList.map((item) => (
         <div
           key={item.key}
-          className="flex h-11 w-full items-center justify-between rounded-[20px] bg-white/5 p-1 pl-4 text-white"
+          className="flex h-11 w-full items-center justify-between rounded-control bg-white/5 p-1 pl-4 text-white"
         >
           <div className="flex min-w-0 items-center gap-3">
             <Icon icon={item.config.icon} size={18} className="shrink-0" />
@@ -1135,7 +1135,7 @@ function AccountProvidersView({
             loading={unlinkingProvider === item.key}
             onClick={() => handleUnlink(item)}
             className={cn(
-              "center h-9 rounded-[16px] px-3.5 py-1 text-xs font-semibold cursor-pointer",
+              "center h-9 rounded-chip px-3.5 py-1 text-xs font-semibold cursor-pointer",
               ACTION_TONE_CLASS,
             )}
           >
@@ -1150,7 +1150,7 @@ function AccountProvidersView({
           disabled={Boolean(linkingProvider)}
           loading={linkingProvider === config.key}
           onClick={() => handleLink(config)}
-          className="flex h-11 w-full items-center justify-between rounded-[20px] bg-white/5 px-4 text-white/70 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-11 w-full items-center justify-between rounded-control bg-white/5 px-4 text-white/70 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="flex min-w-0 items-center gap-3">
             <Icon
@@ -1212,13 +1212,13 @@ function AccountSessionsView({
             className="flex w-full items-center justify-between gap-2.5"
           >
             <div className="flex min-w-0 items-center gap-3">
-              <div className="size-10 shrink-0 rounded-[20px] bg-white/5" />
+              <div className="size-10 shrink-0 rounded-control bg-white/5" />
               <div className="flex flex-col gap-1.5">
-                <div className="h-3.5 w-32 rounded-full bg-white/5" />
-                <div className="h-2.5 w-44 rounded-full bg-white/5" />
+                <div className="h-3.5 w-32 rounded-chip bg-white/5" />
+                <div className="h-2.5 w-44 rounded-chip bg-white/5" />
               </div>
             </div>
-            <div className="h-7 w-20 shrink-0 rounded-full bg-white/5" />
+            <div className="h-7 w-20 shrink-0 rounded-chip bg-white/5" />
           </div>
         ))}
       </div>
@@ -1244,7 +1244,7 @@ function AccountSessionsView({
               key={s.session_id}
               title={s.user_agent || undefined}
               className={cn(
-                "flex min-h-[52px] w-full items-center justify-between gap-3 rounded-[20px] py-2 pr-2 pl-3.5",
+                "flex min-h-[52px] w-full items-center justify-between gap-3 rounded-control py-1 pr-1 pl-3.5",
                 s.is_current ? "bg-primary/10" : "bg-white/5 hover:bg-white/10",
               )}
             >
@@ -1270,7 +1270,7 @@ function AccountSessionsView({
                 {s.is_current ? (
                   <span
                     className={cn(
-                      "center h-9 rounded-[12px] px-3.5 text-xs font-semibold",
+                      "center h-11 rounded-chip px-3.5 text-xs font-semibold",
                       ACTION_TONE_CLASS,
                     )}
                   >
@@ -1292,7 +1292,7 @@ function AccountSessionsView({
                       )
                     }
                     className={cn(
-                      "center h-9 cursor-pointer rounded-[12px] px-3.5 text-xs font-semibold",
+                      "center h-11 cursor-pointer rounded-chip px-3.5 text-xs font-semibold",
                       ACTION_TONE_CLASS,
                     )}
                   >
@@ -1304,7 +1304,7 @@ function AccountSessionsView({
           );
         })
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-[20px] bg-white/5 p-6 text-center">
+        <div className="flex flex-col items-center justify-center gap-2 rounded-control bg-white/5 p-6 text-center">
           <Icon icon="solar:devices-bold" size={22} className="text-white/50" />
           <span className="text-xs font-medium text-white/50">
             No active sessions found
@@ -1368,10 +1368,10 @@ function AccountPasskeysView({
         {[1, 2].map((i) => (
           <div
             key={i}
-            className="flex h-11 w-full items-center justify-between rounded-[20px] bg-white/5 px-4 ring-1 ring-inset ring-white/5"
+            className="flex h-11 w-full items-center justify-between rounded-control bg-white/5 px-4 ring-1 ring-inset ring-white/5"
           >
-            <div className="h-3.5 w-28 rounded-full bg-white/10" />
-            <div className="h-6 w-16 rounded-lg bg-white/10" />
+            <div className="h-3.5 w-28 rounded-chip bg-white/10" />
+            <div className="h-6 w-16 rounded-chip bg-white/10" />
           </div>
         ))}
       </div>
@@ -1390,7 +1390,7 @@ function AccountPasskeysView({
             <div
               key={pId}
               className={cn(
-                "w-full rounded-[20px] bg-white/5 text-white",
+                "w-full rounded-control bg-white/5 text-white",
                 isRenaming
                   ? "flex flex-col gap-2.5 p-0 bg-transparent"
                   : "flex h-11 items-center justify-between p-1 pl-4",
@@ -1435,7 +1435,7 @@ function AccountPasskeysView({
                         setEditingId(null);
                         setEditingName("");
                       }}
-                      className="size-10 center shrink-0 rounded-[20px] bg-white/5 text-xs cursor-pointer text-white/70 hover:bg-white/10 hover:text-white"
+                      className="size-10 center shrink-0 rounded-control bg-white/5 text-xs cursor-pointer text-white/70 hover:bg-white/10 hover:text-white"
                     >
                       <Icon icon="solar:close-bold" />
                     </Button>
@@ -1452,7 +1452,7 @@ function AccountPasskeysView({
                         setEditingId(pId);
                         setEditingName(pName);
                       }}
-                      className="center h-9 rounded-[16px] px-3.5 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
+                      className="center h-9 rounded-chip px-3.5 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
                     >
                       Rename
                     </Button>
@@ -1468,7 +1468,7 @@ function AccountPasskeysView({
                         )
                       }
                       className={cn(
-                        "center h-9 rounded-[16px] px-3.5 text-xs font-semibold cursor-pointer text-white/70 hover:bg-white/10 disabled:opacity-50",
+                        "center h-9 rounded-chip px-3.5 text-xs font-semibold cursor-pointer text-white/70 hover:bg-white/10 disabled:opacity-50",
                         ACTION_TONE_CLASS,
                       )}
                     >
@@ -1481,7 +1481,7 @@ function AccountPasskeysView({
           );
         })
       ) : (
-        <div className="flex min-h-24 w-full items-center justify-center rounded-[20px] bg-white/5 p-4 text-center">
+        <div className="flex min-h-24 w-full items-center justify-center rounded-control bg-white/5 p-4 text-center">
           <span className="text-xs text-white/50">No passkeys registered</span>
         </div>
       )}

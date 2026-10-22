@@ -53,7 +53,7 @@ export function DiaryDeleteButton({
           : `Remove ${title} from the diary`
       }
       className={cn(
-        "center size-8 cursor-pointer rounded-full disabled:cursor-wait",
+        "center size-8 cursor-pointer rounded-control disabled:cursor-wait",
         confirming
           ? "bg-red-600 text-white"
           : "text-white/40 hover:bg-white/10 hover:text-white",

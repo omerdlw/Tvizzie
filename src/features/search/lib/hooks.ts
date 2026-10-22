@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { fetchSearch } from "./client";
-import { SEARCH_DEBOUNCE_MS } from "./constants";
+import { SEARCH_CACHE_LIMIT, SEARCH_DEBOUNCE_MS } from "./constants";
 import {
   SEARCH_TYPES,
   type SearchFailure,
   type SearchResults,
   type SearchScope,
+  type SearchType,
 } from "./types";
 import { isSearchable, normalizeQuery } from "./utils";
 
@@ -15,88 +16,172 @@ export function emptyResults(): SearchResults {
   return { lists: [], movies: [], people: [], reviews: [], users: [] };
 }
 
-type Settled =
-  | { query: string; scope: SearchScope; ok: true; results: SearchResults }
-  | { query: string; scope: SearchScope; ok: false; failure: SearchFailure };
+type Hits = SearchResults[SearchType];
+type Answers = ReadonlyMap<string, Hits>;
+
+// Answers outlive the dock: a search reopened, a scope switched to or a
+// word backspaced to shows what was already fetched, at once. The map is
+// replaced, never changed, so a render reads one consistent snapshot.
+let answers: Answers = new Map();
+const answerListeners = new Set<() => void>();
+
+const answerKey = (kind: SearchType, query: string) =>
+  `${kind}:${query.toLowerCase()}`;
+
+function remember(kind: SearchType, query: string, hits: Hits) {
+  const next = new Map(answers);
+  const key = answerKey(kind, query);
+  next.delete(key);
+  next.set(key, hits);
+  for (const oldest of next.keys()) {
+    if (next.size <= SEARCH_CACHE_LIMIT) break;
+    next.delete(oldest);
+  }
+  answers = next;
+  answerListeners.forEach((listener) => listener());
+}
+
+function subscribeAnswers(listener: () => void) {
+  answerListeners.add(listener);
+  return () => {
+    answerListeners.delete(listener);
+  };
+}
+
+const readAnswers = () => answers;
+
+function kindsOf(scope: SearchScope): readonly SearchType[] {
+  return scope === "all" ? SEARCH_TYPES : [scope];
+}
+
+// A kind that failed while others answered is shown as empty for this
+// query rather than holding the whole answer back.
+function collect(
+  store: Answers,
+  holes: ReadonlySet<string>,
+  scope: SearchScope,
+  query: string,
+): SearchResults | null {
+  const results = emptyResults();
+  for (const kind of kindsOf(scope)) {
+    const key = answerKey(kind, query);
+    const hits = store.get(key);
+    if (!hits && !holes.has(key)) return null;
+    Object.assign(results, { [kind]: hits ?? [] });
+  }
+  return results;
+}
 
 interface SearchState {
   clear: () => void;
+  failure: SearchFailure | null;
   input: string;
   isLoading: boolean;
   query: string;
-  failure: SearchFailure | null;
   results: SearchResults | null;
   retry: () => void;
   setInput: (value: string) => void;
 }
 
 export function useSearch(scope: SearchScope): SearchState {
+  const store = useSyncExternalStore(
+    subscribeAnswers,
+    readAnswers,
+    readAnswers,
+  );
   const [input, setRawInput] = useState("");
   const [debounced, setDebounced] = useState("");
-  const [settled, setSettled] = useState<Settled | null>(null);
+  const [holes, setHoles] = useState<ReadonlySet<string>>(() => new Set());
+  const [failed, setFailed] = useState<{
+    key: string;
+    failure: SearchFailure;
+  } | null>(null);
+  const [shown, setShown] = useState<{
+    query: string;
+    scope: SearchScope;
+  } | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   const normalized = normalizeQuery(input);
   const query = isSearchable(normalized) ? normalized : "";
-  const ready = debounced === query ? query : "";
+  const fresh = query ? collect(store, holes, scope, query) : null;
+  const known = fresh !== null;
+  const failureKey = `${scope}:${query.toLowerCase()}`;
+  const failure = failed?.key === failureKey ? failed.failure : null;
+  const ready = query && !known && !failure && debounced === query ? query : "";
+
+  // The last full answer stays up while the next one is on its way, so the
+  // dock does not fall back to skeletons on every keystroke.
+  if (known && (shown?.query !== query || shown.scope !== scope)) {
+    setShown({ query, scope });
+  }
 
   useEffect(() => {
-    if (!query) return;
+    if (!query || known) return;
     const timer = setTimeout(() => setDebounced(query), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, known]);
 
   useEffect(() => {
     if (!ready) return;
 
     const controller = new AbortController();
     const { signal } = controller;
-    const kinds = scope === "all" ? SEARCH_TYPES : [scope];
+    const kinds = kindsOf(scope).filter(
+      (kind) => !answers.has(answerKey(kind, ready)),
+    );
     void Promise.all(
       kinds.map((kind) => fetchSearch(kind, ready, signal)),
     ).then((outcomes) => {
       if (signal.aborted) return;
 
-      const results = emptyResults();
+      const missing: string[] = [];
+      let firstFailure: SearchFailure | null = null;
       outcomes.forEach((outcome, index) => {
-        if (outcome.success)
-          Object.assign(results, { [kinds[index]]: outcome.data.hits });
+        if (outcome.success) remember(kinds[index], ready, outcome.data.hits);
+        else {
+          missing.push(answerKey(kinds[index], ready));
+          firstFailure ??= outcome.error;
+        }
       });
 
-      const failed = outcomes.find((outcome) => !outcome.success);
-      setSettled(
-        failed && !failed.success && outcomes.every((o) => !o.success)
-          ? { query: ready, scope, ok: false, failure: failed.error }
-          : { query: ready, scope, ok: true, results },
-      );
+      const answered =
+        outcomes.some((outcome) => outcome.success) ||
+        kinds.length < kindsOf(scope).length;
+      if (firstFailure && !answered) {
+        setFailed({
+          key: `${scope}:${ready.toLowerCase()}`,
+          failure: firstFailure,
+        });
+      } else if (missing.length > 0) {
+        setHoles((current) => new Set([...current, ...missing]));
+      }
     });
     return () => controller.abort();
   }, [ready, scope, attempt]);
 
   const setInput = useCallback((value: string) => {
     setRawInput(value);
-    if (!isSearchable(normalizeQuery(value))) setSettled(null);
   }, []);
-  const clear = useCallback(() => setInput(""), [setInput]);
+  const clear = useCallback(() => setRawInput(""), []);
   const retry = useCallback(() => {
-    setSettled(null);
+    setFailed(null);
+    setHoles(new Set());
     setAttempt((value) => value + 1);
   }, []);
 
-  const current =
-    settled && settled.query === query && settled.scope === scope
-      ? settled
+  const stale =
+    shown && shown.scope === scope
+      ? collect(store, holes, scope, shown.query)
       : null;
-  const lastGood =
-    settled?.ok && settled.scope === scope ? settled.results : null;
 
   return {
     clear,
-    failure: current && !current.ok ? current.failure : null,
+    failure,
     input,
-    isLoading: query !== "" && current === null,
+    isLoading: query !== "" && !known && !failure,
     query,
-    results: query ? (current?.ok ? current.results : lastGood) : null,
+    results: query ? (fresh ?? stale) : null,
     retry,
     setInput,
   };

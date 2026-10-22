@@ -1,42 +1,11 @@
 import type { JSX } from "react";
 import { movieHref } from "@config/routes";
 import { Avatar, Tooltip } from "@/ui";
-import { Star } from "@/features/reviews/components/rating-stars";
+import { cn } from "@omerdlw/base-framework/utils";
+import { RatingStars, Star } from "@/features/reviews/components/rating-stars";
 import type { DiaryEntry, PersonPreview } from "../../lib/browse-data";
 import { AccountLink } from "./account-link";
 import { counted } from "./section";
-
-export interface ProfileStat {
-  count: number;
-  href: string;
-  label: string;
-}
-
-export function ProfileStats({
-  stats,
-}: {
-  stats: readonly ProfileStat[];
-}): JSX.Element {
-  return (
-    <ul className="grid grid-cols-4 divide-x divide-white/10 overflow-hidden rounded-xl ring-1 ring-white/10 ring-inset sm:col-span-2 lg:col-span-1">
-      {stats.map((stat) => (
-        <li className="flex" key={stat.label}>
-          <AccountLink
-            className="flex w-full flex-col items-center gap-1 px-1 py-3.5 transition-colors hover:bg-white/[0.04]"
-            href={stat.href}
-          >
-            <span className="text-lg leading-6 font-semibold text-white tabular-nums">
-              {stat.count.toLocaleString("en-US")}
-            </span>
-            <span className="text-[10px] leading-3 font-semibold tracking-[0.1em] whitespace-nowrap text-white/40 uppercase">
-              {stat.label}
-            </span>
-          </AccountLink>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 const MONTH = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -58,12 +27,12 @@ export function DiaryDigest({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {months.map((month) => {
         const date = new Date(`${month.key}-01T00:00:00Z`);
         return (
           <div className="flex gap-3" key={month.key}>
-            <span className="flex w-9 shrink-0 flex-col items-center self-start overflow-hidden rounded-[4px] ring-1 ring-white/15 ring-inset">
+            <span className="flex w-9 shrink-0 flex-col items-center self-start overflow-hidden rounded-chip ring-1 ring-white/15 ring-inset">
               <span className="w-full bg-white/10 py-0.5 text-center text-[9px] leading-3 font-semibold tracking-[0.1em] text-white/70 uppercase">
                 {MONTH.format(date)}
               </span>
@@ -106,31 +75,54 @@ export function RatingsChart({
   spread: readonly number[];
 }): JSX.Element {
   const peak = Math.max(1, ...spread);
+  const total = spread.reduce((sum, count) => sum + count, 0);
+  const average = total
+    ? spread.reduce((sum, count, index) => sum + count * (index + 1), 0) /
+      (2 * total)
+    : 0;
   return (
-    <div className="flex items-end gap-2">
-      <Star className="mb-px" fill={1} size={10} />
-      <div className="flex h-16 flex-1 items-end gap-[3px]">
-        {spread.map((count, index) => (
-          <Tooltip
-            key={index}
-            text={`${stars((index + 1) / 2)} · ${counted(count, "rating")}`}
-          >
-            <span className="group/bar flex h-full flex-1 items-end">
-              <span
-                className="w-full rounded-t-[2px] bg-white/20 transition-colors group-hover/bar:bg-white/50"
-                style={{
-                  height: count ? `max(4px, ${(count / peak) * 100}%)` : "1px",
-                }}
-              />
-            </span>
-          </Tooltip>
-        ))}
+    <div className="flex flex-col gap-5">
+      <div className="flex items-baseline gap-3">
+        <span className="text-4xl leading-none font-semibold text-white tabular-nums">
+          {average.toFixed(1)}
+        </span>
+        <span className="flex flex-col gap-1.5">
+          <RatingStars rating={Math.round(average * 2) / 2} size={12} />
+          <span className="text-[11px] leading-3 text-white/40">
+            average rating
+          </span>
+        </span>
       </div>
-      <span aria-hidden="true" className="mb-px flex gap-px">
-        {Array.from({ length: 5 }, (_, index) => (
-          <Star fill={1} key={index} size={8} />
-        ))}
-      </span>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex h-24 items-end gap-1 border-b border-white/10">
+          {spread.map((count, index) => (
+            <Tooltip
+              key={index}
+              text={`${stars((index + 1) / 2)} · ${counted(count, "rating")}`}
+            >
+              <span className="group/bar flex h-full flex-1 items-end">
+                {count ? (
+                  <span
+                    className={cn(
+                      "w-full rounded-t-[2px] transition-colors group-hover/bar:bg-white/60",
+                      count === peak ? "bg-white/40" : "bg-white/15",
+                    )}
+                    style={{ height: `max(4px, ${(count / peak) * 100}%)` }}
+                  />
+                ) : null}
+              </span>
+            </Tooltip>
+          ))}
+        </div>
+        <div aria-hidden="true" className="flex justify-between">
+          <Star fill={1} size={9} />
+          <span className="flex gap-px">
+            {Array.from({ length: 5 }, (_, index) => (
+              <Star fill={1} key={index} size={9} />
+            ))}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

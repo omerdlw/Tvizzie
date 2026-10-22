@@ -62,7 +62,7 @@ export function MovieSocialProof({
       <div className="min-h-0 overflow-hidden">
         {proof && summary ? (
           <button
-            className="group flex w-full cursor-pointer items-center gap-3 rounded-[20px] bg-white/5 p-3 text-left ring-1 ring-white/5 transition-colors duration-slow ease-out-expo outline-none ring-inset hover:bg-white/10 focus-visible:ring-white/50"
+            className="group flex w-full cursor-pointer items-center gap-3 rounded-control bg-white/5 p-3 text-left ring-1 ring-white/5 transition-colors duration-slow ease-out-expo outline-none ring-inset hover:bg-white/10 focus-visible:ring-white/50"
             onClick={() =>
               void openSurface(
                 createSocialProofSurfaceEntry({ movieId, proof, title }),

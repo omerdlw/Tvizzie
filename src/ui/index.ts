@@ -15,6 +15,8 @@ export { Select } from "./select";
 export { Avatar } from "./avatar";
 export { primitivesTheme } from "./theme";
 export { MediaCard } from "./media-card";
+export { Highlight } from "./highlight";
+export { ResultRow } from "./result-row";
 export type { MediaCardAspect } from "./media-card";
 export { SegmentedControl } from "./segmented-control";
 export { StickyAside } from "./sticky-aside";

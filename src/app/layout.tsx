@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import type { JSX, ReactNode } from "react";
 import "./globals.css";
 import { baselGrotesk, baselMono, martina, zuume } from "@/app/fonts";
@@ -17,7 +18,14 @@ export interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps): JSX.Element {
+export default async function RootLayout({
+  children,
+}: RootLayoutProps): Promise<JSX.Element> {
+  // Every page is rendered per request, so its scripts carry the nonce of the
+  // policy the proxy sent with it. A page built ahead of time would have none,
+  // and the policy would block it.
+  await connection();
+
   return (
     <html lang="en">
       <body

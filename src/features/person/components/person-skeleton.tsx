@@ -39,11 +39,11 @@ function Sidebar(): JSX.Element {
     <div className={SIDEBAR_CLASS}>
       <div className="flex min-w-0 flex-col gap-3">
         <div className="w-full shrink-0">
-          <SkeletonBlock className="aspect-[2/3] w-full rounded-[20px]" />
+          <SkeletonBlock className="aspect-[2/3] w-full rounded-card" />
         </div>
         <div className="flex gap-3">
-          <SkeletonBlock className="h-12 min-w-0 flex-1 rounded-[20px]" />
-          <SkeletonBlock className="h-12 min-w-0 flex-1 rounded-[20px]" />
+          <SkeletonBlock className="h-12 min-w-0 flex-1 rounded-control" />
+          <SkeletonBlock className="h-12 min-w-0 flex-1 rounded-control" />
         </div>
       </div>
 
@@ -98,13 +98,13 @@ function Filmography(): JSX.Element {
   return (
     <section className="flex w-full flex-col">
       <SectionHeaderSkeleton
-        actions={<SkeletonBlock className="h-8 w-44 shrink-0 rounded-[13px]" />}
+        actions={<SkeletonBlock className="h-8 w-44 shrink-0 rounded-control" />}
         title="13.5rem"
       />
       <div className={FILMOGRAPHY_GRID_CLASS}>
         {Array.from({ length: 12 }, (_, index) => (
           <div className="min-w-0" key={index}>
-            <SkeletonBlock className="aspect-[2/3] w-full rounded-[20px]" />
+            <SkeletonBlock className="aspect-[2/3] w-full rounded-card" />
           </div>
         ))}
       </div>

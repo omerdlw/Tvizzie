@@ -77,7 +77,7 @@ export function TileActions({
   };
 
   const button =
-    "center size-8 cursor-pointer rounded-full bg-black/70 text-white/80 ring-1 ring-white/10 backdrop-blur-sm ring-inset hover:bg-black hover:text-white disabled:cursor-wait";
+    "center size-8 cursor-pointer rounded-chip bg-black/70 text-white/80 ring-1 ring-white/10 backdrop-blur-sm ring-inset hover:bg-black hover:text-white disabled:cursor-wait";
 
   return (
     <div

@@ -24,7 +24,6 @@ export function MovieRecommendations({
         {recommendations.map((item) => (
           <MoviePosterLink
             key={item.id}
-            caption={false}
             carried
             movie={{
               id: item.id,

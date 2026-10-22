@@ -19,7 +19,7 @@ export function PosterThumb({
 
   return (
     <div
-      className={`relative aspect-[2/3] shrink-0 overflow-hidden rounded-[12px] bg-white/5 ring-1 ring-white/5 ring-inset ${className}`}
+      className={`relative aspect-[2/3] shrink-0 overflow-hidden rounded-card bg-white/5 ring-1 ring-white/5 ring-inset ${className}`}
     >
       <AdaptiveImage
         alt=""

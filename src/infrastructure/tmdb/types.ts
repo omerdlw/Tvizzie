@@ -1,7 +1,10 @@
 import type { z } from "zod";
 import type { movieDetailsSchema, movieImagesSchema } from "./schemas/movie";
 import type { personDetailsSchema } from "./schemas/person";
-import type { featuredMoviePageSchema } from "./schemas/discover";
+import type {
+  featuredMoviePageSchema,
+  trendingPeoplePageSchema,
+} from "./schemas/discover";
 import type {
   movieSearchPageSchema,
   personSearchPageSchema,
@@ -14,6 +17,7 @@ export type FeaturedMoviePage = z.output<typeof featuredMoviePageSchema>;
 export type FeaturedMovie = FeaturedMoviePage["results"][number];
 
 export type PersonSearchPage = z.output<typeof personSearchPageSchema>;
+export type TrendingPeoplePage = z.output<typeof trendingPeoplePageSchema>;
 
 export type PersonDetails = z.output<typeof personDetailsSchema>;
 export type PersonCastCredit = PersonDetails["credits"]["cast"][number];

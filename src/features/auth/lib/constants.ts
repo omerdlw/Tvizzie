@@ -13,6 +13,9 @@ export const OAUTH_PROVIDERS: readonly OAuthProvider[] = Object.freeze([
 
 export const DEFAULT_MAX_AUTH_AGE_SECONDS = 600;
 
+// Test accounts from scripts/seed; see features/auth/server/seed-login.ts.
+export const SEED_EMAIL_DOMAIN = "seed.tvizzie.test";
+
 export const INITIAL_AUTH_STATE: AuthState = Object.freeze({
   error: null,
   isAuthenticated: false,

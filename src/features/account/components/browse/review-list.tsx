@@ -4,6 +4,7 @@ import { useState, type JSX } from "react";
 import { cn } from "@omerdlw/base-framework/utils";
 import { movieHref } from "@config/routes";
 import { Button, MediaCard } from "@/ui";
+import { RADIUS } from "@/ui/radius";
 import { RatingStars } from "@/features/reviews/components/rating-stars";
 import { ReviewActions } from "@/features/reviews/components/review-actions";
 import type { ReviewCardData } from "../../lib/browse-data";
@@ -58,7 +59,7 @@ function ReviewRow({
         href={href}
         image={posterImage(review.posterPath, "72px")}
         label={review.year ? `${review.title} (${review.year})` : review.title}
-        radius={4}
+        radius={RADIUS.chip}
       />
       <article className="flex min-w-0 flex-1 flex-col">
         <h3 className="flex min-w-0 flex-wrap items-baseline gap-x-2">
