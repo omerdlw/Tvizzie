@@ -18,8 +18,14 @@ import {
   useTransform,
   type MotionStyle,
 } from "motion/react";
-import { usePathname, useRouter } from "next/navigation";
-import { useOptionalDockActions } from "@omerdlw/base-framework/modules/dock";
+import { usePathname } from "next/navigation";
+import {
+  NAVIGATION_SOURCE,
+  useArrival,
+  useNavigationHold,
+  useNavigationPayload,
+  type NavigationTrip,
+} from "@omerdlw/base-framework/modules/navigation";
 import { cn } from "@omerdlw/base-framework/utils";
 import {
   dropCarry,
@@ -27,15 +33,6 @@ import {
   settleCarry,
   useTintedFavicon,
 } from "@/motion/film";
-import {
-  depart,
-  endHandoff,
-  handoffTo,
-  holdSteps,
-  samePage,
-  stepTo,
-  watchIntent,
-} from "@/motion/handoff";
 import { useScrollY, useSmoothScroll } from "@/motion/scroll";
 import { GRAMMAR, type Opening } from "./grammar";
 import { EASE, FOCUSED, blur, focus } from "./tempo";
@@ -81,12 +78,12 @@ function remember(pathname: string) {
 
 let booted = false;
 
-function usePace(pathname: string) {
+function usePace(pathname: string, arrival: NavigationTrip | null) {
   const [pace] = useState(() => {
     const { arrive, revisit } = GRAMMAR.film;
     if (!booted) return 1;
     if (seenList().includes(pathname)) return revisit.pace;
-    return handoffTo(pathname) ? arrive.pace : 1;
+    return arrival ? arrive.pace : 1;
   });
   useEffect(() => {
     booted = true;
@@ -117,7 +114,8 @@ export function Stage({
   wash?: boolean;
 }) {
   const pathname = usePathname();
-  const pace = usePace(pathname);
+  const arrival = useArrival();
+  const pace = usePace(pathname, arrival);
   const [timeline] = useState(() =>
     createTimeline({
       hold: picture,
@@ -128,7 +126,7 @@ export function Stage({
   );
   const reduced = useReducedMotion();
   const [tone, setTone] = useState<string | null>(
-    () => handoffTo(pathname)?.grade ?? null,
+    () => arrival?.payload.grade ?? null,
   );
   const grade = useMemo(() => ({ set: setTone, tone }), [tone]);
   const [lead, setLead] = useState<string | null>(null);
@@ -148,7 +146,6 @@ export function Stage({
 
   const smooth = useSmoothScroll();
   useEffect(() => {
-    endHandoff();
     settleCarry();
     smooth?.resync();
   }, [smooth]);
@@ -226,9 +223,6 @@ function Leaving({
   tone: string | null;
   wash: boolean;
 }) {
-  const dock = useOptionalDockActions();
-  const router = useRouter();
-  const pathname = usePathname();
   const timeline = useContext(TimelineContext);
   const reduced = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
@@ -254,78 +248,27 @@ function Leaving({
     else timeline?.resume();
   }, [leaving, timeline]);
 
-  useEffect(() => {
-    if (!dock || reduced) return;
-    const timers = new Set<ReturnType<typeof setTimeout>>();
-    const waiting = new Set<() => void>();
-    const unregister = dock.registerGuard({
-      when: (to: string) =>
-        new Promise<boolean>((resolve) => {
+  // Every trip out of the page, by the dock or the back button, waits for
+  // the exit; the carry rides along only on the way forward.
+  useNavigationHold(
+    reduced
+      ? null
+      : (trip) => {
+          const carried = trip.source !== NAVIGATION_SOURCE.HISTORY;
           setLeaving(true);
-          waiting.add(
-            depart(to, router, {
-              onReturn: () => {
-                dropCarry();
-                setLeaving(false);
-              },
-              patience: wait * 1000 + 2500,
-            }),
+          if (carried) liftCarry(trip.href, GRAMMAR.film.carry.run);
+          trip.signal.addEventListener(
+            "abort",
+            () => {
+              if (carried) dropCarry();
+              setLeaving(false);
+            },
+            { once: true },
           );
-          liftCarry(to, GRAMMAR.film.carry.run);
-          timers.add(setTimeout(() => resolve(false), wait * 1000));
-        }),
-    });
-    return () => {
-      unregister();
-      timers.forEach(clearTimeout);
-      waiting.forEach((stop) => stop());
-    };
-  }, [dock, reduced, router, wait]);
-
-  useEffect(() => watchIntent(router), [router]);
-
-  useEffect(() => {
-    if (reduced) return;
-    let held: { state: unknown } | null = null;
-    let passing = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    const pass = () => {
-      timer = null;
-      if (!held) return;
-      const { state } = held;
-      held = null;
-      passing = true;
-      window.dispatchEvent(new PopStateEvent("popstate", { state }));
-      passing = false;
-    };
-    const release = holdSteps((event) => {
-      if (passing) return false;
-      if (samePage(window.location.pathname, pathname)) {
-        if (timer) {
-          clearTimeout(timer);
-          timer = null;
-          held = null;
-          endHandoff();
-          setLeaving(false);
-        }
-        return false;
-      }
-      held = { state: event.state };
-      if (!timer) {
-        stepTo(window.location.pathname);
-        setLeaving(true);
-        timer = setTimeout(pass, wait * 1000);
-      }
-      return true;
-    });
-    return () => {
-      release();
-      if (timer) {
-        clearTimeout(timer);
-        pass();
-      }
-    };
-  }, [pathname, reduced, wait]);
+          return new Promise((resolve) => setTimeout(resolve, wait * 1000));
+        },
+  );
+  useNavigationPayload("grade", () => grade.get());
 
   return (
     <LeavingContext value={leaving}>

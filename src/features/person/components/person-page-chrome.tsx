@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { usePage } from "@omerdlw/base-framework/kernel";
 import {
   useAmbientTheme,
   type AmbientPalette,
 } from "@omerdlw/base-framework/modules/ambient";
+import {
+  useArrival,
+  useDeparture,
+  useNavigationPayload,
+} from "@omerdlw/base-framework/modules/navigation";
 import { useArtworkContextMenu, useArtworkPath } from "@/features/artwork";
-import { handoffTo, useDeparture, useHeldPalette } from "@/motion/handoff";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { PersonDetails } from "@/infrastructure/tmdb/types";
 import { PERSON_FALLBACK_ICON } from "../lib/constants";
@@ -45,8 +48,8 @@ export function PersonPageChrome({
     kind: "person",
   });
 
-  const pathname = usePathname();
-  const departure = useDeparture(pathname);
+  const departure = useDeparture()?.href;
+  const arrival = useArrival();
 
   usePage({
     title: person.name,
@@ -57,12 +60,12 @@ export function PersonPageChrome({
       targetPath: departure,
     },
   });
-  const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
+  const [inherited] = useState(() => arrival?.payload.palette ?? undefined);
   const { palette: lit } = useAmbientTheme({
     image: swatch,
     initialPalette: palette?.source === swatch ? palette : inherited,
   });
-  useHeldPalette(lit);
+  useNavigationPayload("palette", lit);
 
   return null;
 }

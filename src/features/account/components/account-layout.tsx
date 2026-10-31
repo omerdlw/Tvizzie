@@ -27,7 +27,7 @@ import {
   useAmbientTheme,
   type AmbientPalette,
 } from "@omerdlw/base-framework/modules/ambient";
-import { useHeldPalette } from "@/motion/handoff";
+import { useNavigationPayload } from "@omerdlw/base-framework/modules/navigation";
 import { createAccountSocialSurfaceEntry } from "./surfaces/account-social-surface";
 import { ProfileStatButton, ProfileStatRow } from "./browse/profile-stats";
 import { accountHref } from "@/config/routes";
@@ -168,7 +168,7 @@ function AccountHero({
     image: backdropUrl || account?.avatarUrl || null,
     initialPalette: served,
   });
-  useHeldPalette(palette);
+  useNavigationPayload("palette", palette);
 
   const openSocial = (tab: "following" | "followers") => {
     if (!account?.id) return;

@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
 import { usePage } from "@omerdlw/base-framework/kernel";
 import { useDockActions } from "@omerdlw/base-framework/modules/dock";
 import {
   useAmbientTheme,
   type AmbientPalette,
 } from "@omerdlw/base-framework/modules/ambient";
+import {
+  useArrival,
+  useDeparture,
+  useNavigationPayload,
+} from "@omerdlw/base-framework/modules/navigation";
 import { useArtworkContextMenu, useArtworkPath } from "@/features/artwork";
-import { handoffTo, useDeparture, useHeldPalette } from "@/motion/handoff";
 import { MovieAction } from "@/features/reviews";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import type { MovieDetails } from "@/infrastructure/tmdb/types";
@@ -66,8 +69,8 @@ export function MoviePageChrome({
     [hasProviders, movie.id, movie.title, openSurface],
   );
 
-  const pathname = usePathname();
-  const departure = useDeparture(pathname);
+  const departure = useDeparture()?.href;
+  const arrival = useArrival();
 
   usePage({
     title: movie.title,
@@ -79,12 +82,12 @@ export function MoviePageChrome({
       targetPath: departure,
     },
   });
-  const [inherited] = useState(() => handoffTo(pathname)?.palette ?? undefined);
+  const [inherited] = useState(() => arrival?.payload.palette ?? undefined);
   const { palette: lit } = useAmbientTheme({
     image: swatch,
     initialPalette: palette?.source === swatch ? palette : inherited,
   });
-  useHeldPalette(lit);
+  useNavigationPayload("palette", lit);
 
   return null;
 }

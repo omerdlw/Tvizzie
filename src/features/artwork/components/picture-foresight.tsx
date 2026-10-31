@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { report } from "@omerdlw/base-framework/utils";
-import { foresee } from "@/motion/handoff";
+import { useNavigationIntent } from "@omerdlw/base-framework/modules/navigation";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { artworkKey } from "../lib/entries";
 import { artworkStore } from "../lib/store";
@@ -46,12 +45,8 @@ async function ready(path: string) {
 }
 
 export function PictureForesight(): null {
-  useEffect(
-    () =>
-      foresee((path) => {
-        ready(path).catch((error) => report("PictureForesight", error));
-      }),
-    [],
-  );
+  useNavigationIntent((path) => {
+    ready(path).catch((error) => report("PictureForesight", error));
+  });
   return null;
 }

@@ -14,7 +14,7 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { useOptionalDockActions } from "@omerdlw/base-framework/modules/dock";
+import { useNavigationHold } from "@omerdlw/base-framework/modules/navigation";
 import { cn } from "@omerdlw/base-framework/utils";
 import { useOpticalInset } from "../optical-inset";
 import { useScrollY, useSmoothScroll } from "../scroll";
@@ -114,31 +114,23 @@ function Leaving({
   className?: string;
   scope?: string;
 }) {
-  const dock = useOptionalDockActions();
   const reduced = useReducedMotion();
   const { wait } = useScore().exit;
   const [leaving, setLeaving] = useState(false);
 
-  useEffect(() => {
-    if (!dock || reduced) return;
-    const timers = new Set<ReturnType<typeof setTimeout>>();
-    const unregister = dock.registerGuard({
-      when: (to: string) =>
-        within(to, scope)
-          ? false
-          : new Promise<boolean>((resolve) => {
-              setLeaving(true);
-              timers.add(
-                setTimeout(() => setLeaving(false), wait * 1000 + 2500),
-              );
-              timers.add(setTimeout(() => resolve(false), wait * 1000));
-            }),
-    });
-    return () => {
-      unregister();
-      timers.forEach(clearTimeout);
-    };
-  }, [dock, reduced, scope, wait]);
+  useNavigationHold(
+    reduced
+      ? null
+      : (trip) => {
+          if (within(trip.to, scope)) return;
+          setLeaving(true);
+          trip.signal.addEventListener("abort", () => setLeaving(false), {
+            once: true,
+          });
+          return new Promise((resolve) => setTimeout(resolve, wait * 1000));
+        },
+    { history: false },
+  );
 
   return (
     <LeavingContext value={leaving}>
