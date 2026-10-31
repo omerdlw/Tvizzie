@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { LOGO_PATH, LOGO_VIEWBOX } from "@/ui/logo";
 
 const iconFor = (tone: string) => {
   const [r, g, b] = tone.split(/\s+/).map(Number);
   const c = `rgb(${r},${g},${b})`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="s" x1="8" x2="56" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset=".5" stop-color="#fffaf0"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient><radialGradient id="h" cx="32" cy="27" r="28" gradientTransform="matrix(1 0 0 .36 0 17.3)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${c}" stop-opacity=".6"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs><rect width="64" height="64" rx="16" fill="#0a0a0a"/><rect width="64" height="64" rx="16" fill="${c}" fill-opacity="0.18"/><rect y="15" width="64" height="24" fill="url(#h)"/><rect x="12" y="16" width="40" height="7" rx="2" fill="${c}"/><rect x="8" y="25.5" width="48" height="3" fill="url(#s)"/><rect x="15" y="31" width="34" height="18" rx="2" fill="${c}"/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#0a0a0a"/><rect width="64" height="64" rx="16" fill="${c}" fill-opacity="0.18"/><svg x="14" y="14" width="36" height="36" viewBox="${LOGO_VIEWBOX}"><path fill="${c}" d="${LOGO_PATH}"/></svg></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 

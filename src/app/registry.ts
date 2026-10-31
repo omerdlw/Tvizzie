@@ -1,6 +1,8 @@
+import { createElement } from "react";
 import type { AppRegistryEntry } from "@omerdlw/base-framework/kernel";
 import { project } from "@/config/project";
 import { DEFAULT_ACCOUNT_ICON } from "@/features/account";
+import { Logo } from "@/ui";
 
 export const APP_REGISTRY_ENTRIES: readonly AppRegistryEntry[] = Object.freeze([
   {
@@ -8,9 +10,9 @@ export const APP_REGISTRY_ENTRIES: readonly AppRegistryEntry[] = Object.freeze([
     items: {
       "/": {
         description: project.description,
-        icon: "solar:home-2-bold",
+        icon: createElement(Logo, { size: 22 }),
         name: "home",
-        title: "Home",
+        title: "Guffin - Home",
         path: "/",
       },
       "/oscars": {

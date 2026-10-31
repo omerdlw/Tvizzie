@@ -8,6 +8,7 @@ export { Highlight } from "./highlight";
 export { Icon } from "./icon";
 export { Input } from "./input";
 export { Loader } from "./loader";
+export { Logo, LOGO_PATH, LOGO_VIEWBOX } from "./logo";
 export { MediaCard, type MediaCardAspect } from "./media-card";
 export {
   ASIDE_CLASS,
