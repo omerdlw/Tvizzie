@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="seam" x1="8" x2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f3e9d2" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#f3e9d2" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="32" cy="27" r="28" gradientTransform="matrix(1 0 0 .36 0 17.3)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f3e9d2" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#f3e9d2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0a0a0a"/>
+  <rect y="15" width="64" height="24" fill="url(#halo)"/>
+  <rect x="12" y="16" width="40" height="7" rx="2" fill="#f3e9d2"/>
+  <rect x="8" y="25.5" width="48" height="3" fill="url(#seam)"/>
+  <rect x="15" y="31" width="34" height="18" rx="2" fill="#f3e9d2"/>
+</svg>
