@@ -106,7 +106,7 @@ export function Stage({
 }: {
   /**
    * A pure #000 room: the frame adds no light of its own (no wash, grain,
-   * glass sheen or cursor glow), so only the page's own effects light it.
+   * glass sheen), so only the page's own effects light it.
    */
   black?: boolean;
   children: ReactNode;

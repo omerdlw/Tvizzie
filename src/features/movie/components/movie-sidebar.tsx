@@ -43,7 +43,7 @@ function Row({
       from="still"
     >
       <div className="flex w-full items-baseline justify-between gap-6">
-        <dt className={`crt-glow shrink-0 ${TONE.label} text-white/50`}>
+        <dt className={`shrink-0 ${TONE.label} text-white/50`}>
           <Expose hover out={out} since={0}>
             {label}
           </Expose>

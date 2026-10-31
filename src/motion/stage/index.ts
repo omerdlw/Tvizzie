@@ -13,7 +13,6 @@ export { Picture, type PictureLight } from "./picture";
 export { useRoom } from "./room";
 export { Sequence } from "./sequence";
 export { Beat, Cascade, Header, Item, Section, Swap, Trace } from "./section";
-export { trackSpotlight } from "./spotlight";
 export * from "./tempo";
 export { Count, Expose, Title, Words } from "./type";
 export { SURFACE_LEAD, SurfaceScene } from "./surface-scene";

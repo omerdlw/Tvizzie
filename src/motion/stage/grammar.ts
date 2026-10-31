@@ -36,7 +36,7 @@ export const GRAMMAR = {
   scrub: {
     defocus: { range: [24, 560] },
     drift: 8,
-    push: 0.12,
+    push: 0.32,
   },
   scroll: { response: 0.16, wheelMultiplier: 0.8 },
   exit: {

@@ -5,7 +5,7 @@ import { useDockActions } from "@omerdlw/base-framework/modules/dock";
 import { cn, report } from "@omerdlw/base-framework/utils";
 import { useAuth } from "@/features/auth";
 import { Icon } from "@/ui";
-import { Fade, Item, trackSpotlight } from "@/motion/stage";
+import { Fade, Item } from "@/motion/stage";
 import { getMovieSocialProofAction } from "../server/actions";
 import type { MovieSocialProof as Proof } from "../lib/types";
 import { describeProof } from "../lib/utils";
@@ -66,13 +66,12 @@ export function MovieSocialProof({
         {proof && summary ? (
           <Item exit={false} from="light">
             <button
-              className="cine-card cine-fade cine-spot group relative flex h-14 w-full cursor-pointer items-center overflow-hidden rounded-full bg-white/[0.06] px-3.5 text-left ring-1 ring-white/[0.04] ring-inset hover:bg-white/10 hover:ring-white/[0.08]"
+              className="cine-card cine-fade group relative flex h-14 w-full cursor-pointer items-center overflow-hidden rounded-full bg-white/[0.06] px-3.5 text-left ring-1 ring-white/[0.04] ring-inset hover:bg-white/10 hover:ring-white/[0.08]"
               onClick={() =>
                 void openSurface(
                   createSocialProofSurfaceEntry({ movieId, proof, title }),
                 )
               }
-              onPointerMove={trackSpotlight}
               type="button"
             >
               <Fade

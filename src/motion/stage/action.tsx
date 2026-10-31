@@ -6,10 +6,9 @@ import { Button, Icon, TONE } from "@/ui";
 import { Magnet } from "../film/magnet";
 import { Fade } from "./clock";
 import { Item } from "./section";
-import { trackSpotlight } from "./spotlight";
 
 const BASE =
-  "cine-card cine-fade cine-spot group center relative w-full cursor-pointer gap-2.5 overflow-hidden rounded-full text-[13px] leading-4 font-medium select-none";
+  "cine-card cine-fade group center relative w-full cursor-pointer gap-2.5 overflow-hidden rounded-full text-[13px] leading-4 font-medium select-none";
 
 export function StageAction({
   active,
@@ -70,7 +69,6 @@ export function StageAction({
         disabled={disabled}
         loading={loading}
         onClick={onClick}
-        onPointerMove={trackSpotlight}
       >
         {fade ? (
           <Fade

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -25,8 +25,6 @@ const dialogOpen = () =>
   getComputedStyle(document.body).overflowY === "hidden" ||
   getComputedStyle(document.documentElement).overflowY === "hidden";
 
-const TUBE_FACE =
-  "inset 0 0 18vmin 3vmin rgb(0 0 0 / 0.55), inset 0 0 3vmin 0.5vmin rgb(0 0 0 / 0.4)";
 const THROUGH = 1.06;
 
 type Bezier = [number, number, number, number];
@@ -165,21 +163,16 @@ export function Intermission({
                 "radial-gradient(ellipse 120% 100% at 50% 45%, transparent 40%, rgb(0 0 0 / 0.7)), linear-gradient(to top, rgb(0 0 0 / 0.75), transparent 45%)",
             }}
           />
-          <div
-            className="crt-scan absolute inset-0"
-            style={{ "--scan-depth": 0.1 } as CSSProperties}
-          />
-          <div className="absolute inset-0" style={{ boxShadow: TUBE_FACE }} />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-8 sm:p-12">
             <div className="flex min-w-0 flex-col gap-3">
-              <span className="crt-glow text-[10px] font-semibold tracking-[0.32em] text-white/50 uppercase">
+              <span className="text-[10px] font-semibold tracking-[0.32em] text-white/50 uppercase">
                 {label}
               </span>
               <span className="font-zuume text-6xl leading-none font-bold text-white uppercase sm:text-8xl">
                 {title}
               </span>
             </div>
-            <span className="crt-glow hidden shrink-0 text-[10px] font-semibold tracking-[0.32em] text-white/40 uppercase sm:block">
+            <span className="hidden shrink-0 text-[10px] font-semibold tracking-[0.32em] text-white/40 uppercase sm:block">
               Move to resume
             </span>
           </div>

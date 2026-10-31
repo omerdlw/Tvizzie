@@ -382,92 +382,6 @@ html.reticle *:not([data-reticle-off], [data-reticle-off] *) {
     transform: scale(1.14);
   }
 
-  [data-cinematic] {
-    --scan: 3px;
-  }
-  @media (resolution: 1.25dppx) {
-    [data-cinematic] {
-      --scan: 3.2px;
-    }
-  }
-  @media (resolution: 1.5dppx) {
-    [data-cinematic] {
-      --scan: 2.6667px;
-    }
-  }
-  @media (resolution: 1.75dppx) {
-    [data-cinematic] {
-      --scan: 2.8571px;
-    }
-  }
-  .crt-scan {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 0) 0,
-      rgb(0 0 0 / var(--scan-depth, 0.05)) calc(var(--scan) * 0.5),
-      rgb(0 0 0 / 0) var(--scan)
-    );
-  }
-  @keyframes crt-scan-read {
-    to {
-      opacity: 0;
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: scroll()) {
-      [data-cinematic] .crt-scan-page {
-        animation: crt-scan-read linear both;
-        animation-range: 0 100vh;
-        animation-timeline: scroll(root block);
-      }
-    }
-  }
-
-  .crt-tube-face {
-    border-radius: inherit;
-    box-shadow:
-      inset 0 0 32px 4px rgb(0 0 0 / 0.38),
-      inset 0 0 6px 1px rgb(0 0 0 / 0.35);
-    inset: 0;
-    pointer-events: none;
-    position: absolute;
-  }
-  .crt-tube-face::before {
-    background: radial-gradient(
-      120% 70% at 18% 0%,
-      rgb(var(--white-rgb) / 0.11),
-      transparent 48%
-    );
-    border-radius: inherit;
-    content: "";
-    inset: 0;
-    position: absolute;
-  }
-  .crt-tube-face::after {
-    --scan-depth: 0.16;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 0) 0,
-      rgb(0 0 0 / var(--scan-depth)) calc(var(--scan) * 0.5),
-      rgb(0 0 0 / 0) var(--scan)
-    );
-    border-radius: inherit;
-    content: "";
-    inset: 0;
-    opacity: 0;
-    position: absolute;
-    transition: opacity 2.4s var(--ease-phosphor);
-  }
-  [data-cinematic] .cine-card:is(:hover, :focus-visible) .crt-tube-face::after {
-    opacity: 1;
-    transition-duration: 0.7s;
-    transition-timing-function: var(--ease-out-cream);
-  }
-
-  [data-cinematic] .crt-glow {
-    text-shadow: 0 0 0.7em color-mix(in srgb, currentColor 30%, transparent);
-  }
-
   @keyframes film-drift {
     from {
       transform: scale(1.04) translate3d(0, 0, 0);
@@ -483,32 +397,6 @@ html.reticle *:not([data-reticle-off], [data-reticle-off] *) {
 
   [data-cinematic] ::selection {
     background: rgb(var(--grade, var(--white-rgb)) / 0.32);
-  }
-
-  [data-cinematic] .cine-spot::after {
-    background: radial-gradient(
-      280px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(
-        in srgb,
-        color-mix(
-          in srgb,
-          rgb(var(--grade, var(--white-rgb))) 45%,
-          var(--white)
-        ),
-        transparent 86%
-      ),
-      transparent 70%
-    );
-    border-radius: inherit;
-    content: "";
-    inset: 0;
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    transition: opacity 1.2s var(--ease-out-cream);
-  }
-  [data-cinematic] .cine-spot:is(:hover, :focus-visible)::after {
-    opacity: 1;
   }
 
   @keyframes cine-shimmer {

@@ -5,7 +5,7 @@ import { personHref } from "@/config/routes";
 import { useArtworkPath } from "@/features/artwork";
 import { MediaCard, useDockLinkClick } from "@/ui";
 import { SCENE } from "../lib/motion";
-import { Develop, Expose, trackSpotlight } from "@/motion/stage";
+import { Develop, Expose } from "@/motion/stage";
 import { tmdbImageUrl } from "@/infrastructure/tmdb/images";
 import { cn } from "@omerdlw/base-framework/utils";
 import type { PersonEntry } from "../lib/types";
@@ -37,10 +37,9 @@ export function PersonCard({
       aria-label={`${person.name}, ${person.subtitle}`}
       href={href}
       onClick={handleClick}
-      onPointerMove={trackSpotlight}
       prefetch={false}
       className={cn(
-        "cine-card cine-fade cine-spot relative flex items-center gap-3 overflow-hidden focus-visible:outline-[1.5px] focus-visible:outline-offset-2 focus-visible:outline-white/20 bg-white/[0.06] ring-1 ring-white/[0.04] ring-inset hover:bg-white/10 hover:ring-white/[0.08]",
+        "cine-card cine-fade relative flex items-center gap-3 overflow-hidden focus-visible:outline-[1.5px] focus-visible:outline-offset-2 focus-visible:outline-white/20 bg-white/[0.06] ring-1 ring-white/[0.04] ring-inset hover:bg-white/10 hover:ring-white/[0.08]",
         compact ? "h-10 min-w-0 flex-1 p-1 pr-2" : "h-[84px] p-1 pr-4",
       )}
       style={radius === undefined ? undefined : { borderRadius: radius }}

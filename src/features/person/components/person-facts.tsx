@@ -20,7 +20,7 @@ function Row({
 }) {
   return (
     <div className="group/row relative flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
-      <dt className={`crt-glow shrink-0 ${TONE.label} text-white/50`}>
+      <dt className={`shrink-0 ${TONE.label} text-white/50`}>
         <Expose at={at} hover out={out}>
           {label}
         </Expose>
